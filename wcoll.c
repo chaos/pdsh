@@ -345,6 +345,7 @@ rms_rid_to_nodes(char *part, int rid)
 	xpclose(f);
 	/* should either have empty string or host[n-m] range */
 	/* turn elanid range into list of hostnames */
+	xstrcln(tmp, "\r\n\t "); /* drop trailing \n */
 	return hostlist_create(tmp);
 }
 

@@ -138,6 +138,7 @@ qsw_setbitmap(hostlist_t nodelist, int procs_per_node, ELAN_CAPABILITY *cap)
 			BT_SET(cap->Bitmap, proc0 + i);
 		}
 	}
+	hostlist_iterator_destroy(itr);
 
 	return 0;
 }
@@ -167,6 +168,7 @@ setenvf(const char *fmt, ...)
 static int
 qsw_rms_setenv(qsw_info_t *qi)
 {
+	/* MPI wants some of these ... */
 	if (setenvf("RMS_RANK=%d", qi->rank) < 0)
 		return -1;
 	if (setenvf("RMS_NODEID=%d", qi->nodeid) < 0)
