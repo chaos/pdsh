@@ -219,6 +219,8 @@ Wed May 29 16:03:12 PDT 2002
 	Change fcntl(efd, F_SETFD, O_NONBLOCK) to F_SETFL (xrcmd.c)
 	Add fcntl call to k4cmd.c and qcmd.c.
 
-	Turn on USE_PAM for qshd and link qshd with -lpam -lpam_misc.
-
 	Added include <qsw/types.h> to compile with RMS 2.73.
+
+	Temporarily disable --with-rms and PAM support in qshd.
+
+	Taggged pdsh-1-6-3chaos.

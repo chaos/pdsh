@@ -109,9 +109,6 @@
 /* Define if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
-/* define for PAM support in qshd */
-#undef USE_PAM
-
 /* Define the project's version. */
 #undef VERSION
 
