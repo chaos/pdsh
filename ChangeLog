@@ -154,8 +154,4 @@ Release 1.6
 	Avoid non-portable gethostbyname_r call on non-AIX system by doing 
 	all DNS lookups before threads start up.
 
-	Add support for debug malloc library (NOTE: with debug malloc enabled,
-	"pdsh -a cat /etc/passwd >/dev/null" causes an abort complaining of
-	a recursive call.
-
 	Released version 1.6.
