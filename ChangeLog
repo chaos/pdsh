@@ -166,6 +166,7 @@
 
 2002-06-20 akeane@quadrics.com (via garlick)
 	* configure.ac fix to find pthreads on OSF/TRU64.
+	* Taggged pdsh-1-6-4chaos.
 
 TODO for version 1.7
 	- improve deja-gnu support
