@@ -54,21 +54,21 @@ typedef struct {
 	testfun_t fun;
 } testcase_t;
 
-static testresult_t test_xstrerrorcat(void);
+static testresult_t _test_xstrerrorcat(void);
 
 static testcase_t testcases[] = {
-	/* 0 */ { "xstrerrorcat", &test_xstrerrorcat },
+	/* 0 */ { "xstrerrorcat", &_test_xstrerrorcat },
 };
 
 static void
-testmsg(int testnum, testresult_t result)
+_testmsg(int testnum, testresult_t result)
 {
 	out("%P: Test %d: %s: %s\n", testnum, testcases[testnum].desc,
 			result == PASS ? "PASS" :  "FAIL");
 }
 
 static testresult_t
-test_xstrerrorcat(void)
+_test_xstrerrorcat(void)
 {
 	testresult_t result = PASS;
 
@@ -97,6 +97,6 @@ testcase(int testnum)
 	if (testnum < 0 || testnum >= (sizeof(testcases)/sizeof(testcase_t)))
 		errx("%P: Test %d unknown\n", testnum);
 	result = testcases[testnum].fun();
-	testmsg(testnum, result);
+	_testmsg(testnum, result);
 	exit(0);
 }

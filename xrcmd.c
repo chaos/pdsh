@@ -122,7 +122,8 @@ xrcmd_signal(int efd, int signum)
  *	s (RETURN)	socket for stdout/sdin or -1 on failure
  */
 int 
-xrcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd, int rank, int *fd2p)
+xrcmd(char *ahost, char *addr, char *locuser, char *remuser, 
+		char *cmd, int rank, int *fd2p)
 {
 	struct sockaddr_in sin, from;
 	fd_set reads;

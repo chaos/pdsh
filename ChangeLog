@@ -206,3 +206,6 @@
 	* Fixed --enable-debug option in configure.ac.
 	* Removed range operator configurability altogether.
 	* Enable "reckless hostrange expansion" (foo1-4 style ranges) for AIX
+
+2002-08-12 garlick
+	* Make all static "helper" functions underbar-prefixed.

@@ -115,7 +115,7 @@ read_genders(char *attr, int iopt)
 
 #if	HAVE_SDR
 static int 
-sdr_numswitchplanes(void)
+_sdr_numswitchplanes(void)
 {
 	FILE *f;
 	list_t words;
@@ -142,7 +142,7 @@ sdr_numswitchplanes(void)
 }
 
 static void 
-sdr_getswitchname(char *switchName)
+_sdr_getswitchname(char *switchName)
 {
 	FILE *f;
 	list_t words;
@@ -171,7 +171,7 @@ sdr_getswitchname(char *switchName)
  *	resp (OUT)	array of boolean, indexed by node number
  */
 static void 
-sdr_getresp(bool Gopt, char *nameType, bool resp[])
+_sdr_getresp(bool Gopt, char *nameType, bool resp[])
 {
 	int nn, switchplanes;
 	FILE *f;
@@ -184,9 +184,9 @@ sdr_getresp(bool Gopt, char *nameType, bool resp[])
 
 	/* deal with Colony switch attribute name change */
 	if (!strcmp(nameType, "switch_responds")) {
-		sdr_getswitchname(buf);
+		_sdr_getswitchname(buf);
 		if (!strcmp(buf, "SP_Switch2")) {
-			switchplanes = sdr_numswitchplanes();
+			switchplanes = _sdr_numswitchplanes();
 			attr = (switchplanes == 1) ?  "switch_responds0" : 
 				"switch_responds0 switch_responds1";
 		} else
@@ -223,7 +223,7 @@ sdr_getresp(bool Gopt, char *nameType, bool resp[])
  *	resp (OUT)	array of hostnames indexed by node number (heap cpy)
  */
 static void 
-sdr_getnames(bool Gopt, char *nameType, char *nodes[])
+_sdr_getnames(bool Gopt, char *nameType, char *nodes[])
 {
 	int nn;
 	FILE *f;
@@ -273,17 +273,17 @@ sdr_wcoll(bool Gopt, bool iopt, bool vopt)
 		rnodes[nn] = NULL;
 	}
 	if (iopt)
-		sdr_getnames(Gopt, "initial_hostname", inodes);
+		_sdr_getnames(Gopt, "initial_hostname", inodes);
 	else
-		sdr_getnames(Gopt, "reliable_hostname", rnodes);
+		_sdr_getnames(Gopt, "reliable_hostname", rnodes);
 
 	/*
 	 * Gather data needed to process -v.
 	 */
 	if (vopt) {
 		if (iopt)
-			sdr_getresp(Gopt, "switch_responds", sresp);
-		sdr_getresp(Gopt, "host_responds", hresp);
+			_sdr_getresp(Gopt, "switch_responds", sresp);
+		_sdr_getresp(Gopt, "host_responds", hresp);
 	}
 		
 	/*
@@ -325,7 +325,7 @@ sdr_wcoll(bool Gopt, bool iopt, bool vopt)
  * result (RETURN)	NULL or a list of hostnames
  */
 static hostlist_t
-rms_rid_to_nodes(char *part, int rid)
+_rms_rid_to_nodes(char *part, int rid)
 {
 	FILE *f;
 	char tmp[256];
@@ -367,7 +367,7 @@ rms_wcoll(void)
 		rid = atoi(ridstr);
 		part = rhs;
 
-		result = rms_rid_to_nodes(part, rid);
+		result = _rms_rid_to_nodes(part, rid);
 	}
 
 	/*

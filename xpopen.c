@@ -60,7 +60,7 @@ static struct pid {
 } *pidlist;
 
 /* forward declaration */
-static list_t parse_command_with_quotes(char *str);
+static list_t _parse_command_with_quotes(char *str);
 
 /* 
  * xpopen(): a safer popen for pdsh.
@@ -89,7 +89,7 @@ xpopen(char *cmd, char *mode)
 	pid_t pid;
 	char *av[ARG_MAX+1];
 	int maxfd = sysconf(_SC_OPEN_MAX);
-        list_t args = parse_command_with_quotes(cmd);
+        list_t args = _parse_command_with_quotes(cmd);
 
 	if ((*mode != 'r' && *mode != 'w') || mode[1] != '\0') {
 		errno = EINVAL;
@@ -213,7 +213,7 @@ xpclose(FILE *f)
  * 		one arg. 
  */
 static list_t 
-parse_command_with_quotes(char *str)
+_parse_command_with_quotes(char *str)
 {
 	list_t args = list_new();
 	char *c, *lc;

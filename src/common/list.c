@@ -62,7 +62,39 @@ struct list_implementation {
         char **data;
 };
 
-static char *next_tok(char *, char **);
+/* 
+ * Helper function for list_split(). Extract tokens from str.  
+ * Return a pointer to the next token; at the same time, advance 
+ * *str to point to the next separator.  
+ *   sep (IN)	string containing list of separator characters
+ *   str (IN)	double-pointer to string containing tokens and separators
+ *   RETURN	next token
+ */
+static char *
+_next_tok(char *sep, char **str)
+{
+	char *tok;
+
+	/* push str past any leading separators */
+	while (**str != '\0' && strchr(sep, **str) != '\0')
+		(*str)++;
+
+	if (**str == '\0')
+		return NULL;
+
+	/* assign token pointer */
+	tok = *str;
+
+	/* push str past token and leave pointing to first separator */
+	while (**str != '\0' && strchr(sep, **str) == '\0')
+		(*str)++;
+
+	/* nullify consecutive separators and push str beyond them */
+	while (**str != '\0' && strchr(sep, **str) != '\0')
+		*(*str)++ = '\0';
+
+	return tok;
+}
 
 /*
  * Create a new list with LIST_CHUNK elements allocated.
@@ -165,39 +197,6 @@ list_shift(list_t l)
 	return word;
 }
 
-/* 
- * Helper function for list_split(). Extract tokens from str.  
- * Return a pointer to the next token; at the same time, advance 
- * *str to point to the next separator.  
- *   sep (IN)	string containing list of separator characters
- *   str (IN)	double-pointer to string containing tokens and separators
- *   RETURN	next token
- */
-static char *
-next_tok(char *sep, char **str)
-{
-	char *tok;
-
-	/* push str past any leading separators */
-	while (**str != '\0' && strchr(sep, **str) != '\0')
-		(*str)++;
-
-	if (**str == '\0')
-		return NULL;
-
-	/* assign token pointer */
-	tok = *str;
-
-	/* push str past token and leave pointing to first separator */
-	while (**str != '\0' && strchr(sep, **str) == '\0')
-		(*str)++;
-
-	/* nullify consecutive separators and push str beyond them */
-	while (**str != '\0' && strchr(sep, **str) != '\0')
-		*(*str)++ = '\0';
-
-	return tok;
-}
 
 /*
  * Given a list of separators and a string, generate a list
@@ -214,7 +213,7 @@ list_split(char *sep, char *str)
 	if (sep == NULL)
 		sep = SPACES;
 
-	while ((tok = next_tok(sep, &str)) != NULL) {
+	while ((tok = _next_tok(sep, &str)) != NULL) {
 		if (strlen(tok) > 0)
 			list_push(new, tok);
 	} 

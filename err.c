@@ -80,7 +80,7 @@ err_cleanup(void)
 }
 
 /* 
- * verr() is like vfprintf, but handles (only) the following formats:
+ * _verr() is like vfprintf, but handles (only) the following formats:
  * following formats:
  * %s	string
  * %S   string, but treat as hostname and truncate after dot
@@ -93,7 +93,7 @@ err_cleanup(void)
  * %H   hostname for this host
  */
 static void 
-verr(FILE *stream, char *format, va_list ap) 
+_verr(FILE *stream, char *format, va_list ap) 
 {
 	char *buf = NULL;
 	char *q;
@@ -152,7 +152,7 @@ err(char *format, ...)
 	va_list	ap;
 
 	va_start(ap, format);
-	verr(stderr, format, ap);
+	_verr(stderr, format, ap);
 	va_end(ap);
 }
 
@@ -162,7 +162,7 @@ errx(char *format, ...)
 	va_list	ap;
 
 	va_start(ap, format);
-	verr(stderr, format, ap);
+	_verr(stderr, format, ap);
 	va_end(ap);
 	exit(1);
 }
@@ -173,6 +173,6 @@ out(char *format, ...)
 	va_list	ap;
 
 	va_start(ap, format);
-	verr(stdout, format, ap);
+	_verr(stdout, format, ap);
 	va_end(ap);
 }

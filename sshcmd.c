@@ -44,7 +44,7 @@
  * program in place of a direct rcmd() function call.
  */
 static int 
-pipecmd(char *path, char *args[], const char *ahost, int *fd2p)
+_pipecmd(char *path, char *args[], const char *ahost, int *fd2p)
 {
 	int             cpid;
 	int             sp[2], esp[2];
@@ -135,7 +135,7 @@ sshcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
 	args[7] = ahost; 	/*     initializers */
 	args[8] = cmd;
 
-	return pipecmd(_PATH_SSH, args, ahost, fd2p);
+	return _pipecmd(_PATH_SSH, args, ahost, fd2p);
 }
 
 /* pdcp uses this version */
@@ -151,7 +151,7 @@ sshcmdrw(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
 	args[6] = ahost; 	/*     initializers */
 	args[7] = cmd;
 
-	return pipecmd(_PATH_SSH, args, ahost, fd2p);
+	return _pipecmd(_PATH_SSH, args, ahost, fd2p);
 }
 
 void
@@ -176,7 +176,7 @@ rshcmd(char *ahost, char *luser, char *ruser, char *cmd, int *fd2p)
 	args[3] = ruser; 	/*     initializers */
 	args[4] = cmd;
 
-	return pipecmd(_PATH_RSH, args, ahost, fd2p);
+	return _pipecmd(_PATH_RSH, args, ahost, fd2p);
 }
 #endif
 

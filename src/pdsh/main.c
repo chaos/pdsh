@@ -46,9 +46,9 @@
 #include "dsh.h"
 #include "opt.h"
 
-static char *getcmd(char *);
-static void shell(uid_t, char *);
-static void interactive_dsh(opt_t *);
+static char *_getcmd(char *);
+static void _shell(uid_t, char *);
+static void _interactive_dsh(opt_t *);
 
 int 
 main(int argc, char *argv[])
@@ -78,7 +78,7 @@ main(int argc, char *argv[])
 		else if (opt.personality == PCP || opt.cmd != NULL) 
 			retval = dsh(&opt); /* single dsh/pcp command */
 		else  			/* prompt loop */ 
-			interactive_dsh(&opt);
+			_interactive_dsh(&opt);
 	} else {
 		retval = 1;
 	}
@@ -97,19 +97,19 @@ main(int argc, char *argv[])
  *	opt (IN)	program options struct
  */
 static void 
-interactive_dsh(opt_t *opt)
+_interactive_dsh(opt_t *opt)
 {
 	pid_t pid;
 
 	signal(SIGINT, SIG_IGN);
 
-	while ((opt->cmd = getcmd(opt->progname)))  {
+	while ((opt->cmd = _getcmd(opt->progname)))  {
 		if (*opt->cmd == '\0') { 		/* empty command */
 			Free((void **)&opt->cmd);
 			continue;
 		}
 		if (*opt->cmd == '!') { 		/* shell escape */
-			shell(opt->luid, opt->cmd + 1);
+			_shell(opt->luid, opt->cmd + 1);
 			Free((void **)&opt->cmd);
 			continue;
 		}
@@ -142,7 +142,7 @@ interactive_dsh(opt_t *opt)
  *	cmd (IN)	command and args
  */
 static void 
-shell(uid_t uid, char *cmd)
+_shell(uid_t uid, char *cmd)
 {
 	pid_t pid;
 
@@ -163,7 +163,7 @@ shell(uid_t uid, char *cmd)
  *	prompt (IN)	string used to build prompt (e.g. program name)
  */
 static char *
-getcmd(char *prompt)
+_getcmd(char *prompt)
 {
 	char *cmd = NULL;
 	char buf[LINEBUFSIZE];

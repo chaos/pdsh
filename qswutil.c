@@ -73,7 +73,7 @@ static int debug_syslog = 1; /* syslog program setup at LOG_DEBUG level */
  *	nodenum (RETURN)	elanid (-1 on failure)
  */
 static int
-qsw_host2elanid(char *host)
+_host2elanid(char *host)
 {
 	char *p = host;
 	int id;
@@ -91,7 +91,7 @@ qsw_host2elanid(char *host)
  * low node id's.
  */
 static int
-qsw_setbitmap(hostlist_t nodelist, int procs_per_node, ELAN_CAPABILITY *cap)
+_setbitmap(hostlist_t nodelist, int procs_per_node, ELAN_CAPABILITY *cap)
 {
 	int node;
 	char *host;
@@ -102,7 +102,7 @@ qsw_setbitmap(hostlist_t nodelist, int procs_per_node, ELAN_CAPABILITY *cap)
 	if ((itr = hostlist_iterator_create(nodelist)) == NULL)
 		errx("%p: hostlist_iterator_create failed\n");
 	while ((host = hostlist_next(itr)) != NULL) {
-		node = qsw_host2elanid(host);
+		node = _host2elanid(host);
 		if (node < 0)
 			return -1;
 		if (node < cap->LowNode || cap->LowNode == -1)
@@ -149,7 +149,7 @@ qsw_setbitmap(hostlist_t nodelist, int procs_per_node, ELAN_CAPABILITY *cap)
  * Example: setenvf("RMS_RANK=%d", rank);
  */
 static int
-setenvf(const char *fmt, ...) 
+_setenvf(const char *fmt, ...) 
 {
 	va_list ap;
 	char buf[BUFSIZ];
@@ -166,26 +166,26 @@ setenvf(const char *fmt, ...)
 }
 
 static int
-qsw_rms_setenv(qsw_info_t *qi)
+_rms_setenv(qsw_info_t *qi)
 {
 	/* MPI wants some of these ... */
-	if (setenvf("RMS_RANK=%d", qi->rank) < 0)
+	if (_setenvf("RMS_RANK=%d", qi->rank) < 0)
 		return -1;
-	if (setenvf("RMS_NODEID=%d", qi->nodeid) < 0)
+	if (_setenvf("RMS_NODEID=%d", qi->nodeid) < 0)
 		return -1;
-	if (setenvf("RMS_PROCID=%d", qi->procid) < 0)
+	if (_setenvf("RMS_PROCID=%d", qi->procid) < 0)
 		return -1;
-	if (setenvf("RMS_NNODES=%d", qi->nnodes) < 0)
+	if (_setenvf("RMS_NNODES=%d", qi->nnodes) < 0)
 		return -1;
-	if (setenvf("RMS_NPROCS=%d", qi->nprocs) < 0)
+	if (_setenvf("RMS_NPROCS=%d", qi->nprocs) < 0)
 		return -1;
 
 	/* XXX these are probably unnecessary */
-	if (setenvf("RMS_MACHINE=yourmom") < 0)
+	if (_setenvf("RMS_MACHINE=yourmom") < 0)
 		return -1;
-	if (setenvf("RMS_RESOURCEID=pdsh.%d", qi->prgnum) < 0)
+	if (_setenvf("RMS_RESOURCEID=pdsh.%d", qi->prgnum) < 0)
 		return -1;
-	if (setenvf("RMS_JOBID=%d", qi->prgnum) < 0)
+	if (_setenvf("RMS_JOBID=%d", qi->prgnum) < 0)
 		return -1;
 	return 0;
 }
@@ -403,7 +403,7 @@ qsw_init_capability(ELAN_CAPABILITY *cap, int nprocs, hostlist_t nodelist,
 	 * Describe the mapping of processes to nodes.
 	 * This sets cap->HighNode, cap->LowNode, and cap->Bitmap.
 	 */
-	if (qsw_setbitmap(nodelist, procs_per_node, cap) < 0) {
+	if (_setbitmap(nodelist, procs_per_node, cap) < 0) {
 		err("%p: do all target nodes have an Elan adapter?\n");
 		return -1;
 	}
@@ -593,7 +593,7 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 			errx("%p: unsupported Elan capability type\n");
 	}
 	qi->rank = qi->procid;
-	if (qsw_rms_setenv(qi) < 0)
+	if (_rms_setenv(qi) < 0)
 		errx("%p: failed to set environment variables: %m\n");
 
 	/*
@@ -618,7 +618,7 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 #ifdef TEST_MAIN
 /* encode info, then decode and check that the result is what we started with */
 static void
-verify_info_encoding(qsw_info_t *qi)
+_verify_info_encoding(qsw_info_t *qi)
 {
 	int err;
 	char tmpstr[1024];
@@ -632,7 +632,7 @@ verify_info_encoding(qsw_info_t *qi)
 
 /* encode cap, then decode and check that the result is what we started with */
 static void
-verify_cap_encoding(ELAN_CAPABILITY *cap)
+_verify_cap_encoding(ELAN_CAPABILITY *cap)
 {
 	ELAN_CAPABILITY capcpy;
 	char tmpstr[1024];
@@ -648,7 +648,7 @@ verify_cap_encoding(ELAN_CAPABILITY *cap)
 
 /* concatenate args into a single string */
 static void 
-strncatargs(char *buf, int len, int argc, char *argv[])
+_strncatargs(char *buf, int len, int argc, char *argv[])
 {
 	if (len > 0) {
 		buf[0] = '\0';
@@ -664,7 +664,7 @@ strncatargs(char *buf, int len, int argc, char *argv[])
 }
 
 static void
-usage(void)
+_usage(void)
 {
 	errx("Usage %p [ -n procs ] [ -u uid ] command args...\n");
 }
@@ -703,7 +703,7 @@ main(int argc, char *argv[])
 				qinfo.nprocs = atoi(optarg);
 				break;
 			default:
-				usage();
+				_usage();
 		}
 	}
 
@@ -711,10 +711,10 @@ main(int argc, char *argv[])
 	argv += optind;
 
 	if (argc == 0)
-		usage();
+		_usage();
 
 	/* prep arg for the shell */
-	strncatargs(cmdbuf, sizeof(cmdbuf), argc, argv);
+	_strncatargs(cmdbuf, sizeof(cmdbuf), argc, argv);
 
 	/* create working collective containing only this host */
 	if (gethostname(hostname, sizeof(hostname)) < 0)
@@ -728,8 +728,8 @@ main(int argc, char *argv[])
 		errx("%p: failed to initialize Elan capability\n");
 
 	/* assert encode/decode routines work (we don't use them here) */
-	verify_info_encoding(&qinfo);
-	verify_cap_encoding(&cap);
+	_verify_info_encoding(&qinfo);
+	_verify_cap_encoding(&cap);
 
 	/* generate random program number */
 	qinfo.prgnum = qsw_get_prgnum();

@@ -14,7 +14,10 @@ AC_INIT(dsh.h)
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_AUX_DIR([auxdir])
 
-# determine project/version from META file
+#
+# Determine project/version from META file.
+# These are substituted into the Makefile and config.h.
+#
 PROJECT="`perl -ne 'print,exit if s/^\s*NAME:\s*(\S*).*/\1/i' $srcdir/META`"
 AC_DEFINE_UNQUOTED(PROJECT, "$PROJECT", [Define the project's name.])
 AC_SUBST(PROJECT)
@@ -31,8 +34,12 @@ AC_SUBST(RELEASE)
 AC_CANONICAL_HOST
 AC_SUBST(host_cpu)
 
+#
+# Configure arg: --enable-debug
+#
 # Check for debug vs. production compilation.
 # This must be done before AC_PROG_CC defines its own defaults.
+#
 AC_MSG_CHECKING(whether debugging is enabled)
 AC_ARG_ENABLE(debug,
   AC_HELP_STRING([--enable-debug], [enable debugging for development work]),
@@ -53,8 +60,14 @@ else
 fi
 AC_MSG_RESULT(${debug=no})
 
-# Enable features that interact with external software
-# --with-elan
+# 
+# Configure arg: --with-elan
+#
+# Build qshd/qcmd and link against elan libs.  This enables the pdsh -E option,
+# in addition to the connect method used when -E is not there 
+# (e.g. ssh or rsh).
+# XXX pam support is not yet working in qshd.
+#
 AC_MSG_CHECKING(whether to support Elan interconnect)
 AC_ARG_WITH(elan,
     AC_HELP_STRING([--with-elan], [Include QSW Elan support]),
@@ -79,8 +92,15 @@ AC_SUBST(PROG_QSHD)
 : ${HAVE_ELAN=0}
 AC_SUBST(HAVE_ELAN)
 
-# --with-ssh
-# or you can say --with-ssh=/ssh/executable
+#
+# Configure arg: --with-ssh=[/path/to/ssh]  
+#
+# Use an external ssh program to connect.  Ssh then replaces rsh as the
+# default remote shell mechanism.  
+# XXX Note that arguments are subtly different between ssh and ssh2 versions, 
+# and sshcmd.c checks the executable name to select between the two option sets.
+# NOTE: --with-krb4 and --with-ssh are mutually exclusive (caught below)
+#
 AC_MSG_CHECKING(whether to use SSH as primary remote shell)
 AC_ARG_WITH(ssh,
     AC_HELP_STRING([--with-ssh], [Use SSH as primary remote shell]),
@@ -108,8 +128,15 @@ fi
 : ${HAVE_SSH=0}
 AC_SUBST(HAVE_SSH)
 
-# --with-krb4
-# or you can say --with-krb4=/usr/local/krb4
+#
+# Configure arg: --with-krb4=[/krb4/root/dir]
+#
+# Use kerberos IV remote shell protocol to connect.  If configured, this 
+# replaces rsh as the default remote shell mechanism.  This has only ever
+# been used on IBM SP's and not in a while at LLNL (k4 KDC did not handle
+# many simultaneous queries SP).
+# NOTE: --with-krb4 and --with-ssh are mutually exclusive (caught below)
+# 
 AC_MSG_CHECKING(whether to include Kerberos IV support)
 AC_ARG_WITH(krb4,
     AC_HELP_STRING([--with-krb4], [Include Kerberos IV support]),
@@ -134,7 +161,7 @@ fi
 : ${HAVE_KRB4=0}
 AC_SUBST(HAVE_KRB4)
 
-# Detect this conflict
+# Detect attempt to configure --with-krb4 and --with-ssh (pick one!)
 if test "$withkrb4" = yes && test "$withssh" = yes; then
     AC_MSG_ERROR([--with-krb4 and --with-ssh cannot both be specified])
 fi
@@ -214,6 +241,9 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
+#
+# If specified on the command line, use ssh.  Otherwise use rsh.
+#
 if test "$withssh" = yes; then
     if test -z "$SSH"; then
         AC_PATH_PROG(SSH, ssh, [], /admin/bin:/usr/bin:/usr/local/bin:$PATH)
@@ -226,6 +256,9 @@ if test "$withssh" = yes; then
 fi
 AC_SUBST(SSH)
 
+#
+# Find path to nodeattr.  Support for genders (-g|-a) is automatic if found.
+#
 AC_PATH_PROG(NODEATTR, nodeattr, [], /usr/bin:/admin/scripts:$PATH)
 if test -n "$NODEATTR"; then
     AC_DEFINE_UNQUOTED(_PATH_NODEATTR, "$NODEATTR", [Path to nodeattr])
@@ -236,6 +269,9 @@ fi
 AC_SUBST(HAVE_GENDERS)
 AC_SUBST(NODEATTR)
 
+#
+# Find path to rmsquery.  Support for RMS (allocate) is automatic if found.
+#
 AC_PATH_PROG(RMSQUERY, rmsquery, [], /usr/bin:$PATH)
 if test -n "$RMSQUERY"; then
     AC_DEFINE_UNQUOTED(_PATH_RMSQUERY, "$RMSQUERY", [Path to rmsquery])
@@ -247,6 +283,9 @@ AC_SUBST(RMSQUERY)
 AC_SUBST(HAVE_RMSQUERY)
 AC_SUBST(RMSQUERY)
 
+#
+# Find path to SDRGetObjects.  Support for SDR (-av) is automatic if found.
+#
 AC_PATH_PROG(SDRGETOBJECTS, SDRGetObjects, "", /usr/lpp/ssp/bin:$PATH)
 if test -n "$SDRGETOBJECTS"; then
     AC_DEFINE_UNQUOTED(_PATH_SDRGETOBJECTS, "$SDRGETOBJECTS", [Path SDRGetObjects])
@@ -257,15 +296,14 @@ fi
 AC_SUBST(HAVE_SDR)
 AC_SUBST(SDRGETOBJECTS)
 
+#
+# Find path to rcp for pdcp.
+#
 AC_PATH_PROG(RCP, rcp, [], /usr/bin:$PATH)
 if test -n "$RCP"; then
     AC_DEFINE_UNQUOTED(_PATH_RCP, "$RCP", [Path to rcp])
 fi
 AC_SUBST(RSH)
-
-#if test -z "$SDRGETOBJECTS" && test -z "$NODEATTR" && test -z "$MACHINES"; then
-#    AC_MSG_ERROR([did not find nodeattr, SDRGetObjects, or machines file])
-#fi
 
 # Checks for libraries.
 AC_CHECK_LIB([socket], [socket], LIBS="-lsocket -lnsl $LIBS",, [-lsocket -lnsl])
@@ -284,8 +322,6 @@ AC_CHECK_LIB([pthread], [__pthread_testcancel], )
 
 if test "$withelan" = yes; then
     AC_CHECK_LIB([rmscall], [rms_prgcreate],, AC_MSG_ERROR([No librmscall!]))
-fi
-if test "$withelan" = yes; then
     AC_CHECK_LIB([elan3], [elan3_create],,AC_MSG_ERROR([No libelan3!]))
 #    AC_CHECK_LIB([pam], [pam_start], LIBSPAM="-lpam -lpam_misc",
 #	AC_MSG_ERROR([No libpam!]), [-lpam -lpam_misc])

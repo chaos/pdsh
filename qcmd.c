@@ -147,7 +147,7 @@ qcmd_init(opt_t *opt)
  *	nodeid (IN)	node index for this connection
  */
 static int
-qcmd_send_extra_args(int s, int nodeid)
+_qcmd_send_extra_args(int s, int nodeid)
 {
 	char **ep;
 	char tmpstr[1024];
@@ -299,7 +299,7 @@ qcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
 	(void)write(s, locuser, strlen(locuser)+1);
 	(void)write(s, remuser, strlen(remuser)+1);
 	(void)write(s, cmd, strlen(cmd)+1);
-	if (qcmd_send_extra_args(s, nodeid) < 0)
+	if (_qcmd_send_extra_args(s, nodeid) < 0)
 		goto bad2;
 
 	rv = read(s, &c, 1);

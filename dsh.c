@@ -121,7 +121,7 @@ static int 		threadcount = 0;
 static thd_t *t;
 
 /*
- * Timeout values, initialized in dsh(), used in wdog().
+ * Timeout values, initialized in dsh(), used in _wdog().
  */
 static int connect_timeout, command_timeout;
 
@@ -130,7 +130,7 @@ static int connect_timeout, command_timeout;
  * SIGDFL prior to executing handler).
  */
 static void 
-xsignal(int signal, void (*handler)(int))
+_xsignal(int signal, void (*handler)(int))
 {
 	struct sigaction sa, old_sa;
 
@@ -147,7 +147,7 @@ xsignal(int signal, void (*handler)(int))
  * causing them to return EINTR.
  */
 static void 
-alarm_handler(int dummy)
+_alarm_handler(int dummy)
 {
 }
 
@@ -156,7 +156,7 @@ alarm_handler(int dummy)
  * threads.
  */
 static void 
-list_slowthreads(void)
+_list_slowthreads(void)
 {
 	int i;
 	time_t ttl;
@@ -201,7 +201,7 @@ list_slowthreads(void)
  * Block SIGINT in this thread.
  */
 static void 
-int_block(void)
+_int_block(void)
 {
         sigset_t blockme;
  
@@ -215,7 +215,7 @@ int_block(void)
  * process.
  */
 static void 
-fwd_signal(int signum)
+_fwd_signal(int signum)
 {
 	int i;
 
@@ -255,7 +255,7 @@ fwd_signal(int signum)
  * SIGINT in other threads.
  */
 static void 
-int_handler(int signum)
+_int_handler(int signum)
 {
 	static time_t last_intr = 0;
 
@@ -263,9 +263,9 @@ int_handler(int signum)
 		err("%p: interrupt (one more within %d sec to abort)\n", 
 		    INTR_TIME);
 		last_intr = time(NULL);
-		list_slowthreads();
+		_list_slowthreads();
 	} else {
-		fwd_signal(signum);
+		_fwd_signal(signum);
 		errx("%p: interrupt, aborting.\n");
 	}
 }
@@ -275,9 +275,9 @@ int_handler(int signum)
  * script, and when the script dies, we should die too.
  */ 
 static void 
-int_handler_justdie(int signum)
+_int_handler_justdie(int signum)
 {
-	fwd_signal(signum);
+	_fwd_signal(signum);
 	errx("%p: batch mode interrupt, aborting.\n");
 }
 
@@ -289,11 +289,11 @@ int_handler_justdie(int signum)
  * on the first iteration).
  */
 static void *
-wdog(void *args)
+_wdog(void *args)
 {
 	int i;
 
-	int_block();			/* block SIGINT */
+	_int_block();			/* block SIGINT */
 
 	for (;;) {
 	    for (i = 0; t[i].host != NULL; i++) {
@@ -321,7 +321,7 @@ wdog(void *args)
 }
 
 static void 
-rexpand_dir(list_t list, char *name)
+_rexpand_dir(list_t list, char *name)
 {
 	DIR *dir;
 	struct dirent *dp;
@@ -345,13 +345,13 @@ rexpand_dir(list_t list, char *name)
 			errx("%p: not a regular file or directory: %s\n", file);
 		list_push(list, file);
 		if (S_ISDIR(sb.st_mode))
-			rexpand_dir(list, file);
+			_rexpand_dir(list, file);
 	}
 	closedir(dir);
 }
 
 static list_t 
-expand_dirs(list_t infiles)
+_expand_dirs(list_t infiles)
 {
 	list_t new = list_new();
 	struct stat sb;
@@ -366,7 +366,7 @@ expand_dirs(list_t infiles)
 			errx("%p: stat: %s: %m\n", name);
 		list_push(new, name);
 		if (S_ISDIR(sb.st_mode))
-			rexpand_dir(new, name);
+			_rexpand_dir(new, name);
 	}
 
 	return new;
@@ -381,7 +381,7 @@ expand_dirs(list_t infiles)
  *	RETURN		-1 on failure, size on success
  */
 static int 
-rcp_write(int fd, char *buf, int size)
+_rcp_write(int fd, char *buf, int size)
 {
 	char *bufp = buf;
 	int towrite = size;
@@ -407,7 +407,7 @@ rcp_write(int fd, char *buf, int size)
  *	RETURN		-1 on failure, 0 on success.
  */
 static int 
-rcp_send_file_data(int outfd, char *filename, char *host)
+_rcp_send_file_data(int outfd, char *filename, char *host)
 {
 	int infd, inbytes;
 	char tmpbuf[BUFSIZ];
@@ -415,19 +415,19 @@ rcp_send_file_data(int outfd, char *filename, char *host)
 	infd = open(filename, O_RDONLY);
 	/* checked ahead of time - shouldn't happen */
 	if (infd < 0) {
-		err("%S: rcp_send_file_data: open %s: %m\n", host, filename);
+		err("%S: _rcp_send_file_data: open %s: %m\n", host, filename);
 		return -1;
 	}
 	do {
 		inbytes = read(infd, tmpbuf, BUFSIZ);
 		if (inbytes < 0) {
-			err("%S: rcp_send_file_data: read %s: %m\n", 
+			err("%S: _rcp_send_file_data: read %s: %m\n", 
 					host, filename);
 			return -1;
 		} 
 		if (inbytes > 0) {
-			if (rcp_write(outfd, tmpbuf, inbytes) < 0) {
-				err("%S: rcp_send_file_data: write: %m\n", 
+			if (_rcp_write(outfd, tmpbuf, inbytes) < 0) {
+				err("%S: _rcp_send_file_data: write: %m\n", 
 						host);
 				return -1;
 			}	
@@ -446,13 +446,13 @@ rcp_send_file_data(int outfd, char *filename, char *host)
  *	RETURN 		-1 on failure, 0 on success
  */
 static int 
-rcp_sendstr(int fd, char *str, char *host)
+_rcp_sendstr(int fd, char *str, char *host)
 {
 	assert(strlen(str) > 0);
 	assert(str[strlen(str) - 1] == '\n');
 
-	if (rcp_write(fd, str, strlen(str)) < 0) {
-		err("%s: rcp_sendstr: write: %m\n", host);
+	if (_rcp_write(fd, str, strlen(str)) < 0) {
+		err("%s: _rcp_sendstr: write: %m\n", host);
 		return -1;
 	}
 	return 0;
@@ -465,7 +465,7 @@ rcp_sendstr(int fd, char *str, char *host)
  *	RETURN		-1 on fatal error, 0 otherwise
  */
 static int 
-rcp_response(int fd, char *host)
+_rcp_response(int fd, char *host)
 {
 	char resp;
 	int i = 0, result = -1;
@@ -498,7 +498,7 @@ rcp_response(int fd, char *host)
 #define RCP_MODEMASK (S_ISUID|S_ISGID|S_ISVTX|S_IRWXU|S_IRWXG|S_IRWXO)
 
 static int 
-rcp_sendfile(int fd, char *file, char *host, bool popt)
+_rcp_sendfile(int fd, char *file, char *host, bool popt)
 {
 	int result = 0;
 	char tmpstr[BUFSIZ], *template;
@@ -518,11 +518,11 @@ rcp_sendfile(int fd, char *file, char *host, bool popt)
 		 */
 		sprintf(tmpstr, "T%ld %ld %ld %ld\n", 
 		    sb.st_atime, 0L, sb.st_mtime, 0L);
-		if (rcp_sendstr(fd, tmpstr, host) < 0)
+		if (_rcp_sendstr(fd, tmpstr, host) < 0)
 			goto fail;
 
 		/* 2: RECV response code */
-		if (rcp_response(fd, host) < 0)
+		if (_rcp_response(fd, host) < 0)
 			goto fail;
 	}
 
@@ -533,7 +533,7 @@ rcp_sendfile(int fd, char *file, char *host, bool popt)
 		 */
 		sprintf(tmpstr, "D%04o %d %s\n", 
 		    sb.st_mode & RCP_MODEMASK, 0, xbasename(file));
-		if (rcp_sendstr(fd, tmpstr, host) < 0)
+		if (_rcp_sendstr(fd, tmpstr, host) < 0)
 			goto fail;
 	} else {
 		/* 
@@ -545,25 +545,25 @@ rcp_sendfile(int fd, char *file, char *host, bool popt)
 		    ? "C%04o %lld %s\n" : "C%04o %ld %s\n");
 		sprintf(tmpstr, template, sb.st_mode & RCP_MODEMASK, 
 		    sb.st_size, xbasename(file));
-		if (rcp_sendstr(fd, tmpstr, host) < 0)
+		if (_rcp_sendstr(fd, tmpstr, host) < 0)
 			goto fail;
 	}
 
 	/* 4: RECV response code */
-	if (rcp_response(fd, host) < 0)
+	if (_rcp_response(fd, host) < 0)
 		goto fail;
 
 	if (S_ISREG(sb.st_mode)) {
 		/* 5: SEND data */
-		if (rcp_send_file_data(fd, file, host) < 0)
+		if (_rcp_send_file_data(fd, file, host) < 0)
 			goto fail;
 
 		/* 6: SEND NULL byte */
-		if (rcp_write(fd, "", 1) < 0)
+		if (_rcp_write(fd, "", 1) < 0)
 			goto fail;
 
 		/* 7: RECV response code */
-		if (rcp_response(fd, host) < 0)
+		if (_rcp_response(fd, host) < 0)
 			goto fail;
 	}
 
@@ -577,8 +577,8 @@ fail:
  *	name (IN)	hostname
  *	addr (OUT)	pointer to location where address will be written
  */
-void 
-gethost(char *name, char *addr)
+static void 
+_gethost(char *name, char *addr)
 {
 	struct hostent *hp;
 
@@ -595,7 +595,7 @@ gethost(char *name, char *addr)
  * Arguments are pointer to thd_t entry defined above.
  */
 static void *
-rcp_thread(void *args)
+_rcp_thread(void *args)
 {
 	thd_t *a = (thd_t *)args;
 	int result = DSH_DONE; /* the desired outcome */
@@ -614,11 +614,11 @@ rcp_thread(void *args)
 	xstrcat(&cmd, " -t ");			/* remote will always be "to" */
 	xstrcat(&cmd, a->pcp_outfile);		/* outfile is remote target */
 
-	int_block();			/* block SIGINT */
+	_int_block();			/* block SIGINT */
 
 #if	HAVE_MTSAFE_GETHOSTBYNAME
 	if (a->rcmd_type != RCMD_SSH)
-		gethost(a->host, a->addr);
+		_gethost(a->host, a->addr);
 #endif
 	a->start = time(NULL);
 	a->state = DSH_RCMD;
@@ -656,11 +656,11 @@ rcp_thread(void *args)
 		a->connect = time(NULL);
 
 		/* 0: RECV response code */
-		if (rcp_response(a->fd, a->host) >= 0) {
+		if (_rcp_response(a->fd, a->host) >= 0) {
 
 			/* send the files */
 			for (i = 0; i < list_length(a->pcp_infiles); i++)
-				rcp_sendfile(a->fd, 
+				_rcp_sendfile(a->fd, 
 						list_nth(a->pcp_infiles, i), 
 						a->host, a->pcp_popt);
 		}
@@ -686,7 +686,7 @@ rcp_thread(void *args)
  * the code as an integer and truncating the line.
  */
 static int 
-extract_rc(char *buf)
+_extract_rc(char *buf)
 {
 	int ret = 0;
 	char *p = strstr(buf, RC_MAGIC);
@@ -706,7 +706,7 @@ extract_rc(char *buf)
  * Arguments are pointer to thd_t entry defined above.
  */
 static void *
-rsh_thread(void *args)
+_rsh_thread(void *args)
 {
 	thd_t *a = (thd_t *)args;
 	int rv, maxfd;
@@ -716,12 +716,12 @@ rsh_thread(void *args)
 	int result = DSH_DONE; /* the desired outcome */
 	int *efdp = a->dsh_sopt ? &a->efd : NULL;
 
-	int_block();			/* block SIGINT */
+	_int_block();			/* block SIGINT */
 
 	a->start = time(NULL);
 #if	HAVE_MTSAFE_GETHOSTBYNAME
 	if (a->rcmd_type != RCMD_SSH)
-		gethost(a->host, a->addr);
+		_gethost(a->host, a->addr);
 #endif
 	/* establish the connection */
 	a->state = DSH_RCMD;
@@ -813,7 +813,7 @@ rsh_thread(void *args)
 					err("%p: %S: xfgets: %m\n", a->host);
 								/* ready */
 				if (buf != NULL && strlen(buf) > 0)
-					a->rc = extract_rc(buf);
+					a->rc = _extract_rc(buf);
 				if (buf != NULL && strlen(buf) > 0) {
 					if (a->labels)
 						out("%S: %s", a->host, buf);
@@ -857,7 +857,7 @@ rsh_thread(void *args)
 
 	/* if a single qshell thread fails, terminate whole job */
 	if (a->rcmd_type == RCMD_QSHELL && a->state == DSH_FAILED) {
-		fwd_signal(SIGTERM);
+		_fwd_signal(SIGTERM);
 		errx("%p: terminating Elan program\n");
 	}
 
@@ -874,8 +874,8 @@ rsh_thread(void *args)
 /*
  * If debugging, call this to dump thread connect/command times.
  */
-void 
-dump_debug_stats(int rshcount)
+static void 
+_dump_debug_stats(int rshcount)
 {
 	time_t conTot = 0, conMin = TIME_T_YEAR, conMax = 0;
 	time_t cmdTot = 0, cmdMin = TIME_T_YEAR, cmdMax = 0;
@@ -946,17 +946,17 @@ dsh(opt_t *opt)
 	}
 
 	/* install signal handlers */
-	xsignal(SIGALRM, alarm_handler);
+	_xsignal(SIGALRM, _alarm_handler);
 	if (opt->sigint_terminates)
-		xsignal(SIGINT, int_handler_justdie);
+		_xsignal(SIGINT, _int_handler_justdie);
 	else
-		xsignal(SIGINT, int_handler);
+		_xsignal(SIGINT, _int_handler);
 
 	rshcount = hostlist_count(opt->wcoll);
 
 	/* expand directories, if any, and verify access for all files */
 	if (opt->personality == PCP)
-		pcp_infiles = expand_dirs(opt->infile_names);
+		pcp_infiles = _expand_dirs(opt->infile_names);
 
 	/* prepend DSHPATH setting to command */
 	if (opt->personality == DSH && opt->dshpath) {
@@ -1006,21 +1006,21 @@ dsh(opt_t *opt)
 		/* if MT-safe, do it in parallel in rsh/rcp threads */
 		/* gethostbyname_r is not very portable so skip it */
 		if (opt->rcmd_type != RCMD_SSH)
-			gethost(t[i].host, t[i].addr);
+			_gethost(t[i].host, t[i].addr);
 #endif
 		i++;
 	} 
 	assert(i == rshcount);
 	hostlist_iterator_destroy(itr);
 
-	/* set timeout values for wdog() */
+	/* set timeout values for _wdog() */
 	connect_timeout = opt->connect_timeout;
 	command_timeout = opt->command_timeout;
 
 	/* start the watchdog thread */
 	pthread_attr_init(&attr_wdog);
 	pthread_attr_setdetachstate(&attr_wdog, PTHREAD_CREATE_DETACHED);
-	rv = pthread_create(&thread_wdog, &attr_wdog, wdog, (void *)t);
+	rv = pthread_create(&thread_wdog, &attr_wdog, _wdog, (void *)t);
 
 	/* start all the other threads (at most 'fanout' active at once) */
 	for (i = 0; i < rshcount; i++) {
@@ -1041,7 +1041,7 @@ dsh(opt_t *opt)
 #endif
 		rv = pthread_create(&t[i].thread, &t[i].attr, 
 		    opt->personality == DSH 
-		    ? rsh_thread : rcp_thread, (void *)&t[i]);
+		    ? _rsh_thread : _rcp_thread, (void *)&t[i]);
 		if (rv != 0)
 			errx("%p: pthread_create %S: %m\n", t[i].host);
 		threadcount++;
@@ -1055,7 +1055,7 @@ dsh(opt_t *opt)
 		pthread_cond_wait(&threadcount_cond, &threadcount_mutex);
 
 	if (debug)
-		dump_debug_stats(rshcount);
+		_dump_debug_stats(rshcount);
 
 	/* if -S, our exit value is the largest of the return codes */
 	if (opt->getstat) {

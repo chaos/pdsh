@@ -206,7 +206,7 @@ xfgets2(char **str, FILE *stream)
  * If the string is uninitialized, it should be NULL.
  */
 static void 
-makespace(char **str, int needed)
+_makespace(char **str, int needed)
 {
 	int used;
 
@@ -232,12 +232,12 @@ makespace(char **str, int needed)
 void 
 xstrcat(char **str1, char *str2)
 {
-	makespace(str1, strlen(str2));
+	_makespace(str1, strlen(str2));
 	strcat(*str1, str2);
 }
 
 static void 
-strcatchar(char *str, char c)
+_strcatchar(char *str, char c)
 {
 	int len = strlen(str);
 
@@ -254,8 +254,8 @@ strcatchar(char *str, char c)
 void 
 xstrcatchar(char **str, char c)
 {
-	makespace(str, 1);
-	strcatchar(*str, c);
+	_makespace(str, 1);
+	_strcatchar(*str, c);
 }
 
 void 

@@ -49,8 +49,8 @@
 #include "xstring.h"
 #include "xmalloc.h"	
 
-static void usage(opt_t *opt);
-static void show_version(void);
+static void _usage(opt_t *opt);
+static void _show_version(void);
 
 #define OPT_USAGE_DSH "\
 Usage: pdsh [-options] command ...\n\
@@ -286,7 +286,7 @@ opt_args(opt_t *opt, int argc, char *argv[])
 				else if (strcmp(optarg, "cyclic") == 0)
 					opt->q_allocation = ALLOC_CYCLIC;
 				else
-					usage(opt);
+					_usage(opt);
 				break;
 			case 'a':	/* indicates all nodes */
 				opt->allnodes = true;
@@ -322,14 +322,14 @@ opt_args(opt_t *opt, int argc, char *argv[])
 				opt->preserve = true;
 				break;
 			case 'V':	/* show version */
-				show_version();
+				_show_version();
 				break;
 			case 'T':	/* execute testcase */
 				testcase(atoi(optarg));
 				break;
 			case 'h':	/* display usage message */
 			default:
-				usage(opt);
+				_usage(opt);
 		}
 	}
 
@@ -412,7 +412,7 @@ opt_verify(opt_t *opt)
 
 	/* can't prompt for command if stdin was used for wcoll */
 	if (opt->personality == DSH && opt->stdin_unavailable && !opt->cmd) {
-		usage(opt);
+		_usage(opt);
 		verified = false;
 	}
 
@@ -579,7 +579,7 @@ opt_free(opt_t *opt)
  * then exit.
  */
 static void 
-usage(opt_t *opt)
+_usage(opt_t *opt)
 {
 	if (opt->personality == DSH) {
 		err(OPT_USAGE_DSH);
@@ -602,7 +602,8 @@ usage(opt_t *opt)
 	exit(1);
 }
 
-static void show_version(void)
+static void 
+_show_version(void)
 {
 	printf("%s-%s-%s (", PROJECT, VERSION, RELEASE);
 #if	HAVE_SDR
