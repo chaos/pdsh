@@ -45,29 +45,10 @@
 #  define LINEBUFSIZE 2048
 #endif
 
-MODULE_TYPE        ( "misc"                                    );
-#if GENDERS_G_ONLY
-MODULE_NAME        ( "nodeattr-g"                              );
-MODULE_DESCRIPTION ( "target nodes using \"nodeattr -g attr\"" );
-#else
-MODULE_NAME        ( "nodeattr"                                );
-MODULE_DESCRIPTION ( "target nodes using \"nodeattr -[av] [-g attr]\"" );
-#endif /* GENDERS_G_ONLY */
-
-MODULE_AUTHOR      ( "Jim Garlick <garlick@llnl.gov>"          );
-
 hostlist_t nodeattr_wcoll(opt_t *pdsh_opts);
 
-/* 
- * Export pdsh module operations structure
- */
-struct pdsh_module_operations pdsh_module_ops = {
-    (ModInitF) NULL, 
-    (ModExitF) NULL, 
-    (ModReadWcollF) nodeattr_wcoll, 
-    (ModPostOpF) NULL
-};
-
+static int nodeattr_process_opt(opt_t *, int, char *);
+static hostlist_t _read_genders(char *attr, int iopt);
 
 /*
  *  nodeattr module options
@@ -82,9 +63,29 @@ static bool altnames   = false;
 #endif  /* !G_ONLY */
 static char *gend_attr = NULL;
 
-static int nodeattr_process_opt(opt_t *, int, char *);
+/* 
+ * Export pdsh module operations structure
+ */
+struct pdsh_module_operations nodeattr_module_ops = {
+    (ModInitF)       NULL, 
+    (ModExitF)       NULL, 
+    (ModReadWcollF)  nodeattr_wcoll, 
+    (ModPostOpF)     NULL
+};
 
-struct pdsh_module_option pdsh_module_options[] = 
+/* 
+ * Export rcmd module operations
+ */
+struct pdsh_rcmd_operations nodeattr_rcmd_ops = {
+    (RcmdInitF)  NULL,
+    (RcmdSigF)   NULL,
+    (RcmdF)      NULL,
+};
+
+/* 
+ * Export module options
+ */
+struct pdsh_module_option nodeattr_module_options[] = 
  { { 'g', "attribute", "target nodes with specified genders attribute",
      (optFunc) nodeattr_process_opt 
    },
@@ -99,7 +100,27 @@ struct pdsh_module_option pdsh_module_options[] =
    PDSH_OPT_TABLE_END
  };
 
-static hostlist_t _read_genders(char *attr, int iopt);
+/* 
+ * Nodeattr module info 
+ */
+struct pdsh_module nodeattr_module = {
+  "misc",
+#if GENDERS_G_ONLY
+  "nodeattr-g",
+#else
+  "nodeattr",
+#endif /* GENDERS_G_ONLY */
+  "Jim Garlick <garlick@llnl.gov>",
+#if GENDERS_G_ONLY
+  "target nodes using \"nodeattr -g attr\"",
+#else
+  "target nodes using \"nodeattr -[av] [-g attr]\"",
+#endif /* GENDERS_G_ONLY */
+
+  &nodeattr_module_ops,
+  &nodeattr_rcmd_ops,
+  &nodeattr_module_options[0],
+};
 
 static int
 nodeattr_process_opt(opt_t *pdsh_opts, int opt, char *arg)

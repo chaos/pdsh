@@ -125,47 +125,60 @@ void mod_print_options(mod_t mod, int descr_column);
  */
 char * mod_get_name(mod_t mod);
 char * mod_get_type(mod_t mod);
+void * mod_get_rcmd_init(mod_t mod);
+void * mod_get_rcmd_signal(mod_t mod);
+void * mod_get_rcmd(mod_t mod);
 void * mod_get_sym(mod_t mod, const char *sym);
-
-/*
- * Macros for use by modules to define importantinformation.
- *  Only MODULE_TYPE and MODULE_NAME are required
- *
- */
-#define MODULE_TYPE(type)                                                  \
-const char __module_type[]   = type
-
-#define MODULE_NAME(name)                                                  \
-const char __module_name[]   = name
-
-#define MODULE_AUTHOR(author)                                              \
-const char __module_author[] = author
-
-#define MODULE_DESCRIPTION(desc)                                           \
-const char __module_descr[]   = desc
 
 #endif /* !_MOD_H */
 
 /*
  * Functions that may be exported by any pdsh module
- *   via a pdsh_module_operations structure. The exported structure
- *   must be named pdsh_module_ops.
+ *   via a pdsh_module_operations structure. 
  */
 typedef int        (*ModInitF)      (void);
 typedef int        (*ModExitF)      (void);
 typedef hostlist_t (*ModReadWcollF) (opt_t *);
 typedef int        (*ModPostOpF)    (opt_t *);
 
-struct pdsh_module_operations {
-	ModInitF      init;         /* Called just after module is loaded      */
-	ModExitF      exit;         /* Called just before module unloaded      */
+/*
+ * Functions that may be exported by any rcmd module
+ *   via a pdsh_rcmd_operations structure. 
+ */
+typedef int        (*RcmdInitF)     (opt_t *);
+typedef int        (*RcmdSigF)      (int, int);
+typedef int        (*RcmdF)         (char *, char *, char *, char *, char *,
+                                     int, int *);
 
-	ModReadWcollF read_wcoll;   /* Called if wcoll is not initialized at
+/* stores all module operations of a module */
+struct pdsh_module_operations {
+    ModInitF      init;         /* Called just after module is loaded      */
+    ModExitF      exit;         /* Called just before module unloaded      */
+
+    ModReadWcollF read_wcoll;   /* Called if wcoll is not initialized at
                                    end of option processing. First wcoll
                                    returned by a module will be used.      */ 
 
-	ModPostOpF    postop;       /* Called after argv option processing     */
+    ModPostOpF    postop;       /* Called after argv option processing     */
+};
 
+/* stores all rcmd operations of a module */
+struct pdsh_rcmd_operations {
+    RcmdInitF  rcmd_init;
+    RcmdSigF   rcmd_signal;
+    RcmdF      rcmd;
+};
+
+/* stores all information about a module */
+struct pdsh_module {
+    char *type;
+    char *name;
+    char *author;
+    char *descr;
+  
+    struct pdsh_module_operations *mod_ops;
+    struct pdsh_rcmd_operations *rcmd_ops;
+    struct pdsh_module_option *opt_table;
 };
 
 /* 

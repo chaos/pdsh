@@ -40,32 +40,54 @@
 #  define GENDERS_ALTNAME_ATTRIBUTE   "altname"
 #endif
 
-MODULE_TYPE       ("misc"                   );
-MODULE_NAME       ("nodeupdown"             );
-MODULE_AUTHOR     ("Al Chu <chu11@llnl.gov>");
-MODULE_DESCRIPTION("remove targets if down according to libnodeupdown");
-
 static int mod_nodeupdown_postop(opt_t *opt);
-
-struct pdsh_module_operations pdsh_module_ops = {
-    NULL,
-    NULL,
-    NULL,
-    (ModPostOpF) mod_nodeupdown_postop
-};
-
-
-static bool verify   = false;
-
 static int opt_v(opt_t *, int, char *);
 static void remove_all_down_nodes(hostlist_t);
 
-struct pdsh_module_option pdsh_module_options[] = 
+static bool verify   = false;
+
+/* 
+ * Export pdsh module operations structure
+ */
+struct pdsh_module_operations nodeupdown_module_ops = {
+    (ModInitF)       NULL,
+    (ModExitF)       NULL,
+    (ModReadWcollF)  NULL,
+    (ModPostOpF)     mod_nodeupdown_postop
+};
+
+/* 
+ * Export rcmd module operations
+ */
+struct pdsh_rcmd_operations nodeupdown_rcmd_ops = {
+    (RcmdInitF)  NULL,
+    (RcmdSigF)   NULL,
+    (RcmdF)      NULL,
+};
+
+/* 
+ * Export module options
+ */
+struct pdsh_module_option nodeupdown_module_options[] = 
  { { 'v', NULL, "exclude targets if they are down", 
      (optFunc) opt_v
    },
    PDSH_OPT_TABLE_END
  };
+
+/* 
+ * Nodeupdown module info 
+ */
+struct pdsh_module nodeupdown_module = {
+  "misc",
+  "nodeupdown",
+  "Al Chu <chu11@llnl.gov>",
+  "remove targets if down according to libnodeupdown",
+
+  &nodeupdown_module_ops,
+  &nodeupdown_rcmd_ops,
+  &nodeupdown_module_options[0],
+};
 
 static int opt_v(opt_t *pdsh_opt, int opt, char *arg)
 {

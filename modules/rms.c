@@ -39,15 +39,6 @@
 #include "xstring.h"
 #include "mod.h"
 
-MODULE_TYPE        ( "misc"                                              );
-MODULE_NAME        ( "rms"                                               );
-MODULE_AUTHOR      ( "Jim Garlick <garlick@llnl.gov>"                    );
-MODULE_DESCRIPTION ( "Attempt to read wcoll from RMS_RESOURCEID env var" );
-
-/*
- *  Export generic pdsh module options
- */
-
 /*
  *  Call this module after all option processing. The module will only
  *    try to read the RMS_RESOURCEID if opt->wcoll is not already set.
@@ -55,18 +46,49 @@ MODULE_DESCRIPTION ( "Attempt to read wcoll from RMS_RESOURCEID env var" );
  *    modules had a chance to update the wcoll.
  */
 static int mod_rms_postop(opt_t *opt);
-
-struct pdsh_module_operations pdsh_module_ops = {
-    NULL,
-    NULL,
-    NULL,
-    (ModPostOpF) mod_rms_postop
-};
-
-
 static hostlist_t _rms_rid_to_nodes(char *part, int rid);
 static hostlist_t _rms_wcoll(void);
 
+/*
+ *  Export generic pdsh module options
+ */
+struct pdsh_module_operations rms_module_ops = {
+    (ModInitF)       NULL, 
+    (ModExitF)       NULL, 
+    (ModReadWcollF)  NULL,
+    (ModPostOpF)     mod_rms_postop
+};
+
+/* 
+ * Export rcmd module operations
+ */
+struct pdsh_rcmd_operations rms_rcmd_ops = {
+    (RcmdInitF)  NULL,
+    (RcmdSigF)   NULL,
+    (RcmdF)      NULL,
+};
+
+/* 
+ * Export module options
+ */
+struct pdsh_module_option rms_module_options[] = 
+ { 
+   PDSH_OPT_TABLE_END
+ };
+
+/* 
+ * Rms module info 
+ */
+struct pdsh_module rms_module = {
+  "misc",
+  "rms",
+  "Jim Garlick <garlick@llnl.gov>",
+  "Attempt to read wcoll from RMS_RESOURCEID env var",
+
+  &rms_module_ops,
+  &rms_rcmd_ops,
+  &rms_module_options[0],
+};
 
 /*
  *  If no wcoll has been established by this time, look for the

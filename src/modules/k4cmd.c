@@ -94,37 +94,55 @@
 extern errno;
 extern char *inet_ntoa();
 
-MODULE_TYPE        ( "rcmd"                               );
-MODULE_NAME        ( "k4"                                 );
-MODULE_AUTHOR      ( "Jim Garlick <garlick@llnl.gov>"     );
-MODULE_DESCRIPTION ( "kerberos based rcmd connect method" );
+int k4cmd_init(opt_t *);
+int k4cmd_signal(int, int);
+int k4cmd(char *, char *, char *, char *, char *, int, int *); 
 
-/*
- *  Export misc pdsh module operations
- *
- *  Note: All functionality of this module is in the "rcmd" portion
+/* 
+ * Export pdsh module operations structure
  */
-
-struct pdsh_module_operations pdsh_module_ops = {
-    NULL,
-    NULL,
-    NULL,
-    NULL
+struct pdsh_module_operations k4cmd_module_ops = {
+    (ModInitF)       NULL, 
+    (ModExitF)       NULL, 
+    (ModReadWcollF)  NULL, 
+    (ModPostOpF)     NULL,
 };
 
-
 /*
- *  Export rcmd module specific functions:
- *
+ *  Export rcmd module operations
  */
-#define k4cmd_init      pdsh_rcmd_init
-#define k4cmd_signal    pdsh_signal
-#define k4cmd           pdsh_rcmd
+struct pdsh_rcmd_operations k4cmd_rcmd_ops = {
+    (RcmdInitF)  k4cmd_init,
+    (RcmdSigF)   k4cmd_signal,
+    (RcmdF)      k4cmd,
+};
 
+/* 
+ * Export module options
+ */
+struct pdsh_module_option k4cmd_module_options[] = 
+ { 
+   PDSH_OPT_TABLE_END
+ };
 
-void k4cmd_init(opt_t * opt)
+/* 
+ * k4cmd module info 
+ */
+struct pdsh_module k4cmd_module = {
+    "rcmd",
+    "k4",
+    "Jim Garlick <garlick@llnl.gov>",
+    "kerberos based rcmd connect method",
+
+    &k4cmd_module_ops,
+    &k4cmd_rcmd_ops,
+    &k4cmd_module_options[0],
+};
+
+int k4cmd_init(opt_t * opt)
 {
     /* not implemented */
+    return 0;
 }
 
 /*
@@ -132,7 +150,7 @@ void k4cmd_init(opt_t * opt)
  *      efd (IN)        file descriptor connected socket (-1 if not used)
  *      signum (IN)     signal number to send
  */
-void k4cmd_signal(int efd, int signum)
+int k4cmd_signal(int efd, int signum)
 {
     char c;
 
@@ -143,6 +161,7 @@ void k4cmd_signal(int efd, int signum)
         c = (char) signum;
         write(efd, &c, 1);
     }
+    return 0;
 }
 
 /*

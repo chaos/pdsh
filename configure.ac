@@ -78,8 +78,6 @@ dnl AC_FUNC_MALLOC
 AC_FUNC_STRERROR_R
 AC_CHECK_FUNCS([strerror pthread_sigmask sigthreadmask])
 
-
-
 #
 # Test for default pdsh fanout and connect timeout
 #

@@ -134,21 +134,50 @@ static char sccsid[] = "@(#)mcmd.c      Based from: 8.3 (Berkeley) 3/26/94";
 #define EXIT_PTHREAD()          return -1
 #endif
 
-MODULE_TYPE(          "rcmd"                             );
-MODULE_NAME(          "mrsh"                             );
-MODULE_DESCRIPTION(   "mrsh rcmd connect method"         );
-MODULE_AUTHOR(        "Mike Haskell <haskell5@llnl.gov>" );
+int mcmd_init(opt_t *);
+int mcmd_signal(int, int);
+int mcmd(char *, char *, char *, char *, char *, int, int *); 
 
-struct pdsh_module_operations pdsh_module_ops = {
-  NULL,
-  NULL,
-  NULL,
-  NULL
+/* 
+ * Export pdsh module operations structure
+ */
+struct pdsh_module_operations mcmd_module_ops = {
+    (ModInitF)       NULL, 
+    (ModExitF)       NULL, 
+    (ModReadWcollF)  NULL, 
+    (ModPostOpF)     NULL,
 };
 
-#define mcmd_init   pdsh_rcmd_init
-#define mcmd        pdsh_rcmd
-#define mcmd_signal pdsh_signal
+/*
+ *  Export rcmd module operations
+ */
+struct pdsh_rcmd_operations mcmd_rcmd_ops = {
+    (RcmdInitF)  mcmd_init,
+    (RcmdSigF)   mcmd_signal,
+    (RcmdF)      mcmd,
+};
+
+/* 
+ * Export module options
+ */
+struct pdsh_module_option mcmd_module_options[] = 
+ { 
+   PDSH_OPT_TABLE_END
+ };
+
+/* 
+ * Mcmd module info 
+ */
+struct pdsh_module mcmd_module = {
+  "rcmd",
+  "mrsh",
+  "Mike Haskell <haskell5@llnl.gov>",
+  "mrsh rcmd connect method",
+
+  &mcmd_module_ops,
+  &mcmd_rcmd_ops,
+  &mcmd_module_options[0],
+};
 
 int
 mcmd_init(opt_t * opt)

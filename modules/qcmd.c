@@ -116,8 +116,6 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #define HBUF_LEN	1024
 #endif
 
-
-
 extern char **environ;
 
 static bool dist_set = false;
@@ -128,38 +126,38 @@ static char cwd[MAXPATHLEN + 1];
 static qsw_info_t qinfo;
 static ELAN_CAPABILITY cap;
 
-
-MODULE_TYPE        ( "rcmd"                           );
-MODULE_NAME        ( "qsh"                            );
-MODULE_AUTHOR      ( "Jim Garlick <garlick@llnl.gov>" );
-MODULE_DESCRIPTION ( "Run MPI jobs over QsNet"        );
-
-/*
- *  Export generic pdsh module operations
- */
-
 static int qcmd_postop(opt_t *opt);
-
-struct pdsh_module_operations pdsh_module_ops = {
-    NULL,
-    NULL,
-    NULL,
-    (ModPostOpF) qcmd_postop
-};
-
-
-/*
- *  Define rcmd specific module exports:
- */
-
-#define qcmd_signal     pdsh_signal
-#define qcmd_init       pdsh_rcmd_init
-#define qcmd            pdsh_rcmd
 
 int opt_m(opt_t *, int, char *);
 int opt_n(opt_t *, int, char *);
 
-struct pdsh_module_option pdsh_module_options[] =
+int qcmd_init(opt_t *);
+int qcmd_signal(int, int);
+int qcmd(char *, char *, char *, char *, char *, int, int *); 
+
+/*
+ *  Export generic pdsh module operations
+ */
+struct pdsh_module_operations qcmd_module_ops = {
+    (ModInitF)       NULL,
+    (ModExitF)       NULL,
+    (ModReadWcollF)  NULL,
+    (ModPostOpF)     qcmd_postop
+};
+
+/*
+ *  Export rcmd module operations
+ */
+struct pdsh_rcmd_operations qcmd_rcmd_ops = {
+    (RcmdInitF)  qcmd_init,
+    (RcmdSigF)   qcmd_signal,
+    (RcmdF)      qcmd,
+};
+
+/* 
+ * Export module options
+ */
+struct pdsh_module_option qcmd_module_options[] =
  { { 'm', "block|cyclic", "(qshell) control assignment of procs to nodes",
        (optFunc) opt_m },
    { 'n', "n",            "(qshell) set number of tasks per node",
@@ -167,6 +165,19 @@ struct pdsh_module_option pdsh_module_options[] =
    PDSH_OPT_TABLE_END
  };
 
+/* 
+ * Qcmd module info 
+ */
+struct pdsh_module qcmd_module = {
+  "rcmd",
+  "qsh",
+  "Jim Garlick <garlick@llnl.gov>",
+  "Run MPI jobs over QsNet",
+
+  &qcmd_module_ops,
+  &qcmd_rcmd_ops,
+  &qcmd_module_options[0],
+};
 
 int
 opt_m(opt_t *pdsh_opts, int opt, char *arg)

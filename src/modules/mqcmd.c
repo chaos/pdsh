@@ -148,34 +148,58 @@ static ELAN_CAPABILITY cap;
 #define EXIT_PTHREAD()          return -1
 #endif
 
-MODULE_TYPE(          "rcmd"                                                 );
-MODULE_NAME(          "mqsh"                                                 );
-MODULE_DESCRIPTION(   "Run MPI jobs over QsNet with mrsh authentication"     );
-MODULE_AUTHOR(        "Mike Haskell and Jim Garlick"                         );
-
 static int mqcmd_postop(opt_t *opt);
+
 int opt_m(opt_t *, int, char *);
 int opt_n(opt_t *, int, char *);
 
-#define mqcmd_signal     pdsh_signal
-#define mqcmd_init       pdsh_rcmd_init
-#define mqcmd            pdsh_rcmd
+int mqcmd_init(opt_t *);
+int mqcmd_signal(int, int);
+int mqcmd(char *, char *, char *, char *, char *, int, int *); 
 
-struct pdsh_module_operations pdsh_module_ops = {
-  NULL,
-  NULL,
-  NULL,
-  (ModPostOpF) mqcmd_postop
+/* 
+ * Export pdsh module operations structure
+ */
+struct pdsh_module_operations mqcmd_module_ops = {
+    (ModInitF)       NULL, 
+    (ModExitF)       NULL, 
+    (ModReadWcollF)  NULL, 
+    (ModPostOpF)     mqcmd_postop,
 };
 
+/*
+ *  Export rcmd module operations
+ */
+struct pdsh_rcmd_operations mqcmd_rcmd_ops = {
+    (RcmdInitF)  mqcmd_init,
+    (RcmdSigF)   mqcmd_signal,
+    (RcmdF)      mqcmd,
+};
 
-struct pdsh_module_option pdsh_module_options[] =
+/* 
+ * Export module options
+ */
+struct pdsh_module_option mqcmd_module_options[] =
   { { 'm', "block|cyclic", "(mqshell) control assignment of procs to nodes",
       (optFunc) opt_m },
     { 'n', "n",            "(mqshell) set number of tasks per node",
       (optFunc) opt_n },
     PDSH_OPT_TABLE_END
   };
+
+/* 
+ * Mqcmd module info 
+ */
+struct pdsh_module mqcmd_module = {
+  "rcmd",
+  "mqsh",
+  "Mike Haskell <haskell5@llnl.gov> and Jim Garlick <garlick1@llnl.gov>",
+  "Run MPI jobs over QsNet with mrsh authentication",
+
+  &mqcmd_module_ops,
+  &mqcmd_rcmd_ops,
+  &mqcmd_module_options[0],
+};
 
 int
 opt_m(opt_t *pdsh_opts, int opt, char *arg)

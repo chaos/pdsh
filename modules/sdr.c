@@ -43,31 +43,38 @@
 #define MAX_SP_NODES_PER_FRAME  16
 #define MAX_SP_NODE_NUMBER (MAX_SP_NODES * MAX_SP_NODES_PER_FRAME - 1)
 
-MODULE_TYPE       ("misc"                   );
-MODULE_NAME       ("sdr"                    );
-MODULE_AUTHOR     ("Jim Garlick <garlick@llnl.gov>");
-MODULE_DESCRIPTION("Support for SDR on IBM SP");
-
-/*
- *  Export generic module functions
- */
 static hostlist_t read_sdr(opt_t *opt);
 
-struct pdsh_module_operations pdsh_module_ops = {
-    NULL,
-    NULL,
-    (ModReadWcollF) read_sdr,
-    NULL
-};
+static int opt_sdr(opt_t *, int, char *);
 
 static bool allnodes = false;
 static bool altnames = false;
 static bool verify   = false;
 static bool global   = false;
 
-static int opt_sdr(opt_t *, int, char *);
+/*
+ *  Export generic module functions
+ */
+struct pdsh_module_operations sdr_module_ops = {
+    (ModInitF)       NULL, 
+    (ModExitF)       NULL, 
+    (ModReadWcollF)  read_sdr,
+    (ModPostOpF)     NULL,
+};
 
-struct pdsh_module_option pdsh_module_options[] = 
+/* 
+ * Export rcmd module operations
+ */
+struct pdsh_rcmd_operations sdr_rcmd_ops = {
+    (RcmdInitF)  NULL,
+    (RcmdSigF)   NULL,
+    (RcmdF)      NULL,
+};
+
+/* 
+ * Export module options
+ */
+struct pdsh_module_option sdr_module_options[] = 
  { { 'a', NULL, "target all nodes", 
      (optFunc) opt_sdr
    },
@@ -83,6 +90,19 @@ struct pdsh_module_option pdsh_module_options[] =
    PDSH_OPT_TABLE_END
  };
 
+/* 
+ * Sdr module info 
+ */
+struct pdsh_module sdr_module = {
+  "misc",
+  "sdr",
+  "Jim Garlick <garlick@llnl.gov>",
+  "Support for SDR on IBM SP",
+
+  &sdr_module_ops,
+  &sdr_rcmd_ops,
+  &sdr_module_options[0],
+};
 
 static int opt_sdr(opt_t *pdsh_opt, int opt, char *arg)
 {

@@ -45,44 +45,38 @@
 #  define GENDERS_ALTNAME_ATTRIBUTE   "altname"
 #endif
 
-MODULE_TYPE        ( "misc"                                                 );
-
-#if GENDERS_G_ONLY
-MODULE_NAME        ( "genders-g"                                            );
-#else
-MODULE_NAME        ( "genders"                                              );
-#endif /* GENDERS_G_ONLY */
-
-MODULE_AUTHOR      ( "Jim Garlick <garlick@llnl.gov>"                       );
-MODULE_DESCRIPTION ( "target nodes using libgenders and genders attributes" );
-
 hostlist_t genders_wcoll(opt_t *pdsh_opts);
 
-/* 
- * Export pdsh module operations structure
- */
-struct pdsh_module_operations pdsh_module_ops = {
-    (ModInitF) NULL, 
-    (ModExitF) NULL, 
-    (ModReadWcollF) genders_wcoll, 
-    (ModPostOpF) NULL,
-};
+static int genders_process_opt(opt_t *, int, char *);
+static hostlist_t _read_genders(char *attr, int iopt);
 
-
-/*
- *  Genders module options
- *   -a      select all nodes
- *   -i      select alternate hostnames from genders
- *   -g attr select all nodes with genders attribute "attr"
- *
- */
 static bool allnodes   = false;
 static bool altnames   = false;
 static char *gend_attr = NULL;
 
-static int genders_process_opt(opt_t *, int, char *);
+/* 
+ * Export pdsh module operations structure
+ */
+struct pdsh_module_operations genders_module_ops = {
+    (ModInitF)       NULL, 
+    (ModExitF)       NULL, 
+    (ModReadWcollF)  genders_wcoll, 
+    (ModPostOpF)     NULL,
+};
 
-struct pdsh_module_option pdsh_module_options[] = 
+/* 
+ * Export rcmd module operations
+ */
+struct pdsh_rcmd_operations genders_rcmd_ops = {
+    (RcmdInitF)  NULL,
+    (RcmdSigF)   NULL,
+    (RcmdF)      NULL,
+};
+
+/* 
+ * Export module options
+ */
+struct pdsh_module_option genders_module_options[] = 
  { 
    { 'g', "attribute", "target nodes with specified genders attribute",
      (optFunc) genders_process_opt 
@@ -98,7 +92,23 @@ struct pdsh_module_option pdsh_module_options[] =
    PDSH_OPT_TABLE_END
  };
 
-static hostlist_t _read_genders(char *attr, int iopt);
+/* 
+ * Genders module info 
+ */
+struct pdsh_module genders_module = {
+    "misc",
+#if GENDERS_G_ONLY
+    "genders-g",
+#else
+    "genders",
+#endif /* GENDERS_G_ONLY */
+    "Jim Garlick <garlick@llnl.gov>",
+    "target nodes using libgenders and genders attributes",
+
+    &genders_module_ops,
+    &genders_rcmd_ops,
+    &genders_module_options[0],
+};
 
 #if 0
 int mod_genders_init(void)

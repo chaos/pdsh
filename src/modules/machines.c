@@ -31,35 +31,51 @@
 #include "wcoll.h"
 #include "mod.h"
 
-MODULE_TYPE        ("misc"                   );
-MODULE_NAME        ("machines"               );
-MODULE_AUTHOR      ("Jim Garlick <garlick@llnl.gov>");
-MODULE_DESCRIPTION ("Read list of all nodes from a machines file");
-
-/*
- *  Export generic module functions
- */
 static hostlist_t read_machines(opt_t *opt);
 
-struct pdsh_module_operations pdsh_module_ops = {
-    NULL,
-    NULL,
-    (ModReadWcollF) read_machines,
-    NULL
-};
-
-
-/*
- *  Provide "-a" option for pdsh.
- */
 static bool allnodes = false;
 static int opt_a(opt_t *, int, char *);
 
-struct pdsh_module_option pdsh_module_options[] = 
+/* 
+ * Export pdsh module operations structure
+ */
+struct pdsh_module_operations machines_module_ops = {
+    (ModInitF)       NULL, 
+    (ModExitF)       NULL, 
+    (ModReadWcollF)  read_machines, 
+    (ModPostOpF)     NULL,
+};
+
+/* 
+ * Export rcmd module operations
+ */
+struct pdsh_rcmd_operations machines_rcmd_ops = {
+    (RcmdInitF)  NULL,
+    (RcmdSigF)   NULL,
+    (RcmdF)      NULL,
+};
+
+/* 
+ * Export module options
+ */
+struct pdsh_module_option machines_module_options[] = 
  { { 'a', NULL, "target all nodes", (optFunc) opt_a },
    PDSH_OPT_TABLE_END
  };
 
+/* 
+ * Machines module info 
+ */
+struct pdsh_module machines_module = {
+  "misc",
+  "machines",
+  "Jim Garlick <garlick@llnl.gov>",
+  "Read list of all nodes from a machines file",
+
+  &machines_module_ops,
+  &machines_rcmd_ops,
+  &machines_module_options[0],
+};
 
 static int opt_a(opt_t *pdsh_opt, int opt, char *arg)
 {

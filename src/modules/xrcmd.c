@@ -112,28 +112,55 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 
 #define RSH_PORT 514
 
-MODULE_TYPE(        "rcmd"                           );
-MODULE_NAME(        "bsd"                            );
-MODULE_DESCRIPTION( "BSD rcmd connect method"        );
-MODULE_AUTHOR(      "Jim Garlick <garlick@llnl.gov>" );
+int xrcmd_init(opt_t *);
+int xrcmd_signal(int, int);
+int xrcmd(char *, char *, char *, char *, char *, int, int *); 
 
-
-struct pdsh_module_operations pdsh_module_ops = {
-    NULL, 
-    NULL, 
-    NULL, 
-    NULL
+/* 
+ * Export pdsh module operations structure
+ */
+struct pdsh_module_operations xrcmd_module_ops = {
+  (ModInitF)       NULL, 
+  (ModExitF)       NULL, 
+  (ModReadWcollF)  NULL,
+  (ModPostOpF)     NULL,
 };
 
-#define xrcmd_init   pdsh_rcmd_init
-#define xrcmd        pdsh_rcmd
-#define xrcmd_signal pdsh_signal
+/*
+ *  Export rcmd module operations
+ */
+struct pdsh_rcmd_operations xrcmd_rcmd_ops = {
+    (RcmdInitF)  xrcmd_init,
+    (RcmdSigF)   xrcmd_signal,
+    (RcmdF)      xrcmd,
+};
 
+/* 
+ * Export module options
+ */
+struct pdsh_module_option xrcmd_module_options[] = 
+ { 
+   PDSH_OPT_TABLE_END
+ };
+
+/* 
+ * Xrcmd module info 
+ */
+struct pdsh_module xrcmd_module = {
+  "rcmd",
+  "bsd",
+  "Jim Garlick <garlick@llnl.gov>",
+  "BSD rcmd connect method",
+
+  &xrcmd_module_ops,
+  &xrcmd_rcmd_ops,
+  &xrcmd_module_options[0],
+};
 
 int xrcmd_init(opt_t * opt)
 {
     /* not implemented */
-	return 0;
+    return 0;
 }
 
 /*

@@ -43,15 +43,11 @@
  */
 static char * rcmd_rank[] = { "bsd", "mrsh", "ssh", "krb4", "qsh", "mqsh", NULL };
 
-typedef int (*RcmdInitF) (opt_t *);
-typedef int (*RcmdSigF)  (int efd, int signum);
-typedef int (*RcmdF)     (char *, char *, char *, char *, char *, int, int *);
-
 /* 
  *  Container for information specific to rcmd modules.
  */
 struct _rmodule {
-	mod_t mod;
+    mod_t mod;
     RcmdInitF init;
     RcmdSigF  signal;
     RcmdF     rcmd;
@@ -90,22 +86,23 @@ mod_rcmd_load(opt_t * opt)
         goto fail;
     }
 
-	rmod->init = (RcmdInitF) mod_get_sym(rmod->mod, "pdsh_rcmd_init");
+    rmod->init = (RcmdInitF) mod_get_rcmd_init(rmod->mod);
 
-	if (!(rmod->signal = (RcmdSigF) mod_get_sym(rmod->mod, "pdsh_signal" ))) {
-        err("Unable to resolve \"pdsh_signal\" in module \"%s\"\n", "XXX");
-		goto fail;
-    }
-	if (!(rmod->rcmd = (RcmdF) mod_get_sym(rmod->mod, "pdsh_rcmd"   ))) {
-        err("Unable to resolve \"pdsh_rcmd\" in module \"%s\"\n", "XXX");
-		goto fail;
+    if (!(rmod->signal = (RcmdSigF) mod_get_rcmd_signal(rmod->mod))) {
+        err("Unable to resolve \"rcmd_signal\" in module \"%s\"\n", "XXX");
+        goto fail;
     }
 
-	return 0;
+    if (!(rmod->rcmd = (RcmdF) mod_get_rcmd(rmod->mod))) {
+        err("Unable to resolve \"rcmd\" in module \"%s\"\n", "XXX");
+        goto fail;
+    }
+
+    return 0;
 
   fail:
-	Free((void **) &rmod);
-	return -1;
+    Free((void **) &rmod);
+    return -1;
 }
 
 
@@ -122,15 +119,15 @@ char * mod_rcmd_get_default_module(void)
     while ((name = rcmd_rank[i++]) && !mod) 
         mod = mod_get_module("rcmd", name);
 
-   return mod ? mod_get_name(mod) : NULL;
+    return mod ? mod_get_name(mod) : NULL;
 }
 
 
 int
 mod_rcmd_init(opt_t *opt)
 {
-	if (rmod->init)
-		return ((*rmod->init)(opt));
+    if (rmod->init)
+        return ((*rmod->init)(opt));
     else 
         return 0;
 }
@@ -145,7 +142,7 @@ mod_rcmd_exit(void)
 
 int mod_rcmd_signal(int efd, int signum)
 {
-	assert(rmod != NULL);
+    assert(rmod != NULL);
 
     return (*rmod->signal) (efd, signum);
 }
@@ -154,7 +151,7 @@ int
 mod_rcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
      int nodeid, int *fd2p)
 {
-	assert(rmod != NULL);
+    assert(rmod != NULL);
     return (*rmod->rcmd) (ahost, addr, locuser, remuser, cmd, nodeid, fd2p);
 }
 

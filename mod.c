@@ -45,31 +45,25 @@
 #include "hostlist.h"
 #include "list.h"
 
-
 /*
  *  Components of a module.
  */
 struct module_components {
 #ifndef NDEBUG
 #define MOD_MAGIC 0xc0c0b0b
-	int magic;
+    int magic;
 #endif
-	lt_dlhandle handle;
-	char *filename;
-	char *type;
-	char *name;
-	char *descr;
-	char *author;
-
-	struct pdsh_module_option     *opt_table;
-    struct pdsh_module_operations *ops;
+    lt_dlhandle handle;
+    char *filename;
+  
+    struct pdsh_module            *pmod;
 };
 
 /* 
  *  Static prototypes:
  */
 static int  _is_loaded(char *filename); 
-static int  _mod_load(const char *filename);
+static int  _mod_load(const char *, const char *);
 static void _mod_destroy(mod_t mod);
 static bool _mod_opts_ok(mod_t mod);
 static int  _mod_print_info(mod_t mod);
@@ -88,16 +82,16 @@ static bool initialized = false;
 int
 mod_init(void)
 {
-	if (!initialized) {
+    if (!initialized) {
         if ( !(module_list = list_create((ListDelF) _mod_destroy))
            || !(module_itr = list_iterator_create(module_list))  ) {
             err("Unable to create module list and iterator\n");
             return -1;
         }
         initialized = true;
-		return lt_dlinit();
-	} else
-		return 0;
+        return lt_dlinit();
+    } else
+        return 0;
 }
 
 int
@@ -113,14 +107,14 @@ mod_exit(void)
     list_iterator_destroy(module_itr);
     list_destroy(module_list);
     
-	return lt_dlexit(); 
+    return lt_dlexit(); 
 }
 
 hostlist_t
 _mod_read_wcoll(mod_t mod, opt_t *pdsh_opts)
 {
-    if (mod->ops->read_wcoll)
-        return (*mod->ops->read_wcoll) (pdsh_opts);
+    if (mod->pmod->mod_ops && mod->pmod->mod_ops->read_wcoll)
+        return (*mod->pmod->mod_ops->read_wcoll) (pdsh_opts);
     return 0;
 }
 
@@ -128,8 +122,8 @@ _mod_read_wcoll(mod_t mod, opt_t *pdsh_opts)
 int
 _mod_postop(mod_t mod, opt_t *pdsh_opts)
 {
-    if (mod->ops->postop)
-        return (*mod->ops->postop) (pdsh_opts);
+    if (mod->pmod->mod_ops && mod->pmod->mod_ops->postop)
+        return (*mod->pmod->mod_ops->postop) (pdsh_opts);
     return 0;
 }
 
@@ -191,35 +185,33 @@ mod_t
 mod_create(void)
 {
     mod_t mod = Malloc(sizeof(*mod));
-	mod->handle = NULL;
-	mod->type   = NULL;
-	mod->name   = NULL;
-	assert(mod->magic = MOD_MAGIC);
-
-	return mod;
+    mod->handle = NULL;
+    assert(mod->magic = MOD_MAGIC);
+    
+    return mod;
 }
 
 static void
 _mod_destroy(mod_t mod)
 {
-	assert(mod->magic == MOD_MAGIC);
+    assert(mod->magic == MOD_MAGIC);
 
-	if (mod->ops && mod->ops->exit)
-		(*mod->ops->exit)();
+    if (mod->pmod->mod_ops && mod->pmod->mod_ops->exit)
+        (*mod->pmod->mod_ops->exit)();
     
     if (mod->filename)
         Free((void **) &mod->filename);
 
-	mod->type = NULL;
-	mod->name = NULL;
+    mod->pmod->type = NULL;
+    mod->pmod->name = NULL;
 
     if (mod->handle)
         lt_dlclose(mod->handle);
 
-	assert(mod->magic = ~MOD_MAGIC);
-	Free((void **) &mod);
+    assert(mod->magic = ~MOD_MAGIC);
+    Free((void **) &mod);
 
-	return;
+    return;
 }
 
 static int _cmp_filenames(mod_t mod, char *filename)
@@ -233,106 +225,107 @@ _is_loaded(char *filename)
     if (list_find_first(module_list, (ListFindF) _cmp_filenames, filename))
         return 1;
 
-	return 0;
+    return 0;
 }
 
 static bool
 _mod_opts_ok(mod_t mod)
 {
-	struct pdsh_module_option *p;
-	for (p = mod->opt_table; p && (p->opt != 0); p++) {
-		if (!opt_register(p)) 
-			return false;
-	}
+    struct pdsh_module_option *p;
+    for (p = mod->pmod->opt_table; p && (p->opt != 0); p++) {
+        if (!opt_register(p)) 
+            return false;
+    }
 
-	return true;
+    return true;
 }
 
 /*
  *  Load a single module from file `fq_path' and append to module_list.
  */
 static int
-_mod_load(const char *fq_path)
+_mod_load(const char *fq_path, const char *filename)
 {
-	mod_t mod = NULL;
-	const lt_dlinfo *info;
+    mod_t mod = NULL;
+    const lt_dlinfo *info;
+    char mod_name[MAXPATHLEN + strlen("_module") + 1];   
 
-	assert(fq_path != NULL);
+    assert(fq_path != NULL);
 
-	mod = mod_create();
+    mod = mod_create();
 
-	if (!(mod->handle = lt_dlopen(fq_path)))
-		goto fail;
+    if (!(mod->handle = lt_dlopen(fq_path)))
+        goto fail;
 
-	if (!(info = lt_dlgetinfo(mod->handle))) 
+    if (!(info = lt_dlgetinfo(mod->handle))) 
         goto fail_libtool_broken;
 
-	if (info->filename == NULL) 
-		goto fail_libtool_broken;
+    if (info->filename == NULL) 
+        goto fail_libtool_broken;
 
-	mod->filename = Strdup(info->filename);
+    mod->filename = Strdup(info->filename);
 
-	if (_is_loaded(mod->filename)) {
-		err("%p: [%s] module already loaded\n", mod->filename);
-		goto fail;
-	}
-
-	if (!(mod->type = lt_dlsym(mod->handle, "__module_type"))) {
-		err("%p:[%s] can't resolve module type\n", mod->filename);
-		goto fail;
-	}
-
-	if (!(mod->name = lt_dlsym(mod->handle, "__module_name"))) {
-		err("%p:[%s] can't resolve module name\n", mod->filename);
-		goto fail;
-	}
-    if (!(mod->ops = lt_dlsym(mod->handle, "pdsh_module_ops"))) {
-        err("%p:[%s] can't resolve module operations\n", mod->filename);
+    if (_is_loaded(mod->filename)) {
+        err("%p: [%s] module already loaded\n", mod->filename);
         goto fail;
     }
 
-    /*
-     *  Optional exports
+    /* Determine structure name that holds all module info 
+     * move pointer.  We subtract -3 in order to remove ".la"
+     * from the filename.  
      */
-	mod->descr       = lt_dlsym(mod->handle, "__module_descr");
-	mod->author      = lt_dlsym(mod->handle, "__module_author");
-	mod->opt_table   = lt_dlsym(mod->handle, "pdsh_module_options");
 
+    strncpy(mod_name, filename, MAXPATHLEN);
+    strcpy(&mod_name[0] + strlen(filename) - 3, "_module");
+    
+    /* load all module info from the pdsh_module structure */
+    if (!(mod->pmod = lt_dlsym(mod->handle, mod_name))) {
+        err("%p:[%s] can't resolve pdsh module\n", mod->filename);
+        goto fail;
+    }
 
-	if (!_mod_opts_ok(mod)) {
-		err("failed to install module options for \"%s/%s\"\n", 
-				mod->type, mod->name);
-		goto fail;
-	}
+    /* Must have atleast a name and type */
+    if (!mod->pmod->type || !mod->pmod->name) {
+        err("%p:[%s] type or name not specified in module\n", mod->filename);
+        goto fail;
+    }
 
-	if (mod->ops->init && ((*mod->ops->init)() < 0)) {
-		err("%p: %s/%s module_init() failed\n", mod->type, mod->name);
-		goto fail;
-	}
+    if (!_mod_opts_ok(mod)) {
+        err("failed to install module options for \"%s/%s\"\n", 
+            mod->pmod->type, mod->pmod->name);
+        goto fail;
+    }
 
-	list_append(module_list, mod);
+    if (mod->pmod->mod_ops && 
+        mod->pmod->mod_ops->init && 
+        ((*mod->pmod->mod_ops->init)() < 0)) {
+        err("%p: %s/%s module_init() failed\n", mod->pmod->type, mod->pmod->name);
+        goto fail;
+    }
 
-	return 0;
+    list_append(module_list, mod);
 
-  fail_libtool_broken:
+    return 0;
+
+ fail_libtool_broken:
     /*
      * Avoid dlclose() of invalid handle
      */
     mod->handle = NULL;
-  fail:
-	_mod_destroy(mod);
-	return -1;
+ fail:
+    _mod_destroy(mod);
+    return -1;
 }
 
 
 int 
 mod_load_modules(const char *dir)
 {
-	int            retval = 0;
-	DIR           *dirp   = NULL;
-	struct dirent *entry  = NULL;
-	char           path[MAXPATHLEN + 1];
-	char           *p;
+    int            retval = 0;
+    DIR           *dirp   = NULL;
+    struct dirent *entry  = NULL;
+    char           path[MAXPATHLEN + 1];
+    char           *p;
 
     assert(dir != NULL);
     assert(*dir != '\0');
@@ -340,20 +333,20 @@ mod_load_modules(const char *dir)
     if (!initialized)
         mod_init();
 
-	if (!_path_permissions_ok(dir)) 
-		return -1;
-
-	if (!(dirp = opendir(dir)))
+    if (!_path_permissions_ok(dir)) 
         return -1;
 
-	strncpy(path, dir, MAXPATHLEN);
-	p = path + strlen(dir);
-	*(p++) = '/';
+    if (!(dirp = opendir(dir)))
+        return -1;
 
-	while ((entry = readdir(dirp))) {
-		struct stat st;
+    strncpy(path, dir, MAXPATHLEN);
+    p = path + strlen(dir);
+    *(p++) = '/';
 
-		strcpy(p, entry->d_name);
+    while ((entry = readdir(dirp))) {
+        struct stat st;
+
+        strcpy(p, entry->d_name);
 
         /*
          *  As an efficiency enhancement, only attempt to open 
@@ -362,20 +355,21 @@ mod_load_modules(const char *dir)
         if (strcmp(&p[strlen(p) - 3], ".la") != 0)
             continue;
 
-		if (stat(path, &st) < 0)
-			continue;
-		if (!S_ISREG(st.st_mode))
-			continue;
-		if (_mod_load(path) < 0) 
-			continue;
+        if (stat(path, &st) < 0)
+            continue; 
+        if (!S_ISREG(st.st_mode))
+            continue;
 
-		retval++;
-	}
+        if (_mod_load(path, entry->d_name) < 0) 
+            continue;
+
+        retval++;
+    }
 
     if (closedir(dirp) < 0)
         err("%p: error closing %s: %m", dir);
 
-	return 0;
+    return 0;
 }
 
 
@@ -398,15 +392,15 @@ _print_option_help(struct pdsh_module_option *p, int col)
 void
 mod_print_options(mod_t mod, int col)
 {
-	struct pdsh_module_option *p = mod->opt_table;
+    struct pdsh_module_option *p = mod->pmod->opt_table;
     if (!p || !p->opt)
         return;
     /* 
-     * out("%s/%s Options:\n", mod->type, mod->name);
+     * out("%s/%s Options:\n", mod->pmod->type, mod->pmod->name);
      */
-	for (p = mod->opt_table; p && (p->opt != 0); p++) 
-		_print_option_help(p, col);
-	
+    for (p = mod->pmod->opt_table; p && (p->opt != 0); p++) 
+        _print_option_help(p, col);
+        
 }
 
 /*
@@ -415,18 +409,19 @@ mod_print_options(mod_t mod, int col)
 static int 
 _mod_print_info(mod_t mod)
 {
-	if (mod == NULL) 
-		return 0;
-	out("Module: %s/%s\n",    mod->type, mod->name); 
-	out("Author: %s\n",       mod->author ? mod->author : "???");
-	out("Descr:  %s\n",       mod->descr ? mod->descr : "???");
+    if (mod == NULL) 
+        return 0;
 
-	if (mod->opt_table) {
-		out("Options:\n");
-		mod_print_options(mod, 18);
-	}
+    out("Module: %s/%s\n",    mod->pmod->type, mod->pmod->name); 
+    out("Author: %s\n",       mod->pmod->author ? mod->pmod->author : "???");
+    out("Descr:  %s\n",       mod->pmod->descr ? mod->pmod->descr : "???");
 
-	out("\n");
+    if (mod->pmod->opt_table && mod->pmod->opt_table->opt) {
+        out("Options:\n");
+        mod_print_options(mod, 18);
+    }
+
+    out("\n");
 
     return 0;
 }
@@ -447,7 +442,7 @@ void mod_print_all_options(int col)
 static int
 _cmp_type(mod_t mod, char *type)
 {
-    return (strcmp(mod->type, type) == 0);
+    return (strcmp(mod->pmod->type, type) == 0);
 }
 
 List
@@ -464,7 +459,7 @@ mod_get_module_names(char *type)
 
     list_iterator_reset(module_itr);
     while ((mod = list_find(module_itr, (ListFindF) _cmp_type, type)))
-        list_push(l, mod->name);
+        list_push(l, mod->pmod->name);
 
     return l;
 }
@@ -473,21 +468,21 @@ void
 mod_list_module_info(void)
 {
     int nmodules = list_count(module_list);
-	if (nmodules == 0)
-		return;
-	out("%d module%s loaded:\n\n", nmodules, (nmodules > 1 ? "s" : ""));
-	list_for_each(module_list, (ListForF) _mod_print_info, NULL);
+    if (nmodules == 0)
+        return;
+    out("%d module%s loaded:\n\n", nmodules, (nmodules > 1 ? "s" : ""));
+    list_for_each(module_list, (ListForF) _mod_print_info, NULL);
 }
 
 
 void *
 mod_get_sym(mod_t mod, const char *name)
 {
-	assert(mod != NULL);
-	assert(mod->magic == MOD_MAGIC);
-	assert(name != NULL);
+    assert(mod != NULL);
+    assert(mod->magic == MOD_MAGIC);
+    assert(name != NULL);
 
-	return (void *) lt_dlsym(mod->handle, name);
+    return (void *) lt_dlsym(mod->handle, name);
 }
 
 
@@ -496,42 +491,67 @@ mod_get_module(const char *type, const char *name)
 {
     mod_t mod;
 
-	assert(type != NULL);
-	assert(name != NULL);
+    assert(type != NULL);
+    assert(name != NULL);
 
     list_iterator_reset(module_itr);
     while ((mod = list_next(module_itr))) {
-		if ( (strncmp(mod->type, type, strlen(type)) == 0)
-		   && (strncmp(mod->name, name, strlen(name)) == 0) )
-			return mod;
-	}
-	return NULL;
+        if ( (strncmp(mod->pmod->type, type, strlen(type)) == 0)
+             && (strncmp(mod->pmod->name, name, strlen(name)) == 0) )
+          return mod;
+    }
+    return NULL;
 }
 
 char *
 mod_get_name(mod_t mod)
 {
-    return mod->name;
+    return mod->pmod->name;
 }
 
 char *
 mod_get_type(mod_t mod)
 {
-    return mod->type;
+    return mod->pmod->type;
 }
+
+void * 
+mod_get_rcmd_init(mod_t mod) {
+    if (mod->pmod->rcmd_ops && mod->pmod->rcmd_ops->rcmd_init)
+        return mod->pmod->rcmd_ops->rcmd_init;
+    else
+        return NULL;
+}
+
+void * 
+mod_get_rcmd_signal(mod_t mod) {
+    if (mod->pmod->rcmd_ops && mod->pmod->rcmd_ops->rcmd_signal)
+        return mod->pmod->rcmd_ops->rcmd_signal;
+    else
+        return NULL;
+}
+
+void * 
+mod_get_rcmd(mod_t mod) {
+    if (mod->pmod->rcmd_ops && mod->pmod->rcmd_ops->rcmd)
+        return mod->pmod->rcmd_ops->rcmd;
+    else
+        return NULL;
+}
+
 
 int 
 mod_process_opt(opt_t *opt, int c, char *optarg)
 {
     mod_t mod;
-	struct pdsh_module_option *p = NULL;
+    struct pdsh_module_option *p = NULL;
 
     list_iterator_reset(module_itr);
     while ((mod = list_next(module_itr))) {
         if ((p = _mod_find_opt(mod, c)))
             return p->f(opt, c, optarg);
     }
-	return -1;
+    return -1;
 }
 
 
@@ -542,10 +562,10 @@ mod_process_opt(opt_t *opt, int c, char *optarg)
 static struct pdsh_module_option *
 _mod_find_opt(mod_t mod, int opt)
 {
-	struct pdsh_module_option *p = mod->opt_table;
-	for (p = mod->opt_table; p && (p->opt != 0); p++) 
-		if (p->opt == opt) return p;
-	return NULL;
+  struct pdsh_module_option *p = mod->pmod->opt_table;
+  for (p = mod->pmod->opt_table; p && (p->opt != 0); p++) 
+      if (p->opt == opt) return p;
+  return NULL;
 }
 
 
@@ -556,10 +576,12 @@ _mod_find_opt(mod_t mod, int opt)
 static bool
 _dir_ok(struct stat *st)
 {
+#if 0
     if ((st->st_uid != 0) && (st->st_uid != getuid())) 
         return false;
     if ((st->st_mode & S_IWOTH) /* || (st->st_mode & S_IWGRP) */) 
         return false;
+#endif
     return true;
 }
 

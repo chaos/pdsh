@@ -73,28 +73,52 @@
  */
 static bool use_rw = false;
 
-MODULE_TYPE        ( "rcmd"                            );
-MODULE_NAME        ( "ssh"                             );
-MODULE_AUTHOR      ( "Jim Garlick <garlick@llnl.gov>"  );
-MODULE_DESCRIPTION ( "ssh based rcmd connect method"   );
+static int mod_ssh_postop(opt_t *opt);
+
+int sshcmd_init(opt_t *);
+int sshcmd_signal(int, int);
+int sshcmd(char *, char *, char *, char *, char *, int, int *);
 
 /*
  *  Export generic pdsh module operations:
  */
-
-static int mod_ssh_postop(opt_t *opt);
-
-#define sshcmd_init   pdsh_rcmd_init
-#define sshcmd        pdsh_rcmd
-#define sshcmd_signal pdsh_signal
-
-struct pdsh_module_operations pdsh_module_ops = {
-    NULL,
-    NULL,
-    NULL,
-    (ModPostOpF) mod_ssh_postop
+struct pdsh_module_operations sshcmd_module_ops = {
+    (ModInitF)       NULL,
+    (ModExitF)       NULL,
+    (ModReadWcollF)  NULL,
+    (ModPostOpF)     mod_ssh_postop
 };
 
+/*
+ *  Export rcmd module operations
+ */
+struct pdsh_rcmd_operations sshcmd_rcmd_ops = {
+    (RcmdInitF)  sshcmd_init,
+    (RcmdSigF)   sshcmd_signal,
+    (RcmdF)      sshcmd,
+};
+
+/* 
+ * Export module options
+ */
+struct pdsh_module_option sshcmd_module_options[] = 
+ { 
+   PDSH_OPT_TABLE_END
+ };
+
+/* 
+ * Sshcmd module info 
+ */
+struct pdsh_module sshcmd_module = {
+  "rcmd",
+  "ssh",
+  "Jim Garlick <garlick@llnl.gov>",
+  "ssh based rcmd connect method",
+
+  &sshcmd_module_ops,
+  &sshcmd_rcmd_ops,
+  &sshcmd_module_options[0],
+};
 
 static int mod_ssh_postop(opt_t *opt)
 {
