@@ -111,8 +111,6 @@ Release 1.5+
 
 	Call htons on hard-coded port numbers before using them.
 
-	Make compile with -Wall on linux with no warnings.
-
 	Added qshell support for running Quadrics Elan3 jobs on Linux
 	with -E option and qshd server.  
 
@@ -121,5 +119,8 @@ Release 1.5+
 	Todo: handle multiple Elan3 tasks per node.
 	Todo: qshd cleanup, packaging.
 	Todo: handle Elan3 multirail.
+	Todo: force fanout == numnodes for -E
+
+	Make compile with -Wall on linux with no warnings.
 
 	Updated to latest rpm target
