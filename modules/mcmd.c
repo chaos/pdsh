@@ -275,6 +275,7 @@ mcmd(char *ahost, char *addr, char *remuser, char *cmd, int *fd2p)
 
         rv = bind(s, (struct sockaddr *)&ss, len); 
         if (rv < 0) {
+                close(s);
                 err("%p: %S: mcmd: bind failed: %m\n", ahost);
                 EXIT_PTHREAD();
         }
@@ -286,6 +287,7 @@ mcmd(char *ahost, char *addr, char *remuser, char *cmd, int *fd2p)
         sin.sin_port = htons(MRSH_PORT);
         rv = connect(s, (struct sockaddr *)&sin, sizeof(sin));
         if (rv < 0) {
+                close(s);
                 err("%p: %S: mcmd: connect failed: %m\n", ahost);
                 EXIT_PTHREAD();
         }
@@ -295,6 +297,7 @@ mcmd(char *ahost, char *addr, char *remuser, char *cmd, int *fd2p)
          */
         lport = 0;
         if (fd2p == 0) {
+                close(s);
                 err("%p: %S: mcmd: no stderr defined\n", ahost);
                 EXIT_PTHREAD();
         }
@@ -302,6 +305,7 @@ mcmd(char *ahost, char *addr, char *remuser, char *cmd, int *fd2p)
         s2 = socket(AF_INET, SOCK_STREAM, 0);
         if (s2 < 0) {
                 close(s);
+                close(s2);
                 err("%p: %S: mcmd: socket call for stderr failed: %m\n", ahost);
                 EXIT_PTHREAD();
         }
@@ -312,6 +316,8 @@ mcmd(char *ahost, char *addr, char *remuser, char *cmd, int *fd2p)
         stderr_sock.sin_port = 0;
 
         if (bind(s2, (struct sockaddr *)&stderr_sock, sizeof(stderr_sock)) < 0) {
+                close(s);
+                close(s2);
                 err("%p: %S: bind failed: %m\n", ahost);
                 EXIT_PTHREAD();
         }
@@ -326,6 +332,7 @@ mcmd(char *ahost, char *addr, char *remuser, char *cmd, int *fd2p)
         /* getsockname is thread safe */
         if (getsockname(s2,&m_socket,&len) < 0) {
                 close(s);
+                close(s2);
                 err("%p: %S: getsockname failed: %m\n", ahost);
                 EXIT_PTHREAD();
         }
@@ -401,8 +408,12 @@ mcmd(char *ahost, char *addr, char *remuser, char *cmd, int *fd2p)
         mptr = strcpy(mptr, cmd);
 
         if ((m_rv = munge_encode(&m,0,mbuf,mcount)) != EMUNGE_SUCCESS) {
+                close(s);
+                close(s2);
+                free(tmpbuf);
                 fprintf(stderr,"%s\n",munge_strerror((munge_err_t)m_rv));
                 err("%p: %S: mcmd: munge_encode: %m\n", ahost);
+                EXIT_PTHREAD();
         }
 
         mcount = (strlen(m)+1);
@@ -456,7 +467,6 @@ mcmd(char *ahost, char *addr, char *remuser, char *cmd, int *fd2p)
 
         s3 = accept(s2, (struct sockaddr *)&from, &len);
         if (s3 < 0) {
-                fprintf(stderr,"%s: ",ahost);
                 lport = 0;
                 close(s2);
                 close(s);
@@ -486,7 +496,7 @@ mcmd(char *ahost, char *addr, char *remuser, char *cmd, int *fd2p)
 
                 memcpy(tptr,(char *) &rand,sizeof(rand));
                 tptr += sizeof(rand);
-                m_rv = fd_read_line (s3, tptr, LINEBUFSIZE - sizeof(rand));
+                m_rv = fd_read_line (s3, tptr, LINEBUFSIZE);
                 if (m_rv < 0) {
                         if (lport)
                                 close(*fd2p);
@@ -537,7 +547,6 @@ mcmd(char *ahost, char *addr, char *remuser, char *cmd, int *fd2p)
         
                 m_rv = fd_read_line (s, &tmpbuf[0], LINEBUFSIZE);
                 if (m_rv < 0) {
-                        fprintf(stderr,"Error from %s: %s\n",ahost,&tmpbuf[0]);
                         if (lport)
                                 close(*fd2p);
                         close(s);
