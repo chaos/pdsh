@@ -406,6 +406,8 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
   ssize_t m_rv;
   sigset_t blockme;
   sigset_t oldset;
+  int maxfd;
+  fd_set reads;
 
   sigemptyset(&blockme);
   sigaddset(&blockme, SIGURG);
@@ -633,9 +635,21 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
   free(m);
   free(tmbuf);
 
+  FD_ZERO(&reads);
+  FD_SET(s, &reads);
+  FD_SET(s2, &reads);
+  maxfd = (s > s2) ? s : s2;
+  if (select(maxfd + 1, &reads, 0, 0, 0) < 1 || !FD_ISSET(s2, &reads)) {
+    if (errno != 0)
+      err("%p: %S: mqcmd: select (setting up stderr): %m\n", ahost);
+    else
+      err("%p: %S: select: protocol failure in circuit setup\n", ahost);
+    (void) close(s2);
+    goto bad;
+  }
+
   errno = 0;
   len = sizeof(from); /* arg to accept */
-
   s3 = accept(s2, (struct sockaddr *)&from, &len);
   if (s3 < 0) {
     close(s2);
