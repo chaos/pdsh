@@ -30,13 +30,13 @@ remote shell services, including standard "rsh", Kerberos IV, and ssh.
 %endif
 
 #
-# Defaults are --with-elan --with-readline 
-# (Use --without [elan|readline] to disable)
+# Defaults are --with-qshell --with-readline 
+# (Use --without [qshell|readline] to disable)
 #
-%{!?_with_elan: %{!?_without_elan:     %define _with_elan --with-elan}}
+%{!?_with_qshell: %{!?_without_qshell:     %define _with_qshell --with-qshell}}
 %{!?_with_readline: %{!?_without_readline: %define _with_readline --with-readline}}
 
-%{?_with_elan:BuildRequires: qsnetlibs}
+%{?_with_qshell:BuildRequires: qsnetlibs}
 %{?_with_readline:BuildRequires: readline-devel}
 
 
@@ -45,7 +45,7 @@ remote shell services, including standard "rsh", Kerberos IV, and ssh.
 # Defaults:
 #  without: 
 #  with:    genders, nodeupdown, nodeattr, rmsquery, machines
-#           mrsh, mqsh 
+#           mrsh, mqshell 
 # 
 #
 %{!?_with_bsd: %{!?_without_bsd: %define _with_bsd 1}}
@@ -57,12 +57,12 @@ remote shell services, including standard "rsh", Kerberos IV, and ssh.
 %{!?_with_nodeattr: %{!?_without_nodeattr: %define _with_nodeattr --with-nodeattr}}
 %{!?_with_machines: %{!?_without_machines: %define _with_machines --with-machines}}
 %{!?_with_nodeupdown:  %{!?_without_nodeupdown: %define _with_nodeupdown --with-nodeupdown}}
-%{!?_with_mqsh:  %{!?_without_mqsh: %define _with_mqsh --with-mqsh}}
+%{!?_with_mqshell:  %{!?_without_mqshell: %define _with_mqshell --with-mqshell}}
 
 ##############################################################################
 
 %package qshd
-Summary: Remote shell daemon for pdsh/Elan3
+Summary: Remote shell daemon for pdsh/qshell/Elan3
 Group:   System Environment/Base
 Prereq:  xinetd
 %description qshd
@@ -72,7 +72,7 @@ MPICH executables.
 ##############################################################################
 
 %package mqshd
-Summary: Remote shell daemon for pdsh/mrsh/Elan3
+Summary: Remote shell daemon for pdsh/mqshell/Elan3
 Group:   System Environment/Base
 Prereq:  xinetd
 %description mqshd
@@ -102,6 +102,7 @@ Pdsh module for ssh rcmd functionality.
 Summary:  Provides qshell rcmd capability to pdsh.
 Group:    System Environment/Base
 Provides: pdsh-rcmd
+Requires: pdsh-qshd
 %description rcmd-qshell
 Pdsh module for running QsNet MPI jobs.
 
@@ -109,6 +110,7 @@ Pdsh module for running QsNet MPI jobs.
 Summary:  Provides mrsh rcmd capability to pdsh.
 Group:    System Environment/Base
 Provides: pdsh-rcmd
+Requires: mrshd
 %description rcmd-mrsh
 Pdsh module for mrsh rcmd functionality.
 
@@ -116,24 +118,28 @@ Pdsh module for mrsh rcmd functionality.
 Summary:  Provides mqshell rcmd capability to pdsh.
 Group:    System Environment/Base
 Provides: pdsh-rcmd
+Requires: pdsh-mqshd
 %description rcmd-mqshell
 Pdsh module for mqshell rcmd functionality.
 
 %package  mod-genders
 Summary:  Provides libgenders support for pdsh.
 Group:    System Environment/Base
+Requires: genders >= 1.1
 %description mod-genders
 Pdsh module for libgenders functionality.
 
 %package  mod-nodeattr
 Summary:  Provides genders support for pdsh using the nodeattr program.
 Group:    System Environment/Base
+Requires: genders 
 %description mod-nodeattr
 Pdsh module for genders functionality using the nodeattr program.
 
 %package  mod-nodeupdown
 Summary:  Provides libnodeupdown support for pdsh.
 Group:    System Environment/Base
+Requires: whatsup
 %description mod-nodeupdown
 Pdsh module providing -v functionality using libnodeupdown.
 
@@ -163,8 +169,8 @@ Pdsh module for gathering list of all target nodes from a machines file.
     %{?_enable_debug}       \
     %{?_with_ssh}           \
     %{?_without_ssh}        \
-    %{?_with_elan}          \
-    %{?_without_elan}       \
+    %{?_with_qshell}        \
+    %{?_without_qshell}     \
     %{?_with_readline}      \
     %{?_without_readline}   \
     %{?_with_machines}      \
@@ -179,8 +185,8 @@ Pdsh module for gathering list of all target nodes from a machines file.
     %{?_without_nodeattr}   \
     %{?_with_mrsh}          \
     %{?_without_mrsh}       \
-    %{?_with_mqsh}          \
-    %{?_without_mqsh}  
+    %{?_with_mqshell}       \
+    %{?_without_mqshell}  
     
            
 if [ "$SMP" != "" ] ; then
@@ -231,7 +237,7 @@ rm -rf "$RPM_BUILD_ROOT"
 %endif
 ##############################################################################
 
-%if %{?_with_elan:1}%{!?_with_elan:0}
+%if %{?_with_qshell:1}%{!?_with_qshell:0}
 %files rcmd-qshell
 %defattr(-,root,root)
 %{_libdir}/pdsh/qcmd.*
@@ -245,7 +251,7 @@ rm -rf "$RPM_BUILD_ROOT"
 %endif
 ##############################################################################
 
-%if %{?_with_mqsh:1}%{!?_with_mqsh:0}
+%if %{?_with_mqshell:1}%{!?_with_mqshell:0}
 %files rcmd-mqshell
 %defattr(-,root,root)
 %{_libdir}/pdsh/mqcmd.*
@@ -287,7 +293,7 @@ rm -rf "$RPM_BUILD_ROOT"
 %endif
 ##############################################################################
 
-%if %{?_with_elan:1}%{!?_with_elan:0}
+%if %{?_with_qshell:1}%{!?_with_qshell:0}
 %files qshd
 %defattr(-,root,root)
 %{_sbindir}/in.qshd
@@ -295,14 +301,14 @@ rm -rf "$RPM_BUILD_ROOT"
 
 %post qshd
 if ! grep "^qshell" /etc/services >/dev/null; then
-  echo "qshell            523/tcp                  # pdsh/elan3" >>/etc/services
+  echo "qshell            523/tcp                  # pdsh/qshell/elan3" >>/etc/services
 fi
 /etc/rc.d/init.d/xinetd reload
 
 %endif
 ##############################################################################
 
-%if %{?_with_mqsh:1}%{!?_with_mqsh:0}
+%if %{?_with_mqshell:1}%{!?_with_mqshell:0}
 %files mqshd
 %defattr(-,root,root)
 %{_sbindir}/in.mqshd
@@ -310,7 +316,7 @@ fi
 
 %post mqshd
 if ! grep "^mqshell" /etc/services >/dev/null; then
-  echo "mqshell         21234/tcp                  # pdsh/mrsh/elan3" >>/etc/services
+  echo "mqshell         21234/tcp                  # pdsh/mqshell/elan3" >>/etc/services
 fi
 /etc/rc.d/init.d/xinetd reload
 
