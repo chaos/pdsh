@@ -26,10 +26,11 @@ mkdir -p $RPM_BUILD_ROOT/usr/bin
 mkdir -p $RPM_BUILD_ROOT/usr/man/man1
 install -s -o root -m 4755 pdsh $RPM_BUILD_ROOT/usr/bin
 install -s -o root -m 4755 pdsh $RPM_BUILD_ROOT/usr/bin/pcp
-install -s -m 755 dshbak $RPM_BUILD_ROOT/usr/bin
-install -s -m 644 pdsh.1 $RPM_BUILD_ROOT/usr/man/man1
-install -s -m 644 pcp.1 $RPM_BUILD_ROOT/usr/man/man1
-install -s -m 644 dshbak.1 $RPM_BUILD_ROOT/usr/man/man1
+install -m 755 dshbak $RPM_BUILD_ROOT/usr/bin
+gzip pdsh.1 pcp.1 dshbak.1
+install -m 644 pdsh.1.gz $RPM_BUILD_ROOT/usr/man/man1
+install -m 644 pcp.1.gz $RPM_BUILD_ROOT/usr/man/man1
+install -m 644 dshbak.1.gz $RPM_BUILD_ROOT/usr/man/man1
 
 %files
 %doc README ChangeLog DISCLAIMER README.KRB4
@@ -37,8 +38,8 @@ install -s -m 644 dshbak.1 $RPM_BUILD_ROOT/usr/man/man1
 /usr/bin/pdsh
 /usr/bin/pcp
 /usr/bin/dshbak
-/usr/man/man1/pdsh.1
-/usr/man/man1/pcp.1
-/usr/man/man1/dshbak.1
+/usr/man/man1/pdsh.1.gz
+/usr/man/man1/pcp.1.gz
+/usr/man/man1/dshbak.1.gz
 
 %changelog

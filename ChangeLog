@@ -95,4 +95,4 @@ Release 1.4
 
 Release 1.5pre
 
-	Renamed spec file to pdsh.spec.
+	Renamed spec file to pdsh.spec.  Gzip installed man pages on Linux.
