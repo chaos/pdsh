@@ -96,7 +96,7 @@ Default is no limit.
 .I "-c"
 In interactive mode, do not remove failed hosts from the target node list.
 .LP
-.I "-n tasks per node"
+.I "-n tasks_per_node"
 Set the number of tasks spawned per node.  The underlying remote shell service
 must support spawning multiple tasks for this to be effective.
 .if @HAVE_ELAN@ \{
