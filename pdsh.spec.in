@@ -13,10 +13,9 @@ Prereq: genders
 %define enabledebug 1
 
 %description
-Pdsh is a reimplementation of the dsh command supplied with the IBM PSSP
-product that uses POSIX threads within a single process, and achieves better 
-performance while using fewer system resources (in particular, privileged 
-sockets and process slots).
+Pdsh is a multithreaded remote shell client which executes commands
+on multiple remote hosts in parallel.  Pdsh can use several different remote
+shell services, including standard "rsh", Kerberos IV, and ssh.
 
 %package qshd
 Summary: Remote shell daemon for pdsh/Elan3
