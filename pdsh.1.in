@@ -33,9 +33,10 @@ system.
 
 .I "-w host,host,..."
 Target the specified hosts.  No spaces are allowed in the comma-separated
-list.  A list consisting of a single "-" character causes the target hosts
-to be read from stdin, one per line.  The host list may contain comma-separated
-hostname ranges of the form ``host1-5'' or ``host[1-5]''.
+list.  A list consisting of a single "-" character causes the target 
+hosts to be read from stdin, one per line.  The host list may contain 
+comma-separated hostname ranges of the form ``host1@RANGE_OP@5'' or 
+``host[1@RANGE_OP@5]''.
 .LP
 .I "-x"
 In combiation with -w, do not attempt to expand hostname ranges.  Setting the 
@@ -47,13 +48,16 @@ In combination with -w, use character 'c' as a range operator when expanding
 hostname ranges.  Alternatively, the PDSH_RANGE_OPERATOR enviornment variable 
 can be used to set this value.
 .LP
+.if @HAVE_MACHINES@ \{
 .I "-a"
 Target "all" nodes in the cluster.
-.if @HAVE_MACHINES@ \{
 The list of hostnames is taken from the MPICH machines file.
 \}
-.if !@HAVE_MACHINES@ \{
-.if @HAVE_SDR@ \{
+.ie @HAVE_SDR@ \{
+.I "-a"
+Target "all" nodes in the cluster.
+The list of hostnames comes from the SDR (reliable_hostname).
+.LP
 .I "-v"
 In combination with -a, eliminate nodes that the SDR thinks are down.
 .LP
@@ -62,23 +66,19 @@ In combination with -a, include all partitions.
 .LP
 .I "-i"
 In combination with -a, use SDR initial_hostname instead of reliable_hostname.
-\} \}
+\}
+.ie @HAVE_GENDERS@ \{
+.I "-a"
+Target "all" nodes in the cluster.  The list of hostnames from a genders query.
+.LP
+.I "-i"
+In combination with -a or -g, select alternate hostnames using genders
+``altname'' attribute.
+\}
 .if @HAVE_GENDERS@ \{
 .I "-g attribute"
-Target nodes that have the specified genders attribute.
-.if !@HAVE_MACHINES@ \{
-.if !@HAVE_SDR@ \{
-.I "-i"
-In combination with -a or -g, use a hostname specified as the value of the
-``altname'' genders attribute instead of the normal one.
-\} \} \}
-.if @HAVE_RMS@ \{
-.I "-N number"
-Allocate the specified number of nodes from RMS.
-.LP
-.I "-P partition"
-In combination with -N, select a non-default RMS partition.
-.\}
+Target nodes that have the specified genders attribute.	
+\}
 .LP
 If none of the above options are specified, the WCOLL environment variable
 must point to a file that contains a list of nodes, one per line.  
@@ -159,7 +159,7 @@ when ssh is used.
 Qshell assumes Elan3 single rail.
 .LP
 Output from multiple processes per node may be interspersed when using Qshell.
-\}/
+\}
 
 .SH "FILES"
 .if @HAVE_SSH@ @SSH@

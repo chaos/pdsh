@@ -20,9 +20,10 @@ A second SIGINT within one second terminates the program.
 .SH TARGET NODE LIST OPTIONS
 .I "-w host,host,..."
 Target the specified hosts.  No spaces are allowed in the comma-separated
-list.  A list consisting of a single "-" character causes the target hosts
-to be read from stdin, one per line.  The host list may contain comma-separated
-hostname ranges of the form ``host1-5'' or ``host[1-5]''.
+list.  A list consisting of a single "-" character causes the target 
+hosts to be read from stdin, one per line.  The host list may contain 
+comma-separated hostname ranges of the form ``host1@RANGE_OP@5'' or 
+``host[1@RANGE_OP@5]''.
 .LP
 .I "-x"
 In combiation with -w, do not attempt to expand hostname ranges.  Setting the 
