@@ -112,12 +112,12 @@ Provides: pdsh-rcmd
 %description rcmd-mrsh
 Pdsh module for mrsh rcmd functionality.
 
-%package  rcmd-mqsh
-Summary:  Provides mqsh rcmd capability to pdsh.
+%package  rcmd-mqshell
+Summary:  Provides mqshell rcmd capability to pdsh.
 Group:    System Environment/Base
 Provides: pdsh-rcmd
-%description rcmd-mqsh
-Pdsh module for mqsh rcmd functionality.
+%description rcmd-mqshell
+Pdsh module for mqshell rcmd functionality.
 
 %package  mod-genders
 Summary:  Provides libgenders support for pdsh.
@@ -244,7 +244,7 @@ rm -rf "$RPM_BUILD_ROOT"
 ##############################################################################
 
 %if %{?_with_mqsh:1}%{!?_with_mqsh:0}
-%files rcmd-mqsh
+%files rcmd-mqshell
 %defattr(-,root,root)
 %{_libdir}/pdsh/mqcmd.*
 %endif
