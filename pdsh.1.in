@@ -275,8 +275,8 @@ confirmation if a host key changes, prompt for passwords if RSA keys are not
 configured properly, etc..  Finally, the connect timeout is not adjustable 
 when ssh is used.
 
-Qshell and mQshell assume Elan3 single rail only.  Output from multiple
-processes per node may be interspersed when using Qshell or mQshell.
+Qshell and Mqshell assume Elan3 single rail only.  Output from multiple
+processes per node may be interspersed when using Qshell or Mqshell.
 
 Host range parsing assumes numerical part of hostname is at the end, e.g.
 specifying foo[0-5]bar will not work.
