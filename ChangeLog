@@ -2,7 +2,7 @@
 	* hostlist.c: properly handle deletion of unsuffixed hosts (pdsh/120)
 	* opt.c: Abort when -x option given but hostlist_delete() returns 0
 	* Makefile.am, configure.ac: only need READLINE_LIBS for pdsh binary
-	* Tagged pdsh-1-7-5chaos
+	* Tagged pdsh-1-7-5chaos (sent this version to addy@quadrics.com)
 
 2002-09-27 garlick
 	* Added support for readline in interactive mode if found.
