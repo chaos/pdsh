@@ -19,6 +19,7 @@ sbin_PROGRAMS = \
 
 in_qshd_SOURCES = \
     qshell.c \
+    qshell.h \
     qshd.c
 
 in_qshd_LDADD = \
@@ -27,6 +28,7 @@ in_qshd_LDADD = \
 
 in_mqshd_SOURCES = \
     qshell.c \
+    qshell.h \
     mqshd.c
 
 in_mqshd_LDADD = \
