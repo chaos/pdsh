@@ -1,4 +1,4 @@
-/* config.h.in.  Generated automatically from configure.ac by autoheader.  */
+/* config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Default connect timeout */
 #undef CONNECT_TIMEOUT
@@ -13,40 +13,40 @@
 /* define for Elan support */
 #undef HAVE_ELAN
 
-/* Define if you have the <fcntl.h> header file. */
+/* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
 /* Define if Genders is available */
 #undef HAVE_GENDERS
 
-/* Define if you have the <inttypes.h> header file. */
+/* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
 /* define for Kerberos IV support */
 #undef HAVE_KRB4
 
-/* Define if you have the `elan3' library (-lelan3). */
+/* Define to 1 if you have the `elan3' library (-lelan3). */
 #undef HAVE_LIBELAN3
 
-/* Define if you have the `pthread' library (-lpthread). */
-#undef HAVE_LIBPTHREAD
-
-/* Define if you have the `rmscall' library (-lrmscall). */
+/* Define to 1 if you have the `rmscall' library (-lrmscall). */
 #undef HAVE_LIBRMSCALL
 
 /* Using machines file */
 #undef HAVE_MACHINES
 
-/* Define if your system has a working `malloc' function. */
+/* Define to 1 if your system has a working `malloc' function. */
 #undef HAVE_MALLOC
 
-/* Define if you have the <memory.h> header file. */
+/* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
-/* Define if you have the <pthread.h> header file. */
+/* Define if you have POSIX threads libraries and header files. */
+#undef HAVE_PTHREAD
+
+/* Define to 1 if you have the <pthread.h> header file. */
 #undef HAVE_PTHREAD_H
 
-/* Define if you have the `pthread_sigmask' function. */
+/* Define to 1 if you have the `pthread_sigmask' function. */
 #undef HAVE_PTHREAD_SIGMASK
 
 /* Define if RMS is available */
@@ -55,58 +55,80 @@
 /* Define if SDR is available */
 #undef HAVE_SDR
 
-/* Define if you have the `sigthreadmask' function. */
+/* Define to 1 if you have the `sigthreadmask' function. */
 #undef HAVE_SIGTHREADMASK
 
 /* Define to use SSH as primary remote shell */
 #undef HAVE_SSH
 
-/* Define if you have the <stdint.h> header file. */
+/* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
-/* Define if you have the <stdlib.h> header file. */
+/* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
 
-/* Define if you have the `strerror' function. */
+/* Define to 1 if you have the `strerror' function. */
 #undef HAVE_STRERROR
 
-/* Define if you have the `strerror_r' function. */
+/* Define to 1 if you have the `strerror_r' function. */
 #undef HAVE_STRERROR_R
 
-/* Define if you have the <strings.h> header file. */
+/* Define to 1 if you have the <strings.h> header file. */
 #undef HAVE_STRINGS_H
 
-/* Define if you have the <string.h> header file. */
+/* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
 
-/* Define if you have the <sys/file.h> header file. */
+/* Define to 1 if you have the <sys/file.h> header file. */
 #undef HAVE_SYS_FILE_H
 
-/* Define if you have the <sys/stat.h> header file. */
+/* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
 
-/* Define if you have the <sys/types.h> header file. */
+/* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
 
-/* Define if you have the <unistd.h> header file. */
+/* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
-
-/* Define to 1 if `strerror_r' returns a string. */
-#undef HAVE_WORKING_STRERROR_R
 
 /* Define if you are building a production release. */
 #undef NDEBUG
 
+/* Name of package */
+#undef PACKAGE
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
 /* Define the project's name. */
 #undef PROJECT
+
+/* Define to the necessary symbol if this constant uses a non-standard name on
+   your system. */
+#undef PTHREAD_CREATE_JOINABLE
 
 /* Define the project's release. */
 #undef RELEASE
 
-/* Define if you have the ANSI C header files. */
+/* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
-/* Define the project's version. */
+/* Define to 1 if strerror_r returns char *. */
+#undef STRERROR_R_CHAR_P
+
+/* Version number of package */
 #undef VERSION
 
 /* Define if using the debug malloc library. */
