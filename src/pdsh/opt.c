@@ -342,13 +342,17 @@ opt_args(opt_t *opt, int argc, char *argv[])
 
 	/* get wcoll, SDR, genders file, or MPICH machines file */
 	if (opt->allnodes) {
+		char *rhs;
 #if	HAVE_MACHINES
 		opt->wcoll = read_wcoll(_PATH_MACHINES, NULL);
 #elif 	HAVE_SDR
 		opt->wcoll = sdr_wcoll(opt->sdr_global, 
 		    opt->altnames, opt->sdr_verify);
 #elif 	HAVE_GENDERS
-		opt->wcoll = read_genders("all", opt->altnames);
+		if ((rhs = getenv("PDSH_GENDERS_ALL")) != NULL)
+			opt->wcoll = read_genders(rhs, opt->altnames);
+		else
+			opt->wcoll = read_genders("all", opt->altnames);
 #else
 #error configure erorr
 #endif

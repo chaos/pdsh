@@ -202,3 +202,7 @@ Thu Apr 11 05:13:08 PDT 2002
 	Change semantics of -n option: now it is tasks per node instead of 
 	total number of tasks.  This is no longer a qshell specific argument,
 	but unless qshell is used it must be == 1.
+
+Thu May 23 15:25:00 PDT 2002
+	Genders: if the PDSH_GENDERS_ALL environment variable is set to an 
+	attribute name, that is used instead of the 'all' attribute.
