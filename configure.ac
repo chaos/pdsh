@@ -1,7 +1,8 @@
 # Process this file with autoconf to produce a configure script.
 # NOTE: We distribute ./configure and do not expect people building pdsh
 # to have to regenerate from configure.ac.  However, if this is necessary,
-# the ./mkconfig script is provided.  You may need autoconf 2.52 or greater.
+# the ./mkconfig script is provided.  You may need autoconf 2.52 or greater
+# (It does blow up with 2.13 on AIX).
 
 AC_INIT(dsh.h)
 AC_CONFIG_HEADER([conf.h])
