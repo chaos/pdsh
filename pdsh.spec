@@ -35,6 +35,7 @@ mkdir -p $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/usr/bin
 mkdir -p $RPM_BUILD_ROOT/usr/man/man1
 mkdir -p $RPM_BUILD_ROOT/etc/xinetd.d
+mkdir -p $RPM_BUILD_ROOT/usr/sbin
 install -s pdsh $RPM_BUILD_ROOT/usr/bin/pdcp
 install -s pdsh $RPM_BUILD_ROOT/usr/bin/pdsh
 install -s qshd $RPM_BUILD_ROOT/usr/sbin/in.qshd
