@@ -8,7 +8,7 @@ bin_PROGRAMS =		  pdsh.inst
 sbin_PROGRAMS =           @PROG_QSHD@
 bin_SCRIPTS =             dshbak
 EXTRA_PROGRAMS =          in.qshd
-man1_MANS =               pdsh.1 pdcp.1 dshbak.1
+man_MANS =                pdsh.1 pdcp.1 dshbak.1
 noinst_LTLIBRARIES =      libqsw.la
 
 if WITH_ELAN
@@ -76,8 +76,8 @@ install-exec-hook:
 	@echo "chmod 4755 $(DESTDIR)$(bindir)/pdsh"
 	@chmod 4755 $(DESTDIR)$(bindir)/pdsh ||\
          echo "Unable to set permissions on pdsh"
-	$(LN_S) $(DESTDIR)$(bindir)/pdsh $(DESTDIR)$(bindir)/pdcp || \
-         cp -p $(DESTDIR)$(bindir)/pdsh $(DESTDIR)$(bindir)/pdcp || : 
+	@cp -p $(DESTDIR)$(bindir)/pdsh $(DESTDIR)$(bindir)/pdcp ||\
+	 echo "Unable to copy pdsh to pdcp"
 
 uninstall-local:
 	$(RM) $(DESTDIR)$(bindir)/pdcp
