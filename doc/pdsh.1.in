@@ -15,7 +15,7 @@ pdsh \- issue commands to groups of hosts in parallel
 is a variant of the rsh(1) command.  Unlike rsh(1) which runs commands
 on a single remote host, pdsh(1) can run multiple remote commands in
 parallel.  A number of options and features for pdsh are dependent on
-the pdsh modules installed on a system.  See MODULES below for further
+how pdsh has been built and installed.  See MODULES below for further
 explanation.  Pdsh options are described in TARGET NODE LIST OPTIONS
 and OTHER OPTIONS below.
 .LP
@@ -33,9 +33,9 @@ and commands prefaced with an exclamation point will be executed on the local
 system.
 
 .SH MODULES
-A number of options and features in pdsh exist only if specific pdsh
-modules are installed on the system.  The following is a list of
-modules that can be installed with pdsh and the command line options
+A number of options and features in pdsh depend on the modules that
+have been built or installed with pdsh.  The following is a list of
+modules that may be installed with pdsh and the command line options
 available when that module is installed.  A list of all module types
 installed can be found using the -L option.
 .LP
@@ -55,7 +55,7 @@ user can select the service type using the -R option.  Atleast one of the
 following must be installed on the system in order for pdsh to
 function.  If multiple rcmd modules are installed on the same system,
 the default service selected by pdsh is based on the order listed below.
-A list of all available rcmd modules is output with the -h option.
+A list of all available rcmd modules is listed with the -h option.
 .LP
 .B bsd
 .LP
@@ -134,11 +134,12 @@ options are available when this module is installed.
 .LP
 .SH TARGET NODE LIST OPTIONS
 .I "-w host,host,..."
-Target the specified hosts.  No spaces are allowed in the comma-separated
-list.  A list consisting of a single "-" character causes the target 
-hosts to be read from stdin, one per line.  The host list may contain 
-hostname ranges of the form ``host[1-5]''. For more information about
-hostname ranges, see the HOST RANGES section below.
+Target the specified hosts.  Conflicts with -a and -g options.  No
+spaces are allowed in the comma-separated list.  A list consisting of
+a single "-" character causes the target hosts to be read from stdin,
+one per line.  The host list may contain hostname ranges of the form
+``host[1-5]''. For more information about hostname ranges, see the
+HOST RANGES section below.
 .LP
 .I "-x host,host,..."
 Exclude the specified hosts.  May be specified in conjunction with other
@@ -146,8 +147,9 @@ target node list options such as -a. Hostname ranges may also be specified
 to the -x option (see HOST RANGES section below)
 .LP
 .I "-a"
-Target "all" nodes in the cluster.  Available only if the genders,
-nodeattr, SDR, or machines module is installed.
+Target "all" nodes in the cluster.  Conflicts with -w and -g options.
+Available only if the genders, nodeattr, SDR, or machines module is
+installed.
 .LP
 .I "-v"
 In combination with -a, eliminate nodes that are down.  Available only
@@ -155,11 +157,12 @@ if the SDR or nodeupdown module is installed.
 .LP
 .I "-G"
 In combination with -a, include all partitions. Available only 
-the if SDR module is installed.
+if the SDR module is installed.
 .LP
 .I "-g attribute"
-Target nodes that have the specified genders attribute.	 Available only
-if the genders or nodeattr module is installed.
+Target nodes that have the specified genders attribute.  Conflicts
+with -a and -w options.  Available only if the genders or nodeattr
+module is installed.
 .LP
 .I "-i"
 In conjunction with -a or -g, request canonical hostnames.  The

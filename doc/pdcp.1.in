@@ -9,18 +9,18 @@ pdcp \- copy files to groups of hosts in parallel
 .br
 .SH DESCRIPTION
 .B pdcp
-is a variant of the rcp(1) command.  Unlike rcp(1) which copies files to
-a single remote host, pdcp(1) can copy files to multiple remote hosts in 
-parallel.  A number of options and features for pdcp are dependent on
-the pdsh modules installed on a system.  See MODULES below for further
-explanation.  Pdcp options are described in TARGET NODE LIST OPTIONS
-and OTHER OPTIONS below.
+is a variant of the rcp(1) command.  Unlike rcp(1) which copies files
+to a single remote host, pdcp(1) can copy files to multiple remote
+hosts in parallel.  A number of options and features for pdcp are
+dependent on how pdcp has been built and installed.  See MODULES below
+for further explanation.  Pdcp options are described in TARGET NODE
+LIST OPTIONS and OTHER OPTIONS below.
 .LP
 When pdcp receives SIGINT (ctrl-C), it lists the status of current threads.
 A second SIGINT within one second terminates the program.
 .SH MODULES
-A number of options and features in pdcp exist only if specific pdsh
-modules are installed on the system.  The following is a list of
+A number of options and features in pdcp depend n the modules
+that have been built or installed with pdcp.  The following is a list of
 modules that can be installed with pdsh and the command line options
 available when that module is installed.  A list of all module types
 installed can be found using the -L option.
@@ -38,10 +38,10 @@ originally executed remote copies through rcmd(3) (the library
 routine used by rsh(1)).  Depending on the modules installed, remote
 copies can now be executed through several different services.  The
 user can select the service using the -R option.  Atleast one of the
-following must be installed on the system in order for pdsh to
+following must be installed on the system in order for pdcp to
 function.  If multiple rcmd modules are installed on the same system,
 the default service selected by pdcp is based on the order listed below.
-A list of all available rcmd modules is output with the -h option.
+A list of all available rcmd modules is listed with the -h option.
 .LP
 .B bsd
 .LP
@@ -60,22 +60,14 @@ The krb4
 The k4b4 module allows users to execute remote commands after
 authenticating with kerberos.
 .LP
-.B qshell
-.LP
-The qshell module allows users to remote copy through Qshell.  
-.LP
-.B mqshell
-.LP
-The mqshell module allows users to remote copy through Mqshell. 
-.LP
 .IP "\fBFEATURE MODULES\fR" 0
 .LP
-The following modules may be available to pdsh.  They give the
-user a number of other possible options when running pdsh.
+The following modules may be available to pdcp.  They give the
+user a number of other possible options when running pdcp.
 .LP
 .B genders
 .LP
-The genders module allows pdsh to access the genders database through
+The genders module allows pdcp to access the genders database through
 the genders(3) library.  The -g, -a, and -i options are available when
 this module is installed.
 .LP
@@ -87,16 +79,21 @@ when this module is installed.
 .LP
 .B nodeattr
 .LP
-The nodeattr module allows pdsh to access the genders database through
+The nodeattr module allows pdcp to access the genders database through
 the nodeattr(1) command.  This module is primarily needed for older
 systems that do not yet have the gender(3) library installed.  The -g,
 -a, and -i options are available when this module is installed.
 .LP
 .B nodeupdown
 .LP
-The nodeupdown module allows pdsh to interact with the nodeupdown(3)
+The nodeupdown module allows pdcp to interact with the nodeupdown(3)
 library.  The -v option is available when this module is
 installed.
+.LP
+.B rms
+.LP
+The rms module allows pdsh to target nodes based on an RMS resource.
+See TARGET NODE LIST OPTIONS below for additional details.
 .LP
 .B SDR
 .LP
@@ -105,11 +102,12 @@ options are available when this module is installed.
 .LP
 .SH TARGET NODE LIST OPTIONS
 .I "-w host,host,..."
-Target the specified hosts.  No spaces are allowed in the comma-separated
-list.  A list consisting of a single "-" character causes the target 
-hosts to be read from stdin, one per line.  The host list may contain 
-hostname ranges of the form ``host[1-5]''. For more information about
-hostname ranges, see the HOST RANGES section below.
+Target the specified hosts.  Conflicts with -a and -g options.  No
+spaces are allowed in the comma-separated list.  A list consisting of
+a single "-" character causes the target hosts to be read from stdin,
+one per line.  The host list may contain hostname ranges of the form
+``host[1-5]''. For more information about hostname ranges, see the
+HOST RANGES section below.
 .LP
 .I "-x host,host,..."
 Exclude the specified hosts.  May be specified in conjunction with other
@@ -117,8 +115,9 @@ target node list options such as -a. Hostname ranges may also be specified
 to the -x option (see HOST RANGES section below)
 .LP
 .I "-a"
-Target "all" nodes in the cluster.  Available only if the genders,
-nodeattr, SDR, or machines module is installed.
+Target "all" nodes in the cluster.  Conflicts with -w and -g options.
+Available only if the genders, nodeattr, SDR, or machines module is
+installed.
 .LP
 .I "-v"
 In combination with -a, eliminate nodes that are down.  Available only
@@ -126,11 +125,12 @@ if the SDR or nodeupdown module is installed.
 .LP
 .I "-G"
 In combination with -a, include all partitions. Available only 
-the if SDR module is installed.
+if the SDR module is installed.
 .LP
 .I "-g attribute"
-Target nodes that have the specified genders attribute.  Available only
-if the genders or nodeattr module is installed.
+Target nodes that have the specified genders attribute.  Conflicts
+with -a and -w options.  Available only if the genders or nodeattr
+module is installed.
 .LP
 .I "-i"
 In conjunction with -a or -g, request canonical hostnames.  The
@@ -217,7 +217,7 @@ It is now also used on Linux clusters at LLNL.
 When using 
 .B ssh 
 for remote execution, stderr of ssh to be folded in with that of the
-remote command.  When invoked by pdsh, it is not possible for ssh to
+remote command.  When invoked by pdcp, it is not possible for ssh to
 prompt for confirmation if a host key changes, prompt for passwords if
 RSA keys are not configured properly, etc..  Finally, the connect
 timeout is not adjustable when ssh is used.
