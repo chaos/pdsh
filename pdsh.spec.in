@@ -8,6 +8,7 @@ Source: %{name}-%{version}.tgz
 BuildRoot: %{_tmppath}/%{name}-%{version}
 Prereq: genders
 
+%define buildqshell 0
 %define buildqshell @BUILD_QSHD@
 
 %description
@@ -29,6 +30,9 @@ executables.
 %setup
 
 %build
+test -n "$RPM_ENABLE_DEBUG" && DEBUG="--enable-debug"
+test -n "$RPM_ENABLE_QSW" && QSW="--with-elan --with-rms"
+CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="-s" ./configure --prefix=/usr $DEBUG $QSW
 make
 
 %install
