@@ -18,10 +18,6 @@
 AC_DEFUN([AC_STATIC_MODULES_INIT],
 [
   rm -f src/modules/static_modules.h
-
-  # always build xrcmd 
-  MODULES=xrcmd      
-
 ])
 
 AC_DEFUN([AC_ADD_STATIC_MODULE],

@@ -76,7 +76,7 @@ CPPFLAGS="$CPPFLAGS $PTHREAD_CFLAGS"
 LIBS="$PTHREAD_LIBS $LIBS"
 
 # Checks for header files.
-AC_CHECK_HEADERS([fcntl.h strings.h sys/file.h unistd.h \
+AC_CHECK_HEADERS([fcntl.h strings.h sys/file.h unistd.h features.h \
                   pthread.h poll.h sys/poll.h sys/sysmacros.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
@@ -103,6 +103,12 @@ AC_CONNECT_TIMEOUT
 #
 AC_SDR
 AM_CONDITIONAL(WITH_SDR, [test -n "$SDRGETOBJECTS"])
+
+#
+# Test for inclusion of standard "rsh" module
+# 
+AC_RSH
+AM_CONDITIONAL(WITH_RSH, [test "$ac_with_rsh" = "yes"]) 
 
 #
 # Test for ssh

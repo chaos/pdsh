@@ -79,12 +79,16 @@ if WITH_KRB4
 KRB4_MODULE = k4cmd.la
 endif
 
+if WITH_RSH
+RSH_MODULE = xrcmd.la
+endif
+
 if WITH_STATIC_MODULES
 libmods_la_LIBADD = $(LIBMODS_OBJS)
 libmods_la_DEPENDENCIES = $(LIBMODS_OBJS) 
 else
 pkglib_LTLIBRARIES = \
-	xrcmd.la \
+	$(RSH_MODULE) \
 	$(SSH_MODULE) \
 	$(MRSH_MODULE) \
 	$(MQSHELL_MODULE) \
