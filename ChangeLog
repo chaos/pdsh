@@ -1,3 +1,6 @@
+2003-07-XX achu
+	* Fixed typos in manpages.
+	
 2003-07-16 achu
         * Fixed additional issues with command line options and modules
 	  recognized (or not-recognized) between pdsh and pdcp.
