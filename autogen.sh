@@ -19,6 +19,9 @@ AMMAJOR=1
 AMMINOR=4
 AMPATCH=4
 
+# auxdir location
+AUXDIR=auxdir
+
 (autoconf --version 2>&1 | \
  perl -n0e "(/(\d+)\.(\d+)/ && \$1>=$ACMAJOR && \$2>=$ACMINOR) || exit 1") || {
    echo
@@ -66,6 +69,10 @@ aclocal $ACLOCAL_FLAGS
 echo "running autoheader ... "
 autoheader
 echo "running automake --add-missing ... "
+# ensure AUXDIR exists
+if test ! -d $AUXDIR; then
+  mkdir $AUXDIR
+fi
 automake --copy --add-missing 
 echo "running autoconf ... "
 autoconf
