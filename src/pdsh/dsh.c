@@ -487,6 +487,19 @@ fail:
 	return result;
 }
 
+void gethost(char *name, char *addr)
+{
+	struct hostent *hp;
+
+	if (!(hp = gethostbyname(name)))
+		errx("%p: gethostbyname %S failed: %s\n", 
+				name, hstrerror(h_errno));
+	assert(hp->h_addrtype == AF_INET);
+	assert(IP_ADDR_LEN == hp->h_length);
+	memcpy(addr, hp->h_addr_list[0], IP_ADDR_LEN);
+}
+
+
 /*
  * Rcp thread.  One per remote connection.
  * Arguments are pointer to thd_t entry defined above.
@@ -512,6 +525,11 @@ static void *rcp(void *args)
 
 	int_block();			/* block SIGINT */
 
+#ifdef	_AIX
+	/* AIX 4.3 man page claims gethostbyname is MT-safe so go parallel */
+	if (a->rcmd_type != RCMD_SSH)
+		gethost(a->host, a->addr);
+#endif
 	a->start = time(NULL);
 	a->state = DSH_RCMD;
 	switch (a->rcmd_type) {
@@ -607,7 +625,11 @@ static void *rsh(void *args)
 	int_block();			/* block SIGINT */
 
 	a->start = time(NULL);
-
+#ifdef	_AIX
+	/* AIX 4.3 man page claims gethostbyname is MT-safe so go parallel */
+	if (a->rcmd_type != RCMD_SSH)
+		gethost(a->host, a->addr);
+#endif
 	/* establish the connection */
 	a->state = DSH_RCMD;
 	switch (a->rcmd_type) {
@@ -789,18 +811,6 @@ void dump_debug_stats(int rshcount)
 	err("Failures:      %d\n", failed);
 }
 
-void gethost(char *name, char *addr)
-{
-	struct hostent *hp;
-
-	if (!(hp = gethostbyname(name)))
-		errx("%p: gethostbyname %S failed: %s\n", 
-				name, hstrerror(h_errno));
-	assert(hp->h_addrtype == AF_INET);
-	assert(IP_ADDR_LEN == hp->h_length);
-	memcpy(addr, hp->h_addr_list[0], IP_ADDR_LEN);
-}
-
 /* 
  * Run command on a list of hosts, keeping 'fanout' number of connections 
  * active concurrently.
@@ -888,8 +898,10 @@ int dsh(opt_t *opt)
 		t[i].pcp_outfile = opt->outfile_name;	
 		t[i].pcp_popt = opt->preserve;
 		t[i].pcp_ropt = opt->recursive;
-#if	!HAVE_GETHOSTBYNAME_R
-		gethost(t[i].host, t[i].addr);
+#ifndef _AIX
+		/* If not AIX, gethostbyname is assumed to not be thread safe */
+		if (opt->rcmd_type != RCMD_SSH)
+			gethost(t[i].host, t[i].addr);
 #endif
 	} 
 	t[i].host = NULL;
