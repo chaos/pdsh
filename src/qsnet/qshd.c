@@ -64,6 +64,7 @@ char rcsid[] =
  *	data
  */
 #include <sys/types.h>
+#include <sys/wait.h>	/* waitpid */
 #include <sys/param.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
