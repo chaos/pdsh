@@ -1,5 +1,6 @@
 2002-09-27 grondo
-	* pdsh.1.in,pdcp.1.in: Improve documentation of 
+	* Make-rpm.mk: Updated rpm target for compatibility with automake
+	* pdsh.1.in, pdcp.1.in: Improve documentation of 
 	  hostname range handling (gnat pdsh/97)
 
 2002-09-26 grondo
