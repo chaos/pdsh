@@ -85,6 +85,7 @@ AC_CHECK_HEADERS([fcntl.h strings.h sys/file.h unistd.h features.h \
 
 # Checks for typedefs, structures, and compiler characteristics.
 TYPE_SOCKLEN_T
+AC_SYS_LARGEFILE
 
 # Checks for library functions.
 dnl AC_FUNC_MALLOC

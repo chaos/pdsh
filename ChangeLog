@@ -1,3 +1,7 @@
+2004-09-21  Mark Grondona <mgrondona@llnl.gov>
+
+	* configure.ac : Add AC_SYS_LARGEFILE (fix for gnat pdsh/497).
+
 2004-07-19  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/slurm.c : Allow multiple jobids to -j option.
