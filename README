@@ -83,16 +83,25 @@ by calling rresvport(), which normally draws from a pool of 256 sockets.
 You may exhaust these if multiple pdsh's are running simultanously on
 a machine, or if the fanout is set too high.
 
-2) When pdsh is configured to use rsh, and rsh is wrapped with TCP wrappers,
-there are two areas where bottlenecks can be created: IDENT and DNS.
+2) When pdsh is using a remote shell service that is wrapped with TCP wrappers,
+there are three areas where bottlenecks can be created: IDENT, DNS, and SYSLOG.
 If your hosts.allow includes {users}@, e.g.  "in.rshd : ALL@ALL : ALLOW"
-and tcp wrappers is configured to support IDENT, each simultaneous rsh 
+and TCP wrappers is configured to support IDENT, each simultaneous remote shell
 connection will result in an IDENT query back to the source.  For large fanouts
 this can quickly overwhelm the source.  Similarly, if TCP wrappers is
-configured to query the DNS on every rsh connection, there is the possibility
-of overwhelming the DNS server.  Consider either reducing the pdsh fanout,
-or if security permits, unconfiguring the PARANOID option and using
-IP addresses in your hosts.allow.
+configured to query the DNS on every connection, there is the possibility
+of overwhelming the DNS server.  Finally, if every remote shell connection
+results in a remote syslog entry, syslogd on your loghost may see bursts
+of high activity and logs may grow excessively long when pdsh runs.  
+
+If local security policy permits, consider configuring TCP wrappers to avoid 
+calling IDENT, DNS, or SYSLOG on every remote shell connection.  Configuring
+without the "PARANOID" option (require all connections to be registered in
+the DNS, permitting a simple list of IP addresses or a subnet (no names, and 
+no user@ prefix), and setting the SYSLOG severity for the remote shell to
+a level that is not remotely logged will avoid these pitfalls.  If these
+actions are not possible, you may wish to mitigate them by configuring
+pdsh with a smaller default fanout (change DFLT_FANOUT in dsh.h).
 
 +---------------------+
 | THEORY OF OPERATION |
