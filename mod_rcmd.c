@@ -41,7 +41,11 @@
  * Ordered preference for determining default rcmd method
  *   Warning: If none of these are loaded, there will be no default.
  */
-static char * rcmd_rank[] = { "bsd", "ssh", "k4cmd", "qsh", NULL };
+static char * rcmd_rank[] = { "bsd", "ssh", "k4cmd", "qsh", 
+#if HAVE_MRSH
+                              "mrsh",
+#endif
+                              NULL };
 
 typedef int (*RcmdInitF) (opt_t *);
 typedef int (*RcmdSigF)  (int efd, int signum);

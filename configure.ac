@@ -43,7 +43,6 @@ AC_LIB_LTDL
 # Checks for libraries.
 AC_CHECK_LIB([socket], [socket], LIBS="-lsocket -lnsl $LIBS",, [-lsocket -lnsl])
 
-
 # Check for how to compile pthread programs:
 ACX_PTHREAD
 AC_DEFINE(WITH_PTHREADS, 1, [Define if you have pthreads])
@@ -106,6 +105,13 @@ AC_GENDERS
 AM_CONDITIONAL(WITH_LIBGENDERS, [test "$ac_have_libgenders"    = "yes"])
 AM_CONDITIONAL(WITH_NODEUPDOWN, [test "$ac_have_libnodeupdown" = "yes"])
 AM_CONDITIONAL(WITH_NODEATTR,   [test "$ac_have_nodeattr"      = "yes"])
+
+#
+# Check for libmunge and mrsh
+#
+AC_MRSH
+AM_CONDITIONAL(WITH_LIBMUNGE,   [test "$ac_have_libmunge"      = "yes"])
+AM_CONDITIONAL(WITH_MRSH,       [test "$ac_have_mrsh"          = "yes"])
 
 #
 # Determine whether to build RMS module (Support for RMS allocate)

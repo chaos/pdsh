@@ -39,9 +39,14 @@ if WITH_SDR
 SDR_MODULE = sdr.la
 endif
 
+if WITH_MRSH
+MRSH_MODULE = mcmd.la
+endif
+
 pkglib_LTLIBRARIES = \
 	sshcmd.la \
 	xrcmd.la \
+        $(MRSH_MODULE) \
 	$(ELAN_MODULE) \
 	$(GENDERS_MODULE) \
 	$(NODEATTR_MODULE) \
@@ -49,7 +54,6 @@ pkglib_LTLIBRARIES = \
 	$(RMS_MODULE) \
 	$(MACHINES_MODULE) \
 	$(SDR_MODULE)
-	
 
 xrcmd_la_SOURCES =        xrcmd.c
 xrcmd_la_LDFLAGS =        $(MODULE_FLAGS)
@@ -57,6 +61,8 @@ sshcmd_la_SOURCES =       sshcmd.c
 sshcmd_la_LDFLAGS =       $(MODULE_FLAGS)
 qcmd_la_SOURCES =         qcmd.c
 qcmd_la_LDFLAGS =         $(MODULE_FLAGS) $(top_builddir)/libqsw.la
+mcmd_la_SOURCES =         mcmd.c
+mcmd_la_LDFLAGS =         $(MODULE_FLAGS) $(MRSH_LIBS)
 
 machines_la_SOURCES =     machines.c
 machines_la_LDFLAGS =     $(MODULE_FLAGS)
