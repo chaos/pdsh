@@ -47,37 +47,23 @@ same effect.
 In combination with -w, use character 'c' as a range operator when expanding 
 hostname ranges.  Alternatively, the PDSH_RANGE_OPERATOR enviornment variable 
 can be used to set this value.
-.if @HAVE_MACHINES@ \{
-.I "-a"
-Target "all" nodes in the cluster.
-The list of hostnames is taken from the MPICH machines file.
-\}
-.ie @HAVE_SDR@ \{
-.I "-a"
-Target "all" nodes in the cluster.
-The list of hostnames comes from the SDR (reliable_hostname).
 .LP
+.I "-a"
+Target "all" nodes in the cluster.
+.if @HAVE_SDR@ \{
 .I "-v"
 In combination with -a, eliminate nodes that the SDR thinks are down.
 .LP
 .I "-G"
 In combination with -a, include all partitions. 
-.LP
-.I "-i"
-In combination with -a, use SDR initial_hostname instead of reliable_hostname.
-\}
-.ie @HAVE_GENDERS@ \{
-.I "-a"
-Target "all" nodes in the cluster.  The list of hostnames from a genders query.
-.LP
-.I "-i"
-In combination with -a or -g, select alternate hostnames using genders
-``altname'' attribute.
 \}
 .if @HAVE_GENDERS@ \{
 .I "-g attribute"
 Target nodes that have the specified genders attribute.	
 \}
+.LP
+.I "-i"
+In conjunction with -a or -g, request alternate hostnames.
 .LP
 If none of the above options are specified, the WCOLL environment variable
 must point to a file that contains a list of nodes, one per line.  
