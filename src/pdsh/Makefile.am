@@ -10,11 +10,6 @@ INCLUDES =                 -I $(top_srcdir)
 noinst_PROGRAMS =          pdsh
 bin_PROGRAMS =             pdsh.inst
 
-
-if WITH_QSW
-QSW_LIBS =                 $(top_builddir)/src/qsnet/libqsw.la
-endif
-
 if WITH_STATIC_MODULES
 MODULE_LIBS =              $(top_builddir)/src/modules/libmods.la 
 else
@@ -24,7 +19,7 @@ LTDL_LDADD =               $(LIBADD_DL)
 endif
 
 pdsh_LDADD =               $(READLINE_LIBS) $(LTDL_LDADD)
-pdsh_LDFLAGS =             $(MODULE_LIBS) $(MODULE_FLAGS) $(QSW_LIBS) \
+pdsh_LDFLAGS =             $(MODULE_LIBS) $(MODULE_FLAGS) \
                            $(top_builddir)/src/common/libcommon.la
 
 pdsh_inst_LDADD =          $(pdsh_LDADD)
