@@ -11,7 +11,7 @@
 #    Checks for mqshell option and checks for things mqshd requires
 #
 #  WARNINGS:
-#    This macro must be called after AC_ELAN and AC_MRSH
+#    This macro must be called after AC_QSHELL and AC_MRSH
 #    This macro must be placed after AC_PROG_CC or equivalent.
 ##*****************************************************************************
 
@@ -33,7 +33,7 @@ AC_DEFUN([AC_MQSHELL],
 [
   #
   # Check for whether to include mqshell module
-  # Assumes this is AFTER --with-elan and --with-mrsh checks
+  # Assumes this is AFTER --with-qshell and --with-mrsh checks
   #
   AC_MSG_CHECKING([for whether to build mqshell module and mqshd daemon])
   AC_ARG_WITH([mqshell],
@@ -50,19 +50,19 @@ AC_DEFUN([AC_MQSHELL],
    
   if test "$ac_with_mqshell" = "yes"; then
         
-    # check for elan libs if --with-elan was not specified
-    if test "$ac_have_elan" = "yes"; then 
-       ac_mqshell_elan=yes
+    # check for elan libs if --with-qshell was not specified
+    if test "$ac_have_qshell" = "yes"; then 
+       ac_mqshell_qshell=yes
     else
        AC_CHECK_LIB([rmscall], [rms_prgcreate], 
-              AC_CHECK_LIB([elan3], [elan3_create], [ac_mqshell_have_elan=yes]))
+              AC_CHECK_LIB([elan3], [elan3_create], [ac_mqshell_have_qshell=yes]))
         
-       if test "$ac_mqshell_have_elan" = "yes" ; then
-          ELAN_LIBS="-lrmscall -lelan3" 
-          AC_SUBST(ELAN_LIBS)
-          ac_mqshell_elan=yes
+       if test "$ac_mqshell_have_qshell" = "yes" ; then
+          QSHELL_LIBS="-lrmscall -lelan3" 
+          AC_SUBST(QSHELL_LIBS)
+          ac_mqshell_qshell=yes
        else
-          ac_mqshell_elan=no
+          ac_mqshell_qshell=no
        fi
     fi
 
@@ -95,7 +95,7 @@ AC_DEFUN([AC_MQSHELL],
     fi
 
     # do we have everything we want?
-    if test "$ac_mqshell_elan" = "yes" &&
+    if test "$ac_mqshell_qshell" = "yes" &&
        test "$ac_mqshell_munge" = "yes" &&
        test "$ac_mqshell_mrsh" = "yes" ; then
        ac_have_mqshell=yes
