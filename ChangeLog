@@ -1,3 +1,9 @@
+2005-03-28  Mark Grondona <mgrondona@llnl.gov>
+
+	* config/ac_qshell.m4, config/ac_mqshell.m4 : Abort configure script 
+	  when --with-qshell or --with-mqshell is supplied and PAM support
+	  cannot be found (instead of silently deactivating these options).
+
 2005-03-18  Mark Grondona <mgrondona@llnl.gov>
 
 	* README.QsNet : Add reference to Quadrics' pdsh FAQ.
