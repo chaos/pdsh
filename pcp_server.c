@@ -426,6 +426,9 @@ bad:
                 break;
         }
     }
+
+    return;
+
 screwup:
     _error("protocol screwup: %s\n", why);
     exit(1);
