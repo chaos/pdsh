@@ -611,7 +611,7 @@ usage(opt_t *opt)
 
 static void show_version(void)
 {
-	printf("%s-%s (", PROJECT, VERSION);
+	printf("%s-%s-%s (", PROJECT, VERSION, RELEASE);
 #if	HAVE_SDR
 	printf("+sdr");
 #endif
