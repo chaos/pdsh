@@ -120,6 +120,31 @@ list_t read_genders(char *attr, int iopt)
 #endif
 
 #if HAVE_SDRGETOBJECTS
+static int sdr_numswitchplanes(void)
+{
+	FILE *f;
+	list_t words;
+	char cmd[LINEBUFSIZE];
+	char buf[LINEBUFSIZE];
+	int n;
+
+	sprintf(cmd, "%s -x SP number_switch_planes", _PATH_SDRGETOBJECTS);
+
+	f = xpopen(cmd, "r");
+
+	if (f == NULL)
+       		errx("%p: error running %s\n", _PATH_SDRGETOBJECTS);
+	while (fgets(buf, LINEBUFSIZE, f) != NULL) {
+		words = list_split(NULL, buf);
+		assert(list_length(words) == 1);
+		n = atoi(list_nth(words, 0));
+		list_free(&words);
+	}
+	if (xpclose(f) != 0)
+		err("%p: nonzero return code from %s\n", _PATH_SDRGETOBJECTS);
+
+	return n;
+}
 
 static void sdr_getswitchname(char *switchName)
 {
@@ -151,19 +176,23 @@ static void sdr_getswitchname(char *switchName)
  */
 static void sdr_getresp(bool Gopt, char *nameType, bool resp[])
 {
-	int nn;
+	int nn, switchplanes;
 	FILE *f;
 	list_t words;
 	char cmd[LINEBUFSIZE];
 	char buf[LINEBUFSIZE];
 	char *attr = "host_responds";
 
+	switchplanes = 1;
+
 	/* deal with Colony switch attribute name change */
 	if (!strcmp(nameType, "switch_responds")) {
 		sdr_getswitchname(buf);
-		if (!strcmp(buf, "SP_Switch2"))
-			attr = "switch_responds0";
-		else
+		if (!strcmp(buf, "SP_Switch2")) {
+			switchplanes = sdr_numswitchplanes();
+			attr = (switchplanes == 1) ?  "switch_responds0" : 
+				"switch_responds0 switch_responds1";
+		} else
 			attr = "switch_responds";
 	}
 		
@@ -174,11 +203,16 @@ static void sdr_getresp(bool Gopt, char *nameType, bool resp[])
        		errx("%p: error running %s\n", _PATH_SDRGETOBJECTS);
 	while (fgets(buf, LINEBUFSIZE, f) != NULL) {
 		words = list_split(NULL, buf);
-		assert(list_length(words) == 2);
-
+		assert(list_length(words) == (1+switchplanes));
 		nn = atoi(list_nth(words, 0));
 		assert(nn >= 0 && nn <= MAX_SP_NODE_NUMBER);
-		resp[nn] = (atoi(list_nth(words, 1)) == 1);
+		if (switchplanes == 1) 
+			resp[nn] = (atoi(list_nth(words, 1)) == 1);
+		else if (switchplanes == 2)
+			resp[nn] = (atoi(list_nth(words, 1)) == 1 ||
+				    atoi(list_nth(words, 1)) == 1);
+		else
+			errx("%p: number_switch_planes > 2 not supported\n");
 		list_free(&words);
 	}
 	xpclose(f);
