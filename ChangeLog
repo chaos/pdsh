@@ -1,3 +1,11 @@
+2003-10-12  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/qsnet/qshell.c (getpwnam_common): return copy of passwd
+	struct alloc'd on heap instead of return value from getpwnam.
+
+	* src/common/hostlist.c: update to latest hostlist code from
+	LSD-Tools project.
+ 
 2003-10-02  Albert Chu <chu11@llnl.gov>
 
 	* src/pdsh/opt.h: Increased MAX_USERNAME from 9 to 17.
