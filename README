@@ -40,10 +40,8 @@ As of version 1.6, pdsh uses GNU autoconf for configuration.  To configure:
 	interconnect via the -E option and qshell daemon.
 
 --with-rms
-	Enable support for the RMS partition manager (Quadrics resource 
-	management system).  If no explicit hostnames are targeted, the
-	"-N nodes -n cpus" options may be used to allocate available nodes
-	from RMS.
+	Enable support for running on a set of nodes allocated via the RMS
+	(Quadrics resource management system) allocate command. 
 
 --enable-debug
 	Turns on assertion checking and compiles with -Wall.
@@ -66,8 +64,7 @@ hostnames with -i (initial_hostname), etc..
 
 If SDRGetObjects is not found and if the LLNL Genders software is available, 
 configure will find the nodeattr command and use that to generate the list 
-of "all" nodes for -a ("all" attribute), transform to alternate hostnames 
-with -i (altname=name), etc.. 
+of "all" nodes for -a ("all" attribute).
 
 If neither of the above are found, a flat list of hostnames can be used for
 the list of "all" nodes.  Specify the location of this file using the 
