@@ -1,6 +1,12 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
+* Changes in pdsh-2.3  (2004-11-22)
+===================================
+ -- Support copying files >2GB in pdcp.
+ -- Increase max number of open files to the hard limit if 
+    a large fanout is requested.
+
 * Changes in pdsh-2.2  (2004-07-30)
 ===================================
  -- Do not abort when excluded hosts are not within the target list.
