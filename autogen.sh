@@ -19,6 +19,10 @@ AMMAJOR=1
 AMMINOR=4
 AMPATCH=4
 
+LTLMAJOR=1
+LTLMINOR=4
+LTLPATCH=3
+
 # auxdir location
 AUXDIR=auxdir
 
@@ -33,14 +37,14 @@ AUXDIR=auxdir
    DIE=1
 }
 
-amtest="
+versiontest="
 if (/(\d+)\.(\d+)((-p|\.)(\d+))*/) { 
 	exit 1 if (\$1 < $AMMAJOR || \$2 < $AMMINOR); 
 	exit 0 if (\$2 > $AMMINOR); 
 	exit 1 if (\$5 < $AMPATCH); 
 }"
 
-(automake --version 2>&1 | perl -n0e "$amtest" ) || {
+(automake --version 2>&1 | perl -n0e "$versiontest" ) || {
    echo
    echo "Error: You must have \`automake' version $AMMAJOR.$AMMINOR-p$AMPATCH or greater"
    echo "installed to run $0. Get the latest version from"
@@ -50,14 +54,23 @@ if (/(\d+)\.(\d+)((-p|\.)(\d+))*/) {
    DIE=1
 }
 
-
 test -n "$NO_AUTOMAKE" || (aclocal --version) < /dev/null > /dev/null 2>&1 || {
    echo
    echo "Error: \`aclocal' appears to be missing. The installed version of"
    echo "\`automake' may be too old. Get the most recent version from"
    echo "ftp://ftp.gnu.org/pub/gnu/automake/"
+   echo
    NO_ACLOCAL=yes
    DIE=1
+}
+
+(libtoolize --version 2>&1 | perl -n0e "$versiontest") || {
+   echo
+   echo "Warning: On some systems, libtoolize versions < 1.4.3 may not"
+   echo "install necessary files correctly.  Get the most recent"
+   echo "version of libtool from"
+   echo "ftp://ftp.gnu.org/gnu/libtool/"
+   echo
 }
 
 if test $DIE -eq 1; then
