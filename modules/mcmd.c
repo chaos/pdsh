@@ -410,7 +410,7 @@ mcmd(char *ahost, char *addr, char *remuser, char *cmd, int *fd2p)
         if ((m_rv = munge_encode(&m,0,mbuf,mcount)) != EMUNGE_SUCCESS) {
                 close(s);
                 close(s2);
-                free(tmpbuf);
+                free(tmbuf);
                 fprintf(stderr,"%s\n",munge_strerror((munge_err_t)m_rv));
                 err("%p: %S: mcmd: munge_encode: %m\n", ahost);
                 EXIT_PTHREAD();
