@@ -54,7 +54,7 @@ cp dshbak.1.gz $RPM_BUILD_ROOT/usr/man/man1
 mkdir -p $RPM_BUILD_ROOT/etc/xinetd.d
 mkdir -p $RPM_BUILD_ROOT/usr/sbin
 cp qshell.xinetd $RPM_BUILD_ROOT/etc/xinetd.d/qshell
-install -s qshd $RPM_BUILD_ROOT/usr/sbin/in.qshd
+install -s in.qshd $RPM_BUILD_ROOT/usr/sbin/
 %endif
 
 %files
