@@ -6,6 +6,8 @@
 	* pdsh.spec.in: Added requirement that nodeupdown module requires
 	whatsup >= 1.3 package.
 
+	* : Tagged pdsh-2-0-0-pre12.
+
 2003-12-02  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/dsh.c (dsh): Reinstall old SIGINT handler before
