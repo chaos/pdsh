@@ -7,7 +7,7 @@
 include $(top_srcdir)/config/Make-inc.mk
 
 INCLUDES = \
-    -I $(top_srcdir)
+    -I$(top_srcdir)
 
 noinst_LTLIBRARIES = \
     libcommon.la

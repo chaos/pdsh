@@ -6,7 +6,7 @@
 
 include $(top_srcdir)/config/Make-inc.mk
 
-INCLUDES =                 -I $(top_srcdir)
+INCLUDES =                 -I$(top_srcdir)
 noinst_PROGRAMS =          pdsh
 bin_PROGRAMS =             pdsh.inst
 
@@ -49,12 +49,12 @@ PDSH_SOURCES = \
     xpopen.c \
     xpopen.h
 
-config.c: $(top_srcdir)/META $(top_srcdir)/config.h
+config.c: $(top_srcdir)/META $(top_builddir)/config.h
 	@(echo "char *pdsh_version = \"$(PDSH_VERSION)\";";\
           echo "char *pdsh_module_dir = \"$(pkglibdir)\";"\
          )> config.c
 
-testconfig.c: $(top_srcdir)/META $(top_srcdir)/config.h
+testconfig.c: $(top_srcdir)/META $(top_builddir)/config.h
 	@(echo "char *pdsh_version = \"$(PDSH_VERSION)\";";\
           moddir=`cd $(top_builddir)/src/modules && pwd`; \
           echo "char *pdsh_module_dir = \"$$moddir\";"\

@@ -7,7 +7,10 @@
 include $(top_srcdir)/config/Make-inc.mk
 
 INCLUDES = \
-    -I $(top_srcdir)
+    -I$(top_srcdir)
+
+noinst_LTLIBRARIES = \
+    libqsw.la
 
 EXTRA_PROGRAMS = \
     in.qshd \
@@ -37,9 +40,6 @@ in_mqshd_LDADD = \
     $(top_builddir)/src/common/libcommon.la \
     $(MRSH_LIBS) \
     $(QSHELL_LIBS)
-
-noinst_LTLIBRARIES = \
-    libqsw.la
 
 libqsw_la_LDFLAGS = \
     $(ELAN_LIBS)
