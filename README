@@ -41,6 +41,7 @@ To configure in additional feature modules:
 --with-qshell
 	Enable support for running parallel jobs on the Quadrics Elan
 	interconnect via the qshell service option (-R qsh) and qshell daemon.
+	See README.QsNet for more information.
 
 --with-genders
         Enable support of a genders database through the genders(3)

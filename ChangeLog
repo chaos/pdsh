@@ -7,6 +7,11 @@
 	pthread_attr_init() directly. Set stacksize argument using
 	DSH_THREAD_STACKSIZE (Currently set to 128K).
 
+	* README : Add note to look at README.QsNet for --with-qshell.
+
+	* : Tagged pdsh-2-1-1
+
+
 2004-06-01  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/qsnet/qswutil.c (_qsw_cap_create) : Fix multirail loop for

@@ -1,6 +1,14 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
+* Changes in pdsh-2.1  (2004-06-09)
+===================================
+ -- Fix dshbak script to allow whitespace in hostname "tags"
+    (Ashley Pittman <ashley@quadrics.com>).
+ -- Fix broken QsNet support on Elan3 systems without libelanctrl.
+ -- Explicitly set thread stack size to 128K to avoid arbitrarily
+    large stack set from current rlimit under Linux/NPTL.
+
 * Changes in pdsh-2.0  (2004-05-26)
 ===================================
  -- Reorganized pdsh source tree.
