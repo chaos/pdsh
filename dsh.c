@@ -97,6 +97,7 @@
 #include "err.h"
 #include "opt.h"
 #include "wcoll.h"
+#include "mod_rcmd.h"
 
 static int debug = 0;
 
@@ -212,30 +213,8 @@ static void _fwd_signal(int signum)
     int i;
 
     for (i = 0; t[i].host != NULL; i++) {
-        if (t[i].state == DSH_READING) {
-            switch (t[i].rcmd_type) {
-            case RCMD_BSD:
-                xrcmd_signal(t[i].efd, signum);
-                break;
-#if	HAVE_KRB4
-            case RCMD_K4:
-                k4cmd_signal(t[i].efd, signum);
-                break;
-#endif
-#if	HAVE_ELAN
-            case RCMD_QSHELL:
-                qcmd_signal(t[i].efd, signum);
-                break;
-#endif
-#if	HAVE_SSH
-            case RCMD_SSH:
-                break;
-#endif
-            default:
-                errx("%p: unknown rcmd type\n");
-                break;
-            }
-        }
+        if (t[i].state == DSH_READING) 
+			mod_rcmd_signal(t[i].efd, signum);
     }
 
 }
@@ -309,7 +288,7 @@ static void *_wdog(void *args)
     return NULL;
 }
 
-static void _rexpand_dir(list_t list, char *name)
+static void _rexpand_dir(List list, char *name)
 {
     DIR *dir;
     struct dirent *dp;
@@ -331,31 +310,30 @@ static void _rexpand_dir(list_t list, char *name)
             errx("%p: access: %s: %m\n", name);
         if (!S_ISDIR(sb.st_mode) && !S_ISREG(sb.st_mode))
             errx("%p: not a regular file or directory: %s\n", file);
-        list_push(list, file);
+        list_append(list, file);
         if (S_ISDIR(sb.st_mode))
             _rexpand_dir(list, file);
     }
     closedir(dir);
 }
 
-static list_t _expand_dirs(list_t infiles)
+static List _expand_dirs(List infiles)
 {
-    list_t new = list_new();
+    List new = list_create(NULL);
     struct stat sb;
     char *name;
-    int i;
+    ListIterator i;
 
-    for (i = 0; i < list_length(infiles); i++) {
-        name = list_nth(infiles, i);
+    i = list_iterator_create(infiles);
+    while ((name = list_next(i))) {
         if (access(name, R_OK) < 0)
             errx("%p: access: %s: %m\n", name);
         if (stat(name, &sb) < 0)
             errx("%p: stat: %s: %m\n", name);
-        list_push(new, name);
+        list_append(new, name);
         if (S_ISDIR(sb.st_mode))
             _rexpand_dir(new, name);
     }
-
     return new;
 }
 
@@ -497,7 +475,7 @@ static int _rcp_sendfile(int fd, char *file, char *host, bool popt)
          *    (st_atime, st_atime_usec, st_mtime, st_mtime_usec)
          */
         snprintf(tmpstr, sizeof(tmpstr), "T%ld %ld %ld %ld\n",
-                 sb.st_atime, 0L, sb.st_mtime, 0L);
+                 (long) sb.st_atime, 0L, sb.st_mtime, 0L);
         if (_rcp_sendstr(fd, tmpstr, host) < 0)
             goto fail;
 
@@ -563,7 +541,7 @@ static void _gethost(char *name, char *addr)
 
     if (!(hp = gethostbyname(name)))
         errx("%p: gethostbyname %S failed\n", name);
-    assert(hp->h_addrtype == AF_INET);
+    /* assert(hp->h_addrtype == AF_INET); */
     assert(IP_ADDR_LEN == hp->h_length);
     memcpy(addr, hp->h_addr_list[0], IP_ADDR_LEN);
 }
@@ -578,7 +556,6 @@ static void *_rcp_thread(void *args)
     thd_t *a = (thd_t *) args;
     int result = DSH_DONE;      /* the desired outcome */
     char *cmd = NULL;
-    int i;
     int *efdp = a->dsh_sopt ? &a->efd : NULL;
 
     /* construct remote rcp command */
@@ -587,7 +564,7 @@ static void *_rcp_thread(void *args)
         xstrcat(&cmd, " -r");
     if (a->pcp_popt)
         xstrcat(&cmd, " -p");
-    if (list_length(a->pcp_infiles) > 1)        /* outfile must be directory */
+    if (list_count(a->pcp_infiles) > 1)        /* outfile must be directory */
         xstrcat(&cmd, " -d");
     xstrcat(&cmd, " -t ");      /* remote will always be "to" */
     xstrcat(&cmd, a->pcp_outfile);      /* outfile is remote target */
@@ -595,38 +572,15 @@ static void *_rcp_thread(void *args)
     _int_block();               /* block SIGINT */
 
 #if	HAVE_MTSAFE_GETHOSTBYNAME
-    if (a->rcmd_type != RCMD_SSH)
+    if (a->resolve_hosts)
         _gethost(a->host, a->addr);
 #endif
     a->start = time(NULL);
     a->state = DSH_RCMD;
-    switch (a->rcmd_type) {
-#if 	HAVE_KRB4
-    case RCMD_K4:
-        a->fd = k4cmd(a->host, a->addr, a->luser, a->ruser,
-                      cmd, a->nodeid, efdp);
-        break;
-#endif
-    case RCMD_BSD:
-        a->fd = xrcmd(a->host, a->addr, a->luser, a->ruser,
-                      cmd, a->nodeid, efdp);
-        break;
-#if 	HAVE_ELAN
-    case RCMD_QSHELL:
-        a->fd = qcmd(a->host, a->addr, a->luser, a->ruser,
-                     cmd, a->nodeid, efdp);
-        break;
-#endif
-#if 	HAVE_SSH
-    case RCMD_SSH:
-        a->fd = sshcmdrw(a->host, a->addr, a->luser, a->ruser,
-                         cmd, a->nodeid, efdp);
-        break;
-#endif
-    default:
-        errx("%p: unknown rcmd type\n");
-        break;
-    }
+
+	a->fd = mod_rcmd(a->host, a->addr, a->luser, a->ruser, 
+			         cmd, a->nodeid, efdp);
+
     if (a->fd == -1)
         result = DSH_FAILED;
     else {
@@ -635,12 +589,14 @@ static void *_rcp_thread(void *args)
 
         /* 0: RECV response code */
         if (_rcp_response(a->fd, a->host) >= 0) {
+            ListIterator i;
+            char *name;
 
-            /* send the files */
-            for (i = 0; i < list_length(a->pcp_infiles); i++)
-                _rcp_sendfile(a->fd,
-                              list_nth(a->pcp_infiles, i),
-                              a->host, a->pcp_popt);
+            /* Send the files */
+            i = list_iterator_create(a->pcp_infiles);
+            while ((name = list_next(i)))
+                _rcp_sendfile(a->fd, name, a->host, a->pcp_popt);
+            list_iterator_destroy(i);
         }
         close(a->fd);
         if (a->dsh_sopt)
@@ -688,7 +644,7 @@ static void *_rsh_thread(void *args)
 {
     thd_t *a = (thd_t *) args;
     int rv, maxfd;
-    FILE *fp, *efp;
+    FILE *fp, *efp = NULL;
     fd_set readfds, writefds, wantrfds, wantwfds;
     char *buf = NULL;
     int result = DSH_DONE;      /* the desired outcome */
@@ -697,39 +653,17 @@ static void *_rsh_thread(void *args)
     _int_block();               /* block SIGINT */
 
     a->start = time(NULL);
+
 #if	HAVE_MTSAFE_GETHOSTBYNAME
-    if (a->rcmd_type != RCMD_SSH)
+    if (a->resolve_hosts)
         _gethost(a->host, a->addr);
 #endif
+
     /* establish the connection */
     a->state = DSH_RCMD;
-    switch (a->rcmd_type) {
-#if 	HAVE_KRB4
-    case RCMD_K4:
-        a->fd = k4cmd(a->host, a->addr, a->luser, a->ruser,
-                      a->dsh_cmd, a->nodeid, efdp);
-        break;
-#endif
-    case RCMD_BSD:
-        a->fd = xrcmd(a->host, a->addr, a->luser, a->ruser,
-                      a->dsh_cmd, a->nodeid, efdp);
-        break;
-#if 	HAVE_ELAN
-    case RCMD_QSHELL:
-        a->fd = qcmd(a->host, a->addr, a->luser, a->ruser,
-                     a->dsh_cmd, a->nodeid, efdp);
-        break;
-#endif
-#if 	HAVE_SSH
-    case RCMD_SSH:
-        a->fd = sshcmd(a->host, a->addr, a->luser, a->ruser,
-                       a->dsh_cmd, a->nodeid, efdp);
-        break;
-#endif
-    default:
-        errx("%p: unknown rcmd type\n");
-        break;
-    }
+
+	a->fd = mod_rcmd(a->host, a->addr, a->luser, a->ruser,
+			         a->dsh_cmd, a->nodeid, efdp);
 
     /* 
      * Copy stdout/stderr to local stdout/stderr, 
@@ -832,9 +766,9 @@ static void *_rsh_thread(void *args)
     Free((void **) &buf);
 
     /* if a single qshell thread fails, terminate whole job */
-    if (a->rcmd_type == RCMD_QSHELL && a->state == DSH_FAILED) {
+    if (a->kill_on_fail && a->state == DSH_FAILED) {
         _fwd_signal(SIGTERM);
-        errx("%p: terminating Elan program\n");
+        errx("%p: terminating all processes\n");
     }
 
     /* Signal dsh() so another thread can replace us */
@@ -893,30 +827,15 @@ int dsh(opt_t * opt)
     int rv, rshcount;
     pthread_t thread_wdog;
     pthread_attr_t attr_wdog;
-    list_t pcp_infiles = NULL;
+    List pcp_infiles = NULL;
     hostlist_iterator_t itr;
 
-    switch (opt->rcmd_type) {
-#if HAVE_ELAN
-    case RCMD_QSHELL:
-        qcmd_init(opt);
-        break;
-#endif
-#if HAVE_KRB4
-    case RCMD_K4:
-        k4cmd_init(opt);
-        break;
-#endif
-#if HAVE_SSH
-    case RCMD_SSH:
-        sshcmd_init(opt);
-        break;
-#endif
-    case RCMD_BSD:
-        xrcmd_init(opt);
-        break;
-    default:
-        errx("%p: unknown rcmd type\n");
+	/*
+	 *   Initialize rcmd modules...
+	 */
+    if (mod_rcmd_init(opt) < 0) {
+        err("%p: unable to initialize an rcmd module\n");
+		exit(1);
     }
 
     /* install signal handlers */
@@ -964,7 +883,6 @@ int dsh(opt_t * opt)
         assert(i < rshcount);
         t[i].luser = opt->luser;        /* general */
         t[i].ruser = opt->ruser;
-        t[i].rcmd_type = opt->rcmd_type;
         t[i].state = DSH_NEW;
         t[i].labels = opt->labels;
         t[i].fd = t[i].efd = -1;
@@ -979,7 +897,7 @@ int dsh(opt_t * opt)
 #if	!HAVE_MTSAFE_GETHOSTBYNAME
         /* if MT-safe, do it in parallel in rsh/rcp threads */
         /* gethostbyname_r is not very portable so skip it */
-        if (opt->rcmd_type != RCMD_SSH)
+        if (opt->resolve_hosts)
             _gethost(t[i].host, t[i].addr);
 #endif
         i++;
@@ -1040,7 +958,16 @@ int dsh(opt_t * opt)
         }
     }
 
+    /*
+     *  free hostnames allocated in hostlist_next()
+     */
+    for (i = 0; t[i].host != NULL; i++)
+        free(t[i].host);
+
     Free((void **) &t);         /* cleanup */
+
+    mod_rcmd_exit();
+
     return rc;
 }
 

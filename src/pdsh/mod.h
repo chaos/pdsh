@@ -1,0 +1,171 @@
+/*****************************************************************************\
+ *  $Id$
+ *****************************************************************************
+ *  Copyright (C) 2001-2002 The Regents of the University of California.
+ *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
+ *  Written by Mark Grondona <mgrondona@llnl.gov>.
+ *  UCRL-CODE-2003-005.
+ *  
+ *  This file is part of Pdsh, a parallel remote shell program.
+ *  For details, see <http://www.llnl.gov/linux/pdsh/>.
+ *  
+ *  Pdsh is free software; you can redistribute it and/or modify it under
+ *  the terms of the GNU General Public License as published by the Free
+ *  Software Foundation; either version 2 of the License, or (at your option)
+ *  any later version.
+ *  
+ *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
+ *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ *  details.
+ *  
+ *  You should have received a copy of the GNU General Public License along
+ *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
+ *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
+\*****************************************************************************/
+#ifndef _MOD_H
+#define _MOD_H
+
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif 
+
+#include "opt.h"
+
+typedef struct module_components * mod_t;
+
+/*
+ *  Initialize the module loader interface
+ *    Returns 0 for Success and -1 for Failure.
+ */
+int mod_init(void);
+
+/*
+ *  Finalize and close the module loader interface.
+ *    Cycles through list of loaded modules and runs each modules
+ *    "exit" routine if one was exported. Then frees memory associated
+ *    with the module and unloads it. 
+ *
+ *  Returns 0 for Success and -1 for Failure.
+ */
+int mod_exit(void);
+
+/*
+ *  Load all modules from specified directory. Directory must
+ *    be owned by the current user  and not writable by any other user.
+ *    After successfully loading each module, the module's "init"
+ *    routine is called, and the module is unloaded if init returns < 0.
+ *
+ *  Returns 0 for Success and -1 for Failure.
+ */
+int mod_load_modules(const char *dir);
+
+/*
+ *  List information about all loaded modules to stdout.
+ */
+void mod_list_module_info(void);
+
+/*
+ *  Traverse through loaded modules and attempt to process 
+ *    option `opt' with argument `arg.'
+ *
+ *  Note: Only one module exporting a given option can be loaded
+ *    at a time. This is enforced on a first-come-first-served basis.
+ */
+int mod_process_opt(opt_t *pdsh_opt, int opt, char *arg);
+
+/*
+ *  Traverses list of loaded modules, calling any exported "read_wcoll" 
+ *    routines. Returns the first non-NULL result.
+ *
+ *  This routine should only be called from within pdsh/opt.c after
+ *  option processing is complete, but before mod_postop().
+ *
+ */
+hostlist_t mod_read_wcoll(opt_t *pdsh_opts);
+
+/*
+ *  Traverse list of loaded modules and call any exported "postop" routines.
+ *
+ *  Returns the total number of errors.
+ *
+ */
+int mod_postop(opt_t *pdsh_opts);
+
+/*
+ *  Search list of loaded modules for a module with given type and name.
+ *    Returns the module if found, NULL if no match.
+ */
+mod_t mod_get_module(const char *type, const char *name);
+
+/*
+ *  Build list of module names of type "type"
+ */
+List mod_get_module_names(char *type);
+
+/*
+ * Print all options provided by modules
+ *   Justify option description starting on given column.
+ */
+void mod_print_all_options(int column);
+
+/* 
+ *  Print options for module "mod"
+ */
+void mod_print_options(mod_t mod, int descr_column);
+
+/*
+ *  Module accessor functions. Return module name, type, and
+ *    look up additional exported symbols in given module.
+ *
+ *  All return a pointer to the desired value if successful, or NULL
+ *    on failure.
+ */
+char * mod_get_name(mod_t mod);
+char * mod_get_type(mod_t mod);
+void * mod_get_sym(mod_t mod, const char *sym);
+
+/*
+ * Macros for use by modules to define importantinformation.
+ *  Only MODULE_TYPE and MODULE_NAME are required
+ *
+ */
+#define MODULE_TYPE(type)                                                  \
+const char __module_type[]   = type
+
+#define MODULE_NAME(name)                                                  \
+const char __module_name[]   = name
+
+#define MODULE_AUTHOR(author)                                              \
+const char __module_author[] = author
+
+#define MODULE_DESCRIPTION(desc)                                           \
+const char __module_descr[]   = desc
+
+#endif /* !_MOD_H */
+
+/*
+ * Functions that may be exported by any pdsh module
+ *   via a pdsh_module_operations structure. The exported structure
+ *   must be named pdsh_module_ops.
+ */
+typedef int        (*ModInitF)      (void);
+typedef int        (*ModExitF)      (void);
+typedef hostlist_t (*ModReadWcollF) (opt_t *);
+typedef int        (*ModPostOpF)    (opt_t *);
+
+struct pdsh_module_operations {
+	ModInitF      init;         /* Called just after module is loaded      */
+	ModExitF      exit;         /* Called just before module unloaded      */
+
+	ModReadWcollF read_wcoll;   /* Called if wcoll is not initialized at
+                                   end of option processing. First wcoll
+                                   returned by a module will be used.      */ 
+
+	ModPostOpF    postop;       /* Called after argv option processing     */
+
+};
+
+/* 
+ * vi: tabstop=4 shiftwidth=4 expandtab
+ */

@@ -132,7 +132,6 @@ char rcsid[] = "$Id$";
 
 #include "xstring.h"
 #include "err.h"
-#include "list.h"
 #include "qswutil.h"
 
 #if defined(__GLIBC__) && (__GLIBC__ >= 2)

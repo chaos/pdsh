@@ -1,0 +1,38 @@
+##*****************************************************************************
+## $Id$
+##*****************************************************************************
+#  AUTHOR:
+#    Jim Garlick <garlick@llnl.gov>
+#
+#  SYNOPSIS:
+#    AC_READLINE
+#
+#  DESCRIPTION:
+#    Adds support for --with-readline. Exports READLINE_LIBS if found
+#    
+#
+#  WARNINGS:
+#    This macro must be placed after AC_PROG_CC or equivalent.
+##*****************************************************************************
+
+AC_DEFUN([AC_READLINE],
+[
+  AC_MSG_CHECKING([for whether to include readline suport])
+  AC_ARG_WITH([readline],
+    AC_HELP_STRING([--with-readline], [compile with readline support]),
+    [ ac_with_readline=yes]
+  )
+  AC_MSG_RESULT([${ac_with_readline=no}])
+  if test "$ac_with_readline" = "yes"; then
+          savedLIBS="$LIBS"
+	  READLINE_LIBS="-lreadline -lhistory -lncurses"
+
+	  AC_CHECK_LIB([readline], [readline], [], 
+	      AC_MSG_ERROR([Cannot find libreadline!]), [ -lhistory -lncurses ])
+
+	  AC_DEFINE([HAVE_READLINE], [1], 
+		        [Define if you are compiling with readline.])
+          LIBS="$savedLIBS"
+  fi
+  AC_SUBST(READLINE_LIBS)
+])

@@ -65,7 +65,9 @@ if test $DIE -eq 1; then
 fi
 
 echo "running aclocal $ACLOCAL_FLAGS ... "
-aclocal $ACLOCAL_FLAGS
+aclocal -I auxdir $ACLOCAL_FLAGS
+echo "running libtoolize ..."
+libtoolize --automake --copy 
 echo "running autoheader ... "
 autoheader
 echo "running automake --add-missing ... "

@@ -49,9 +49,10 @@
 #include "xstring.h"
 #include "dsh.h"
 #include "opt.h"
+#include "mod.h"
 
-static char *_getcmd(char *);
-static void _shell(uid_t, char *);
+extern const char *pdsh_module_dir;
+
 static void _interactive_dsh(opt_t *);
 
 int main(int argc, char *argv[])
@@ -63,6 +64,15 @@ int main(int argc, char *argv[])
      * Initialize.
      */
     err_init(xbasename(argv[0]));       /* init err package */
+
+	mod_init();
+
+	/*
+	 *  XXX: Need a better way to do this.
+	 */
+	if (mod_load_modules(pdsh_module_dir) < 0)
+        errx("%p: Couldn't load any pdsh modules\n");
+
 
     /*
      * Handle options.
@@ -86,10 +96,13 @@ int main(int argc, char *argv[])
         retval = 1;
     }
 
+    mod_exit(); 
+
     /*
      * Clean up.
      */
     opt_free(&opt);             /* free heap storage in opt struct */
+    err_cleanup();
 
     return retval;
 }
@@ -142,6 +155,9 @@ static void _interactive_dsh(opt_t * opt)
 }
 
 #else
+
+static char *_getcmd(char *);
+static void _shell(uid_t, char *);
 
 /*
  * Prompt for dsh commands, then execute them, prompt again, ...

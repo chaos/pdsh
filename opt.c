@@ -49,6 +49,9 @@
 #include "xstring.h"
 #include "xmalloc.h"
 
+#include "mod.h"
+#include "mod_rcmd.h"
+
 static void _usage(opt_t * opt);
 static void _show_version(void);
 
@@ -71,8 +74,6 @@ Usage: pdcp [-options] src [src2...] dest\n\
 -p                preserve modification time and modes\n"
 
 #define OPT_USAGE_COMMON "\
--a                target all nodes\n\
--i                with -a, request canonical hostnames if applicable\n\
 -q                list the option settings and quit\n\
 -b                disable ^C status feature (batch mode)\n\
 -l user           execute remote commands as user\n\
@@ -81,31 +82,53 @@ Usage: pdcp [-options] src [src2...] dest\n\
 -f n              use fanout of n nodes\n\
 -w host,host,...  set target node list on command line\n\
 -x host,host,...  set node exclusion list on command line\n\
--n n              set number of tasks per node\n"
+-R name           set rcmd module to name\n\
+-L                list info on all loaded modules and exit\n"
 /* undocumented "-T testcase" option */
 /* undocumented "-Q" option */
 
-#define OPT_USAGE_SDR "\
--G                for -a, include all partitions of SP System\n\
--v                for -a, skip node if host_responds is false\n"
-
-#define OPT_USAGE_GEND "\
--g attribute      target nodes with specified genders attribute\n"
-
-#define OPT_USAGE_ELAN "\
--E                run Quadrics Elan job using qshell\n\
--m block|cyclic   (qshell) control assignment of procs to nodes\n"
-
-#define OPT_USAGE_NODEUPDOWN "\
--v                for -a, skip node if libnodeupdown believes the node is down\n"
 
 #define DSH_ARGS	"sS"
 #define PCP_ARGS	"pr"
-#define GEN_ARGS	"n:at:csqf:w:x:l:u:bI:ideVT:Q"
-#define SDR_ARGS	"Gv"
-#define GEND_ARGS	"g:"
-#define ELAN_ARGS	"Em:"
-#define NODEUPDOWN_ARGS "v"
+#define GEN_ARGS	"LR:t:csqf:w:x:l:u:bI:deVT:Q"
+
+/*
+ *  Pdsh options string (for getopt) -- initialized
+ *    in _init_pdsh_options(), and appended to by modules that
+ *    register new pdsh options.
+ */    
+static char *pdsh_options = NULL;
+
+static void
+_init_pdsh_options(void)
+{
+	pdsh_options = Strdup(GEN_ARGS);
+	xstrcat(&pdsh_options, DSH_ARGS);
+	xstrcat(&pdsh_options, PCP_ARGS);
+}
+
+/*
+ *  Check whether option `opt' is available for provisioning
+ *    and register the option if so.
+ *
+ *  Returns false if option is already used by pdsh or a pdsh module.
+ *  Returns true if option was successfully registered.
+ */
+bool opt_register(struct pdsh_module_option *p)
+{
+	if (pdsh_options == NULL)
+		_init_pdsh_options();
+
+	if (!strchr(pdsh_options, p->opt)) {
+		xstrcatchar(&pdsh_options, p->opt);
+		if (p->arginfo != NULL)
+			xstrcatchar(&pdsh_options, ':');
+		return true;
+	}
+
+	return false;
+}
+
 
 /*
  * Set defaults for various options.
@@ -115,21 +138,15 @@ void opt_default(opt_t * opt)
 {
     struct passwd *pw;
 
+    if (pdsh_options == NULL)
+	    _init_pdsh_options();
+
     if ((pw = getpwuid(getuid())) != NULL) {
         strncpy(opt->luser, pw->pw_name, MAX_USERNAME);
         strncpy(opt->ruser, pw->pw_name, MAX_USERNAME);
         opt->luid = pw->pw_uid;
     } else
         errx("%p: who are you?\n");
-
-    /* set the default connect method */
-#if 	HAVE_SSH
-    opt->rcmd_type = RCMD_SSH;
-#elif 	HAVE_KRB4
-    opt->rcmd_type = RCMD_K4;
-#else
-    opt->rcmd_type = RCMD_BSD;
-#endif
 
     opt->info_only = false;
     opt->test_range_expansion = false;
@@ -139,15 +156,22 @@ void opt_default(opt_t * opt)
     opt->command_timeout = 0;
     opt->fanout = DFLT_FANOUT;
     opt->sigint_terminates = false;
-    opt->infile_names = list_new();
-    opt->allnodes = false;
+    opt->infile_names = list_create(NULL);
     opt->altnames = false;
     opt->debug = false;
     opt->labels = true;
 
-    /* SDR */
-    opt->sdr_verify = false;
-    opt->sdr_global = false;
+    opt->rcmd_name = NULL;
+
+    /*
+     *  Resolve hostnames by default
+     */
+    opt->resolve_hosts = true; 
+
+    /*
+     *  Do not kill all tasks on single failure by default
+     */
+    opt->kill_on_fail = false;
 
     /* DSH specific */
     opt->dshpath = NULL;
@@ -159,14 +183,12 @@ void opt_default(opt_t * opt)
 #else
     opt->separate_stderr = true;
 #endif
-    *(opt->gend_attr) = '\0';
-    opt->nprocs = 1;
-    opt->q_allocation = ALLOC_UNSPEC;
 
     /* PCP specific */
     opt->outfile_name = NULL;
     opt->recursive = false;
     opt->preserve = false;
+
 }
 
 /*
@@ -232,31 +254,23 @@ void opt_args(opt_t * opt, int argc, char *argv[])
     /* construct valid arg list */
     if (opt->personality == DSH) {
         xstrcpy(&validargs, DSH_ARGS);
-#if 	HAVE_ELAN
-        xstrcat(&validargs, ELAN_ARGS);
-#endif
     } else
         xstrcpy(&validargs, PCP_ARGS);
     xstrcat(&validargs, GEN_ARGS);
-#if	HAVE_SDR
-    xstrcat(&validargs, SDR_ARGS);
-#endif
-#if	HAVE_GENDERS
-    xstrcat(&validargs, GEND_ARGS);
-#endif
-
-#ifdef HAVE_LIBGENDERS
-#ifdef HAVE_LIBNODEUPDOWN
-    xstrcat(&validargs, NODEUPDOWN_ARGS);
-#endif /* HAVE_LIBNODEUPDOWN */
-#endif /* HAVE_LIBGENDERS */
 
 #ifdef __linux
     /* Tell glibc getopt to stop eating after the first non-option arg */
     putenv("POSIXLY_CORRECT=1");
 #endif
-    while ((c = getopt(argc, argv, validargs)) != EOF) {
+    while ((c = getopt(argc, argv, pdsh_options)) != EOF) {
         switch (c) {
+        case 'L':
+            mod_list_module_info();
+            exit(0);
+            break;
+		case 'R': 
+			opt->rcmd_name = Strdup(optarg);
+			break;
         case 'S':              /* get remote command status */
             opt->getstat = ";echo " RC_MAGIC "$?";
             break;
@@ -275,49 +289,17 @@ void opt_args(opt_t * opt, int argc, char *argv[])
         case 'x':              /* exclude node list */
             exclude_buf = Strdup(optarg);
             break;
-        case 'g':              /* genders attribute */
-            strncpy(opt->gend_attr, optarg, MAX_GENDATTR);
-            break;
         case 'q':              /* display fanout and wcoll then quit */
             opt->info_only = true;
             break;
         case 's':              /* split stderr and stdout */
             opt->separate_stderr = true;
             break;
-        case 'E':              /* use qshell */
-            opt->rcmd_type = RCMD_QSHELL;
-            break;
-        case 'n':              /* set number of tasks per node */
-            opt->nprocs = atoi(optarg);
-            break;
-        case 'm':              /* set block or cyclic allocation (qshell) */
-            if (strcmp(optarg, "block") == 0)
-                opt->q_allocation = ALLOC_BLOCK;
-            else if (strcmp(optarg, "cyclic") == 0)
-                opt->q_allocation = ALLOC_CYCLIC;
-            else
-                _usage(opt);
-            break;
-        case 'a':              /* indicates all nodes */
-            opt->allnodes = true;
-            break;
-        case 'G':              /* pass 'Global' opt to SDRGetObjects */
-            opt->sdr_global = true;
-            break;
-        case 'i':              /* use alternate hostnames */
-            opt->altnames = true;
-#if	HAVE_MACHINES
-            err("%p: warning: -i will have no effect\n");
-#endif
-            break;
         case 't':              /* set connect timeout */
             opt->connect_timeout = atoi(optarg);
             break;
         case 'u':              /* set command timeout */
             opt->command_timeout = atoi(optarg);
-            break;
-        case 'v':              /* verify hosts */
-            opt->sdr_verify = true;
             break;
         case 'b':              /* "batch" */
             opt->sigint_terminates = true;
@@ -342,12 +324,21 @@ void opt_args(opt_t * opt, int argc, char *argv[])
             opt->test_range_expansion = true;
             break;
         case 'h':              /* display usage message */
+			_usage(opt);
+			break;
         default:
-            _usage(opt);
+			if (mod_process_opt(opt, c, optarg) < 0)
+					_usage(opt);
         }
     }
 
     Free((void **) &validargs);
+
+    /*
+     *  Load requested (or default) rcmd module 
+     */
+    if (mod_rcmd_load(opt) < 0)
+        exit(1);
 
     /* expand wcoll if needed */
     if (wcoll_buf != NULL) {
@@ -366,64 +357,16 @@ void opt_args(opt_t * opt, int argc, char *argv[])
         /* PCP: build file list */
     } else {
         for (; optind < argc - 1; optind++)
-            list_push(opt->infile_names, argv[optind]);
+            list_append(opt->infile_names, argv[optind]);
         if (optind < argc)
             xstrcat(&opt->outfile_name, argv[optind]);
     }
 
-    /* get wcoll, SDR, genders file, or MPICH machines file */
-    if (opt->allnodes) {
-#if	HAVE_MACHINES
-        opt->wcoll = read_wcoll(_PATH_MACHINES, NULL);
-#elif 	HAVE_SDR
-        opt->wcoll = sdr_wcoll(opt->sdr_global,
-                               opt->altnames, opt->sdr_verify);
-#elif 	HAVE_GENDERS
-	if (opt->sdr_verify) {
-  #ifdef     HAVE_LIBGENDERS
-    #ifdef     HAVE_LIBNODEUPDOWN
-	  opt->wcoll = get_verified_nodes(opt->altnames);
-    #else
-	    errx("%p: this pdsh configuration does not support -v\n");
-    #endif /* HAVE_LIBNODEUPDOWN */
-  #else
-	  errx("%p: this pdsh configuration does not support -v\n");
-  #endif /* HAVE_LIBGENDERS */
-	}
-	else {
-  #ifdef     HAVE_LIBGENDERS
-	  opt->wcoll = read_genders(NULL, opt->altnames);
-  #else
-	  opt->wcoll = read_genders("all", opt->altnames);
-  #endif /* HAVE_LIBGENDERS */
-	}
-#else
-        errx("%p: this pdsh configuration does not support -a\n");
-#endif
-    }
-#if	HAVE_GENDERS
-    /* get wcoll from genders - all nodes with a particular attribute */
-    if (*(opt->gend_attr)) {
-        opt->wcoll = read_genders(opt->gend_attr, opt->altnames);
-    }
-#endif
-#if 	HAVE_RMSQUERY
-    /* check RMS for pre-allocated nodes (RMS_RESOURCEID env var) */
-    if (!opt->wcoll) {
-        opt->wcoll = rms_wcoll();       /* null if no allocation */
-    }
-#endif                          /* HAVE_RMSQUERY */
-#if 	HAVE_ELAN
-    if (opt->rcmd_type == RCMD_QSHELL) {
-        if (opt->fanout == DFLT_FANOUT && opt->wcoll != NULL)
-            opt->fanout = hostlist_count(opt->wcoll);
-        if (opt->q_allocation == ALLOC_UNSPEC)
-            opt->q_allocation = ALLOC_BLOCK;
-        opt->labels = false;
-        if (opt->dshpath != NULL)
-            Free((void **) &opt->dshpath);
-    }
-#endif                          /* HAVE_ELAN */
+    /*
+     * Get wcoll from modules
+     */
+    if (!opt->wcoll)
+        opt->wcoll = mod_read_wcoll(opt);
 
     /* handle -x option */
     if (exclude_buf != NULL && opt->wcoll) {
@@ -433,6 +376,7 @@ void opt_args(opt_t * opt, int argc, char *argv[])
         }
         Free((void **) &exclude_buf);
     }
+
 }
 
 /*
@@ -442,7 +386,14 @@ void opt_args(opt_t * opt, int argc, char *argv[])
 bool opt_verify(opt_t * opt)
 {
     bool verified = true;
-    int i;
+    ListIterator i;
+    char *name;
+
+    /*
+     *  Call all post option processing functions for modules
+     */
+    if (mod_postop(opt) > 0)
+        verified = false;
 
     /* can't prompt for command if stdin was used for wcoll */
     if (opt->personality == DSH && opt->stdin_unavailable && !opt->cmd) {
@@ -466,27 +417,17 @@ bool opt_verify(opt_t * opt)
         verified = false;
     }
 
-    /* When using ssh, connect timeout is out of our juristiction */
-    if (opt->rcmd_type == RCMD_SSH) {
-        if (opt->connect_timeout != CONNECT_TIMEOUT) {
-            err("%p: -e and -t are incompatible\n");
-            verified = false;
-        }
-    }
-
     /* PCP: must have source and destination filename(s) */
     if (opt->personality == PCP) {
-        if (!opt->outfile_name || list_length(opt->infile_names) == 0) {
+        if (!opt->outfile_name || list_is_empty(opt->infile_names)) {
             err("%p: pcp requires source and dest filenames\n");
             verified = false;
         }
     }
 
-    /* verify infile(s) */
-    for (i = 0; i < list_length(opt->infile_names); i++) {
+    i = list_iterator_create(opt->infile_names);
+    while ((name = list_next(i))) {
         struct stat sb;
-        char *name = list_nth(opt->infile_names, i);
-
         if (stat(name, &sb) < 0) {
             err("%p: can't stat %s\n", name);
             verified = false;
@@ -503,29 +444,7 @@ bool opt_verify(opt_t * opt)
             break;
         }
     }
-
-    /* Constraints when running Elan jobs */
-    if (opt->rcmd_type == RCMD_QSHELL) {
-        if (opt->wcoll != NULL) {
-            if (opt->fanout != hostlist_count(opt->wcoll)) {
-                err("%p: fanout must = target node list length with -E\n");
-                verified = false;
-            }
-        }
-        if (opt->nprocs <= 0) {
-            err("%p: -n option should be > 0\n");
-            verified = false;
-        }
-    } else {
-        if (opt->nprocs != 1) {
-            err("%p: -n can only be specified with -E\n");
-            verified = false;
-        }
-        if (opt->q_allocation != ALLOC_UNSPEC) {
-            err("%p: -m can only be specified with -E\n");
-            verified = false;
-        }
-    }
+    list_iterator_destroy(i);
 
     return verified;
 }
@@ -539,6 +458,31 @@ bool opt_verify(opt_t * opt)
 			      (x == RCMD_SSH ? "RCMD_SSH" : "<Unknown>"))))
 #define ALLOCSTR(x)	(x == ALLOC_BLOCK ? "ALLOC_BLOCK" : \
 			  (x == ALLOC_CYCLIC ? "ALLOC_CYCLIC" : "<Unknown>"))
+
+static char * _list_join(const char *sep, List l)
+{
+    char *str = NULL;
+    char *result = NULL;
+    ListIterator i;
+        
+    if (list_count(l) == 0)
+        return NULL;
+        
+    i = list_iterator_create(l);
+    while ((str = list_next(i))) {
+        char buf[1024];
+        snprintf(buf, 1024, "%s%s", str, sep); 
+        xstrcat(&result, buf);
+    }
+    list_iterator_destroy(i);
+
+    /* 
+     * Delete final separator
+     */
+    result[strlen(result) - strlen(sep)] = '\0';
+
+    return result;
+}
 
 /*
  * List the current options.
@@ -554,9 +498,6 @@ void opt_list(opt_t * opt)
         out("-- DSH-specific options --\n");
         out("Separate stderr/stdout	%s\n",
             BOOLSTR(opt->separate_stderr));
-        out("Procs per node       	%d\n", opt->nprocs);
-        out("(elan) allocation     	%s\n",
-            ALLOCSTR(opt->q_allocation));
         out("Path prepended to cmd	%s\n", STRORNULL(opt->dshpath));
         out("Appended to cmd         %s\n", STRORNULL(opt->getstat));
         out("Command:		%s\n", STRORNULL(opt->cmd));
@@ -571,26 +512,18 @@ void opt_list(opt_t * opt)
     out("Local username		%s\n", opt->luser);
     out("Local uid     		%d\n", opt->luid);
     out("Remote username		%s\n", opt->ruser);
-    out("Rcmd type		%s\n", RCMDSTR(opt->rcmd_type));
+    out("Rcmd type		%s\n", opt->rcmd_name);
     out("one ^C will kill pdsh   %s\n", BOOLSTR(opt->sigint_terminates));
     out("Connect timeout (secs)	%d\n", opt->connect_timeout);
     out("Command timeout (secs)	%d\n", opt->command_timeout);
     out("Fanout			%d\n", opt->fanout);
     out("Display hostname labels	%s\n", BOOLSTR(opt->labels));
-    out("All nodes       	%s\n", BOOLSTR(opt->allnodes));
-    infile_str = list_join(", ", opt->infile_names);
+    infile_str = _list_join(", ", opt->infile_names);
     if (infile_str) {
         out("Infile(s)		%s\n", infile_str);
         Free((void **) &infile_str);
     }
-    out("Use alt hostname	%s\n", BOOLSTR(opt->altnames));
     out("Debugging       	%s\n", BOOLSTR(opt->debug));
-
-#if HAVE_SDR
-    out("\n-- SDR options --\n");
-    out("Verify SDR nodes  	%s\n", BOOLSTR(opt->sdr_verify));
-    out("All SDR partitions	%s\n", BOOLSTR(opt->sdr_global));
-#endif                          /* HAVE_SDR */
 
     out("\n-- Target nodes --\n");
     if (opt->test_range_expansion) {
@@ -617,6 +550,12 @@ void opt_free(opt_t * opt)
         hostlist_destroy(opt->wcoll);
     if (opt->cmd != NULL)
         Free((void **) &opt->cmd);
+    if (opt->rcmd_name != NULL)
+        Free((void **) &opt->rcmd_name);
+    if (pdsh_options)
+        Free((void **) &pdsh_options);
+    if (opt->dshpath)
+        Free((void **) &opt->dshpath);
 }
 
 /*
@@ -625,55 +564,38 @@ void opt_free(opt_t * opt)
  */
 static void _usage(opt_t * opt)
 {
+    List l      = NULL;
+    char *names = NULL;
+    char *def   = NULL;
+
     if (opt->personality == DSH) {
         err(OPT_USAGE_DSH);
         err(OPT_USAGE_STDERR);
-#if 	HAVE_ELAN
-        err(OPT_USAGE_ELAN);
-#endif
     } else                      /* PCP */
         err(OPT_USAGE_PCP);
+
     err(OPT_USAGE_COMMON);
-#if 	HAVE_KRB4
-    err(OPT_USAGE_KRB4);
-#endif
-#if	HAVE_SDR
-    err(OPT_USAGE_SDR);
-#endif
-#if	HAVE_GENDERS
-    err(OPT_USAGE_GEND);
-#endif
-#ifdef HAVE_LIBGENDERS
-#ifdef HAVE_LIBNODEUPDOWN
-    err(OPT_USAGE_NODEUPDOWN);
-#endif /* HAVE_LIBNODEUPDOWN */
-#endif /* HAVE_LIBGENDERS */
+
+    mod_print_all_options(18);
+
+    l = mod_get_module_names("rcmd");
+    names = _list_join(",", l);
+    list_destroy(l);
+
+    if (!(def = mod_rcmd_get_default_module()))
+        def = "(none)";
+
+    err("available rcmd modules: %s (default: %s)\n", names, def);
+    Free((void **) &names);
+
     exit(1);
 }
 
 static void _show_version(void)
 {
-    printf("%s-%s-%s (", PROJECT, VERSION, RELEASE);
+    printf("%s-%s-%s (", PACKAGE, VERSION, RELEASE);
 #if	HAVE_SDR
     printf("+sdr");
-#endif
-#if	HAVE_GENDERS
-    printf("+genders");
-#endif
-#if	HAVE_MACHINES
-    printf("+machines");
-#endif
-#if	HAVE_ELAN
-    printf("+elan");
-#endif
-#if	HAVE_RMSQUERY
-    printf("+rmsquery");
-#endif
-#if	HAVE_SSH
-    printf("+ssh");
-#endif
-#if	HAVE_KRB4
-    printf("+krb4");
 #endif
 #if	!NDEBUG
     printf("+debug");
@@ -681,12 +603,10 @@ static void _show_version(void)
 #if 	WITH_DMALLOC
     printf("+dmalloc");
 #endif
-#ifdef  HAVE_LIBNODEUPDOWN
-    printf("+ganglia");
-#endif     
     printf(")\n");
     exit(0);
 }
+
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

@@ -62,7 +62,7 @@ void *Malloc(size_t size)
     p = (int *) malloc(size + 2 * sizeof(int));
     MALLOC_UNLOCK();
     if (!p) {
-        fprintf(stderr, "Malloc(%d) failed\n", size);
+        fprintf(stderr, "Malloc(%ld) failed\n", (long) size);
         exit(1);
     }
     p[0] = XMALLOC_MAGIC;       /* add "secret" magic cookie */
@@ -91,7 +91,7 @@ void Realloc(void **item, size_t newsize)
     p = (int *) realloc(p, newsize + 2 * sizeof(int));
     MALLOC_UNLOCK();
     if (!p) {
-        fprintf(stderr, "Realloc(%d) failed\n", newsize);
+        fprintf(stderr, "Realloc(%ld) failed\n", (long) newsize);
         exit(1);
     }
     assert(p[0] == XMALLOC_MAGIC);

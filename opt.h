@@ -49,8 +49,6 @@ typedef enum { false, true } bool;
 #define RC_FAILED	254     /* -S exit value if any hosts fail to connect */
 
 typedef enum { DSH, PCP } pers_t;
-typedef enum { RCMD_BSD, RCMD_K4, RCMD_SSH, RCMD_QSHELL } rcmd_t;
-typedef enum { ALLOC_UNSPEC, ALLOC_BLOCK, ALLOC_CYCLIC } alloc_t;
 
 typedef struct {
 
@@ -60,13 +58,10 @@ typedef struct {
     bool debug;                 /* -d */
     bool info_only;             /* -q */
     bool test_range_expansion;  /* -Q (implies -q) */
-    bool allnodes;              /* -a */
-    char gend_attr[MAX_GENDATTR];       /* -g */
     bool sdr_verify;            /* -v */
     bool sdr_global;            /* -G */
     bool altnames;              /* -i */
     bool sigint_terminates;     /* -b */
-    rcmd_t rcmd_type;
     hostlist_t wcoll;           /* target node list (-w, WCOLL, or stdin) */
     char luser[MAX_USERNAME];   /* local username */
     uid_t luid;                 /* uid for above */
@@ -76,6 +71,11 @@ typedef struct {
     int command_timeout;
     int nprocs;                 /* -n nprocs */
 
+	char *rcmd_name;            /* -R name   */
+    bool resolve_hosts;         /* Set optionally by rcmd modules */
+
+    bool kill_on_fail;          
+
     /* DSH-specific options */
     bool separate_stderr;       /* -s */
     bool stdin_unavailable;     /* set if stdin used for WCOLL */
@@ -84,15 +84,14 @@ typedef struct {
     char *getstat;              /* optional echo $? appended to cmd */
     bool labels;                /* display host: before output */
 
-    /* Qshell specific */
-    alloc_t q_allocation;       /* -m block */
-
     /* PCP-specific options */
     bool preserve;              /* -p */
     bool recursive;             /* -r */
-    list_t infile_names;        /* -I or pcp source spec */
+    List infile_names;        /* -I or pcp source spec */
     char *outfile_name;         /* pcp dest spec */
+
 } opt_t;
+
 
 void opt_default(opt_t *);
 void opt_env(opt_t *);
@@ -100,6 +99,35 @@ void opt_args(opt_t *, int, char **);
 bool opt_verify(opt_t *);
 void opt_list(opt_t *);
 void opt_free(opt_t *);
+
+
+/*
+ * Structure for pdsh modules to export new options. 
+ * 
+ * Module should define a table of options as:
+ *
+ *     struct pdsh_module_option pdsh_module_opts[] = { ... };
+ *
+ *   which will be read by the module loader. The module loader
+ *   (see mod.c) will call opt_register for each of the defined
+ *   options. If any option fails to register, the module will
+ *   be unloaded and a warning message printed.
+ */ 
+
+typedef int (*optFunc)(opt_t *opt, int optopt, char *optarg);
+
+struct pdsh_module_option {
+	char    opt;        /* option character                          */
+	char   *arginfo;    /* one word descr of arg if option takes one 
+                           If NULL, option takes no arg              */
+	char   *descr;      /* short description of option               */
+	optFunc f;          /* callback function for option processing   */
+};
+
+#define PDSH_OPT_TABLE_END { 0, NULL, NULL, NULL }
+
+
+bool opt_register(struct pdsh_module_option *popt);
 
 #endif                          /* OPT_INCLUDED */
 

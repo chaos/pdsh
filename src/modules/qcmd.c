@@ -109,6 +109,7 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #include "err.h"
 
 #include "dsh.h"                /* LINEBUFSIZE */
+#include "mod.h"
 
 
 #define QSHELL_PORT 523
@@ -117,11 +118,80 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #define HBUF_LEN	1024
 #endif
 
+
+
 extern char **environ;
+
+static bool dist_set = false;
+static bool cyclic   = false;
+static int  nprocs   = 1;
 
 static char cwd[MAXPATHLEN + 1];
 static qsw_info_t qinfo;
 static ELAN_CAPABILITY cap;
+
+
+MODULE_TYPE        ( "rcmd"                           );
+MODULE_NAME        ( "qsh"                            );
+MODULE_AUTHOR      ( "Jim Garlick <garlick@llnl.gov>" );
+MODULE_DESCRIPTION ( "Run MPI jobs over QsNet"        );
+
+/*
+ *  Export generic pdsh module operations
+ */
+
+static int qcmd_postop(opt_t *opt);
+
+struct pdsh_module_operations pdsh_module_ops = {
+    NULL,
+    NULL,
+    NULL,
+    (ModPostOpF) qcmd_postop
+};
+
+
+/*
+ *  Define rcmd specific module exports:
+ */
+
+#define qcmd_signal     pdsh_signal
+#define qcmd_init       pdsh_rcmd_init
+#define qcmd            pdsh_rcmd
+
+int opt_m(opt_t *, int, char *);
+int opt_n(opt_t *, int, char *);
+
+struct pdsh_module_option pdsh_module_options[] =
+ { { 'm', "block|cyclic", "control assignment of procs to nodes",
+       (optFunc) opt_m },
+   { 'n', "n",            "set number of tasks per node",
+       (optFunc) opt_n },
+   PDSH_OPT_TABLE_END
+ };
+
+
+int
+opt_m(opt_t *pdsh_opts, int opt, char *arg)
+{
+    if (strcmp(arg, "block") == 0)
+        cyclic = false;
+    else if (strcmp(arg, "cyclic") == 0)
+        cyclic = true;
+    else 
+        return -1;
+
+    dist_set = true;
+
+    return 0;
+}
+
+int 
+opt_n(opt_t *pdsh_opts, int opt, char *arg)
+{
+    nprocs = atoi(arg);
+    return 0;
+}
+
 
 /*
  * Use rcmd backchannel to propagate signals.
@@ -141,6 +211,56 @@ void qcmd_signal(int efd, int signum)
     }
 }
 
+
+static int qcmd_postop(opt_t *opt)
+{
+    int errors = 0;
+
+    if (strcmp(opt->rcmd_name, "qcmd") == 0) {
+        if (opt->fanout != DFLT_FANOUT && opt->wcoll != NULL) {
+            if  (opt->fanout != hostlist_count(opt->wcoll)) {
+                err("%p: fanout must = target node list length \"-R qcmd\"\n");
+                errors++;
+            }
+        }
+        if (nprocs <= 0) {
+            err("%p: -n should be > 0\n");
+            errors++;
+        }
+    } else {
+        if (nprocs != 1) {
+            err("%p: -n can only be specified with \"-R qcmd\"\n"); 
+            errors++;
+        }
+
+        if (dist_set) {
+            err("%p: -m can only be specified with \"-R qcmd\"\n");
+            errors++;
+        }
+    }
+
+    return errors;
+}
+
+
+static void
+_qcmd_opt_init(opt_t *opt)
+{
+    if (opt->fanout == DFLT_FANOUT && opt->wcoll != NULL)
+        opt->fanout = hostlist_count(opt->wcoll);
+    else {
+        err("%p: qcmd: Unable to set appropriate fanout\n");
+        exit(1);
+    }
+
+    opt->labels       = false;
+    opt->kill_on_fail = true;
+
+    if (opt->dshpath != NULL)
+        Free((void **) &opt->dshpath);
+}
+
+
 /* 
  * Intialize elan capability and info structures that will be used when
  * running the job.
@@ -148,14 +268,19 @@ void qcmd_signal(int efd, int signum)
  */
 void qcmd_init(opt_t * opt)
 {
-    int totprocs = opt->nprocs * hostlist_count(opt->wcoll);
+    int totprocs = nprocs * hostlist_count(opt->wcoll);
+
+    /*
+     *  Verify constraints for running Elan jobs
+     *    and initialize options.
+     */
+    _qcmd_opt_init(opt);
 
     if (getcwd(cwd, sizeof(cwd)) == NULL)       /* cache working directory */
         errx("%p: getcwd failed\n");
 
     /* initialize Elan capability structure. */
-    if (qsw_init_capability(&cap, totprocs, opt->wcoll,
-                            (opt->q_allocation == ALLOC_CYCLIC)) < 0)
+    if (qsw_init_capability(&cap, totprocs, opt->wcoll, cyclic) < 0)
         errx("%p: failed to initialize Elan capability\n");
 
     /* initialize elan info structure */

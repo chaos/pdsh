@@ -27,6 +27,8 @@
 #ifndef _HOSTLIST_H
 #define _HOSTLIST_H
 
+#include <sys/types.h>
+
 /* Notes:
  *
  * If WITH_LSD_FATAL_ERROR_FUNC is defined, the linker will expect to

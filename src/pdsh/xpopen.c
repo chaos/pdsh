@@ -58,7 +58,7 @@ static struct pid {
 } *pidlist;
 
 /* forward declaration */
-static list_t _parse_command_with_quotes(char *str);
+static void _parse_command_with_quotes(char *av[], int maxargs, char *str);
 
 /* 
  * xpopen(): a safer popen for pdsh.
@@ -82,11 +82,12 @@ static list_t _parse_command_with_quotes(char *str);
 FILE *xpopen(char *cmd, char *mode)
 {
     struct pid *cur;
-    int fds[2], j, read, fd;
+    int fds[2], read, fd;
     pid_t pid;
     char *av[ARG_MAX + 1];
     int maxfd = sysconf(_SC_OPEN_MAX);
-    list_t args = _parse_command_with_quotes(cmd);
+    
+    _parse_command_with_quotes(av, ARG_MAX, cmd);
 
     if ((*mode != 'r' && *mode != 'w') || mode[1] != '\0') {
         errno = EINVAL;
@@ -96,13 +97,6 @@ FILE *xpopen(char *cmd, char *mode)
     cur = Malloc(sizeof(struct pid));
 
     read = (*mode == 'r');
-
-    /* build up argument vector */
-    j = 0;
-    while ((av[j++] = list_shift(args)) != NULL) {;
-    }
-    av[++j] = NULL;
-
 
     if (pipe(fds) < 0) {
         close(fds[0]);
@@ -140,10 +134,6 @@ FILE *xpopen(char *cmd, char *mode)
 
         exit(errno);
     }                           /* switch() */
-
-    /* free av */
-    while (av[j++] != NULL)
-        Free((void **) &av[j]);
 
     close(fds[read ? 1 : 0]);
 
@@ -205,18 +195,20 @@ int xpclose(FILE * f)
  * and that is all. This is probably too simple to do what you want.
  * Only makes a minimal effort to complain when there's no matching quote.
  *
+ * argv(IN) container for resulting arguments, strings enclosed in "" are
+ *          treated as a single arg.
+ * maxn(IN) max number of arguments
  * str(IN)	string to parse
- * (OUT)	list of arguments, strings enclosed in "" are treated as
- * 		one arg. 
+ *
  */
-static list_t _parse_command_with_quotes(char *str)
+static void _parse_command_with_quotes(char *argv[], int maxn, char *str)
 {
-    list_t args = list_new();
+    int i = 0;
     char *c, *lc;
 
     c = lc = str;
 
-    while (*c != '\0') {
+    while (*c != '\0' && i < maxn) {
         switch (*c) {
         case QUOTE:
             lc = ++c;
@@ -230,9 +222,9 @@ static list_t _parse_command_with_quotes(char *str)
             /* nullify quote */
             *c = '\0';
 
-            /* push token onto list */
+            /* push token onto argument vector */
             if (strlen(lc) > 0)
-                list_push(args, lc);
+                argv[i++] = lc;
 
             /* move c past null */
             lc = ++c;
@@ -244,7 +236,7 @@ static list_t _parse_command_with_quotes(char *str)
             /* nullify and push token onto list */
             *c = '\0';
             if (lc != NULL && strlen(lc) > 0)
-                list_push(args, lc);
+                argv[i++] = lc;
 
             lc = ++c;
             break;
@@ -254,11 +246,10 @@ static list_t _parse_command_with_quotes(char *str)
     }
 
     /* hit a null. push last token onto list, if such a one exists */
-    if (strlen(lc) > 0)
-        list_push(args, lc);
+    if (strlen(lc) > 0 && i < maxn)
+        argv[i++] = lc;
 
-    return args;
-
+    argv[i] = NULL;
 }
 
 /*

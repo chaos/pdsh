@@ -81,7 +81,7 @@ typedef struct thd {
     char *host;                 /* host name */
     char *luser;                /* local username */
     char *ruser;                /* remote username */
-    rcmd_t rcmd_type;           /* K4, BSD ? */
+    bool resolve_hosts;         /* resolve hosts in thread? */
     time_t start;               /* time stamp for start */
     time_t connect;             /* time stamp for connect */
     time_t finish;              /* time stamp for finish */
@@ -89,7 +89,9 @@ typedef struct thd {
     char *dsh_cmd;              /* command */
     bool dsh_sopt;              /* true if -s (sep stderr/out) */
 
-    list_t pcp_infiles;         /* name of input files/dirs */
+    bool kill_on_fail;          /* If true, kill all procs on single failure */
+
+    List pcp_infiles;         /* name of input files/dirs */
     char *pcp_outfile;          /* name of output file/dir */
     bool pcp_popt;              /* preserve mtime/mode */
     bool pcp_ropt;              /* recursive */
@@ -105,23 +107,6 @@ typedef struct thd {
 int dsh(opt_t *);
 void set_rcmd_timeout(int);
 void testcase(int);
-
-int xrcmd(char *, char *, char *, char *, char *, int, int *);
-void xrcmd_signal(int, int);
-void xrcmd_init(opt_t *);
-
-int k4cmd(char *, char *, char *, char *, char *, int, int *);
-void k4cmd_signal(int, int);
-void k4cmd_init(opt_t *);
-
-int sshcmd(char *, char *, char *, char *, char *, int, int *);
-int sshcmdrw(char *, char *, char *, char *, char *, int, int *);
-void sshcmd_signal(int, int);
-void sshcmd_init(opt_t *);
-
-int qcmd(char *, char *, char *, char *, char *, int, int *);
-void qcmd_init(opt_t *);
-void qcmd_signal(int, int);
 
 #endif                          /* _DSH_INCLUDED */
 
