@@ -40,9 +40,9 @@ AUXDIR=auxdir
 versiontest="
 if (/(\d+)\.(\d+)((-p|\.)(\d+))*/) { 
 	exit 1 if (\$1 < $AMMAJOR); 
-	exit 1 if (\$2 < $AMMINOR);
+	exit 1 if (\$1 == $AMMAJOR && \$2 < $AMMINOR);
         if (defined(\$5)) {
-            exit 1 if (\$5 < $AMPATCH); 
+            exit 1 if (\$1 == $AMMAJOR && \$2 == $AMMINOR && \$5 < $AMPATCH); 
         }
 }"
 
@@ -69,9 +69,9 @@ test -n "$NO_AUTOMAKE" || (aclocal --version) < /dev/null > /dev/null 2>&1 || {
 versiontest="
 if ( / (\d+)\.(\d+)\.(\d+) /) { 
 	exit 1 if (\$1 < $LTLMAJOR); 
-	exit 1 if (\$2 < $LTLMINOR);
-        if (defined(\$5)) {
-      	    exit 1 if (\$3 < $LTLPATCH);
+	exit 1 if (\$1 == $LTLMAJOR && \$2 < $LTLMINOR);
+        if (defined(\$3)) {
+            exit 1 if (\$1 == $LTLMAJOR && \$2 == $LTLMINOR && \$5 < $LTLPATCH); 
         }
 }"
 
