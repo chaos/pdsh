@@ -86,8 +86,9 @@ qsw_setbitmap(list_t nodelist, int tasks_per_node, ELAN_CAPABILITY *cap)
 		return -1;
 
 	/*
-	 * The bits represent a task slot between LowNode and HighNode.
-	 * If there are N tasks per node, there are N bits per node in the map.
+	 * There are (nprocs * nnodes) significant bits in the mask, each 
+	 * representing a task slot.  Bits are off where for holes 
+	 * corresponding to task slots for unallocated nodes.
 	 * For example, if nodes 4 and 6 are running two tasks per node,
 	 * bits 0,1 (corresponding to the two tasks on node 4) and bits 4,5
 	 * (corresponding to the two tasks running no node 6) are set.
@@ -243,6 +244,9 @@ qsw_decode_cap(char *s, ELAN_CAPABILITY *cap)
 	return 0;
 }
 
+/*
+ * string -> info
+ */
 int
 qsw_decode_info(char *s, qsw_info_t *qi)
 {
@@ -258,6 +262,9 @@ qsw_decode_info(char *s, qsw_info_t *qi)
 	return 0;
 }
 
+/*
+ * info -> string
+ */
 int
 qsw_encode_info(char *s, int len, qsw_info_t *qi)
 {
@@ -271,15 +278,16 @@ qsw_encode_info(char *s, int len, qsw_info_t *qi)
 	return 0;
 }
 
+/*
+ * Generate a random program number.  Normally these would be allocated,
+ * but since we have no persistant daemon, we settle for random.
+ * Must be called after qsw_init_capability (we seed lrand48 there).
+ */
 int
 qsw_get_prgnum(void)
 {
 	int prgnum;
 
-	/*
-	 * Generate a random program number.  Same comment about lack of 
-	 * persistant daemon above applies.
-	 */
 	prgnum = lrand48() % (QSW_PRG_END - QSW_PRG_START + 1);	
 	prgnum += QSW_PRG_START;
 
