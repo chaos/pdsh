@@ -146,11 +146,13 @@ xrcmd_la_LDFLAGS =        $(MODULE_FLAGS)
 sshcmd_la_SOURCES =       sshcmd.c
 sshcmd_la_LDFLAGS =       $(MODULE_FLAGS)
 qcmd_la_SOURCES =         qcmd.c
-qcmd_la_LDFLAGS =         $(MODULE_FLAGS) $(top_builddir)/libqsw.la
+qcmd_la_LDFLAGS =         $(MODULE_FLAGS) 
+qcmd_la_LIBADD =          $(top_builddir)/libqsw.la
 mcmd_la_SOURCES =         mcmd.c
 mcmd_la_LDFLAGS =         $(MODULE_FLAGS) $(MRSH_LIBS)
 mqcmd_la_SOURCES =        mqcmd.c
-mqcmd_la_LDFLAGS =        $(MODULE_FLAGS) $(MRSH_LIBS) $(top_builddir)/libqsw.la
+mqcmd_la_LDFLAGS =        $(MODULE_FLAGS) $(MRSH_LIBS) 
+mqcmd_la_LIBADD =         $(top_builddir)/libqsw.la
 k4cmd_la_SOURCES =        k4cmd.c
 k4cmd_la_LDFLAGS =        $(MODULE_FLAGS) $(KRB_LIBS)
 
@@ -172,5 +174,13 @@ rms_la_SOURCES =          rms.c
 rms_la_LDFLAGS =          $(MODULE_FLAGS)
 sdr_la_SOURCES =          sdr.c
 sdr_la_LDFLAGS =          $(MODULE_FLAGS)
+
+force:
+$(qcmd_la_LIBADD) : force
+	@cd `dirname $@` && $(MAKE) `basename $@`
+
+force:
+$(mqcmd_la_LIBADD) : force
+	@cd `dirname $@` && $(MAKE) `basename $@`
 
 endif
