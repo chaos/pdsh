@@ -85,8 +85,8 @@ typedef struct thd {
     time_t start;               /* time stamp for start */
     time_t connect;             /* time stamp for connect */
     time_t finish;              /* time stamp for finish */
+    char *cmd;                  /* command */
 
-    char *dsh_cmd;              /* command */
     bool dsh_sopt;              /* true if -s (sep stderr/out) */
 
     bool kill_on_fail;          /* If true, kill all procs on single failure */

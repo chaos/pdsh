@@ -22,6 +22,11 @@ within one second terminates the program.
 A number of the options and features for pdcp are dependent on how
 pdcp has been built and installed.  See MODULES below for further
 explanation.
+.LP
+It is assumed that the pdcp binary is accessible in the user's default
+PATH on all destination nodes specified.  If that is not the case, the
+PCPPATH environment variable should be set to an appropriate PATH
+value that will allow pdcp to be accessible on all destination nodes.
 .SH MODULES
 A number of options and features in pdcp depend n the modules
 that have been built or installed with pdcp.  The following is a list of

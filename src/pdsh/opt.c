@@ -240,7 +240,7 @@ void opt_default(opt_t * opt, char *argv0)
     opt->preserve = false;
     opt->pcp_server = false;
     opt->target_is_directory = false;
-
+    opt->pcppath = NULL;
 }
 
 /*
@@ -250,6 +250,7 @@ void opt_default(opt_t * opt, char *argv0)
 void opt_env(opt_t * opt)
 {
     char *rhs;
+    char **whichpath; 
 
     if ((rhs = getenv("WCOLL")) != NULL)
         opt->wcoll = read_wcoll(rhs, NULL);
@@ -260,23 +261,29 @@ void opt_env(opt_t * opt)
     if ((rhs = getenv("PDSH_RCMD_TYPE")) != NULL)
         opt->rcmd_name = Strdup(rhs);
 
-    if ((rhs = getenv("DSHPATH")) != NULL) {
+    if (personality == DSH) {
+        rhs = getenv("DSHPATH");
+        whichpath = &opt->dshpath;
+    }
+    else {
+        rhs = getenv("PCPPATH");
+        whichpath = &opt->pcppath;
+    }
+
+    if (rhs != NULL) {
         struct passwd *pw = getpwnam(opt->luser);
         char *shell = "sh";
 
         if (pw && *pw->pw_shell)
             shell = xbasename(pw->pw_shell);
-        /* c shell syntax */
-        if (!strcmp(shell, "csh") || !strcmp(shell, "tcsh")) {
-            opt->dshpath = Strdup("setenv PATH ");
-            xstrcat(&opt->dshpath, rhs);
-            xstrcat(&opt->dshpath, ";");
 
-        } else {                /* bourne shell syntax */
-            opt->dshpath = Strdup("PATH=");
-            xstrcat(&opt->dshpath, rhs);
-            xstrcat(&opt->dshpath, ";");
-        }
+        /* c shell syntax */
+        if (!strcmp(shell, "csh") || !strcmp(shell, "tcsh"))
+            *whichpath = Strdup("setenv PATH ");
+        else
+            *whichpath = Strdup("PATH=");  /* bourne syntax */
+        xstrcat(whichpath, rhs);
+        xstrcat(whichpath, ";");
     }
 }
 
@@ -567,6 +574,7 @@ void opt_list(opt_t * opt)
             STRORNULL(opt->outfile_name));
         out("Recursive		%s\n", BOOLSTR(opt->recursive));
         out("Preserve mod time/mode	%s\n", BOOLSTR(opt->preserve));
+        out("Optional PCPATH		%s\n", STRORNULL(opt->pcppath));
         if (opt->pcp_server) {
             out("pcp server         	%s\n", BOOLSTR(opt->pcp_server));
             out("target is directory	%s\n", BOOLSTR(opt->target_is_directory));
@@ -624,6 +632,8 @@ void opt_free(opt_t * opt)
         Free((void **) &pdsh_options);
     if (opt->dshpath)
         Free((void **) &opt->dshpath);
+    if (opt->pcppath)
+        Free((void **) &opt->pcppath);
 }
 
 /*

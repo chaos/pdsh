@@ -568,19 +568,7 @@ static void *_rcp_thread(void *args)
 {
     thd_t *a = (thd_t *) args;
     int result = DSH_DONE;      /* the desired outcome */
-    char *cmd = NULL;
     int *efdp = a->dsh_sopt ? &a->efd : NULL;
-
-    /* construct remote rcp command */
-    xstrcat(&cmd, a->pcp_progname); 
-    if (a->pcp_ropt)
-        xstrcat(&cmd, " -r");
-    if (a->pcp_popt)
-        xstrcat(&cmd, " -p");
-    if (list_count(a->pcp_infiles) > 1)   /* outfile must be directory */
-        xstrcat(&cmd, " -y");
-    xstrcat(&cmd, " -z ");                /* invoke pcp server */
-    xstrcat(&cmd, a->pcp_outfile);      /* outfile is remote target */
 
     _int_block();               /* block SIGINT */
 
@@ -592,8 +580,7 @@ static void *_rcp_thread(void *args)
     a->state = DSH_RCMD;
 
     a->fd = mod_rcmd(a->host, a->addr, a->luser, a->ruser, 
-                     cmd, a->nodeid, efdp);
-
+                     a->cmd, a->nodeid, efdp);
     if (a->fd == -1)
         result = DSH_FAILED;
     else {
@@ -634,7 +621,6 @@ static void *_rcp_thread(void *args)
     pthread_cond_signal(&threadcount_cond);
     pthread_mutex_unlock(&threadcount_mutex);
 
-    Free((void **) &cmd);
     return NULL;
 }
 
@@ -684,7 +670,7 @@ static void *_rsh_thread(void *args)
     a->state = DSH_RCMD;
 
     a->fd = mod_rcmd(a->host, a->addr, a->luser, a->ruser,
-                     a->dsh_cmd, a->nodeid, efdp);
+                     a->cmd, a->nodeid, efdp);
 
     /* 
      * Copy stdout/stderr to local stdout/stderr, 
@@ -868,10 +854,6 @@ int dsh(opt_t * opt)
 
     rshcount = hostlist_count(opt->wcoll);
 
-    /* expand directories, if any, and verify access for all files */
-    if (pdsh_personality() == PCP)
-        pcp_infiles = _expand_dirs(opt->infile_names);
-
     /* prepend DSHPATH setting to command */
     if (pdsh_personality() == DSH && opt->dshpath) {
         char *cmd = Strdup(opt->dshpath);
@@ -887,6 +869,29 @@ int dsh(opt_t * opt)
 
         xstrcat(&cmd, opt->getstat);
         Free((void **) &opt->cmd);
+        opt->cmd = cmd;
+    }
+
+    /* build PCP command */
+    if (pdsh_personality() == PCP) {
+        char *cmd;
+
+        /* expand directories, if any, and verify access for all files */
+        pcp_infiles = _expand_dirs(opt->infile_names);
+
+        if (opt->pcppath)
+            xstrcat(&cmd, opt->pcppath);
+
+        xstrcat(&cmd, opt->progname); 
+        if (opt->recursive)
+            xstrcat(&cmd, " -r");
+        if (opt->preserve)
+            xstrcat(&cmd, " -p");
+        if (list_count(pcp_infiles) > 1)     /* outfile must be directory */
+            xstrcat(&cmd, " -y");
+        xstrcat(&cmd, " -z ");               /* invoke pcp server */
+        xstrcat(&cmd, opt->outfile_name);    /* outfile is remote target */
+
         opt->cmd = cmd;
     }
 
@@ -908,10 +913,10 @@ int dsh(opt_t * opt)
         t[i].labels = opt->labels;
         t[i].fd = t[i].efd = -1;
         t[i].nodeid = i;
-        t[i].dsh_cmd = opt->cmd;        /* dsh-specific */
-        t[i].dsh_sopt = opt->separate_stderr;
+        t[i].cmd = opt->cmd;
+        t[i].dsh_sopt = opt->separate_stderr;  /* dsh-specific */
         t[i].rc = 0;
-        t[i].pcp_infiles = pcp_infiles; /* pcp-specific */
+        t[i].pcp_infiles = pcp_infiles;        /* pcp-specific */
         t[i].pcp_outfile = opt->outfile_name;
         t[i].pcp_popt = opt->preserve;
         t[i].pcp_ropt = opt->recursive;

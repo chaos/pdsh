@@ -90,7 +90,7 @@ typedef struct {
     char *outfile_name;         /* pcp dest spec */
     bool pcp_server;            /* undocument pdcp server option */
     bool target_is_directory;   /* undocumented pdcp is target a directory */
-
+    char *pcppath;              /* optional PATH command prepended to cmd */
 } opt_t;
 
 
