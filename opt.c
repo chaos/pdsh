@@ -73,8 +73,10 @@ Usage: pdcp [-options] src [src2...] dest\n\
 
 #define OPT_USAGE_ELAN "\
 -E                run Quadrics Elan job using qshell\n\
--m block|cyclic   set qshell allocation of processes to nodes (dflt block)\n\
--n n              set qshell number of processes per node\n"
+-m block|cyclic   (qshell) control assignment of procs to nodes\n\
+-P partition      (qshell) alloc nodes from RMS (req -n and/or -N)\n\
+-N n              (qshell) set total number of nodes for job (req -P)\n\
+-n n              (qshell) set total number of cpus for job\n"
 
 #define DSH_ARGS	"csS"
 #define PCP_ARGS	"pr"
@@ -82,7 +84,7 @@ Usage: pdcp [-options] src [src2...] dest\n\
 #define KRB4_ARGS	"Rk"
 #define SDR_ARGS	"Gv"
 #define GEND_ARGS	"g:"
-#define ELAN_ARGS	"En:m:"
+#define ELAN_ARGS	"En:m:P:N:"
 
 /*
  * Set defaults for various options.
@@ -135,8 +137,10 @@ void opt_default(opt_t *opt)
 	opt->delete_nextpass = true;
 	opt->separate_stderr = DFLT_SEPARATE_STDERR; 
 	*(opt->gend_attr) = '\0';
-	opt->nprocs = -1;
-	opt->allocation = ALLOC_UNSPEC;
+	opt->q_nprocs = -1;
+	opt->q_allocation = ALLOC_UNSPEC;
+	opt->q_partition = NULL;
+	opt->q_nnodes = -1;
 
 	/* PCP specific */
 	opt->outfile_name = NULL;
@@ -278,16 +282,22 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 			case 'E':	/* use qshell */
 				opt->rcmd_type = RCMD_QSHELL;
 				break;
-			case 'n':	/* set number of procs */
-				opt->nprocs = atoi(optarg);
+			case 'n':	/* set number of procs (qshell) */
+				opt->q_nprocs = atoi(optarg);
 				break;
-			case 'm':	/* set block or cyclic allocation */
+			case 'm':	/* set block or cyclic allocation (qshell) */
 				if (strcmp(optarg, "block") == 0)
-					opt->allocation = ALLOC_BLOCK;
+					opt->q_allocation = ALLOC_BLOCK;
 				else if (strcmp(optarg, "cyclic") == 0)
-					opt->allocation = ALLOC_CYCLIC;
+					opt->q_allocation = ALLOC_CYCLIC;
 				else
 					usage(opt);
+				break;
+			case 'N':	/* set number of nodes (qshell) */
+				opt->q_nnodes = atoi(optarg);
+				break;
+			case 'P':	/* allocate nodes from RMS partition (qshell) */
+				opt->q_partition = strdup(optarg);
 				break;
 			case 'a':	/* indicates all nodes */
 				opt->allnodes = true;
@@ -367,24 +377,44 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 #endif
 	} 
 #if HAVE_GENDERS
+	/* get wcoll from genders - all nodes with a particular attribute */
 	if (*(opt->gend_attr)) {
 		opt->wcoll = read_genders(opt->gend_attr, opt->altnames);
 	}
 #endif
+#if HAVE_RMS_PMANAGER
+	/* get wcoll from RMS partition manager */
+	if (opt->q_partition) { 
+		/* catch couple of errors early */
+		if (opt->wcoll)
+			errx("%p: -P cannot be used with -w or other lists\n");
+		if (opt->q_nnodes == -1 && opt->q_nprocs == -1)
+			errx("%p: -P requires -N and/or -n\n");
+		if (opt->q_nprocs != -1 && opt->rcmd_type != RCMD_QSHELL)
+			errx("%p: -n requires -E\n");
 
+		if (opt->q_nprocs == -1)
+			opt->q_nprocs = opt->q_nnodes;
+		if (opt->q_nnodes == -1)
+			opt->q_nnodes = opt->q_nprocs;
+
+		opt->wcoll = rms_wcoll(opt->q_partition, opt->q_nnodes, 
+					opt->q_nprocs);
+	}
+#endif /* HAVE_RMS_PMANAGER */
 #if HAVE_ELAN3
 	if (opt->rcmd_type == RCMD_QSHELL) {
 		if (opt->fanout == DFLT_FANOUT && opt->wcoll != NULL)
 			opt->fanout = list_length(opt->wcoll);
-		if (opt->allocation == ALLOC_UNSPEC)
-			opt->allocation = ALLOC_BLOCK;
+		if (opt->q_allocation == ALLOC_UNSPEC)
+			opt->q_allocation = ALLOC_BLOCK;
 		opt->labels = false;
 		if (opt->dshpath != NULL)
 			xfree((void **)&opt->dshpath);
 	}
-#endif
-	if (opt->nprocs == -1 && opt->wcoll != NULL)
-		opt->nprocs = list_length(opt->wcoll);
+#endif /* HAVE_ELAN3 */
+	if (opt->q_nprocs == -1 && opt->wcoll != NULL)
+		opt->q_nprocs = list_length(opt->wcoll);
 }
 
 /*
@@ -463,23 +493,23 @@ bool opt_verify(opt_t *opt)
 				err("%p: fanout must = target node list length with -E\n");
 				verified = false;
 			}
-			if (opt->nprocs % list_length(opt->wcoll) != 0) {
+			if (opt->q_nprocs % list_length(opt->wcoll) != 0) {
 				err("%p: -n argument must be multiple of target node list length\n");
 				verified = false;
 			}
 		}
-		if (opt->nprocs <= 0) {
+		if (opt->q_nprocs <= 0) {
 			err("%p: -n option should be >= 1\n");
 			verified = false;
 		}
 	} else {
 		if (opt->wcoll != NULL) {
-			if (opt->nprocs != list_length(opt->wcoll)) {
+			if (opt->q_nprocs != list_length(opt->wcoll)) {
 				err("%p: -n can only be specified with -E\n");
 				verified = false;
 			}
 		}
-		if (opt->allocation != ALLOC_UNSPEC) {
+		if (opt->q_allocation != ALLOC_UNSPEC) {
 			err("%p: -m can only be specified with -E\n");
 			verified = false;
 		}
@@ -510,8 +540,8 @@ void opt_list(opt_t *opt)
 	out("-- DSH-specific options --\n");
 	out("Separate stderr/stdout	%s\n", BOOLSTR(opt->separate_stderr));
 	out("Delete on next pass	%s\n", BOOLSTR(opt->delete_nextpass));
-	out("(elan) nprocs       	%d\n", opt->nprocs);
-	out("(elan) allocation     	%s\n", ALLOCSTR(opt->allocation));
+	out("(elan) nprocs       	%d\n", opt->q_nprocs);
+	out("(elan) allocation     	%s\n", ALLOCSTR(opt->q_allocation));
 	out("Path prepended to cmd	%s\n", STRORNULL(opt->dshpath));
 	out("Appended to cmd         %s\n", STRORNULL(opt->getstat));
 	out("Command:		%s\n", STRORNULL(opt->cmd));

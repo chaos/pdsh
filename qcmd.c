@@ -125,14 +125,14 @@ qcmd_init(opt_t *opt)
 		errx("%p: getcwd failed\n");
 
 	/* initialize Elan capability structure. */
-	if (qsw_init_capability(&cap, opt->nprocs, opt->wcoll, 
-				(opt->allocation == ALLOC_CYCLIC)) < 0)
+	if (qsw_init_capability(&cap, opt->q_nprocs, opt->wcoll, 
+				(opt->q_allocation == ALLOC_CYCLIC)) < 0)
 		errx("%p: failed to initialize Elan capability\n");
 
 	/* initialize elan info structure */
 	qinfo.prgnum = qsw_get_prgnum(); /* call after qsw_init_capability */
 	qinfo.nnodes = list_length(opt->wcoll);
-	qinfo.nprocs = opt->nprocs;
+	qinfo.nprocs = opt->q_nprocs;
 	qinfo.nodeid = qinfo.procid = qinfo.rank = 0;
 }
 

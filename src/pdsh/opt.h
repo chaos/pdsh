@@ -60,9 +60,13 @@ typedef struct {
 	char *cmd;
 	char *dshpath;		/* optional PATH command prepended to cmd */
 	char *getstat;		/* optional echo $? appended to cmd */
-	int nprocs;		/* -n (Elan only) */
-	alloc_t allocation;	/* -m block */
 	bool labels;		/* display host: before output */
+
+	/* Qshell specific */
+	alloc_t q_allocation;	/* -m block */
+	int q_nnodes;		/* -N nnodes */
+	char *q_partition;	/* -P partition */
+	int q_nprocs;		/* -n nprocs */
 
 	/* PCP-specific options */
 	bool preserve;		/* -p */
