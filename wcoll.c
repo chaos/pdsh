@@ -343,17 +343,10 @@ rms_wcoll(char *part, int nnodes, int nprocs)
 	uid_t uid = getuid();
 	int rid;
 
-	if (!part)
-	       part = rms_defaultPartition();
-
-	if (!part)  {
-		err("%p: rms: failed to lookup default partition\n");
-		return NULL;
+	if (!part) {
+	       if (!(part = rms_defaultPartition()))
+			errx("%p: rms: failed to lookup default partition\n");
 	}
-
-	/*err("XXX part %s totcpu %d totnodes %d freecpus %d\n", 
-			part, rms_numCpus(part), rms_numNodes(part),
-			rms_freeCpus(part));*/
 
 	/* need to belong to "rms" group to specify uid */
 	/* no project specified */
@@ -361,11 +354,9 @@ rms_wcoll(char *part, int nnodes, int nprocs)
 			uid, NULL, "immediate=1,hwbcast=0,rails=1");
 	switch (rid) {
 		case -1:
-			err("%p: rms: request cannot be met\n");
-			return NULL;
+			errx("%p: rms: request cannot be met\n");
 		case -2:
-			err("%p: rms: request temporarily cannot be met\n");
-			return NULL;
+			errx("%p: rms: request temporarily cannot be met\n");
 		default:
 			err("%p: rms: %s.%d: %d nodes, %d proc%s each\n",
 					part, rid, nnodes, 
