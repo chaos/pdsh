@@ -165,28 +165,14 @@ if test "$withkrb4" = yes; then
 fi
 
 # Checks for header files.
-AC_HEADER_DIRENT
-AC_HEADER_STDC
-AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS([arpa/inet.h errno.h fcntl.h limits.h netdb.h netinet/in.h paths.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/param.h sys/socket.h sys/time.h syslog.h unistd.h pthread.h])
+AC_CHECK_HEADERS([fcntl.h strings.h sys/file.h unistd.h pthread.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_C_CONST
-AC_TYPE_PID_T
-AC_TYPE_SIZE_T
-AC_TYPE_UID_T
 
 # Checks for library functions.
-AC_FUNC_ERROR_AT_LINE
-AC_FUNC_FORK
-AC_PROG_GCC_TRADITIONAL
 AC_FUNC_MALLOC
-AC_FUNC_MEMCMP
-AC_FUNC_SETPGRP
-AC_TYPE_SIGNAL
-AC_FUNC_STAT
 AC_FUNC_STRERROR_R
-AC_CHECK_FUNCS([alarm dup2 endpwent getcwd gethostbyaddr gethostbyname gethostname inet_ntoa isascii memset putenv select strchr strdup strerror strrchr strstr strtoul pthread_sigmask sigthreadmask gethostbyname_r])
+AC_CHECK_FUNCS([strerror pthread_sigmask sigthreadmask])
 
 # Check for Gray Watson's Debug Malloc Library <http://dmalloc.com/>.
 AC_MSG_CHECKING(whether to use the Debug Malloc Library)
@@ -210,6 +196,12 @@ if test "$dmalloc" = yes; then
     ], [dmalloc=no]
   )
 fi
+AH_BOTTOM(
+[#ifdef WITH_DMALLOC
+#  include <stdlib.h>
+#  include <dmalloc.h>
+#endif /* WITH_DMALLOC */]
+)
 
 AC_OUTPUT_COMMANDS(echo "creating dependencies"; make depend >/dev/null)
 AC_OUTPUT([Makefile pdsh.spec])

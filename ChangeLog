@@ -121,7 +121,10 @@ Release 1.6
 
 	Support signal propagation via rsh backchannel (dsh.c, xrcmd.c).
 
-	Added a magic cookie check to xmalloc functions.
+	Added hidden magic cookie and size integers to xmalloc buffers.
+	Changed names to avoid conflict with dmalloc (now Strdup, Malloc, 
+	Free, Realloc).  Delete size pointer from various functions that
+	deal with resizeable strings.
 
 	Use memset instead of bzero.
 
@@ -147,5 +150,12 @@ Release 1.6
 	Autoconfiscated. 
 
 	Added a list of configured features to pdsh -V output.
+
+	Avoid non-portable gethostbyname_r call by doing all DNS lookups
+	before threads start up.
+
+	Add support for debug malloc library (NOTE: with debug malloc enabled,
+	"pdsh -a cat /etc/passwd >/dev/null" causes an abort complaining of
+	a recursive call.
 
 	Released version 1.6.

@@ -65,6 +65,7 @@
 #endif
 #include <errno.h>
 #include <assert.h>
+#include <netdb.h>	/* gethostbyname */
 
 #ifndef MAXPATHNAMELEN
 #define MAXPATHNAMELEN MAXPATHLEN
@@ -495,19 +496,19 @@ static void *rcp(void *args)
 	thd_t *a = (thd_t *)args;
 	int result = DSH_DONE; /* the desired outcome */
 	char *cmd = NULL;
-	int cmd_len, i;
+	int i;
 	int *efdp = a->dsh_sopt ? &a->efd : NULL;
 
 	/* construct remote rcp command */
-	xstrcat(&cmd, &cmd_len, _PATH_RCP);
+	xstrcat(&cmd, _PATH_RCP);
 	if (a->pcp_ropt)
-		xstrcat(&cmd, &cmd_len, " -r");
+		xstrcat(&cmd, " -r");
 	if (a->pcp_popt)
-		xstrcat(&cmd, &cmd_len, " -p");
+		xstrcat(&cmd, " -p");
 	if (list_length(a->pcp_infiles) > 1)	/* outfile must be directory */
-		xstrcat(&cmd, &cmd_len, " -d");
-	xstrcat(&cmd, &cmd_len, " -t ");	/* remote will always be "to" */
-	xstrcat(&cmd, &cmd_len, a->pcp_outfile);/* outfile is remote target */
+		xstrcat(&cmd, " -d");
+	xstrcat(&cmd, " -t ");			/* remote will always be "to" */
+	xstrcat(&cmd, a->pcp_outfile);		/* outfile is remote target */
 
 	int_block();			/* block SIGINT */
 
@@ -516,22 +517,22 @@ static void *rcp(void *args)
 	switch (a->rcmd_type) {
 #if HAVE_KRB4
 		case RCMD_K4:
-			a->fd = k4cmd(a->host, a->luser, a->ruser, 
+			a->fd = k4cmd(a->host, a->addr, a->luser, a->ruser, 
 					cmd, a->nodeid, efdp);
 			break;
 #endif
 		case RCMD_BSD:
-			a->fd = xrcmd(a->host, a->luser, a->ruser, 
+			a->fd = xrcmd(a->host, a->addr, a->luser, a->ruser, 
 					cmd, a->nodeid, efdp);
 			break;
 #if HAVE_ELAN3
 		case RCMD_QSHELL:
-			a->fd = qcmd(a->host, a->luser, a->ruser, 
+			a->fd = qcmd(a->host, a->addr, a->luser, a->ruser, 
 					cmd, a->nodeid, efdp);
 			break;
 #endif
 		case RCMD_SSH:
-			a->fd = sshcmdrw(a->host, a->luser, a->ruser, 
+			a->fd = sshcmdrw(a->host, a->addr, a->luser, a->ruser, 
 					cmd, a->nodeid, efdp);
 			break;
 		default:
@@ -566,7 +567,7 @@ static void *rcp(void *args)
 	pthread_cond_signal(&threadcount_cond);
 	pthread_mutex_unlock(&threadcount_mutex);
 
-	xfree((void **)&cmd);
+	Free((void **)&cmd);
 	return NULL;
 }
 
@@ -596,7 +597,7 @@ static int extract_rc(char *buf)
 static void *rsh(void *args)
 {
 	thd_t *a = (thd_t *)args;
-	int rv, maxfd, bufsize = 0;
+	int rv, maxfd;
 	FILE *fp, *efp;
 	fd_set readfds, writefds, wantrfds, wantwfds;
 	char *buf = NULL;
@@ -612,22 +613,22 @@ static void *rsh(void *args)
 	switch (a->rcmd_type) {
 #if HAVE_KRB4
 		case RCMD_K4:
-			a->fd = k4cmd(a->host, a->luser, a->ruser, 
+			a->fd = k4cmd(a->host, a->addr, a->luser, a->ruser, 
 					a->dsh_cmd, a->nodeid, efdp);
 			break;
 #endif
 		case RCMD_BSD:
-			a->fd = xrcmd(a->host, a->luser, a->ruser, 
+			a->fd = xrcmd(a->host, a->addr, a->luser, a->ruser, 
 					a->dsh_cmd, a->nodeid, efdp);
 			break;
 #if HAVE_ELAN3
 		case RCMD_QSHELL:
-			a->fd = qcmd(a->host, a->luser, a->ruser, 
+			a->fd = qcmd(a->host, a->addr, a->luser, a->ruser, 
 					a->dsh_cmd, a->nodeid, efdp);
 			break;
 #endif
 		case RCMD_SSH:
-			a->fd = sshcmd(a->host, a->luser, a->ruser, 
+			a->fd = sshcmd(a->host, a->addr, a->luser, a->ruser, 
 			    		a->dsh_cmd, a->nodeid, efdp);
 			break;
 		default:
@@ -685,7 +686,7 @@ static void *rsh(void *args)
 
 			/* stdout ready or closed ? */
 			if (FD_ISSET(a->fd, &readfds)) { 
-				rv = xfgets(&buf, &bufsize, fp);
+				rv = xfgets(&buf, fp);
 				if (rv <= 0) { 			/* closed */
 					FD_CLR(a->fd, &wantrfds);
 					FD_CLR(a->fd, &wantwfds);
@@ -706,7 +707,7 @@ static void *rsh(void *args)
 
 			/* stderr ready or closed ? */
 			if (a->dsh_sopt && FD_ISSET(a->efd, &readfds)) { 
-				rv = xfgets(&buf, &bufsize, efp);
+				rv = xfgets(&buf, efp);
 				if (rv <= 0) {			/* closed */
 					FD_CLR(a->efd, &wantrfds);
 					fclose(efp);
@@ -734,7 +735,7 @@ static void *rsh(void *args)
 	a->finish = time(NULL);
 
 	/* clean up */
-	xfree((void **)&buf);
+	Free((void **)&buf);
 
 	/* if a single qshell thread fails, terminate whole job */
 	if (a->rcmd_type == RCMD_QSHELL && a->state == DSH_FAILED) {
@@ -836,21 +837,19 @@ int dsh(opt_t *opt)
 
 	/* prepend DSHPATH setting to command */
 	if (opt->personality == DSH && opt->dshpath) {
-		int cmd_len;
-		char *cmd = xstrduplicate(opt->dshpath, &cmd_len);
+		char *cmd = Strdup(opt->dshpath);
 
-		xstrcat(&cmd, &cmd_len, opt->cmd);
-		xfree((void **)&opt->cmd);
+		xstrcat(&cmd, opt->cmd);
+		Free((void **)&opt->cmd);
 		opt->cmd = cmd;	
 	}
 
 	/* append echo $? to command */
 	if (opt->personality == DSH && opt->getstat) {
-		int cmd_len;
-		char *cmd = xstrduplicate(opt->cmd, &cmd_len);
+		char *cmd = Strdup(opt->cmd);
 
-		xstrcat(&cmd, &cmd_len, opt->getstat);
-		xfree((void **)&opt->cmd);
+		xstrcat(&cmd, opt->getstat);
+		Free((void **)&opt->cmd);
 		opt->cmd = cmd;	
 	}
 
@@ -859,9 +858,11 @@ int dsh(opt_t *opt)
 		debug = 1;
 
 	/* build thread array--terminated with t[i].host == NULL */
-	t = (thd_t *)xmalloc(sizeof(thd_t) * (rshcount + 1));
+	t = (thd_t *)Malloc(sizeof(thd_t) * (rshcount + 1));
 
 	for (i = 0; i < rshcount; i++) {
+		struct hostent *hp;
+
 		t[i].luser = opt->luser;		/* general */
 		t[i].ruser = opt->ruser;
 		t[i].rcmd_type = opt->rcmd_type;
@@ -877,6 +878,16 @@ int dsh(opt_t *opt)
 		t[i].pcp_outfile = opt->outfile_name;	
 		t[i].pcp_popt = opt->preserve;
 		t[i].pcp_ropt = opt->recursive;
+
+		/* gethostbyname is not MT safe so do it here */
+		hp = gethostbyname(t[i].host);
+		if (hp == NULL) {
+			errx("%p: gethostbyname: lookup %S failed: %s\n", 
+					t[i].host, hstrerror(h_errno));
+		}
+		assert(hp->h_addrtype == AF_INET);
+		assert(IP_ADDR_LEN == hp->h_length);
+		memcpy(t[i].addr, hp->h_addr_list[0], IP_ADDR_LEN);
 	} 
 	t[i].host = NULL;
 
@@ -940,6 +951,6 @@ int dsh(opt_t *opt)
 		}
 	}
 
-	xfree((void **)&t);				/* cleanup */
+	Free((void **)&t);				/* cleanup */
 	return rc;
 }

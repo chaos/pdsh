@@ -10,9 +10,11 @@
 
 #include <sys/types.h>
 
-void *xmalloc(size_t);
-void xrealloc(void **, size_t);
-void xfree(void **);
+void *Malloc(size_t);
+void Realloc(void **, size_t);
+void Free(void **);
+int Size(void *);
+char *Strdup(char *);
 
 #define XMALLOC_MAGIC 0x42
 

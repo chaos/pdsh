@@ -11,12 +11,12 @@
 #include <stdio.h>
 
 void xstrcln(char **, char *);
-int xfgets(char **, int *, FILE *);
+int xfgets(char **, FILE *);
 
-char *xstrduplicate(char *str, int *size);
-void xstrcat(char **str1, int *size, char *str2);
-void xstrcatchar(char **str1, int *size, char c);
-void xstrerrorcat(char **str1, int *size);
+char *xstrduplicate(char *str);
+void xstrcat(char **str1, char *str2);
+void xstrcatchar(char **str1, char c);
+void xstrerrorcat(char **str1);
 char *xbasename(char *path);
 
 #endif /* _XSTRING_INCLUDED */

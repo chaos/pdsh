@@ -157,7 +157,6 @@ void opt_default(opt_t *opt)
 void opt_env(opt_t *opt)
 {
 	char *rhs;
-	int dshpath_size;
 
 	if ((rhs = getenv("WCOLL")) != NULL)
 		opt->wcoll = read_wcoll(rhs, NULL);
@@ -166,7 +165,7 @@ void opt_env(opt_t *opt)
                 opt->fanout = atoi(rhs);
 
 	if ((rhs = getenv("PDSH_RANGE_OPERATOR")) != NULL)
-		opt->range_op = (strlen(rhs) > 0) ? strdup(rhs) : NULL;
+		opt->range_op = (strlen(rhs) > 0) ? Strdup(rhs) : NULL;
 
         if ((rhs = getenv("DSHPATH")) != NULL) {
 		struct passwd *pw = getpwnam(opt->luser);
@@ -176,15 +175,14 @@ void opt_env(opt_t *opt)
 			shell = xbasename(pw->pw_shell);
 					/* c shell syntax */
 		if (!strcmp(shell, "csh") || !strcmp(shell, "tcsh")) {
-			opt->dshpath = xstrduplicate("setenv PATH ", 
-					&dshpath_size);
-			xstrcat(&opt->dshpath, &dshpath_size, rhs);
-			xstrcat(&opt->dshpath, &dshpath_size, ";");
+			opt->dshpath = Strdup("setenv PATH ");
+			xstrcat(&opt->dshpath, rhs);
+			xstrcat(&opt->dshpath, ";");
 
 		} else {		/* bourne shell syntax */
-			opt->dshpath = xstrduplicate("PATH=", &dshpath_size);
-			xstrcat(&opt->dshpath, &dshpath_size, rhs);
-			xstrcat(&opt->dshpath, &dshpath_size, ";");
+			opt->dshpath = Strdup("PATH=");
+			xstrcat(&opt->dshpath, rhs);
+			xstrcat(&opt->dshpath, ";");
 		}
         }
 }
@@ -198,7 +196,7 @@ void opt_env(opt_t *opt)
 void opt_args(opt_t *opt, int argc, char *argv[])
 {
 	char validargs[LINEBUFSIZE];
-	int c, cmd_size;
+	int c;
 	extern int optind;
 	extern char *optarg;
 	char *wcoll_buf;
@@ -253,14 +251,14 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 				if (strcmp(optarg, "-") == 0)
 					opt->wcoll = read_wcoll(NULL, stdin);
 				else 
-				        wcoll_buf = strdup(optarg);
+				        wcoll_buf = Strdup(optarg);
 				break;
 			case 'x':       /* no ranges */
 				opt->range_op = NULL;
 				break;
 			case 'X':
 				if (strlen(optarg) == 1)
-					opt->range_op = strdup(optarg);
+					opt->range_op = Strdup(optarg);
 				else
 					usage(opt);
 				break;
@@ -300,7 +298,7 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 				opt->rms_nnodes = atoi(optarg);
 				break;
 			case 'P':	/* allocate nodes from RMS partition (qshell) */
-				opt->rms_partition = strdup(optarg);
+				opt->rms_partition = Strdup(optarg);
 				break;
 			case 'a':	/* indicates all nodes */
 				opt->allnodes = true;
@@ -349,15 +347,15 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 		opt->wcoll = (opt->range_op == NULL) ? 
 			list_split(",", wcoll_buf) :
 			list_split_range(",", opt->range_op, wcoll_buf);
-		free(wcoll_buf);
+		Free((void **)&wcoll_buf);
 	}
 
 	/* DSH: build command */
 	if (opt->personality == DSH) {
 		for ( ; optind < argc; optind++) {
 			if (opt->cmd != NULL)
-				xstrcat(&opt->cmd, &cmd_size, " ");
-			xstrcat(&opt->cmd, &cmd_size, argv[optind]);
+				xstrcat(&opt->cmd, " ");
+			xstrcat(&opt->cmd, argv[optind]);
 		}
 	
 	/* PCP: build file list */
@@ -365,7 +363,7 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 		for ( ; optind < argc - 1; optind++)
 			list_push(opt->infile_names, argv[optind]);
 		if (optind < argc)
-			xstrcat(&opt->outfile_name, &cmd_size, argv[optind]);
+			xstrcat(&opt->outfile_name, argv[optind]);
 	}
 
 	/* get wcoll, SDR, genders file, or MPICH machines file */
@@ -413,7 +411,7 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 			opt->q_allocation = ALLOC_BLOCK;
 		opt->labels = false;
 		if (opt->dshpath != NULL)
-			xfree((void **)&opt->dshpath);
+			Free((void **)&opt->dshpath);
 	}
 #endif /* HAVE_ELAN3 */
 	if (opt->q_nprocs == -1 && opt->wcoll != NULL)
@@ -568,7 +566,7 @@ void opt_list(opt_t *opt)
 	infile_str = list_join(", ", opt->infile_names);
 	if (infile_str) {
 		out("Infile(s)		%s\n", infile_str);
-		xfree((void **)&infile_str);
+		Free((void **)&infile_str);
 	}
 	out("Use alt hostname	%s\n", BOOLSTR(opt->altnames));
 	out("Range operator		`%s'\n", 
@@ -583,7 +581,7 @@ void opt_list(opt_t *opt)
 	wcoll_str = list_join(",", opt->wcoll);
 	out("%s\n", wcoll_str);
 
-	xfree((void **)&wcoll_str);
+	Free((void **)&wcoll_str);
 }
 
 /*
@@ -595,7 +593,7 @@ void opt_free(opt_t *opt)
 	if (opt->wcoll != NULL)
 		list_free(&opt->wcoll);
 	if (opt->cmd != NULL)
-		xfree((void **)&opt->cmd);		
+		Free((void **)&opt->cmd);		
 }
 
 /*
@@ -650,6 +648,9 @@ static void show_version(void)
 #endif
 #if	!NDEBUG
 	printf("+debug");
+#endif
+#if 	WITH_DMALLOC
+	printf("+dmalloc");
 #endif
 	printf(")\n");
 	exit(0);

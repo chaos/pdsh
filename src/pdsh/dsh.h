@@ -51,6 +51,8 @@
 #define MIN(a,b)	((a) < (b) ? (a) : (b))
 #endif
 
+#define IP_ADDR_LEN	4	/* XXX */
+
 #if !HAVE_PTHREAD_SIGMASK && HAVE_SIGTHREADMASK
 #define pthread_sigmask(x, y, z)	sigthreadmask(x, y, z)
 #endif
@@ -87,26 +89,26 @@ typedef struct thd {
 	int		fd;			/* stdin/stdout */
 	int		efd;			/* signal/stderr */
 	bool		labels;			/* display host: labels */
+	char		addr[IP_ADDR_LEN];	/* IP address */
 } thd_t;
 
-struct hostent *xgethostbyname(const char *);
 int dsh(opt_t *);
 void set_rcmd_timeout(int);
 
-int xrcmd(char *, char *, char *, char *, int, int *);
+int xrcmd(char *, char *, char *, char *, char *, int, int *);
 void xrcmd_signal(int, int);
 void xrcmd_init(opt_t *);
 
-int k4cmd (char *, char *, char *, char *, int, int *);
+int k4cmd (char *, char *, char *, char *, char *, int, int *);
 void k4cmd_signal(int, int);
 void k4cmd_init(opt_t *);
 
-int sshcmd (char *, char *, char *, char *, int, int *);
-int sshcmdrw (char *, char *, char *, char *, int, int *);
+int sshcmd (char *, char *, char *, char *, char *, int, int *);
+int sshcmdrw (char *, char *, char *, char *, char *, int, int *);
 void sshcmd_signal(int, int);
 void sshcmd_init(opt_t *);
 
-int qcmd(char *, char *, char *, char *, int, int *);
+int qcmd(char *, char *, char *, char *, char *, int, int *);
 void qcmd_init(opt_t *);
 void qcmd_signal(int, int);
 

@@ -82,10 +82,6 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 
 #define RSH_PORT 514
 
-#if HAVE_GETHOSTBYNAME_R
-#define HBUF_LEN	1024
-#endif
-
 void
 xrcmd_init(opt_t *opt)
 {
@@ -114,6 +110,7 @@ xrcmd_signal(int efd, int signum)
 /*
  * The rcmd call itself.
  * 	ahost (IN)	remote hostname
+ *	addr (IN)	4 byte internet address
  *	locuser (IN)	local username
  *	remuser (IN)	remote username
  *	cmd (IN)	command to execute
@@ -122,40 +119,15 @@ xrcmd_signal(int efd, int signum)
  *	s (RETURN)	socket for stdout/sdin or -1 on failure
  */
 int 
-xrcmd(char *ahost, char *locuser, char *remuser, char *cmd, int rank, int *fd2p)
+xrcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd, int rank, int *fd2p)
 {
-	struct hostent *hp;
 	struct sockaddr_in sin, from;
 	fd_set reads;
 	sigset_t oldset, blockme;
 	pid_t pid;
 	int s, lport, timo, rv, maxfd;
 	char c;
-#if HAVE_GETHOSTBYNAME_R
-	struct hostent he;
-	char hbuf[HBUF_LEN];
-	int h_errnox;
-	static pthread_mutex_t mylock = PTHREAD_MUTEX_INITIALIZER;
-#endif
 	pid = getpid();
-#if HAVE_GETHOSTBYNAME_R
-	memset(hbuf, 0, HBUF_LEN);
-#ifdef __linux
-	pthread_mutex_lock(&mylock); 	/* RH 6.2 - race on /etc/hosts.conf? */
-	/* linux compat args */
-	(void)gethostbyname_r(ahost, &he, hbuf, HBUF_LEN, &hp, &h_errnox);
-	pthread_mutex_unlock(&mylock);
-#else	/* solaris compat args */
-	hp = gethostbyname_r(ahost, &he, hbuf, HBUF_LEN, &h_errnox);
-#endif
-#else
-	hp = gethostbyname(ahost);	/* otherwise assumed MT-safe */
-					/* true on AIX4.3, OSF1 V4.0 */
-#endif
-	if (hp == NULL) {
-		err("%p: gethostbyname: lookup of %S failed\n", ahost);
-		return (-1);
-	}
 
 	sigemptyset(&blockme);
 	sigaddset(&blockme, SIGURG);
@@ -172,8 +144,8 @@ xrcmd(char *ahost, char *locuser, char *remuser, char *cmd, int rank, int *fd2p)
 			return (-1);
 		}
 		fcntl(s, F_SETOWN, pid);
-		sin.sin_family = hp->h_addrtype;
-		memcpy(&sin.sin_addr, hp->h_addr_list[0], hp->h_length);
+		sin.sin_family = AF_INET;
+		memcpy(&sin.sin_addr, addr, IP_ADDR_LEN);
 		sin.sin_port = htons(RSH_PORT);
 		rv = connect(s, (struct sockaddr *)&sin, sizeof(sin));
 		if (rv >= 0)
@@ -186,15 +158,6 @@ xrcmd(char *ahost, char *locuser, char *remuser, char *cmd, int rank, int *fd2p)
 		if (errno == ECONNREFUSED && timo <= 16) {
 			(void)sleep(timo);
 			timo *= 2;
-			continue;
-		}
-		if (hp->h_addr_list[1] != NULL) {
-			err("%p: %S: connect to address %s: %m\n", 
-			    ahost, inet_ntoa(sin.sin_addr));
-			hp->h_addr_list++;
-			memcpy(&sin.sin_addr, hp->h_addr_list[0], hp->h_length);
-			err("%p: %S: trying %s...\n", 
-			    ahost, inet_ntoa(sin.sin_addr));
 			continue;
 		}
 		if (errno == EINTR)

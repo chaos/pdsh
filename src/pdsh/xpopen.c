@@ -19,7 +19,9 @@
 #include <string.h>     /* strcmp() */
 #include <stdlib.h>
 #include <errno.h>
- 
+
+#include "xmalloc.h"
+#include "xstring.h"
 #include "err.h"
 #include "list.h"
 
@@ -72,8 +74,7 @@ FILE *xpopen(char *cmd, char *mode)
 		return (NULL);
 	}
 
-	if ((cur = malloc(sizeof(struct pid))) == NULL)
-		return NULL;
+	cur = Malloc(sizeof(struct pid));
 
         read = (*mode == 'r');
 
@@ -86,7 +87,7 @@ FILE *xpopen(char *cmd, char *mode)
 	if (pipe(fds) < 0) {
 		close(fds[0]);
 		close(fds[1]);
-		free(cur);
+		Free((void **)&cur);
 		errx("%p: unable to dup stdout\n");
 	}
 
@@ -94,7 +95,7 @@ FILE *xpopen(char *cmd, char *mode)
 	case -1:			/* Error. */
 		close(fds[0]);
 		close(fds[1]);
-		free(cur);
+		Free((void **)&cur);
 		return (NULL);
 
 	case 0:				/* child */
@@ -122,7 +123,7 @@ FILE *xpopen(char *cmd, char *mode)
 
 	/* free av */
 	while( av[j++] != NULL) 
-		free(av[j]);
+		Free((void **)&av[j]);
 
 	close(fds[read ? 1 : 0]);
 
@@ -172,7 +173,7 @@ int xpclose(FILE *f)
 	else
 		last->next = cur->next;
 
-	free(cur);
+	Free((void **)&cur);
 
 	return (WIFEXITED(status) != 0) ? WEXITSTATUS(status) : -1;
 }

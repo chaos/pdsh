@@ -82,17 +82,17 @@ static void interactive_dsh(opt_t *opt)
 
 	while ((opt->cmd = getcmd(opt->progname)))  {
 		if (*opt->cmd == '\0') { 		/* empty command */
-			xfree((void **)&opt->cmd);
+			Free((void **)&opt->cmd);
 			continue;
 		}
 		if (*opt->cmd == '!') { 		/* shell escape */
 			shell(opt->luid, opt->cmd + 1);
-			xfree((void **)&opt->cmd);
+			Free((void **)&opt->cmd);
 			continue;
 		}
 		if (strcmp(opt->cmd, "quit") == 0 	/* user exit */
 		    || strcmp(opt->cmd, "exit") == 0) {
-			xfree((void **)&opt->cmd);
+			Free((void **)&opt->cmd);
 			break;
 		}
 
@@ -107,7 +107,7 @@ static void interactive_dsh(opt_t *opt)
 			while (waitpid(pid, NULL, 0) < 0 && errno == EINTR)
 				;
 		}
-		xfree((void **)&opt->cmd);
+		Free((void **)&opt->cmd);
 	}
 }
 
@@ -142,7 +142,6 @@ static char *getcmd(char *prompt)
 {
 	char *cmd = NULL, *buf_cln;
 	char buf[LINEBUFSIZE];
-	int cmd_size;
 
 	out("%s> ", prompt);
 	if (fgets(buf, LINEBUFSIZE, stdin) != NULL) {
@@ -150,7 +149,7 @@ static char *getcmd(char *prompt)
 		buf_cln = buf;
 		xstrcln(&buf_cln, NULL);
 
-		cmd = xstrduplicate(buf_cln, &cmd_size);
+		cmd = Strdup(buf_cln);
 	}
 	return cmd;
 }

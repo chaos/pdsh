@@ -19,8 +19,8 @@
 #include "dsh.h"
 #include "err.h"
 #include "list.h"
-#include "xmalloc.h"	/* xfree */
-#include "xstring.h"	/* for xstrduplicate() */
+#include "xmalloc.h"	/* Free/Strdup */
+#include "xstring.h"
 #include "xpopen.h"	/* for xpopen/close */
 #include "wcoll.h"
 
@@ -245,7 +245,7 @@ static void sdr_getnames(bool Gopt, char *nameType, char *nodes[])
 
 		nn = atoi(list_nth(words, 0));
 		assert (nn >= 0 && nn <= MAX_SP_NODE_NUMBER);
-		nodes[nn] = xstrduplicate(list_nth(words, 1), NULL);
+		nodes[nn] = Strdup(list_nth(words, 1), NULL);
 		list_free(&words);
 	}
 	xpclose(f);
@@ -308,9 +308,9 @@ list_t sdr_wcoll(bool Gopt, bool iopt, bool vopt)
 					list_push(new, rnodes[nn]);
 			}
 			if (inodes[nn] != NULL)		    /* free heap cpys */
-				xfree((void **)&inodes[nn]);
+				Free((void **)&inodes[nn]);
 			if (rnodes[nn] != NULL)
-				xfree((void **)&rnodes[nn]);
+				Free((void **)&rnodes[nn]);
 		}
 	}
 

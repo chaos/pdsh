@@ -6,7 +6,6 @@
  * Changes:
  * - added fd2p arg handling
  * - changed name, func prototype, and added sshcmd() and rshcmd() wrappers
- * - MT-safe gethostent()
  * - use 'err' for output
  * - unset DISPLAY and call setsid() so ssh won't hang prompting for passphrase
  */
@@ -46,32 +45,7 @@ static int
 pipecmd(char *path, char *args[], const char *ahost, int *fd2p)
 {
 	int             cpid;
-	struct hostent  *hp;
 	int             sp[2], esp[2];
-#if HAVE_GETHOSTBYNAME_R
-        struct hostent he;
-        char hbuf[HBUF_LEN];
-        int h_errnox;
-        static pthread_mutex_t mylock = PTHREAD_MUTEX_INITIALIZER;
-#endif
-	/* validate remote hostname. */
-#if HAVE_GETHOSTBYNAME_R
-        memset(hbuf, 0, HBUF_LEN);
-#ifdef __linux
-        pthread_mutex_lock(&mylock);    /* RH 6.2 - race on /etc/hosts.conf? */
-	/* linux compat args */
-        (void)gethostbyname_r(ahost, &he, hbuf, HBUF_LEN, &hp, &h_errnox);
-        pthread_mutex_unlock(&mylock);
-#else 	/* solaris compat args */
-        hp = gethostbyname_r(ahost, &he, hbuf, HBUF_LEN, &h_errnox);
-#endif
-#else
-        hp = gethostbyname(ahost);      /* otherwise assumed MT-safe */
-#endif					/* true on AIX4.3, OSF1 V4.0 */
-	if (hp == NULL) {
-		err("%p: gethostbyname: lookup of %S failed\n", ahost);
-		return -1;
-	}
 
 	/* get a socketpair we'll use for stdin and stdout. */
 	if (socketpair(AF_UNIX, SOCK_STREAM, 0, sp) < 0) {
@@ -143,7 +117,8 @@ pipecmd(char *path, char *args[], const char *ahost, int *fd2p)
 }
 
 int 
-sshcmd(char *ahost, char *luser, char *ruser, char *cmd, int rank, int *fd2p)
+sshcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd, 
+		int rank, int *fd2p)
 {
 	char *args[] = { "ssh", "-q", "-a", "-x", "-f", "-l", 0, 0, 0, 0 };
 
@@ -155,7 +130,8 @@ sshcmd(char *ahost, char *luser, char *ruser, char *cmd, int rank, int *fd2p)
 }
 
 int 
-sshcmdrw(char *ahost, char *luser, char *ruser, char *cmd, int rank, int *fd2p)
+sshcmdrw(char *ahost, char *addr, char *luser, char *ruser, char *cmd, 
+		int rank, int *fd2p)
 {
 	char *args[] = { "ssh", "-q", "-a", "-x", "-l", 0, 0, 0, 0 };
 

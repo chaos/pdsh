@@ -28,7 +28,7 @@
 
 #define SPACES "\n\t "
  
-#define XFGETS_CHUNKSIZE 128
+#define XFGETS_CHUNKSIZE 32
 
 /*
  * Zap leading and trailing occurrences of characters in 'verboten'.
@@ -62,12 +62,11 @@ xstrcln(char **str, char *verboten)
  * length, will always be terminated by a carriage return. 
  * EOF or error can be returned with valid data in the buffer.
  *   str (IN/OUT)	buffer where input is stored (xfgets may resize)
- *   size (IN/OUT)	current size of buffer
  *   stream (IN)	stream to read from
  *   RETURN		0 = EOF, -1 = error, 1 = connection still open.
  */
 int 
-xfgets(char **str, int *size, FILE *stream)
+xfgets(char **str, FILE *stream)
 {
 	int check_err = 0;
 	int rv = 1;
@@ -77,8 +76,7 @@ xfgets(char **str, int *size, FILE *stream)
 	 * Initialize buffer space if a pointer-to-null was passed in.
 	 */	
 	if (*str == NULL) {
-		*str = xmalloc(XFGETS_CHUNKSIZE * sizeof(char));
-		*size = XFGETS_CHUNKSIZE;
+		*str = Malloc(XFGETS_CHUNKSIZE);
 	}
 
 	/*
@@ -87,9 +85,11 @@ xfgets(char **str, int *size, FILE *stream)
 	 */
 	do {
 		/* allocate more buffer space if needed */
-		if (nread == *size - 2) {
-			*size += XFGETS_CHUNKSIZE;
-			xrealloc((void **)str, *size);
+		if (nread == Size(*str) - 2) {
+			int newsize = Size(*str) + XFGETS_CHUNKSIZE;
+
+			Realloc((void **)str, newsize);
+			assert(Size(*str) == newsize);
 		}
 		/* read a character -- quit loop if we get EOF or error */
 		if (fread(*str + nread, 1, 1, stream) != 1) {
@@ -122,12 +122,11 @@ xfgets(char **str, int *size, FILE *stream)
 /*
  * Same as above except it uses read() instead of fread().
  *   str (IN/OUT)	buffer where input is stored (xfgets may resize)
- *   size (IN/OUT)	current size of buffer
  *   fd (IN)		file descriptor to read from
  *   RETURN		0 = EOF, -1 = error, 1 = connection still open.
  */
 int 
-xfgets2(char **str, int *size, FILE *stream)
+xfgets2(char **str, FILE *stream)
 {
 	int check_err = 0;
 	int rv = 1;
@@ -137,10 +136,8 @@ xfgets2(char **str, int *size, FILE *stream)
 	/*
 	 * Initialize buffer space if a pointer-to-null was passed in.
 	 */	
-	if (*str == NULL) {
-		*str = xmalloc(XFGETS_CHUNKSIZE * sizeof(char));
-		*size = XFGETS_CHUNKSIZE;
-	}
+	if (*str == NULL)
+		*str = Malloc(XFGETS_CHUNKSIZE);
 
 	/*
 	 * Read a line's worth of characters, or up to EOF or error.
@@ -148,9 +145,11 @@ xfgets2(char **str, int *size, FILE *stream)
 	 */
 	do {
 		/* allocate more buffer space if needed */
-		if (nread == *size - 2) {
-			*size += XFGETS_CHUNKSIZE;
-			xrealloc((void **)str, *size);
+		if (nread == Size(*str) - 2) {
+			int newsize = Size(*str) + XFGETS_CHUNKSIZE;
+
+			Realloc((void **)str, newsize);
+			assert(Size(*str) == newsize);
 		}
 		/* read a character -- quit loop if we get EOF or error */
 		if ((rv = read(fd, *str + nread, 1)) != 1) {
@@ -180,42 +179,23 @@ xfgets2(char **str, int *size, FILE *stream)
  * If the string is uninitialized, it should be NULL.
  */
 static void 
-makespace(char **str, int *size, int needed)
+makespace(char **str, int needed)
 {
 	int used;
 
 	if (*str == NULL)
-		*str = xmalloc(*size = needed + 1);
+		*str = Malloc(needed + 1);
 	else {
 		used = strlen(*str) + 1;
-		if (used + needed > *size) {
-			xrealloc((void **)str, *size += XFGETS_CHUNKSIZE);
-			makespace(str, size, needed);
+		while (used + needed > Size(*str)) {
+			int newsize = Size(*str) + XFGETS_CHUNKSIZE;
+
+			Realloc((void **)str, newsize);
+			assert(Size(*str) == newsize);
 		}
 	}
 }
 		
-/*
- * Duplicate a string.
- *   str (IN)		string to duplicate
- *   size (OUT)		size will be deposited here if non-NULL
- *   RETURN		copy of string
- */
-char *
-xstrduplicate(char *str, int *size)
-{
-	char *result = NULL;
-	int mysize;
-
-	makespace(&result, &mysize, strlen(str));
-	strcpy(result, str);
-
-	if (size != NULL)
-		*size = mysize;
-
-	return result;
-}
-
 /* 
  * Concatenate str2 onto str1, expanding str1 as needed.
  *   str1 (IN/OUT)	target string (pointer to in case of expansion)
@@ -223,9 +203,9 @@ xstrduplicate(char *str, int *size)
  *   str2 (IN)		source string
  */
 void 
-xstrcat(char **str1, int *size, char *str2)
+xstrcat(char **str1, char *str2)
 {
-	makespace(str1, size, strlen(str2));
+	makespace(str1, strlen(str2));
 	strcat(*str1, str2);
 }
 
@@ -245,14 +225,14 @@ strcatchar(char *str, char c)
  *   c (IN)		character to add
  */
 void 
-xstrcatchar(char **str, int *size, char c)
+xstrcatchar(char **str, char c)
 {
-	makespace(str, size, 1);
+	makespace(str, 1);
 	strcatchar(*str, c);
 }
 
 void 
-xstrerrorcat(char **buf, int *bufsize)
+xstrerrorcat(char **buf)
 {
 #if HAVE_STRERROR_R
         char errbuf[64];
@@ -263,7 +243,7 @@ xstrerrorcat(char **buf, int *bufsize)
         extern char *sys_errlist[];
         char *err = sys_errlist[errno];
 #endif
-        xstrcat(buf, bufsize, err);
+        xstrcat(buf, err);
 }
 
 

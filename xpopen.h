@@ -6,11 +6,11 @@
  */
 
 
-#ifndef _HAVE_XPOPEN
-#define _HAVE_XPOPEN
+#ifndef _XPOPEN_INCLUDED
+#define _XPOPEN_INCLUDED
 
 FILE *xpopen(char *cmd, char *mode);
 int xpclose(FILE *f);
 
-#endif /* _HAVE_XPOPEN */
+#endif /* _XPOPEN_INCLUDED */
 	

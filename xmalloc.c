@@ -9,37 +9,48 @@
 #include "config.h"
 #endif
 
-#if	WITH_DMALLOC
-#include <dmalloc.h>
-#else
 #include <stdlib.h>
-#endif
 #include <errno.h>
 #include <string.h>
 #include <stdio.h>
-
+#include <limits.h>	/* for INT_MAX */
 #include <assert.h>
 
 #include "xmalloc.h"
 
+#if	HAVE_UNSAFE_MALLOC
+#include <pthread.h>
+static pthread_mutex_t malloc_lock = PTHREAD_MUTEX_INITIALIZER;
+#define MALLOC_LOCK()	pthread_mutex_lock(&malloc_lock)
+#define MALLOC_UNLOCK()	pthread_mutex_unlock(&malloc_lock)
+#else
+#define MALLOC_LOCK()	
+#define MALLOC_UNLOCK()	
+#endif
 
 /*
  * "Safe" version of malloc().
  *   size (IN)	number of bytes to malloc
  *   RETURN	pointer to allocate heap space
  */
-void *xmalloc(size_t size)
+void *
+Malloc(size_t size)
 {	
 	void *new;
-	int *p = (int *)malloc(size + sizeof(int));
-
+	int *p;
+       
+	assert(size > 0 && size <= INT_MAX);
+	MALLOC_LOCK();
+	p = (int *)malloc(size + 2*sizeof(int));
+	MALLOC_UNLOCK();
 	if (!p) {
-		perror("malloc failed");
+		fprintf(stderr, "Malloc(%d) failed", size);
 		exit(1);
 	}
 	p[0] = XMALLOC_MAGIC;			/* add "secret" magic cookie */
+	p[1] = size;				/* store size in buffer */
 
-	new = &p[1];
+	new = &p[2];
 	memset(new, 0, size);
 	return new;
 }
@@ -47,23 +58,55 @@ void *xmalloc(size_t size)
 /* 
  * "Safe" version of realloc().  Args are different: pass in a pointer to
  * the object to be realloced instead of the object itself.
- *   item (IN/OUT)	double-pointer to allocated space or NULL
+ *   item (IN/OUT)	double-pointer to allocated space
  *   newsize (IN)	requested size
  */
-void xrealloc(void **item, size_t newsize)
+void 
+Realloc(void **item, size_t newsize)
 {
-	int *p = (int *)*item - 1;
+	int *p = (int *)*item - 2;
 
-	assert(*item != NULL && newsize != 0);
+	assert(*item != NULL);
+       	assert(newsize > 0 && newsize <= INT_MAX);
 	assert(p[0] == XMALLOC_MAGIC);		/* magic cookie still there? */
 
-	p = (int *)realloc(p, newsize + sizeof(int));
+	MALLOC_LOCK();
+	p = (int *)realloc(p, newsize + 2*sizeof(int));
+	MALLOC_UNLOCK();
 	if (!p) {
-		perror("realloc failed");
+		fprintf(stderr, "Realloc(%d) failed", newsize);
 		exit(1);
 	}
 	assert(p[0] == XMALLOC_MAGIC);
-	*item = &p[1];
+	p[1] = newsize;
+	*item = &p[2];
+}
+
+/*
+ * Duplicate a string.
+ *   str (IN)		string to duplicate
+ *   RETURN		copy of string
+ */
+char *
+Strdup(char *str)
+{
+	char *result = Malloc(strlen(str) + 1);
+
+	return strcpy(result, str);
+}
+
+/*
+ * Return the size of a buffer.
+ *   item (IN)		pointer to allocated space
+ */
+int 
+Size(void *item)
+{
+	int *p = (int *)item - 2;
+
+	assert(item != NULL);	
+	assert(p[0] == XMALLOC_MAGIC);
+	return p[1];
 }
 
 /* 
@@ -71,13 +114,16 @@ void xrealloc(void **item, size_t newsize)
  * object.
  *   item (IN/OUT)	double-pointer to allocated space
  */
-void xfree(void **item)
+void 
+Free(void **item)
 {
-	int *p = (int *)*item - 1;
+	int *p = (int *)*item - 2;
 
 	if (*item != NULL) {
 		assert(p[0] == XMALLOC_MAGIC);	/* magic cookie still there? */
+		MALLOC_LOCK();
 		free(p);
+		MALLOC_UNLOCK();
 		*item = NULL;
 	}
 }

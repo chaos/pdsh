@@ -98,6 +98,7 @@ k4cmd_signal(int efd, int signum)
 /*
  * The rcmd call itself.
  *      ahost (IN)      remote hostname
+ *	addr (IN)	IP address
  *      locuser (IN)    local username
  *      remuser (IN)    remote username
  *      cmd (IN)        command to execute
@@ -106,7 +107,8 @@ k4cmd_signal(int efd, int signum)
  *      s (RETURN)      socket for stdout/sdin or -1 on failure
  */
 int 
-k4cmd(char *ahost, char *locuser, char *remuser, char *cmd, int rank, int *fd2p)
+k4cmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd, 
+		int rank, int *fd2p)
 {
         KTEXT_ST ticket;        /* kerberos IV context */
         CREDENTIALS cred;
@@ -122,37 +124,12 @@ k4cmd(char *ahost, char *locuser, char *remuser, char *cmd, int rank, int *fd2p)
 	int             lport = IPPORT_RESERVED - 1;
 	unsigned long	krb_options = 0L;
 	static pthread_mutex_t mylock = PTHREAD_MUTEX_INITIALIZER;
-#if HAVE_GETHOSTBYNAME_R
-        char hbuf[HBUF_LEN];
-        int h_errnox;
-        struct hostent he;
-#else
-#endif
-	struct hostent *hp;
 	int		status;
 	int             rc, rv;
 	fd_set          reads;
 	int 		maxfd;
 
 	pid = getpid();
-#if HAVE_GETHOSTBYNAME_R
-#ifdef __linux
-	pthread_mutex_lock(&mylock); 	/* RH 6.2 - race on /etc/hosts.conf */
-	/* linux compat args */
-	(void)gethostbyname_r(ahost, &he, hbuf, HBUF_LEN, &hp, &h_errnox);
-	pthread_mutex_unlock(&mylock);
-#else
-	/* solaris compat args */
-        hp = gethostbyname_r(ahost, &he, hbuf, HBUF_LEN, &h_errnox);
-#endif
-#else
-        hp = gethostbyname(ahost);	/* assumed MT-safe */
-					/* true on AIX4.3, OSF1 V4.0 */
-#endif
-	if (hp == 0) {
-		err("%p: gethostbyname: lookup of %S failed\n", ahost);
-		return (-1);
-	}
 
 	sigemptyset(&blockme);
 	sigaddset(&blockme, SIGURG);
@@ -168,8 +145,8 @@ k4cmd(char *ahost, char *locuser, char *remuser, char *cmd, int rank, int *fd2p)
 			return (-1);
 		}
 		fcntl(s, F_SETOWN, pid);
-		sin.sin_family = hp->h_addrtype;
-		memcpy((caddr_t) & sin.sin_addr, hp->h_addr_list[0], hp->h_length);
+		sin.sin_family = AF_INET;
+		memcpy((caddr_t) & sin.sin_addr, addr, IP_ADDR_LEN);
 		sin.sin_port = htons(KCMD_PORT);
 
                 rv = connect(s, (struct sockaddr *)&sin, sizeof(sin));
@@ -179,16 +156,6 @@ k4cmd(char *ahost, char *locuser, char *remuser, char *cmd, int rank, int *fd2p)
 		(void) close(s);
 		if (errno == EADDRINUSE) {
 			lport--;
-			continue;
-		}
-		if (hp->h_addr_list[1] != NULL) {
-			err("%p: %S: connect to address %s: %m", 
-			    ahost, inet_ntoa(sin.sin_addr));
-			hp->h_addr_list++;
-			memcpy((caddr_t) & sin.sin_addr, hp->h_addr_list[0],
-			       hp->h_length);
-			err("%p: %S: trying %s...\n", 
-			    ahost, inet_ntoa(sin.sin_addr));
 			continue;
 		}
                 if (errno == EINTR)

@@ -12,7 +12,7 @@
 #include <string.h>
 #include <assert.h>
 #include <ctype.h>
-/*#include <stdlib.h>*/
+#include <stdlib.h>
 
 #include "list.h"
 #include "xmalloc.h"
@@ -55,11 +55,11 @@ static char *next_tok(char *, char **);
  */
 list_t list_new()
 {
-	list_t new = (list_t)xmalloc(sizeof(struct list_implementation));
+	list_t new = (list_t)Malloc(sizeof(struct list_implementation));
 #ifndef NDEBUG
 	new->magic = LIST_MAGIC;
 #endif
-	new->data = (char **)xmalloc(LIST_CHUNK * sizeof(char *));
+	new->data = (char **)Malloc(LIST_CHUNK * sizeof(char *));
 	new->size = LIST_CHUNK;
 	new->nitems = 0;
 
@@ -74,7 +74,7 @@ void list_expand(list_t l)
 {
 	assert(l->magic == LIST_MAGIC);
 	l->size += LIST_CHUNK;
-	xrealloc((void **)&(l->data), l->size * sizeof(char *));
+	Realloc((void **)&(l->data), l->size * sizeof(char *));
 }
 
 /*
@@ -88,9 +88,9 @@ void list_free(list_t *l)
 
 	assert((*l)->magic == LIST_MAGIC);
 	for (i = 0; i < (*l)->nitems; i++)
-		xfree((void **)&((*l)->data[i]));
-	xfree((void **)&((*l)->data));
-	xfree((void **)l);
+		Free((void **)&((*l)->data[i]));
+	Free((void **)&((*l)->data));
+	Free((void **)l);
 }
 	
 /*
@@ -104,7 +104,7 @@ void list_push(list_t l, char *word)
 	if (l->size == l->nitems)
 		list_expand(l);
 	assert(l->size > l->nitems);
-	l->data[l->nitems++] = xstrduplicate(word, NULL);
+	l->data[l->nitems++] = Strdup(word);
 }
 
 /*
@@ -343,13 +343,12 @@ char *list_join(char *sep, list_t l)
 {
 	int i;
 	char *result = NULL;
-	int size;
 
 	assert(l->magic == LIST_MAGIC);
 	for (i = 0; i < l->nitems; i++) {
 		if (result != NULL)	/* add separator if not first token */
-			xstrcat(&result, &size, sep);
-		xstrcat(&result, &size, l->data[i]);
+			xstrcat(&result, sep);
+		xstrcat(&result, l->data[i]);
 	}
 
 	return result;
@@ -455,7 +454,7 @@ void list_del(list_t l, int n)
 	int i;
 	assert(l->magic == LIST_MAGIC);
 	assert(n < l->nitems && n >= 0);
-	xfree((void **)&(l->data[n]));		/* free the string */
+	Free((void **)&(l->data[n]));		/* free the string */
 	for (i = n; i < l->nitems - 1; i++)
 		l->data[i] = l->data[i + 1];
 	l->nitems--;
