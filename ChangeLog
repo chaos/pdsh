@@ -1,3 +1,33 @@
+2003-12-16  Albert Chu <chu11@llnl.gov>
+
+	* src/qsnet/qshell.c (getcommon): Renamed to readchar.
+
+	* src/qsnet/qshell.c (getint): Modified to not use readchar.  See
+	comments for info why.
+
+	* src/qsnet/qshell.c (qshell_conv): New function.
+
+	* src/qsnet/qshell.c (pamauth): Modified to use new qshell_conv
+	function.
+
+	* src/qsnet/qshell.c (get_qshell_info): Added "\n" to end of all
+	errlog messages.
+
+	* src/qsnet/qshd.c (doauth, qshd_get_args): Made changes to
+	support changes to pamauth.
+
+	* src/qsnet/qshd.c (qshd_get_args): Fixed bug in which remuser
+	buffer was being interpreted as the command buffer.
+
+	* src/qsnet/mqshd.c (mqshell_get_args): Made changes to support
+	changes to pamauth.
+
+	* src/qsnet/qshell.h, src/qsnet/qshell.c (errorsock): Removed this
+	unused function.
+	
+	* src/modules/mqcmd.c (mqcmd): Made error messages have more
+	consistent wording.
+
 2003-12-12  Albert Chu <chu11@llnl.gov>
 
 	Upgraded mqshd daemon based on changes in the original mrshd
