@@ -101,4 +101,10 @@ EXTRA_DIST = 		\
 	pdsh.spec.in	\
 	dshbak dshbak.1 \
 	qshell.xinetd   \
+	autogen.sh	\
 	$(AUX_DIST)
+
+# hack for automake version compatibility
+# create auxdir/depcomp if it wasn't added by automake --add-missing
+$(auxdir)/depcomp :
+	touch $@
