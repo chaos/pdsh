@@ -70,8 +70,6 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #include "config.h"
 #endif
 
-#if	HAVE_ELAN
-
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/time.h>
@@ -493,7 +491,6 @@ qcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     pthread_sigmask(SIG_SETMASK, &oldset, NULL);
     return (-1);
 }
-#endif                          /* HAVE_ELAN */
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
