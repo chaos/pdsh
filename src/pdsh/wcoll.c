@@ -472,10 +472,12 @@ hostlist_t rms_wcoll(void)
 #ifdef HAVE_LIBNODEUPDOWN
 /* get a list of up nodes by using the nodeupdown library */
 hostlist_t get_verified_nodes(int iopt) {
-  char *str = NULL;
-  int str_len = 0;
-  hostlist_t hl;
+  int i, ret, len, num_nodes_up, maxvallen;
+  char *altname;
+  char **nodelist;
+  hostlist_t new;
   nodeupdown_t handle;
+  genders_t genders_handle;
 
   if ((handle = nodeupdown_handle_create()) == NULL) {
     errx("%p: error creating nodeupdown handle, %s\n", 
@@ -492,39 +494,93 @@ hostlist_t get_verified_nodes(int iopt) {
     }
   }
 
-  do {
-    free(str);
-    str_len += PDSH_BUFFERLEN;
-    if ((str = (char *)malloc(str_len)) == NULL) {
-      errx("%p: malloc error\n");
-    }
-    memset(str, '\0', str_len);
+  if ((len = nodeupdown_nodelist_create(handle, &nodelist)) == -1) {
+    errx("%p: error creating nodelist, %s\n",
+         nodeupdown_strerror(nodeupdown_errnum(handle)));
+  }
 
-    if (iopt) {
-      if (nodeupdown_get_up_nodes_string(handle, str, str_len) == -1) {
-	errx("%p: error getting up nodes strings, %s\n",
-	     nodeupdown_strerror(nodeupdown_errnum(handle)));
-      }
-    }
-    else {
-      if (nodeupdown_get_up_nodes_string_altnames(handle, str, str_len) == -1) {
-	errx("%p: error getting up nodes string altnames, %s\n",
-	     nodeupdown_strerror(nodeupdown_errnum(handle)));
-      }
-    }
-  } while (nodeupdown_errnum(handle) == NODEUPDOWN_ERR_OVERFLOW);
+  if ((num_nodes_up = nodeupdown_get_up_nodes_list(handle, 
+                                                   nodelist, 
+                                                   len)) == -1) {
+    errx("%p: error getting up nodes strings, %s\n",
+         nodeupdown_strerror(nodeupdown_errnum(handle)));
+  }
 
-  if ((hl = hostlist_create(str)) == NULL) {
+  if ((new = hostlist_create(NULL)) == NULL) {
     errx("%p: error creating hostlist\n");
   }
+
+  /* does user want alternate names? */
+  if (!iopt) {
+    if ((genders_handle = genders_handle_create()) == NULL) {
+      errx("%p: error creating genders handle\n");
+    }
   
+    /* assumes genders file in default location */
+    if (genders_load_data(genders_handle, NULL) == -1) {
+      errx("%p: error opening genders file, %s\n", 
+           genders_strerror(genders_errnum(genders_handle)));
+    }
+
+    if ((maxvallen = genders_getmaxvallen(genders_handle)) == -1) {
+      errx("%p: error getting max value length, %s\n",
+	 genders_strerror(genders_errnum(genders_handle)));
+    }
+    if ((altname = (char *)malloc(maxvallen + 1)) == NULL) {
+      errx("%p: Out of memory\n");
+    }
+
+    /* get each alternate name.  If no alternate name exists, use default */
+    for (i = 0; i < num_nodes_up; i++) {
+      memset(altname, '\0', maxvallen + 1);
+      ret = genders_testattr(genders_handle, 
+			     nodelist[i], 
+			     GENDERS_ALTNAME_ATTRIBUTE, 
+			     altname,
+			     maxvallen + 1);
+      if (ret == 1) {
+	if (hostlist_push_host(new, altname) == 0) {
+	  err("%p: warning: target '%s' not parsed\n", altname);
+	}
+      }
+      else if (ret == 0) {
+	if (hostlist_push_host(new, nodelist[i]) == 0) {
+	  err("%p: warning: target '%s' not parsed\n", nodelist[i]);
+	}
+      }
+      else {
+	errx("%p: error testing genders attribute, %s\n",
+	     genders_strerror(genders_errnum(genders_handle)));
+      }
+    }
+
+    free(altname);
+
+    if (genders_handle_destroy(genders_handle) == -1) {
+      errx("%p: error destroying genders handle, %s\n",
+           genders_strerror(genders_errnum(genders_handle)));
+    }
+
+  }
+  else {
+    for (i = 0; i < num_nodes_up; i++) {
+      if (hostlist_push_host(new, nodelist[i]) == 0) {
+	err("%p: warning: target '%s' not parsed\n", nodelist[i]);
+      }
+    }
+  }
+
+  if (nodeupdown_nodelist_destroy(handle, nodelist) == -1) {
+    errx("%p: error destroying nodelist, %s\n", 
+	 nodeupdown_strerror(nodeupdown_errnum(handle)));
+  }
+
   if (nodeupdown_handle_destroy(handle) == -1) {
     errx("%p: error destroying nodeupdown handle, %s\n", 
 	 nodeupdown_strerror(nodeupdown_errnum(handle)));
   }
 
-  free(str);
-  return hl;
+  return new;
 }
 #endif /* HAVE_LIBNODEUPDOWN */
 #endif /* HAVE_LIBGENDERS */
