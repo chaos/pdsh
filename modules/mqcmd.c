@@ -371,17 +371,19 @@ static int _mqcmd_send_extra_args(int s, int nodeid, const char *ahost)
  * Connection can time out.
  *      ahost (IN)              target hostname
  *      addr (IN)               4 byte internet address
+ *      locuser (IN)            not used 
  *      remuser (IN)            remote username
  *      cmd (IN)                remote command to execute under shell
- *      fd2p (IN)               if non NULL, return stderr file descriptor here
  *      int nodeid (IN)         node index for this connection
+ *      fd2p (IN)               if non NULL, return stderr file descriptor here
  *      int (RETURN)            -1 on error, socket for I/O on success
  *
  * Combination of code derived from mcmd by Mike Haskell, qcmd by
  * Jim Garlick, and a variety of minor modifications.
  */
 int 
-mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
+mqcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd, 
+      int nodeid, int *fd2p)
 {
   struct sockaddr m_socket;
   struct sockaddr_in *getp;
@@ -740,7 +742,7 @@ int
 pdsh_rcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
           int rank, int *fd2p)
 {   
-  return mqcmd(ahost, addr, ruser, cmd, rank, fd2p);
+  return mqcmd(ahost, addr, luser, ruser, cmd, rank, fd2p);
 }
 
 int

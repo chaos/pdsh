@@ -178,8 +178,10 @@ mcmd_signal(int fd, int signum)
  * Connection can time out.
  *      ahost (IN)              target hostname
  *      addr (IN)               4 byte internet address
+ *      locuser (IN)            not used 
  *      remuser (IN)            remote username
  *      cmd (IN)                remote command to execute under shell
+ *      rank (IN)               not used 
  *      fd2p (IN)               if non NULL, return stderr file descriptor here
  *      int (RETURN)            -1 on error, socket for I/O on success
  *
@@ -191,7 +193,8 @@ mcmd_signal(int fd, int signum)
  * 
  */
 int 
-mcmd(char *ahost, char *addr, char *remuser, char *cmd, int *fd2p)
+mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd, 
+     int rank, int *fd2p)
 {
   struct sockaddr m_socket;
   struct sockaddr_in *getp;
@@ -544,7 +547,7 @@ int
 pdsh_rcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
           int rank, int *fd2p)
 {   
-  return mcmd(ahost, addr, ruser, cmd, fd2p);
+  return mcmd(ahost, addr, luser, ruser, cmd, rank, fd2p);
 }
 
 int
