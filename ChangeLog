@@ -6,20 +6,24 @@
 	* src/modules/sdr.c, src/modules/nodeattr.c : Use hostlist_push
 	instead of hostlist_push_host, which doesn't get exported on AIX.
 	
+	* configure.ac : Append -Wl,-bexpall and -Wl,-brtl to LDFLAGS if 
+	using dynamic loading on AIX. Added AC_AIX macro. 
 
 2003-08-28  Mark Grondona <mgrondona@llnl.gov>
 
-        * : Reorganized pdsh code and changed sources accordingly.
+	* : Reorganized pdsh code and changed sources accordingly.
 
-        * src/qsnet/qshd_common.h, src/qsnet/qshd_common.c: 
+	* src/qsnet/qshd_common.h, src/qsnet/qshd_common.c: 
 	Renamed to qshell.[ch], changed	main_common() to qshell() and 
 	removed references to ``doit.''
+
+	* : Tagged pdsh-2-0-0-pre5 for testing.
+
+2003-08-28  Albert Chu  <chu11@llnl.gov>
 
 	* src/modules/mcmd.c (mcmd) src/modules/mqcmd.c (mqcmd): 
 	Incorporated Al Chu's patch to fix potential error message
 	inconsistencies due to a close call before an errno check. 
-
-	* : Tagged pdsh-2-0-0-pre5 for testing.
 
 2003-08-19  Albert Chu  <chu11@llnl.gov>
 

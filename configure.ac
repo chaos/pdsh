@@ -12,6 +12,7 @@ AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_SRCDIR([src/pdsh/dsh.h])
 AC_CANONICAL_SYSTEM
 AC_GPL_LICENSED
+AC_AIX
 
 # hack to fix dejagnu.am brokenness before automake 1.6
 if test x$host_alias = x ; then
@@ -51,7 +52,14 @@ AM_CONDITIONAL(WITH_STATIC_MODULES, test "$ac_static_modules" = "yes")
 if test "$ac_static_modules" = "yes" ; then
    AC_DEFINE_UNQUOTED(STATIC_MODULES, [1], [Use Static Modules])
    AC_STATIC_MODULES_INIT
+else
+   case "$host" in
+   *-*-aix*)
+     LDFLAGS="$LDFLAGS -Wl,-brtl -Wl,-bexpall" 
+   ;;
+   esac
 fi
+
 
 # Checks for libraries.
 AC_CHECK_LIB([socket], [socket], LIBS="-lsocket -lnsl $LIBS",, [-lsocket -lnsl])
