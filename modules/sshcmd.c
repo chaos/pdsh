@@ -258,7 +258,7 @@ _drop_privileges()
     }
 }
 
-void 
+int 
 pdsh_rcmd_init(opt_t * opt)
 {
 	if (opt->personality == PCP)

@@ -130,10 +130,10 @@ struct pdsh_module_operations pdsh_module_ops = {
 #define xrcmd_signal pdsh_signal
 
 
-void xrcmd_init(opt_t * opt)
+int xrcmd_init(opt_t * opt)
 {
     /* not implemented */
-	return;
+	return 0;
 }
 
 /*
@@ -141,7 +141,7 @@ void xrcmd_init(opt_t * opt)
  * 	efd (IN)	file descriptor connected socket (-1 if not used)
  *	signum (IN)	signal number to send
  */
-void xrcmd_signal(int efd, int signum)
+int xrcmd_signal(int efd, int signum)
 {
     char c;
 
@@ -152,6 +152,7 @@ void xrcmd_signal(int efd, int signum)
         c = (char) signum;
         write(efd, &c, 1);
     }
+    return 0;
 }
 
 /*
