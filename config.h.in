@@ -1,0 +1,62 @@
+/* config.h.in.  Generated automatically from configure.ac by autoheader.  */
+
+/* Define if you have the `gethostbyname_r' function. */
+#undef HAVE_GETHOSTBYNAME_R
+
+/* Define if you have the `elan3' library (-lelan3). */
+#undef HAVE_LIBELAN3
+
+/* Define if you have the `nsl' library (-lnsl). */
+#undef HAVE_LIBNSL
+
+/* Define if you have the `pthread' library (-lpthread). */
+#undef HAVE_LIBPTHREAD
+
+/* Define if you have the `rmscall' library (-lrmscall). */
+#undef HAVE_LIBRMSCALL
+
+/* Define if you have the `socket' library (-lsocket). */
+#undef HAVE_LIBSOCKET
+
+/* Define if the system has the type `socklen_t'. */
+#undef HAVE_SOCKLEN_T
+
+/* Define if you have the `strerror_r' function. */
+#undef HAVE_STRERROR_R
+
+/* Define the canonical host CPU type. */
+#undef HOST_CPU
+
+/* Define the canonical host OS type. */
+#undef HOST_OS
+
+/* Define the canonical host vendor type. */
+#undef HOST_VENDOR
+
+/* Define if you are building a production release. */
+#undef NDEBUG
+
+/* Path to the rmsquery command */
+#undef PATH_RMSQUERY
+
+/* Define the project's name. */
+#undef PROJECT
+
+/* Define the project's version. */
+#undef VERSION
+
+/* Define if building with Elan support. */
+#undef WITH_ELAN
+
+/* Define if building with Genders support. */
+#undef WITH_GENDERS
+
+/* Define if building with Kerberos IV support. */
+#undef WITH_KRB4
+
+/* Define if building with RMS support. */
+#undef WITH_RMS
+
+/* Define if your processor stores words with the most significant byte first
+   (like Motorola and SPARC, unlike Intel and VAX). */
+#undef WORDS_BIGENDIAN

@@ -1,4 +1,5 @@
-dnl Process this file with autoconf to produce a configure script.
+dnl autoconf configure.ac >configure
+dnl autoheader configure.ac >config.h.in
 dnl
 dnl $Id$
 dnl
@@ -7,7 +8,7 @@ dnl See ./DISCLAIMER
 
 dnl Prologue.
 dnl
-AC_INIT(common.h)
+AC_INIT(conf.h)
 AC_CONFIG_AUX_DIR(auxdir)
 AC_CONFIG_HEADER(config.h)
 AC_PREFIX_DEFAULT(/usr)
