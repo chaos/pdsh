@@ -140,6 +140,8 @@ Release 1.6
 
 	Added support for allocating the wcoll from an RMS partition.
 
-	Autoconfiscated.
+	Autoconfiscated. 
+
+	Added a list of configured features to pdsh -V output.
 
 	Released version 1.6.

@@ -645,6 +645,9 @@ static void show_version(void)
 #ifdef	_PATH_SDRGETOBJECTS
 	printf("+sdr");
 #endif
+#if	!NDEBUG
+	printf("+debug");
+#endif
 	printf("\n");
 	exit(0);
 }
