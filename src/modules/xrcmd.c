@@ -276,7 +276,7 @@ xrcmd(char *ahost, char *addr, char *locuser, char *remuser,
                 err("%p: %S: rcmd: select (setting up stderr): %m\n",
                     ahost);
             else
-                err("%p: %S: select: protocol failure in circuit setup\n",
+                err("%p: %S: rcmd: select: protocol failure in circuit setup\n",
                     ahost);
             (void) close(s2);
             goto bad;

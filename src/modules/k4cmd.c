@@ -269,7 +269,7 @@ k4cmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
                 err("%p: %S: k4cmd: select (setting up stderr): %m\n",
                     ahost);
             else
-                err("%p: %S: select: protocol failure in circuit setup\n",
+                err("%p: %S: k4cmd: select: protocol failure in circuit setup\n",
                     ahost);
             (void) close(s2);
             goto bad;
