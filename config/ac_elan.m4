@@ -25,7 +25,7 @@ AC_DEFUN([AC_ELAN],
 	        [ac_elan_have_rmscall=yes; ELAN_LIBS="-lrmscall"])
 
    if test "$ac_elan_have_rmscall" != "yes" ; then
-       AC_MSG_NOTICE([Cannot support mqshell without librmscall])        
+       AC_MSG_NOTICE([Cannot support QsNet without librmscall])        
    fi
 
    AC_CHECK_LIB([elan3], [elan3_create],  
@@ -45,18 +45,20 @@ AC_DEFUN([AC_ELAN],
       ELAN_LIBS="$ELAN_LIBS -lelanctrl"
       test "$ac_elan_have_rmscall" = "yes" && ac_have_elan="yes"
    else
-      AC_MSG_NOTICE([Cannot build mqshell without libelan3 or libelanctrl!])
+      AC_MSG_NOTICE([Cannot support QsNet without libelan3 or libelanctrl!])
    fi
 
-   AC_CHECK_LIB([elanhosts], [elanhost_config_create],
-                [ac_elan_have_elanhosts=yes], [])
+   if test "$ac_have_elan" = yes; then
+     AC_CHECK_LIB([elanhosts], [elanhost_config_create],
+                  [ac_elan_have_elanhosts=yes], [])
 
-   if test "$ac_elan_have_elanhosts" = "yes"; then
-      AC_DEFINE(HAVE_LIBELANHOSTS, 1, [define if you have libelanhosts.])
-      ELAN_LIBS="$ELAN_LIBS -lelanhosts"
-   else
-      ac_have_elan="no"
-      AC_MSG_NOTICE([Cannot build QsNet modules without libelanhosts])
+     if test "$ac_elan_have_elanhosts" = "yes"; then
+        AC_DEFINE(HAVE_LIBELANHOSTS, 1, [define if you have libelanhosts.])
+        ELAN_LIBS="$ELAN_LIBS -lelanhosts"
+     else
+        ac_have_elan="no"
+        AC_MSG_NOTICE([Cannot build QsNet modules without libelanhosts])
+     fi
    fi
 
    AC_SUBST(ELAN_LIBS)
