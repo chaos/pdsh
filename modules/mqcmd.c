@@ -87,9 +87,10 @@ static char sccsid[] = "@(#)mcmd.c      Based from: 8.3 (Berkeley) 3/26/94";
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/time.h>
-#include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/poll.h>
+#include <sys/select.h>
 
 #ifdef HAVE_PTHREAD
 #include <pthread.h>
@@ -479,8 +480,7 @@ mqcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
   ssize_t m_rv;
   sigset_t blockme;
   sigset_t oldset;
-  int maxfd;
-  fd_set reads;
+  struct pollfd pfds[2];
 
   sigemptyset(&blockme);
   sigaddset(&blockme, SIGURG);
@@ -678,13 +678,13 @@ mqcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
   free(m);
   free(tmbuf);
 
-  FD_ZERO(&reads);
-  FD_SET(s, &reads);
-  FD_SET(s2, &reads);
-  maxfd = (s > s2) ? s : s2;
-  if (select(maxfd + 1, &reads, 0, 0, 0) < 1 || !FD_ISSET(s2, &reads)) {
+  pfds[0].fd = s;
+  pfds[1].fd = s2;
+  pfds[0].events = pfds[1].events = POLLIN;
+  pfds[0].revents = pfds[1].revents = 0;
+  if (((rv = poll(pfds, 2, -1)) < 0) || rv != 1 || (pfds[0].revents > 0)) {
     if (errno != 0)
-      err("%p: %S: mqcmd: select (setting up stderr): %m\n", ahost);
+      err("%p: %S: mqcmd: poll (setting up stderr): %m\n", ahost);
     else
       err("%p: %S: select: protocol failure in circuit setup\n", ahost);
     (void) close(s2);

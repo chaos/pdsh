@@ -66,6 +66,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/select.h>
+#include <sys/poll.h>
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <sys/param.h>
@@ -650,12 +651,13 @@ static int _extract_rc(char *buf)
 static void *_rsh_thread(void *args)
 {
     thd_t *a = (thd_t *) args;
-    int rv, maxfd;
+    int rv;
     FILE *fp, *efp = NULL;
-    fd_set readfds, writefds, wantrfds, wantwfds;
     char *buf = NULL;
     int result = DSH_DONE;      /* the desired outcome */
     int *efdp = a->dsh_sopt ? &a->efd : NULL;
+    struct pollfd pfds[2];
+    int nfds = 1;
 
     _int_block();               /* block SIGINT */
 
@@ -686,46 +688,45 @@ static void *_rsh_thread(void *args)
         /* use stdio package for buffered I/O */
         fp = fdopen(a->fd, "r+");
 
-        /* prep for select call */
-        FD_ZERO(&wantrfds);
-        FD_SET(a->fd, &wantrfds);
+        /* prep for poll call */
+        pfds[0].fd = a->fd;
         if (a->dsh_sopt) {      /* separate stderr */
             efp = fdopen(a->efd, "r");
-            FD_SET(a->efd, &wantrfds);
+            pfds[1].fd = a->efd;
+            nfds++;
         }
-        FD_ZERO(&wantwfds);
+        else
+            pfds[1].fd = -1;
+
+        pfds[0].events = pfds[1].events = POLLIN; 
 #if	STDIN_BCAST             /* not yet supported */
-        FD_SET(a->fd, &wantwfds);
+            pfds[0].events |= POLLOUT;
 #endif
-        maxfd = (a->dsh_sopt && a->efd > a->fd) ? a->efd : a->fd;
 
         /*
-         * Select / read / report loop.
+         * poll / read / report loop.
          */
-        while (FD_ISSET(a->fd, &wantrfds) || FD_ISSET(a->fd, &wantwfds)
-               || (a->dsh_sopt && FD_ISSET(a->efd, &wantrfds))) {
+        while (pfds[0].fd >= 0 || pfds[1].fd >= 0) {
 
-            memcpy(&readfds, &wantrfds, sizeof(fd_set));
-            memcpy(&writefds, &wantwfds, sizeof(fd_set));
+            pfds[0].revents = pfds[1].revents = 0;
 
-            /* select (possibility for SIGALRM) */
-            rv = select(maxfd + 1, &readfds, &writefds, NULL, NULL);
+            /* poll (possibility for SIGALRM) */
+            rv = poll(pfds, nfds, -1);
             if (rv == -1) {
                 if (errno == EINTR)
                     err("%p: %S: command timeout\n", a->host);
                 else
-                    err("%p: %S: select: %m\n", a->host);
+                    err("%p: %S: poll: %m\n", a->host);
                 result = DSH_FAILED;
                 break;
             }
 
             /* stdout ready or closed ? */
-            if (FD_ISSET(a->fd, &readfds)) {
+            if (pfds[0].revents > 0) {
                 rv = xfgets(&buf, fp);
-                if (rv <= 0) {  /* closed */
-                    FD_CLR(a->fd, &wantrfds);
-                    FD_CLR(a->fd, &wantwfds);
+                if (rv <= 0)  { /* closed */
                     fclose(fp);  /* also closes original fd */
+                    pfds[0].fd = -1;
                 }
                 if (rv == -1)   /* error */
                     err("%p: %S: xfgets: %m\n", a->host);
@@ -741,11 +742,11 @@ static void *_rsh_thread(void *args)
             }
 
             /* stderr ready or closed ? */
-            if (a->dsh_sopt && FD_ISSET(a->efd, &readfds)) {
+            if (a->dsh_sopt && pfds[1].revents > 0) {
                 rv = xfgets(&buf, efp);
-                if (rv <= 0) {  /* closed */
-                    FD_CLR(a->efd, &wantrfds);
+                if (rv <= 0)  {/* closed */
                     fclose(efp);  /* also closes original fd */
+                    pfds[1].fd = -1;
                 }
                 if (rv == -1)   /* error */
                     err("%p: %S: xfgets: %m\n", a->host);
