@@ -19,8 +19,7 @@
 #include "list.h"
 #include "opt.h"
 
-
-#if	HAVE_MAGIC_RSHELL_CLEANUP
+#if	HAVE_MAGIC_RSHELL_CLEANUP && !HAVE_SSH && !HAVE_KRB4
 #define DFLT_SEPARATE_STDERR	false
 #define DFLT_FANOUT 		64
 #else

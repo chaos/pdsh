@@ -186,3 +186,5 @@ Release 1.6+
 	Rcp code to handle short writes just in case.
 
 	Updated copyright notice and normalized function defs.
+
+	If using ssh/kerberos, use conservative fanout and open stderr socket.
