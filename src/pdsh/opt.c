@@ -63,8 +63,6 @@ Usage: pdsh [-options] command ...\n\
 #if	HAVE_MAGIC_RSHELL_CLEANUP
 #define OPT_USAGE_STDERR "\
 -s                separate stderr and stdout\n"
-#else
-#define OPT_USAGE_STDERR ""
 #endif
 
 
@@ -89,9 +87,13 @@ Usage: pdcp [-options] src [src2...] dest\n\
 /* undocumented "-Q" option */
 
 
+#if	HAVE_MAGIC_RSHELL_CLEANUP
 #define DSH_ARGS	"sS"
+#else
+#define DSH_ARGS        "S"
+#endif
 #define PCP_ARGS	"pr"
-#define GEN_ARGS	"hLR:t:csqf:w:x:l:u:bI:deVT:Q"
+#define GEN_ARGS	"hLR:t:cqf:w:x:l:u:bI:deVT:Q"
 
 /*
  *  Pdsh options string (for getopt) -- initialized
@@ -568,7 +570,9 @@ static void _usage(opt_t * opt)
 
     if (opt->personality == DSH) {
         err(OPT_USAGE_DSH);
+#if	HAVE_MAGIC_RSHELL_CLEANUP
         err(OPT_USAGE_STDERR);
+#endif
     } else                      /* PCP */
         err(OPT_USAGE_PCP);
 
