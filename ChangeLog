@@ -1,3 +1,7 @@
+2003-10-28  Mark Grondona <mgrondona@llnl.gov>
+	
+	* src/pdsh/Makefile.am : Removed QSW_LIBS from pdsh binaries.
+
 2003-10-27  Jim Garlick <garlick@llnl.gov>
 
 	* src/qsnet/qswutil.c (qsw_decode_cap) : Changed format
