@@ -1,8 +1,5 @@
 2003-12-12  Albert Chu <chu11@llnl.gov>
 
-	* src/modules/mqcmd.c (mqcmd): Added munge ctx for better error
-	message.
-
 	Upgraded mqshd daemon based on changes in the original mrshd
 	daemon.
 	
@@ -17,6 +14,14 @@
 	"Internal System Error".  Cleaned up code to be more similar to
 	mrshd daemon code.
 
+	Misc
+
+	* src/modules/mqcmd.c (mqcmd): Added munge ctx for better error
+	message.
+
+	* src/modules/mcmd.c: Re-worked code to have similar style to mcmd
+	module from mrsh project, easing potential bug fixes later on.
+	
 2003-12-10  Mark Grondona <mgrondona@llnl.gov>
 	
 	* src/common/Makefile.am, src/modules/Makefile.am, 

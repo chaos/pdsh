@@ -192,8 +192,7 @@ struct pdsh_module pdsh_module_info = {
 static int
 mcmd_init(opt_t * opt)
 {
-    int rand_fd;
-    ssize_t m_rv;
+    int rv, rand_fd;
 
     /*
      * Drop elevated permissions if we have them.
@@ -207,23 +206,21 @@ mcmd_init(opt_t * opt)
      * server sets up the stderr socket and sends it to us.
      * We need to loop for the tiny possibility we read 0 :P
      */
-    rand_fd = open ("/dev/urandom", O_RDONLY | O_NONBLOCK);
-    if ( rand_fd < 0 ) {
+    if ((rand_fd = open ("/dev/urandom", O_RDONLY | O_NONBLOCK)) < 0 ) {
         err("%p: mcmd: Open of /dev/urandom failed\n");
         return -1;
     }
 
     do {
-        m_rv = read (rand_fd, &randy, sizeof(uint32_t));
-        if (m_rv < 0) {
+        if ((rv = read (rand_fd, &randy, sizeof(uint32_t))) < 0) {
             close(rand_fd);
             err("%p: mcmd: Read of /dev/urandom failed\n");
             return -1;
         }
 
-        if (m_rv < (int) (sizeof(uint32_t))) {
+        if (rv < (int) (sizeof(uint32_t))) {
             close(rand_fd);
-            err("%p: mcmd: Read of /dev/urandom returned too few bytes\n");
+            err("%p: mcmd: Read of returned too few bytes\n");
             return -1;
         }
     } while (randy == 0);
@@ -274,30 +271,27 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
 {
     struct sockaddr m_socket;
     struct sockaddr_in *getp;
-    struct sockaddr_in stderr_sock;
     struct sockaddr_in sin, from;
     struct sockaddr_storage ss;
     struct in_addr m_in;
     unsigned int rand, randl;
     unsigned char *hptr;
-    int s, lport, rv;
+    int s, s2, rv, mount, lport;
     int mcount;
-    int s2, s3;
     char c;
     char num[6] = {0};
     char *mptr;
     char *mbuf;
     char *tmbuf;
-    char haddrdot[16] = {0};
     char *m;
+    char *mpvers;
+    char num_seq[12] = {0};
     socklen_t len;
-    ssize_t m_rv;
     sigset_t blockme;
     sigset_t oldset;
-    struct xpollfd xpfds[2];
-    char *mpvers = MRSH_PROTOCOL_VERSION;
-    char num_seq[12] = {0};
+    char haddrdot[16] = {0};
     munge_ctx_t ctx;
+    struct xpollfd xpfds[2];
 
     sigemptyset(&blockme);
     sigaddset(&blockme, SIGURG);
@@ -322,8 +316,7 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     lport = 0;
     len = sizeof(struct sockaddr_in);
 
-    s = socket(AF_INET, SOCK_STREAM, 0);
-    if (s < 0) {
+    if ((s = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         err("%p: %S: mcmd: socket call stdout failed: %m\n", ahost);
         EXIT_PTHREAD();
     }
@@ -331,8 +324,7 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     memset (&ss, '\0', sizeof(ss));
     ss.ss_family = AF_INET;
 
-    rv = bind(s, (struct sockaddr *)&ss, len); 
-    if (rv < 0) {
+    if (bind(s, (struct sockaddr *)&ss, len) < 0) {
         err("%p: %S: mcmd: bind failed: %m\n", ahost);
         goto bad;
     }
@@ -342,34 +334,31 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     memcpy(&sin.sin_addr.s_addr, addr, IP_ADDR_LEN); 
 
     sin.sin_port = htons(MRSH_PORT);
-    rv = connect(s, (struct sockaddr *)&sin, sizeof(sin));
-    if (rv < 0) {
+    if (connect(s, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
         err("%p: %S: mcmd: connect failed: %m\n", ahost);
         goto bad;
     }
 
-    /*
-     * Start the socket setup for the stderr.
-     */
     lport = 0;
     s2 = -1;
     if (fd2p != NULL) {
+        /*
+         * Start the socket setup for the stderr.
+         */
+        struct sockaddr_in sin2;
 
-        s2 = socket(AF_INET, SOCK_STREAM, 0);
-        if (s2 < 0) {
-            close(s2);
+        if ((s2 = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
             err("%p: %S: mcmd: socket call for stderr failed: %m\n", ahost);
             goto bad;
         }
 
-        memset (&stderr_sock, 0, sizeof(stderr_sock));
-        stderr_sock.sin_family = AF_INET;
-        stderr_sock.sin_addr.s_addr = htonl(INADDR_ANY);
-        stderr_sock.sin_port = 0;
-
-        if (bind(s2,(struct sockaddr *)&stderr_sock, sizeof(stderr_sock)) < 0) {
-            close(s2);
+        memset (&sin2, 0, sizeof(sin2));
+        sin2.sin_family = AF_INET;
+        sin2.sin_addr.s_addr = htonl(INADDR_ANY);
+        sin2.sin_port = 0;
+        if (bind(s2,(struct sockaddr *)&sin2, sizeof(sin2)) < 0) {
             err("%p: %S: bind failed: %m\n", ahost);
+            close(s2);
             goto bad;
         }
 
@@ -382,29 +371,28 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
 
         /* getsockname is thread safe */
         if (getsockname(s2,&m_socket,&len) < 0) {
-            close(s2);
             err("%p: %S: getsockname failed: %m\n", ahost);
+            close(s2);
             goto bad;
         }
 
         getp = (struct sockaddr_in *)&m_socket;
-
         lport = ntohs(getp->sin_port);
 
-        rv = listen(s2, 1);
-        if (rv < 0) {
-            close(s2);
+        if (listen(s2, 5) < 0) {
             err("%p: %S: mcmd: listen() failed: %m\n", ahost);
+            close(s2);
             goto bad;
         }
     }
 
+    /* put port in buffer. will be 0 if user didn't want stderr */
     snprintf(num,sizeof(num),"%d",lport);
-    memcpy(&m_in.s_addr, addr, IP_ADDR_LEN);
 
     /* inet_ntoa is not thread safe, so we use the following, 
      * which is more or less ripped from glibc
      */
+    memcpy(&m_in.s_addr, addr, IP_ADDR_LEN);
     hptr = (unsigned char *)&m_in;
     sprintf(haddrdot, "%u.%u.%u.%u", hptr[0], hptr[1], hptr[2], hptr[3]);
 
@@ -438,19 +426,22 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
      *
      */
 
-    mcount = ((strlen(remuser)+1) + (strlen(mpvers)+1) + (strlen(haddrdot)+1) +
-            (strlen(num)+1) + (strlen(num_seq)+1) + (strlen(cmd)+2));
+    mpvers = MRSH_PROTOCOL_VERSION;
+
+    mcount = ((strlen(remuser)+1) + (strlen(mpvers)+1) + 
+              (strlen(haddrdot)+1) + (strlen(num)+1) + 
+              (strlen(num_seq)+1) + strlen(cmd)+2);
 
     tmbuf = mbuf = malloc(mcount);
     if (tmbuf == NULL) {
-        close(s2);
         err("%p: %S: mcmd: Error from malloc\n", ahost);
+        close(s2);
         goto bad;
     }
 
     /*
-     * The following memset() call takes the extra trailing null as part of its
-     * count as well.
+     * The following memset() call takes the extra trailing null as
+     * part of its count as well.
      */
     memset(mbuf,0,mcount);
 
@@ -468,11 +459,11 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
 
     ctx = munge_ctx_create();
 
-    if ((m_rv = munge_encode(&m,ctx,mbuf,mcount)) != EMUNGE_SUCCESS) {
-        close(s2);
-        free(tmbuf);
+    if ((rv = munge_encode(&m,ctx,mbuf,mcount)) != EMUNGE_SUCCESS) {
         err("%p: %S: mcmd: munge_encode: %s\n", ahost, munge_ctx_strerror(ctx));
         munge_ctx_destroy(ctx);
+        close(s2);
+        free(tmbuf);
         goto bad;
     }
 
@@ -486,12 +477,12 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
      * doesn't want stderr
      */
     if (fd2p != NULL) {
-        m_rv = fd_write_n(s, num, strlen(num)+1);
-        if (m_rv != (strlen(num) + 1)) {
+        rv = fd_write_n(s, num, strlen(num)+1);
+        if (rv != (strlen(num) + 1)) {
             free(m);
             free(tmbuf);
             if (errno == EPIPE)
-                err("%p: %S: mcmd: Lost connection: %m", ahost);
+                err("%p: %S: mcmd: Lost connection (EPIPE): %m", ahost);
             else
                 err("%p: %S: mcmd: Write of stderr port failed: %m\n", ahost);
             close(s2);
@@ -505,8 +496,8 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     /*
      * Write the munge_encoded blob to the socket.
      */
-    m_rv = fd_write_n(s, m, mcount);
-    if (m_rv != mcount) {
+    rv = fd_write_n(s, m, mcount);
+    if (rv != mcount) {
         free(m);
         free(tmbuf);
         if (errno == EPIPE)
@@ -521,6 +512,11 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     free(tmbuf);
 
     if (fd2p != NULL) {
+        /*
+         * Wait for stderr connection from daemon.
+         */
+        int s3;
+
         errno = 0;
         xpfds[0].fd = s;
         xpfds[1].fd = s2;
@@ -537,28 +533,40 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
             goto bad;
         }
 
+        errno = 0;
         len = sizeof(from); /* arg to accept */
-        s3 = accept(s2, (struct sockaddr *)&from, &len);
-        if (s3 < 0) {
-            close(s2);
+
+        if ((s3 = accept(s2, (struct sockaddr *)&from, &len)) < 0) {
             err("%p: %S: mcmd: accept (stderr) failed: %m\n", ahost);
+            close(s2);
             goto bad;
+        }
+
+        if (from.sin_family != AF_INET) {
+            err("%p: %S: mcmd: bad family type: %d\n", ahost, from.sin_family);
+            goto bad2;
         }
 
         close(s2);
 
+        /*
+         * The following fixes a race condition between the daemon
+         * and the client.  The daemon is waiting for a null to
+         * proceed.  We do this to make sure that we have our
+         * socket is up prior to the daemon running the command.
+         */
         if (write(s,"",1) < 0) {
-            err("%p: %S: mcmd: Cannot communicate with daemon to proceed: %m\n", ahost);
+            err("%p: %S: mcmd: Could not communicate to daemon to proceed: %m\n", ahost);
             close(s3);
             goto bad;
         }
 
         /*
-         * Read from our stderr.  The server should have placed our random number
-         * we generated onto this socket.
+         * Read from our stderr.  The server should have placed our
+         * random number we generated onto this socket.
          */
-        m_rv = fd_read_n(s3, &rand, sizeof(rand));
-        if (m_rv != (ssize_t) (sizeof(rand))) {
+        rv = fd_read_n(s3, &rand, sizeof(rand));
+        if (rv != (ssize_t) (sizeof(rand))) {
             err("%p: %S: mcmd: Bad read of expected verification "
                     "number off of stderr socket: %m\n", ahost);
             close(s3);
@@ -572,9 +580,8 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
 
             memcpy(tptr,(char *) &rand,sizeof(rand));
             tptr += sizeof(rand);
-            m_rv = fd_read_line (s3, tptr, LINEBUFSIZE);
-            if (m_rv < 0)
-                err("%p: %S: mcmd: Bad read of error from stderr: %m\n", ahost);
+            if (fd_read_line (s3, tptr, LINEBUFSIZE) < 0)
+                err("%p: %S: mcmd: Read error from remote host: %m\n", ahost);
             else
                 err("%p: %S: mcmd: Error: %s\n", ahost, &tmpbuf[0]);
             close(s3);
@@ -585,20 +592,14 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
          * Set the stderr file descriptor for the user...
          */
         *fd2p = s3;
-        from.sin_port = ntohs((u_short)from.sin_port);
-        if (from.sin_family != AF_INET) {
-            err("%p: %S: mcmd: socket: protocol failure in circuit setup\n", ahost);
-            goto bad2;
-        }
     }
 
-    m_rv = read(s, &c, 1);
-    if (m_rv < 0) {
+    if ((rv = read(s, &c, 1)) < 0) {
         err("%p: %S: mcmd: read: protocol failure: %m\n", ahost);
         goto bad2;
     }
 
-    if (m_rv != 1) {
+    if (rv != 1) {
         err("%p: %S: mcmd: read: protocol failure: invalid response\n", ahost);
         goto bad2;
     }
@@ -607,11 +608,10 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
         /* retrieve error string from remote server */
         char tmpbuf[LINEBUFSIZE];
 
-        m_rv = fd_read_line (s, &tmpbuf[0], LINEBUFSIZE);
-        if (m_rv < 0)
+        if (fd_read_line (s, &tmpbuf[0], LINEBUFSIZE) < 0)
             err("%p: %S: mcmd: Error from remote host\n", ahost);
         else
-            err("%p: %S: %s\n", ahost, tmpbuf);
+            err("%p: %S: mcmd: Error: %s\n", ahost, tmpbuf);
         goto bad2;
     }
     RESTORE_PTHREAD();
@@ -619,7 +619,7 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     return (s);
 
 bad2:
-    if (fd2p != NULL)
+    if (lport)
         close(*fd2p);
 bad:
     close(s);
