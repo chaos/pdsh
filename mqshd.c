@@ -244,7 +244,8 @@ static const char *findhostname(struct sockaddr_in *fromp)
     hostname = strdup(inet_ntoa(fromp->sin_addr));
 
   if (hostname == NULL) {
-    errnum = __INTERNAL;
+    syslog(LOG_INFO, "out of memory");
+    errnum = __SYSTEM;
     return NULL;
   }
 
@@ -641,10 +642,8 @@ doit(struct sockaddr_in *fromp)
     }
   }
 
-  if ((rhostname = findhostname(fromp)) == NULL) {
-      errnum = __SYSTEM;
+  if ((rhostname = findhostname(fromp)) == NULL)
       goto error_out;
-  }
 
 #ifdef USE_PAM
   retcode = pam_start("mqshell", pwd->pw_name, &conv, &pamh);
