@@ -44,7 +44,8 @@ in_mqshd_LDADD = \
     $(QSHELL_LIBS)
 
 libqsw_la_LDFLAGS = \
-    $(ELAN_LIBS)
+    $(ELAN_LIBS) \
+    $(LIBADD_DL)
 
 libqsw_la_SOURCES = \
     qswutil.c \
