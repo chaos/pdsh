@@ -19,6 +19,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <limits.h>	/* INT_MAX */
 
 #include <elan3/elan3.h>
 #include <elan3/elanvp.h>
@@ -33,9 +34,9 @@
 /* we will allocate program descriptions in this range */
 /* XXX note: do not start at zero as libelan shifts to get unique shm id */
 #define QSW_PRG_START  1
-#define QSW_PRG_END    100
+#define QSW_PRG_END    INT_MAX
 
-/* we will allocate hardware context numbers in this range */
+/* pdsh will allocate hardware context numbers in this range */
 #define QSW_HWCX_START	ELAN_USER_BASE_CONTEXT_NUM
 #define QSW_HWCX_END	ELAN_USER_TOP_CONTEXT_NUM
 
@@ -62,14 +63,14 @@ qsw_host2elanid(char *host)
 }
 
 /*
- * Given a list of hostnames and the number of tasks per node, 
+ * Given a list of hostnames and the number of processes per node, 
  * set the correct bits in the capability's bitmap and set high and
  * low node id's.
  */
 static int
-qsw_setbitmap(list_t nodelist, int tasks_per_node, ELAN_CAPABILITY *cap)
+qsw_setbitmap(list_t nodelist, int procs_per_node, ELAN_CAPABILITY *cap)
 {
-	int i, j, task0, node;
+	int i, j, proc0, node;
 
 	/* determine high and low node numbers */
 	cap->HighNode = cap->LowNode = -1;
@@ -87,22 +88,22 @@ qsw_setbitmap(list_t nodelist, int tasks_per_node, ELAN_CAPABILITY *cap)
 
 	/*
 	 * There are (nprocs * nnodes) significant bits in the mask, each 
-	 * representing a task slot.  Bits are off where for holes 
-	 * corresponding to task slots for unallocated nodes.
-	 * For example, if nodes 4 and 6 are running two tasks per node,
-	 * bits 0,1 (corresponding to the two tasks on node 4) and bits 4,5
-	 * (corresponding to the two tasks running no node 6) are set.
+	 * representing a process slot.  Bits are off where for holes 
+	 * corresponding to process slots for unallocated nodes.
+	 * For example, if nodes 4 and 6 are running two processes per node,
+	 * bits 0,1 (corresponding to the two processes on node 4) and bits 4,5
+	 * (corresponding to the two processes running no node 6) are set.
 	 */
 	for (i = 0; i < list_length(nodelist); i++) {
 		node = qsw_host2elanid(list_nth(nodelist, i));
-		for (j = 0; j < tasks_per_node; j++) {
-			task0 = (node - cap->LowNode) * tasks_per_node;
-			if (task0 + j >= (sizeof(cap->Bitmap) * 8))  {
+		for (j = 0; j < procs_per_node; j++) {
+			proc0 = (node - cap->LowNode) * procs_per_node;
+			if (proc0 + j >= (sizeof(cap->Bitmap) * 8))  {
 				printf("Bit %d too big for %d byte bitmap\n",
-					task0 + j, sizeof(cap->Bitmap));
+					proc0 + j, sizeof(cap->Bitmap));
 				return -1;
 			}
-			BT_SET(cap->Bitmap, task0 + j);
+			BT_SET(cap->Bitmap, proc0 + j);
 		}
 	}
 
@@ -295,19 +296,20 @@ qsw_get_prgnum(void)
 }
 
 /*
- * Prepare a capability that will be passed to all the tasks in a parallel job.
+ * Prepare a capability that will be passed to all the processes in a 
+ * parallel program.
  * Function returns a 0 on success, -1 = fail.
  */
 int
-qsw_init_capability(ELAN_CAPABILITY *cap, int tasks_per_node, list_t nodelist)
+qsw_init_capability(ELAN_CAPABILITY *cap, int procs_per_node, list_t nodelist)
 {
 	int i;
 
 	srand48(getpid());
 
 	/*
-	 * Assuming block as opposed to cyclic task allocation, and
-	 * single rail (switch plane).
+	 * Assuming block as opposed to cyclic process allocation, and
+	 * single rail.
 	 */
 	elan3_nullcap(cap);
 	cap->Type = ELAN_CAP_TYPE_BLOCK;
@@ -323,28 +325,29 @@ qsw_init_capability(ELAN_CAPABILITY *cap, int tasks_per_node, list_t nodelist)
 
 	/*
 	 * Elan hardware context numbers must be unique per node.
- 	 * One is allocated to each parallel task.  In order for tasks on the
-	 * same node to communicate, they must use contexts in the hi-lo range
-	 * of a common capability.  With pdsh we have no persistant daemon
-	 * to allocate these, so we settle for a random one.  
+ 	 * One is allocated to each parallel process.  In order for processes 
+ 	 * on the same node to communicate, they must use contexts in the 
+	 *  hi-lo range of a common capability.  With pdsh we have no 
+	 * persistant daemon to allocate these, so we settle for a random one.  
 	 */
 	cap->LowContext = lrand48() % (QSW_HWCX_END - QSW_HWCX_START + 1);
 	cap->LowContext += QSW_HWCX_START;
-	cap->HighContext = cap->LowContext + tasks_per_node - 1;
+	cap->HighContext = cap->LowContext + procs_per_node - 1;
 	/* not necessary to initialize cap->MyContext */
 
 	/*
-	 * Describe the mapping of tasks to nodes.
+	 * Describe the mapping of processes to nodes.
 	 * This sets cap->HighNode, cap->LowNode, and cap->Bitmap.
 	 */
-	if (qsw_setbitmap(nodelist, tasks_per_node, cap) < 0) {
+	if (qsw_setbitmap(nodelist, procs_per_node, cap) < 0) {
 		err("%p: do all target nodes have an Elan adapter?\n");
 		return -1;
 	}
-	cap->Entries = list_length(nodelist) * tasks_per_node;
+	cap->Entries = list_length(nodelist) * procs_per_node;
 
 	if (cap->Entries > ELAN_MAX_VPS) {
-		err("%p: too many tasks requested (max %d)\n", ELAN_MAX_VPS);
+		err("%p: too many processes requested (max %d)\n", 
+				ELAN_MAX_VPS);
 		return -1;
 	}
 
@@ -352,35 +355,35 @@ qsw_init_capability(ELAN_CAPABILITY *cap, int tasks_per_node, list_t nodelist)
 }
 
 /*
- * Take necessary steps to set up to run an Elan MPI "program" (set of tasks)
- * on a node.  
+ * Take necessary steps to set up to run an Elan MPI "program" 
+ * (set of processes) on a node.  
  *
  * Process 1	Process 2	|	Process 3	Process 4
  * read args			|
  * fork	-------	rms_prgcreate	|
  * waitpid 	elan3_create	|
  * 		rms_prgaddcap	|
- *		fork N tasks ---+------	rms_setcap
+ *		fork N procs ---+------	rms_setcap
  *		wait all	|	setup RMS_ env	
  *				|	fork ----------	setuid, etc.
- *				|	wait		exec mpi task
+ *				|	wait		exec mpi process
  *				|	exit
  *		exit		|
  * rms_prgdestroy		|
- * exit				|     (one pair of processes per task!)
+ * exit				|     (one pair of processes per mpi proc!)
  *
  * Excessive forking seems to be required!  
  * - The first fork is required because rms_prgdestroy can't occur in the 
  *   process that calls rms_prgcreate (since it is a member, ECHILD).
- * - The second fork is required when running multiple tasks per node because
- *   each process must announce its use of one of the hw contexts in the range
- *   allocated in the capability.
+ * - The second fork is required when running multiple processes per node 
+ *   because each process must announce its use of one of the hw contexts 
+ *   in the range allocated in the capability.
  * - The third fork seems required after the rms_setcap or else elan3_attach
- *   will fail wiht EINVAL.
+ *   will fail with EINVAL.
  *
- * One task:
+ * One process:
  *    init-xinetd-+-in.qshd---in.qshd---in.qshd---in.qshd---sleep
- * Two tasks:
+ * Two processes:
  *    init-xinetd-+-in.qshd---in.qshd---2*[in.qshd---in.qshd---sleep]
  * (if stderr backchannel is active, add one in.qshd)
  *   
@@ -393,11 +396,11 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 	int cpid[ELAN_MAX_VPS];
 	ELAN3_CTX *ctx;
 	char tmpstr[1024];
-	int tasks_per_node; 
-	int task_index;
+	int procs_per_node; 
+	int proc_index;
 
 	if (qi->nprocs > ELAN_MAX_VPS) /* should catch this in client */
-		errx("%p: too many tasks requested\n");
+		errx("%p: too many processes requested\n");
 
 	/* 
 	 * First fork.  Parent waits for child to terminate, then cleans up.
@@ -440,28 +443,28 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 			elan3_capability_string(cap, tmpstr), cap->Bitmap[0]);
 
 	/* 
-	 * Second fork - once for each task.
+	 * Second fork - once for each process.
 	 * Parent waits for all children to exit the it exits.
-	 * Child assigns hardware context to each task, then forks again...
+	 * Child assigns hardware context to each process, then forks again...
 	 */
-	tasks_per_node = qi->nprocs / qi->nnodes;
-	for (task_index = 0; task_index < tasks_per_node; task_index++) {
-		cpid[task_index] = fork();
-		if (cpid[task_index] < 0)
-			errx("%p: fork (%d): %m\n", task_index);
-		else if (cpid[task_index] == 0)
+	procs_per_node = qi->nprocs / qi->nnodes;
+	for (proc_index = 0; proc_index < procs_per_node; proc_index++) {
+		cpid[proc_index] = fork();
+		if (cpid[proc_index] < 0)
+			errx("%p: fork (%d): %m\n", proc_index);
+		else if (cpid[proc_index] == 0)
 			break;
 	}
 	/* parent */
-	if (task_index == tasks_per_node) {
-		int waiting = tasks_per_node;
+	if (proc_index == procs_per_node) {
+		int waiting = procs_per_node;
 		int i;
 
 		while (waiting > 0) {
 			pid = waitpid(0, NULL, 0); /* any in pgrp */
 			if (pid < 0)
 				errx("%p: waitpid: %m\n");
-			for (i = 0; i < tasks_per_node; i++) {
+			for (i = 0; i < procs_per_node; i++) {
 				if (cpid[i] == pid)
 					waiting--;
 			}
@@ -478,11 +481,11 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 	 * - arg2 indexes the hw ctxt range in the capability
 	 *   [cap->LowContext, cap->HighContext]
 	 */
-	if (rms_setcap(0, task_index) < 0)
-		errx("%p: rms_setcap (%d): %m\n", task_index);
+	if (rms_setcap(0, proc_index) < 0)
+		errx("%p: rms_setcap (%d): %m\n", proc_index);
 
 	/* set RMS_ environment vars */
-	qi->procid = qi->rank = (qi->nodeid * tasks_per_node) + task_index;
+	qi->procid = qi->rank = (qi->nodeid * procs_per_node) + proc_index;
 	if (qsw_rms_setenv(qi) < 0)
 		errx("%p: failed to set environment variables: %m\n");
 
@@ -502,7 +505,7 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 	}
 	/* child continues here */
 
-	/* Exec the task... */
+	/* Exec the process... */
 }
 
 #ifdef TEST_MAIN
@@ -560,8 +563,8 @@ usage(void)
 }
 
 /* 
- * Test program for qsw runtime routines.
- * Run one or more tasks locally, e.g. for MPI ping test across shared memory:
+ * Test program for qsw runtime routines.  Run one or more processes locally, 
+ * e.g. for MPI ping test across shared memory:
  *    qrun -n 2 -u 5588 mping 1 32768
  */
 int
@@ -626,7 +629,7 @@ main(int argc, char *argv[])
 
 	/* set up capabilities, environment, fork, etc.. */
 	qsw_setup_program(&cap, &qinfo, uid);
-	/* multiple threads continue on here (one per task) */
+	/* multiple threads continue on here (one per processes) */
 
 	if (seteuid(uid) < 0)
 		errx("%p: seteuid: %m\n");
