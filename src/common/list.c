@@ -442,3 +442,4 @@ void list_del(list_t l, int n)
 		l->data[i] = l->data[i + 1];
 	l->nitems--;
 }
+

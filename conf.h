@@ -22,6 +22,7 @@
 #define HAVE_GETHOSTBYNAME_R	1
 #define HAVE_STRERROR_R		1
 #define HAVE_ELAN3		1
+#define HAVE_RMS_PMANAGER	1
 #ifdef sparc
 #endif
 
@@ -45,6 +46,7 @@
 #define _PATH_NODEATTR		"/usr/bin/nodeattr"
 #define _PATH_MACHINES		"/usr/local/etc/machines"
 #define _PATH_SSH		"/usr/local/bin/ssh"
+#define _PATH_RMSQUERY		"/usr/bin/rmsquery"
 
 /*
  * Default values.
@@ -96,6 +98,9 @@
 #endif
 #ifndef HAVE_ELAN3
 #define HAVE_ELAN3		0
+#endif
+#ifndef HAVE_RMS_PMANAGER
+#define HAVE_RMS_PMANAGER	0
 #endif
 #ifndef NEED_STDERR
 #define NEED_STDERR		1

@@ -135,3 +135,6 @@ Release 1.5+
 
 	Added new options -x and -X for disabling hostname range expansion
 	and defining new expansion operator, respectively.
+
+	Added functions to allocate nodes via RMS for qshell - but not tied
+	to a pdsh wcoll option yet.  (qswutil.[c,h])

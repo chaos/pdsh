@@ -24,6 +24,9 @@
 #include <elan3/elan3.h>
 #include <elan3/elanvp.h>
 #include <rms/rmscall.h>
+#if HAVE_RMS_PMANAGER
+#include <rms/rmsapi.h>
+#endif
 
 #include "xmalloc.h"
 #include "xstring.h"
@@ -35,6 +38,93 @@
 /* XXX note: do not start at zero as libelan shifts to get unique shm id */
 #define QSW_PRG_START  1
 #define QSW_PRG_END    INT_MAX
+
+#if HAVE_RMS_PMANAGER
+/* 
+ * RMS provides no API to get the list of nodes once allocated,
+ * so we query its database.
+ */
+static list_t
+qsw_rid_to_nodes(char *part, int rid)
+{
+	FILE *f;
+	char tmpbuf[256];
+	char base[256], range[256];
+	list_t result = list_new();
+
+	/* XXX for xpopen, change quoting of resource id */
+	/* XXX how to specify partition?  do we need to? */
+	sprintf(tmpbuf, "%s \"select hostnames from resources where name='%d'\"",
+			_PATH_RMSQUERY, rid);
+
+	f = popen(tmpbuf, "r");
+	if (f == NULL)
+		errx("%p: error running %s\n", _PATH_RMSQUERY);
+	*tmpbuf = '\0';
+	while (fgets(tmpbuf, sizeof(tmpbuf), f) != NULL)
+		;
+	pclose(f);
+	/* should either have empty string or host[n-m] range */
+
+	if (sscanf(tmpbuf, "%[^[][%[^]]]", base, range) == 2) {
+		list_t nums = list_split_range(",", "-", range);
+		int i;
+
+		for (i = 0; i < list_length(nums); i++) {
+			snprintf(tmpbuf, sizeof(tmpbuf), "%s%s", 
+					base, list_nth(nums, i));
+			list_push(result, tmpbuf);
+		}
+	} else
+		list_push(result, tmpbuf);
+
+	return result;
+}
+
+/*
+ * Get a list of nodes from the RMS partition manager.
+ */
+list_t
+qsw_alloc(char *part, uid_t uid, int nnodes, int nprocs, int *rid)
+{
+	if (!part)
+	       part = rms_defaultPartition();
+
+	if (!part)  {
+		err("%p: rms: failed to lookup default partition\n");
+		return NULL;
+	}
+
+	err("XXX part %s totcpu %d totnodes %d freecpus %d\n", 
+			part, rms_numCpus(part), rms_numNodes(part),
+			rms_freeCpus(part));
+
+	/* need to belong to "rms" group to specify uid */
+	/* no project specified */
+	*rid = rms_allocateResource(part, nprocs, RMS_UNASSIGNED, nnodes,
+			uid, NULL, "immediate=1,hwbcast=0,rails=1");
+	switch (*rid) {
+		case -1:
+			err("%p: rms: request cannot be met\n");
+			return NULL;
+		case -2:
+			err("%p: rms: request temporarily cannot be met\n");
+			return NULL;
+		default:
+			err("%p: rms: allocated %s.%d\n", part, *rid);
+			break;
+	}
+
+	return qsw_rid_to_nodes(part, *rid);
+}
+
+void
+qsw_free(int rid)
+{
+	if (rms_deallocateResource(rid) < 0)
+		err("%p: rms: failed to deallocate resource %d\n", rid);
+}
+#endif
 
 /* 
  * Convert hostname to elan node number.  This version just returns
@@ -656,3 +746,59 @@ main(int argc, char *argv[])
 	exit(0);
 }
 #endif
+
+#ifdef TEST2_MAIN
+static void
+usage(void)
+{
+	errx("Usage %p -n procs -N cpus -u uid [-p partition]\n");
+}
+
+int
+main(int argc, char *argv[])
+{
+	extern char *optarg;
+	extern int optind;
+	int c;
+	int nnodes = 0, nprocs = 0;
+	uid_t uid;
+	list_t nodes;
+	int i;
+	int rid;
+	char *part = NULL;
+
+	err_init(xbasename(argv[0]));	/* init err package */
+
+	while ((c = getopt(argc, argv, "p:u:n:N:")) != EOF) {
+		switch (c) {
+			case 'u':
+				uid = atoi(optarg);
+				break;
+			case 'n':
+				nprocs = atoi(optarg);
+				break;
+			case 'N':
+				nnodes = atoi(optarg);
+				break;
+			case 'p':
+				part = optarg;
+				break;
+			default:
+				usage();
+		}
+	}
+	if (nprocs == 0 || nnodes == 0)
+		usage();
+
+	nodes = qsw_alloc(part, uid, nnodes, nprocs, &rid);
+	if (nodes)
+		for (i = 0; i < list_length(nodes); i++)
+			printf("%s\n", list_nth(nodes, i));
+
+	/* not sure if this is strictly necessary - exit seems enough */
+	if (nodes)
+		qsw_free(rid);
+
+	exit(0);
+}
+#endif /* TEST2_MAIN */
