@@ -1,0 +1,3 @@
+autoconf configure.ac >configure
+autoheader configure.ac >conf.h.in
+rm -f config.status config.log
