@@ -4,6 +4,9 @@
 # This makefile works for aix 4.3, linux (RedHat5.2/sparc), and 
 # Digital Unix 4.0.
 #
+PACKAGE=pdsh
+VERSION=1.5
+
 OBJS= 	list.o xmalloc.o xstring.o dsh.o main.o opt.o wcoll.o \
 	rcmd.o err.o pipecmd.o $(KRB_OBJS)
 HDRS=	list.h xmalloc.h xstring.h dsh.h opt.h wcoll.h conf.h err.h
@@ -62,3 +65,41 @@ install: $(PROG) $(MAN1) $(OTHER)
 	done
 
 $(OBJS): $(HDRS)
+
+
+# DEVELOPER TARGETS
+
+tar \
+$(PACKAGE)-$(VERSION).tgz: VERSION
+	@if test -z "$(PACKAGE)"; then echo "PACKAGE undefined"; exit 1; fi; \
+	if test -z "$(VERSION)"; then echo "VERSION undefined"; exit 1; fi; \
+	test -z "$$tag" && tag=`echo $(PACKAGE)-$(VERSION) | tr '.' '-'`; \
+	ver=`cvs co -r $$tag -p $(PACKAGE)/VERSION 2>/dev/null | \
+	  sed -ne 's/.*-\(.*\)/\1/p'`; \
+	if test -z "$$ver"; then echo "VERSION ($$tag) undefined"; exit 1; fi; \
+	tmp=$${TMPDIR-/tmp}/tmp-$(PACKAGE)-$$$$; \
+	name=$(PACKAGE)-$$ver; \
+	dir=$$tmp/$$name; \
+	echo "creating $$name.tgz ($$tag)"; \
+	$(mkinstalldirs) $$tmp >/dev/null; \
+	cvs export -r $$tag -d $$dir $(PACKAGE) >/dev/null && \
+	  (cd $$tmp; tar cf - $$name) | gzip -c9 > $$name.tgz; \
+	rm -rf $$tmp
+
+rpm: $(PACKAGE).spec $(PACKAGE)-$(VERSION).tgz
+	@if test -z "$(PACKAGE)"; then echo "PACKAGE undefined"; exit 1; fi; \
+	if test -z "$(VERSION)"; then echo "VERSION undefined"; exit 1; fi; \
+	tmp=$${TMPDIR-/tmp}/tmp-$(PACKAGE)-$$$$; \
+	test -f $(PACKAGE)-$(VERSION).tgz || exit 0; \
+	for d in BUILD RPMS SOURCES SPECS SRPMS TMP; do \
+	  $(mkinstalldirs) $$tmp/$$d >/dev/null; \
+	done; \
+	cp -p $(PACKAGE).spec $$tmp/SPECS; \
+	cp -p $(PACKAGE)-$(VERSION).tgz $$tmp/SOURCES; \
+	echo "creating $(PACKAGE)-$(VERSION) rpm"; \
+	rpm --showrc | egrep "_(gpg|pgp)_name" >/dev/null && sign="--sign"; \
+	rpm -ba --define "_tmppath $$tmp/TMP" --define "_topdir $$tmp" \
+	  $$sign --quiet $$tmp/SPECS/$(PACKAGE).spec && \
+	    cp -p $$tmp/RPMS/*/$(PACKAGE)-$(VERSION)*.*.rpm \
+	      $$tmp/SRPMS/$(PACKAGE)-$(VERSION)*.src.rpm ./; \
+	rm -rf $$tmp
