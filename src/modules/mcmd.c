@@ -511,16 +511,16 @@ pdsh_rcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
         return mcmd(ahost, addr, ruser, cmd, fd2p);
 }
 
-void 
+int
 pdsh_signal(int fd, int signum)
 {   
         mcmd_signal(fd, signum); 
-        return;
+        return 0;
 }
 
-void 
+int
 pdsh_rcmd_init(opt_t * opt)
 {   
         mcmd_init(opt);
-        return;
+        return 0;
 }
