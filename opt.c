@@ -101,7 +101,7 @@ void opt_default(opt_t *opt)
         } else
                 errx("%p: who are you?\n");
 
-#if KRB4
+#if HAVE_KRB4
 	/* for Kerberos IV (probably SP), assume root can K4, users cannot */
 	if (opt->luid == 0)
 		opt->rcmd_type = RCMD_K4
@@ -222,7 +222,7 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 	} else
 		strcpy(validargs, PCP_ARGS);
 	strcat(validargs, GEN_ARGS);
-#if KRB4
+#if HAVE_KRB4
  	strcat(validargs, KRB4_ARGS);
 #endif
 #if HAVE_SDRGETOBJECTS
@@ -610,7 +610,7 @@ static void usage(opt_t *opt)
 	} else /* PCP */
 		err(OPT_USAGE_PCP);
 	err(OPT_USAGE_COMMON);
-#if KRB4
+#if HAVE_KRB4
 	err(OPT_USAGE_KRB4);
 #endif
 #if HAVE_SDRGETOBJECTS
@@ -634,7 +634,7 @@ static void show_version(void)
 #if	HAVE_RMS_PMANAGER
 	printf("+rms");
 #endif
-#if	KRB4
+#if	HAVE_KRB4
 	printf("+krb4");
 #endif
 #if	HAVE_MACHINES

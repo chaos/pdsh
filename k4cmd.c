@@ -28,7 +28,7 @@
 
 #include "conf.h"
 
-#if	KRB4
+#if	HAVE_KRB4
 
 #include <pthread.h>
 
@@ -337,4 +337,4 @@ bad:
 	pthread_sigmask(SIG_SETMASK, &oldset, NULL);
 	return (-1);
 }
-#endif /* KRB4 */
+#endif /* HAVE_KRB4 */

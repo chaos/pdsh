@@ -194,7 +194,7 @@ static void fwd_signal(int signum)
 				case RCMD_BSD:
 					xrcmd_signal(t[i].efd, signum);
 					break;
-#if KRB4
+#if HAVE_KRB4
 				case RCMD_K4:
 					k4cmd_signal(t[i].efd, signum);
 					break;
@@ -510,7 +510,7 @@ static void *rcp(void *args)
 	a->start = time(NULL);
 	a->state = DSH_RCMD;
 	switch (a->rcmd_type) {
-#if KRB4
+#if HAVE_KRB4
 		case RCMD_K4:
 			a->fd = k4cmd(a->host, a->luser, a->ruser, 
 					cmd, a->nodeid, efdp);
@@ -606,7 +606,7 @@ static void *rsh(void *args)
 	/* establish the connection */
 	a->state = DSH_RCMD;
 	switch (a->rcmd_type) {
-#if KRB4
+#if HAVE_KRB4
 		case RCMD_K4:
 			a->fd = k4cmd(a->host, a->luser, a->ruser, 
 					a->dsh_cmd, a->nodeid, efdp);
@@ -802,7 +802,7 @@ int dsh(opt_t *opt)
 			qcmd_init(opt);
 			break;
 #endif
-#if KRB4
+#if HAVE_KRB4
 		case RCMD_K4:
 			k4cmd_init(opt);
 			break;

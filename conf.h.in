@@ -1,31 +1,68 @@
 /* conf.h.in.  Generated automatically from configure.ac by autoheader.  */
 
+/* Define if you have the `alarm' function. */
+#undef HAVE_ALARM
+
+/* Define if you have the <arpa/inet.h> header file. */
+#undef HAVE_ARPA_INET_H
+
+/* Define to 1 if you have the declaration of `strerror_r', and to 0 if you
+   don't. */
+#undef HAVE_DECL_STRERROR_R
+
 /* Define if you have the <dirent.h> header file, and it defines `DIR'. */
 #undef HAVE_DIRENT_H
 
-/* Define if building with Elan support. */
+/* Define if you have the `dup2' function. */
+#undef HAVE_DUP2
+
+/* define if building with Elan3 support */
 #undef HAVE_ELAN3
+
+/* Define if you have the `endpwent' function. */
+#undef HAVE_ENDPWENT
+
+/* Define if you have the <errno.h> header file. */
+#undef HAVE_ERRNO_H
 
 /* Define if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
-/* Define if building with Genders support. */
-#undef HAVE_GENDERS
+/* Define if you have the `fork' function. */
+#undef HAVE_FORK
 
-/* Define if you have the `gethostbyname_r' function. */
-#undef HAVE_GETHOSTBYNAME_R
+/* Define if you have the `getcwd' function. */
+#undef HAVE_GETCWD
+
+/* Define if you have the `gethostbyaddr' function. */
+#undef HAVE_GETHOSTBYADDR
+
+/* Define if you have the `gethostbyname' function. */
+#undef HAVE_GETHOSTBYNAME
+
+/* Define if you have the `gethostname' function. */
+#undef HAVE_GETHOSTNAME
+
+/* Define if you have the `inet_ntoa' function. */
+#undef HAVE_INET_NTOA
 
 /* Define if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
-/* Define if you have the <kparse.h> header file. */
-#undef HAVE_KPARSE_H
+/* Define if you have the `isascii' function. */
+#undef HAVE_ISASCII
 
-/* Define if you have the <krb.h> header file. */
-#undef HAVE_KRB_H
+/* define for Kerberos IV support */
+#undef HAVE_KRB4
+
+/* Define if you have the `des' library (-ldes). */
+#undef HAVE_LIBDES
 
 /* Define if you have the `elan3' library (-lelan3). */
 #undef HAVE_LIBELAN3
+
+/* Define if you have the `krb' library (-lkrb). */
+#undef HAVE_LIBKRB
 
 /* Define if you have the `nsl' library (-lnsl). */
 #undef HAVE_LIBNSL
@@ -45,32 +82,54 @@
 /* Define if you have the `socket' library (-lsocket). */
 #undef HAVE_LIBSOCKET
 
-/* Define if building with MPICH machines support. */
-#undef HAVE_MACHINES
+/* Define if you have the <limits.h> header file. */
+#undef HAVE_LIMITS_H
+
+/* Define if your system has a working `malloc' function. */
+#undef HAVE_MALLOC
 
 /* Define if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
+/* Define if you have the `memset' function. */
+#undef HAVE_MEMSET
+
 /* Define if you have the <ndir.h> header file, and it defines `DIR'. */
 #undef HAVE_NDIR_H
 
-/* Define if you have the <pthread.h> header file. */
-#undef HAVE_PTHREAD_H
+/* Define if you have the <netdb.h> header file. */
+#undef HAVE_NETDB_H
 
-/* Define if you have the `pthread_sigmask' function. */
-#undef HAVE_PTHREAD_SIGMASK
+/* Define if you have the <netinet/in.h> header file. */
+#undef HAVE_NETINET_IN_H
 
-/* Define if building with RMS support. */
+/* Define if you have the <paths.h> header file. */
+#undef HAVE_PATHS_H
+
+/* Define if you have the `putenv' function. */
+#undef HAVE_PUTENV
+
+/* define for RMS support */
 #undef HAVE_RMS_PMANAGER
 
-/* Define if the system has the type `socklen_t'. */
-#undef HAVE_SOCKLEN_T
+/* Define if you have the `select' function. */
+#undef HAVE_SELECT
+
+/* Define if `stat' has the bug that it succeeds when given the zero-length
+   file name argument. */
+#undef HAVE_STAT_EMPTY_STRING_BUG
 
 /* Define if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
 /* Define if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
+
+/* Define if you have the `strchr' function. */
+#undef HAVE_STRCHR
+
+/* Define if you have the `strdup' function. */
+#undef HAVE_STRDUP
 
 /* Define if you have the `strerror' function. */
 #undef HAVE_STRERROR
@@ -84,8 +143,17 @@
 /* Define if you have the <string.h> header file. */
 #undef HAVE_STRING_H
 
+/* Define if you have the `strrchr' function. */
+#undef HAVE_STRRCHR
+
 /* Define if you have the `strstr' function. */
 #undef HAVE_STRSTR
+
+/* Define if you have the `strtoul' function. */
+#undef HAVE_STRTOUL
+
+/* Define if you have the <syslog.h> header file. */
+#undef HAVE_SYSLOG_H
 
 /* Define if you have the <sys/dir.h> header file, and it defines `DIR'. */
 #undef HAVE_SYS_DIR_H
@@ -93,8 +161,17 @@
 /* Define if you have the <sys/file.h> header file. */
 #undef HAVE_SYS_FILE_H
 
+/* Define if you have the <sys/ioctl.h> header file. */
+#undef HAVE_SYS_IOCTL_H
+
 /* Define if you have the <sys/ndir.h> header file, and it defines `DIR'. */
 #undef HAVE_SYS_NDIR_H
+
+/* Define if you have the <sys/param.h> header file. */
+#undef HAVE_SYS_PARAM_H
+
+/* Define if you have the <sys/socket.h> header file. */
+#undef HAVE_SYS_SOCKET_H
 
 /* Define if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
@@ -111,60 +188,56 @@
 /* Define if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
-/* Define the canonical host CPU type. */
-#undef HOST_CPU
+/* Define if you have the `vfork' function. */
+#undef HAVE_VFORK
 
-/* Define the canonical host OS type. */
-#undef HOST_OS
+/* Define if you have the <vfork.h> header file. */
+#undef HAVE_VFORK_H
 
-/* Define the canonical host vendor type. */
-#undef HOST_VENDOR
+/* Define if `fork' works. */
+#undef HAVE_WORKING_FORK
 
-/* Define if building with Kerberos IV support. */
-#undef KRB4
+/* Define to 1 if `strerror_r' returns a string. */
+#undef HAVE_WORKING_STRERROR_R
 
-/* Define if you are building a production release. */
-#undef NDEBUG
+/* Define if `vfork' works. */
+#undef HAVE_WORKING_VFORK
 
-/* Define the project's name. */
+/* Define if `lstat' dereferences a symlink specified with a trailing slash.
+   */
+#undef LSTAT_FOLLOWS_SLASHED_SYMLINK
+
+/* Project name */
 #undef PROJECT
 
-/* Define the range separator string. */
+/* Range operator */
 #undef RANGE_OP
+
+/* Define as the return type of signal handlers (`int' or `void'). */
+#undef RETSIGTYPE
+
+/* Define if the `setpgrp' function takes no argument. */
+#undef SETPGRP_VOID
 
 /* Define if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
-/* Define the project's version. */
+/* Project version */
 #undef VERSION
 
-/* Define if your processor stores words with the most significant byte first
-   (like Motorola and SPARC, unlike Intel and VAX). */
-#undef WORDS_BIGENDIAN
-
-/* Define if on AIX 3.
-   System headers sometimes define this.
-   We just want to avoid a redefinition error message.  */
-#ifndef _ALL_SOURCE
-# undef _ALL_SOURCE
-#endif
-
-/* Define the path to the MPICH machines machines. */
-#undef _PATH_MACHINES
-
-/* Define the path to the nodeattr program. */
+/* Path to nodeattr */
 #undef _PATH_NODEATTR
 
-/* Define the path to the rcp program. */
+/* Path to rcp */
 #undef _PATH_RCP
 
-/* Define the path to the rmsquery program. */
+/* Path to rmsquery */
 #undef _PATH_RMSQUERY
 
-/* Define the path to the SDRGetObjects program. */
+/* Path SDRGetObjects */
 #undef _PATH_SDRGETOBJECTS
 
-/* Define the path to the ssh program. */
+/* Path to ssh */
 #undef _PATH_SSH
 
 /* Define to empty if `const' does not conform to ANSI C. */
@@ -181,3 +254,6 @@
 
 /* Define to `int' if <sys/types.h> doesn't define. */
 #undef uid_t
+
+/* Define as `fork' if `vfork' does not work. */
+#undef vfork

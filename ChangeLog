@@ -131,11 +131,13 @@ Release 1.6
 	(everywhere but AIX where cleanup seems to work without the extra sock)
 
 	Added support for expansion of hostname ranges passed through -w
-	(e.g. -w host1-5 means run on host1,host2,...,host5)
+	(e.g. -w host1-5 means run on host1,host2,...,host5) (Mark Grondona)
 
 	Added new options -x and -X for disabling hostname range expansion
-	and defining new expansion operator, respectively.
+	and defining new expansion operator, respectively. (Mark Grondona)
 
 	Added support for allocating the wcoll from an RMS partition.
 
-	Released version 1.5.
+	Autoconfiscated.
+
+	Released version 1.6.
