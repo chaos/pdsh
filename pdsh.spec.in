@@ -4,8 +4,8 @@ Release: @RELEASE@
 Summary: Parallel remote shell program.
 Copyright: none
 Group: System Environment/Base
-Source: %{name}-%{version}.tgz
-BuildRoot: %{_tmppath}/%{name}-%{version}
+Source: %{name}-%{version}-%{release}.tgz
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}
 # Prereq: 
 
 # Set this to 1 to build with genders support and framework for
