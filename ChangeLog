@@ -1,3 +1,11 @@
+2003-10-14  Mark Grondona <mgrondona@llnl.gov>
+
+	* Makefile.am, pdsh.spec.in: Do not install pdsh/pdcp with setuid
+	bits on by default.
+
+	* src/modules/mcmd.c, src/modules/mqcmd.c (rcmd_init): drop
+	elevated permissions if they are set.
+
 2003-10-13  Mark Grondona <mgrondona@llnl.gov>
 
 	* config/ac_mqshell.m4, config/ac_qshell.m4, config/ac_elan.m4:
