@@ -447,7 +447,8 @@ qsw_init_capability(ELAN_CAPABILITY *cap, int nprocs, hostlist_t nodelist,
 	 * persistant daemon to allocate these, so we settle for a random one.  
 	 */
 	cap->LowContext = lrand48() % 
-		(ELAN_USER_TOP_CONTEXT_NUM - ELAN_USER_BASE_CONTEXT_NUM + 1);
+		( ELAN_USER_TOP_CONTEXT_NUM - 
+		  (ELAN_USER_BASE_CONTEXT_NUM + procs_per_node - 1) - 1 );
 	cap->LowContext +=  ELAN_USER_BASE_CONTEXT_NUM;
 	cap->HighContext = cap->LowContext + procs_per_node - 1;
 	/* not necessary to initialize cap->MyContext */
