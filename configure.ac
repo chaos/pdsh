@@ -264,7 +264,8 @@ AC_PROG_MAKE_SET
 #
 if test "$withssh" = yes; then
     if test -z "$SSH"; then
-        AC_PATH_PROG(SSH, ssh, [], /admin/bin:/usr/bin:/usr/local/bin:$PATH)
+        SEARCH_PATH=/admin/bin:/usr/bin:/usr/local/bin:$PATH
+        AC_PATH_PROG(SSH, ssh, [], $SEARCH_PATH)
     fi
     if test -n "$SSH"; then
         AC_DEFINE_UNQUOTED(_PATH_SSH, "$SSH", [Path to ssh])
@@ -277,7 +278,8 @@ AC_SUBST(SSH)
 #
 # Find path to nodeattr.  Support for genders (-g|-a) is automatic if found.
 #
-AC_PATH_PROG(NODEATTR, nodeattr, [], /usr/bin:/admin/scripts:$PATH)
+SEARCH_PATH=/usr/bin:/admin/scripts:$PATH
+AC_PATH_PROG(NODEATTR, nodeattr, [], $SEARCH_PATH)
 if test -n "$NODEATTR"; then
     AC_DEFINE_UNQUOTED(_PATH_NODEATTR, "$NODEATTR", [Path to nodeattr])
     AC_DEFINE(HAVE_GENDERS, 1, [Define if Genders is available])
@@ -291,7 +293,8 @@ AM_CONDITIONAL(WITH_GENDERS, test $HAVE_GENDERS = 1)
 #
 # Find path to rmsquery.  Support for RMS (allocate) is automatic if found.
 #
-AC_PATH_PROG(RMSQUERY, rmsquery, [], /usr/bin:$PATH)
+SEARCH_PATH=/usr/bin:$PATH
+AC_PATH_PROG(RMSQUERY, rmsquery, [], $SEARCH_PATH)
 if test -n "$RMSQUERY"; then
     AC_DEFINE_UNQUOTED(_PATH_RMSQUERY, "$RMSQUERY", [Path to rmsquery])
     AC_DEFINE(HAVE_RMSQUERY, 1, [Define if RMS is available]) 
@@ -306,7 +309,8 @@ AM_CONDITIONAL(WITH_RMS, test $HAVE_RMSQUERY = 1)
 #
 # Find path to SDRGetObjects.  Support for SDR (-av) is automatic if found.
 #
-AC_PATH_PROG(SDRGETOBJECTS, SDRGetObjects, "", /usr/lpp/ssp/bin:$PATH)
+SEARCH_PATH=/usr/lpp/ssp/bin:$PATH
+AC_PATH_PROG(SDRGETOBJECTS, SDRGetObjects, "", $SEARCH_PATH)
 if test -n "$SDRGETOBJECTS"; then
     AC_DEFINE_UNQUOTED(_PATH_SDRGETOBJECTS, "$SDRGETOBJECTS", [Path SDRGetObjects])
     AC_DEFINE(HAVE_SDR, 1, [Define if SDR is available]) 
@@ -320,7 +324,8 @@ AM_CONDITIONAL(WITH_SDR, test $HAVE_SDR = 1)
 #
 # Find path to rcp for pdcp.
 #
-AC_PATH_PROG(RCP, rcp, [], /usr/bin:$PATH)
+SEARCH_PATH=/usr/bin:$PATH
+AC_PATH_PROG(RCP, rcp, [], $SEARCH_PATH)
 if test -n "$RCP"; then
     AC_DEFINE_UNQUOTED(_PATH_RCP, "$RCP", [Path to rcp])
 fi
