@@ -483,7 +483,10 @@ static void doit(struct sockaddr_in *fromp)
     envcount = atoi(tmpstr);
     while (envcount-- > 0) {
         getstr(envstr, sizeof(envstr), "envstr");
-        putenv(strdup(envstr));
+        /* Following is a mem-leak on some systems, on others it is
+         * the proper way to call putenv.
+         */
+        putenv(strdup(envstr));  
     }
 
     /* read elan capability */
