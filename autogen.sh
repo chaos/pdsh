@@ -39,10 +39,9 @@ AUXDIR=auxdir
 
 versiontest="
 if (/(\d+)\.(\d+)((-p|\.)(\d+))*/) { 
-        print $1;
 	exit 1 if (\$1 < $AMMAJOR); 
 	exit 1 if (\$2 < $AMMINOR);
-        if (defined($5)) {
+        if (defined(\$5)) {
             exit 1 if (\$5 < $AMPATCH); 
         }
 }"
@@ -71,7 +70,7 @@ versiontest="
 if ( / (\d+)\.(\d+)\.(\d+) /) { 
 	exit 1 if (\$1 < $LTLMAJOR); 
 	exit 1 if (\$2 < $LTLMINOR);
-        if (defined($5)) {
+        if (defined(\$5)) {
       	    exit 1 if (\$3 < $LTLPATCH);
         }
 }"
