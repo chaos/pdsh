@@ -10,7 +10,8 @@
 # the ./mkconfig script is provided.  You may need autoconf 2.52 or greater
 # (It does blow up with 2.13 on AIX).
 
-AC_INIT(dsh.h)
+AC_INIT
+AC_CONFIG_SRCDIR([dsh.h])
 AC_CONFIG_AUX_DIR(auxdir)
 AC_CONFIG_SRCDIR([configure.ac])
 
@@ -378,13 +379,14 @@ AC_ARG_WITH(dmalloc,
 )
 AC_MSG_RESULT(${dmalloc=no})
 if test "$dmalloc" = yes; then
-  AC_HAVE_LIBRARY(dmalloc,
-    [ AC_DEFINE_UNQUOTED(WITH_DMALLOC, 1,
+  AC_CHECK_LIB([dmalloc],[main],[ AC_DEFINE_UNQUOTED(WITH_DMALLOC, 1,
         [Define if using the debug malloc library.]
       )
       LIBS="-ldmalloc $LIBS"
-    ], [dmalloc=no]
-  )
+    ],[dmalloc=no
+  ],[])
+ac_cv_lib_dmalloc=ac_cv_lib_dmalloc_main
+
 fi
 AH_BOTTOM(
 [#ifdef WITH_DMALLOC
@@ -406,5 +408,11 @@ AH_BOTTOM(
 #endif /* _AIX */]
 )
 
-# AC_OUTPUT_COMMANDS(echo "creating dependencies"; make depend >/dev/null)
-AC_OUTPUT([Makefile testsuite/Makefile testsuite/pdsh.test/Makefile pdsh.spec pdcp.1 pdsh.1])
+AC_CONFIG_FILES([ Makefile 
+                  testsuite/Makefile 
+		  testsuite/pdsh.test/Makefile 
+		  pdsh.spec 
+		  pdcp.1 pdsh.1
+		]
+)
+AC_OUTPUT
