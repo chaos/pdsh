@@ -220,6 +220,7 @@ Wed May 29 16:03:12 PDT 2002
 	Add fcntl call to k4cmd.c and qcmd.c.
 
 	Added include <qsw/types.h> to compile with RMS 2.73.
+	Other API changes for new quadrics libs.
 
 	Temporarily disable --with-rms and PAM support in qshd.
 
