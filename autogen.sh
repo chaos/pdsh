@@ -39,9 +39,12 @@ AUXDIR=auxdir
 
 versiontest="
 if (/(\d+)\.(\d+)((-p|\.)(\d+))*/) { 
+        print $1;
 	exit 1 if (\$1 < $AMMAJOR); 
 	exit 1 if (\$2 < $AMMINOR);
-	exit 1 if (\$5 < $AMPATCH); 
+        if (defined($5)) {
+            exit 1 if (\$5 < $AMPATCH); 
+        }
 }"
 
 (automake --version 2>&1 | perl -n0e "$versiontest" ) || {
@@ -68,7 +71,9 @@ versiontest="
 if ( / (\d+)\.(\d+)\.(\d+) /) { 
 	exit 1 if (\$1 < $LTLMAJOR); 
 	exit 1 if (\$2 < $LTLMINOR);
-	exit 1 if (\$3 < $LTLPATCH);
+        if (defined($5)) {
+      	    exit 1 if (\$3 < $LTLPATCH);
+        }
 }"
 
 (libtoolize --version 2>&1 | perl -n0e "$versiontest") || {
