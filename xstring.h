@@ -13,7 +13,7 @@
 void xstrcln(char **, char *);
 int xfgets(char **, int *, FILE *);
 
-char *xstrdup(char *str, int *size);
+char *xstrduplicate(char *str, int *size);
 void xstrcat(char **str1, int *size, char *str2);
 void xstrcatchar(char **str1, int *size, char c);
 void xstrerrorcat(char **str1, int *size);

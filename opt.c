@@ -176,12 +176,13 @@ void opt_env(opt_t *opt)
 			shell = xbasename(pw->pw_shell);
 					/* c shell syntax */
 		if (!strcmp(shell, "csh") || !strcmp(shell, "tcsh")) {
-			opt->dshpath = xstrdup("setenv PATH ", &dshpath_size);
+			opt->dshpath = xstrduplicate("setenv PATH ", 
+					&dshpath_size);
 			xstrcat(&opt->dshpath, &dshpath_size, rhs);
 			xstrcat(&opt->dshpath, &dshpath_size, ";");
 
 		} else {		/* bourne shell syntax */
-			opt->dshpath = xstrdup("PATH=", &dshpath_size);
+			opt->dshpath = xstrduplicate("PATH=", &dshpath_size);
 			xstrcat(&opt->dshpath, &dshpath_size, rhs);
 			xstrcat(&opt->dshpath, &dshpath_size, ";");
 		}

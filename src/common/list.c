@@ -12,7 +12,7 @@
 #include <string.h>
 #include <assert.h>
 #include <ctype.h>
-#include <stdlib.h>
+/*#include <stdlib.h>*/
 
 #include "list.h"
 #include "xmalloc.h"
@@ -104,7 +104,7 @@ void list_push(list_t l, char *word)
 	if (l->size == l->nitems)
 		list_expand(l);
 	assert(l->size > l->nitems);
-	l->data[l->nitems++] = xstrdup(word, NULL);
+	l->data[l->nitems++] = xstrduplicate(word, NULL);
 }
 
 /*

@@ -38,6 +38,8 @@ else
 fi
 AC_MSG_RESULT(${debug=no})
 
+
+
 # Enable features that interact with external software
 # --with-elan
 AC_MSG_CHECKING(whether to support Elan interconnect)
@@ -185,6 +187,34 @@ AC_TYPE_SIGNAL
 AC_FUNC_STAT
 AC_FUNC_STRERROR_R
 AC_CHECK_FUNCS([alarm dup2 endpwent getcwd gethostbyaddr gethostbyname gethostname inet_ntoa isascii memset putenv select strchr strdup strerror strrchr strstr strtoul pthread_sigmask sigthreadmask gethostbyname_r])
+
+# Check for Gray Watson's Debug Malloc Library <http://dmalloc.com/>.
+AC_MSG_CHECKING(whether to use the Debug Malloc Library)
+AC_ARG_WITH(dmalloc,
+  AC_HELP_STRING([--with-dmalloc], [use Gray Watson's dmalloc library]),
+  [ case "$withval" in
+      yes) dmalloc=yes ;;
+      no)  dmalloc=no ;;
+      *)   AC_MSG_RESULT(doh!)
+           AC_MSG_ERROR([bad value "$withval" for --with-dmalloc]) ;;
+    esac
+  ]
+)
+AC_MSG_RESULT(${dmalloc=no})
+if test "$dmalloc" = yes; then
+  AC_HAVE_LIBRARY(dmalloc,
+    [ AC_DEFINE_UNQUOTED(WITH_DMALLOC, 1,
+        [Define if using the debug malloc library.]
+      )
+      LIBS="-ldmalloc $LIBS"
+    ], [dmalloc=no]
+  )
+fi
+AH_BOTTOM(
+[#ifdef WITH_DMALLOC
+#include <dmalloc.h>
+#endif /* WITH_DMALLOC */]
+)
 
 AC_OUTPUT_COMMANDS(echo "creating dependencies"; make depend >/dev/null)
 AC_OUTPUT([Makefile pdsh.spec])

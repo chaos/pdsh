@@ -43,9 +43,9 @@ void err_init(char *str)
 	gethostname(thishost, MAXHOSTNAMELEN);
 	if ((p = strchr(thishost, '.')) != NULL)
 		*p = '\0';
-	host = xstrdup(thishost, NULL);
+	host = xstrduplicate(thishost, NULL);
 
-	prog = xstrdup(str, NULL);
+	prog = xstrduplicate(str, NULL);
 }
 
 /*

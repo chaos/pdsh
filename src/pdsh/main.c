@@ -150,7 +150,7 @@ static char *getcmd(char *prompt)
 		buf_cln = buf;
 		xstrcln(&buf_cln, NULL);
 
-		cmd = xstrdup(buf_cln, &cmd_size);
+		cmd = xstrduplicate(buf_cln, &cmd_size);
 	}
 	return cmd;
 }

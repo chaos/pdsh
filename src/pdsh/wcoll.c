@@ -20,7 +20,7 @@
 #include "err.h"
 #include "list.h"
 #include "xmalloc.h"	/* xfree */
-#include "xstring.h"	/* for xstrdup() */
+#include "xstring.h"	/* for xstrduplicate() */
 #include "xpopen.h"	/* for xpopen/close */
 #include "wcoll.h"
 
@@ -245,7 +245,7 @@ static void sdr_getnames(bool Gopt, char *nameType, char *nodes[])
 
 		nn = atoi(list_nth(words, 0));
 		assert (nn >= 0 && nn <= MAX_SP_NODE_NUMBER);
-		nodes[nn] = xstrdup(list_nth(words, 1), NULL);
+		nodes[nn] = xstrduplicate(list_nth(words, 1), NULL);
 		list_free(&words);
 	}
 	xpclose(f);

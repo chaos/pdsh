@@ -837,7 +837,7 @@ int dsh(opt_t *opt)
 	/* prepend DSHPATH setting to command */
 	if (opt->personality == DSH && opt->dshpath) {
 		int cmd_len;
-		char *cmd = xstrdup(opt->dshpath, &cmd_len);
+		char *cmd = xstrduplicate(opt->dshpath, &cmd_len);
 
 		xstrcat(&cmd, &cmd_len, opt->cmd);
 		xfree((void **)&opt->cmd);
@@ -847,7 +847,7 @@ int dsh(opt_t *opt)
 	/* append echo $? to command */
 	if (opt->personality == DSH && opt->getstat) {
 		int cmd_len;
-		char *cmd = xstrdup(opt->cmd, &cmd_len);
+		char *cmd = xstrduplicate(opt->cmd, &cmd_len);
 
 		xstrcat(&cmd, &cmd_len, opt->getstat);
 		xfree((void **)&opt->cmd);
