@@ -14,7 +14,7 @@
 #    This macro must be placed after AC_PROG_CC or equivalent.
 ##*****************************************************************************
 
-AC_DEFUN([AC_SOCKET_CHECK_DECL],
+AC_DEFUN([AC_CHECK_AF_DECL],
 [
   # IEEE standard says they should be in sys/socket.h
   AC_CHECK_DECL($1, AC_DEFINE($2,1,[have $1]),,[#include <sys/socket.h>])
@@ -23,32 +23,35 @@ AC_DEFUN([AC_SOCKET_CHECK_DECL],
 
 AC_DEFUN([AC_NETTOOLS],
 [
+  # The net-tools library originally came from the net-tools package
+  # (which includes netstat, ipconfig, and some other commands) .  It is
+  # not autoconf/automaked to begin with and #defines are set through
+  # manual configuration.
   #
-  # By pure magic luck, the net-tools library has a
-  # "#include "config.h" at the top of each .c file.  So it
-  # is easily configuraable to autoconf/automake  
+  # By pure magic luck, the net-tools library does "#include "config.h" 
+  # for its configuration.  So we can configure net-tools by having them
+  # include our config.h instead.
   #
-  # However, we must create #defines that the library
-  # specifically uses.  We can't use the standard ones from
-  # autoconf
+  # However, we must create #defines that the library specifically
+  # uses.  We can't use the standard ones created from autoconf macros.
   #
 
   # check for domain types 
-  AC_SOCKET_CHECK_DECL([AF_UNIX],   [HAVE_AFUNIX])
-  AC_SOCKET_CHECK_DECL([AF_INET],   [HAVE_AFINET])
-  AC_SOCKET_CHECK_DECL([AF_INET6],  [HAVE_AFINET6])
-  AC_SOCKET_CHECK_DECL([AF_IPX],    [HAVE_AFIPX])
-  AC_SOCKET_CHECK_DECL([AF_ATALK],  [HAVE_AFATALK])
-  AC_SOCKET_CHECK_DECL([AF_AX25],   [HAVE_AFAX25])
-  AC_SOCKET_CHECK_DECL([AF_NETROM], [HAVE_AFNETROM])
-  AC_SOCKET_CHECK_DECL([AF_ROSE],   [HAVE_AFROSE])
-  AC_SOCKET_CHECK_DECL([AF_X25],    [HAVE_AFX25])
-  AC_SOCKET_CHECK_DECL([AF_ECONET], [HAVE_AFECONET])
-  AC_SOCKET_CHECK_DECL([AF_DECnet], [HAVE_AFDECnet])
-  AC_SOCKET_CHECK_DECL([AF_ASH],    [HAVE_AFASH])
+  AC_CHECK_AF_DECL([AF_UNIX],   [HAVE_AFUNIX])
+  AC_CHECK_AF_DECL([AF_INET],   [HAVE_AFINET])
+  AC_CHECK_AF_DECL([AF_INET6],  [HAVE_AFINET6])
+  AC_CHECK_AF_DECL([AF_IPX],    [HAVE_AFIPX])
+  AC_CHECK_AF_DECL([AF_ATALK],  [HAVE_AFATALK])
+  AC_CHECK_AF_DECL([AF_AX25],   [HAVE_AFAX25])
+  AC_CHECK_AF_DECL([AF_NETROM], [HAVE_AFNETROM])
+  AC_CHECK_AF_DECL([AF_ROSE],   [HAVE_AFROSE])
+  AC_CHECK_AF_DECL([AF_X25],    [HAVE_AFX25])
+  AC_CHECK_AF_DECL([AF_ECONET], [HAVE_AFECONET])
+  AC_CHECK_AF_DECL([AF_DECnet], [HAVE_AFDECnet])
+  AC_CHECK_AF_DECL([AF_ASH],    [HAVE_AFASH])
 
   # define all hardware.  All HW headers should exist even if kernel
-  # modules are not loaded/installed
+  # modules are not loaded or installed
   AC_DEFINE(HAVE_HWETHER,1,[have ethernet])
   AC_DEFINE(HAVE_HWARC,1,[have ARCnet])
   AC_DEFINE(HAVE_HWSLIP,1,[have SLIP])
