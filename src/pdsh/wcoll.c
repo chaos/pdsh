@@ -98,7 +98,7 @@ list_t read_genders(char *attr, int iopt)
 	char buf[LINEBUFSIZE];
 	char *p;
 
-#if HAVE_SDRGETOBJECTS
+#ifdef _PATH_SDRGETOBJECTS
 	/* On SP's at LLNL, the genders names are the alternates */ 
 	iopt = !iopt;
 #endif
@@ -119,7 +119,7 @@ list_t read_genders(char *attr, int iopt)
 }
 #endif
 
-#if HAVE_SDRGETOBJECTS
+#ifdef _PATH_SDRGETOBJECTS
 static int sdr_numswitchplanes(void)
 {
 	FILE *f;
@@ -315,7 +315,7 @@ list_t sdr_wcoll(bool Gopt, bool iopt, bool vopt)
 
 	return new;
 }
-#endif /* HAVE_SDRGETOBJECTS */
+#endif /* _PATH_SDRGETOBJECTS */
 
 #if HAVE_RMS_PMANAGER
 /* 

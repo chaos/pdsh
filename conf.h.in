@@ -58,32 +58,14 @@
 /* define for Kerberos IV support */
 #undef HAVE_KRB4
 
-/* Define if you have the `des' library (-ldes). */
-#undef HAVE_LIBDES
-
 /* Define if you have the `elan3' library (-lelan3). */
 #undef HAVE_LIBELAN3
-
-/* Define if you have the `krb' library (-lkrb). */
-#undef HAVE_LIBKRB
-
-/* Define if you have the `nsl' library (-lnsl). */
-#undef HAVE_LIBNSL
 
 /* Define if you have the `pthread' library (-lpthread). */
 #undef HAVE_LIBPTHREAD
 
-/* Define if you have the `rms' library (-lrms). */
-#undef HAVE_LIBRMS
-
-/* Define if you have the `rmsapi' library (-lrmsapi). */
-#undef HAVE_LIBRMSAPI
-
 /* Define if you have the `rmscall' library (-lrmscall). */
 #undef HAVE_LIBRMSCALL
-
-/* Define if you have the `socket' library (-lsocket). */
-#undef HAVE_LIBSOCKET
 
 /* Define if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H

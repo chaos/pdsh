@@ -31,7 +31,7 @@
 #define INTR_TIME		1 	/* secs */
 #define WDOG_POLL 		2	/* secs */
 
-#ifdef HAVE_SDRGETOBJECTS
+#ifdef _PATH_SDRGETOBJECTS
 #define MAX_SP_NODES 		512
 #define MAX_SP_NODES_PER_FRAME	16
 #define MAX_SP_NODE_NUMBER (MAX_SP_NODES * MAX_SP_NODES_PER_FRAME - 1)

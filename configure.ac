@@ -132,22 +132,21 @@ if test -n "$RCP"; then
 fi
 
 # Checks for libraries.
-AC_CHECK_LIB([socket], [socket])
-if test "$ac_cv_lib_socket_socket" = yes; then
-    AC_CHECK_LIB([nsl], [inet_addr])
-fi
+AC_CHECK_LIB([socket], [socket], LIBS="-lsocket -lnsl $LIBS",, [-lsocket -lnsl])
 AC_CHECK_LIB([pthread], [pthread_create])
+if test "$withelan" = yes || test "$withrms" = yes; then
+    AC_CHECK_LIB([rmscall], [rms_prgcreate],, AC_MSG_ERROR([No librmscall!]))
+fi
 if test "$withelan" = yes; then
     AC_CHECK_LIB([elan3], [elan3_create],,AC_MSG_ERROR([No libelan3!]))
-    AC_CHECK_LIB([rmscall], [rms_prgcreate])
 fi
 if test "$withrms" = yes; then
-    AC_CHECK_LIB([rmsapi], [rms_numNodes],,AC_MSG_ERROR([No librmsapi!]))
-    AC_CHECK_LIB([rms], [__builtin_new])
+    AC_CHECK_LIB([rmsapi], [rms_numNodes], LIBS="-lrmsapi -lrms $LIBS",
+	AC_MSG_ERROR([No librmsapi!]), [-lrmsapi -lrms])
 fi
 if test "$withkrb4" = yes; then
-    AC_CHECK_LIB([krb], [krb_sendauth],,AC_MSG_ERROR([No libkrb!]))
-    AC_CHECK_LIB([des], [des_string_to_key])
+    AC_CHECK_LIB([krb], [krb_sendauth], LIBS="-lkrb -ldes $LIBS",
+	AC_MSG_ERROR([No libkrb!]), [-lkrb -ldes])
 fi
 
 # Checks for header files.
@@ -174,5 +173,5 @@ AC_FUNC_STAT
 AC_FUNC_STRERROR_R
 AC_CHECK_FUNCS([alarm dup2 endpwent getcwd gethostbyaddr gethostbyname gethostname inet_ntoa isascii memset putenv select strchr strdup strerror strrchr strstr strtoul])
 
-AC_OUTPUT([Makefile pdsh.spec])
 AC_OUTPUT_COMMANDS(echo "creating dependencies"; make depend >/dev/null)
+AC_OUTPUT([Makefile pdsh.spec])

@@ -225,7 +225,7 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 #if HAVE_KRB4
  	strcat(validargs, KRB4_ARGS);
 #endif
-#if HAVE_SDRGETOBJECTS
+#ifdef _PATH_SDRGETOBJECTS
  	strcat(validargs, SDR_ARGS);
 #endif
 #if HAVE_GENDERS
@@ -367,7 +367,7 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 
 	/* get wcoll, SDR, genders file, or MPICH machines file */
 	if (opt->allnodes) {
-#if HAVE_SDRGETOBJECTS
+#ifdef _PATH_SDRGETOBJECTS
 		opt->wcoll = sdr_wcoll(opt->sdr_global, 
 		    opt->altnames, opt->sdr_verify);
 #elif HAVE_GENDERS
@@ -613,7 +613,7 @@ static void usage(opt_t *opt)
 #if HAVE_KRB4
 	err(OPT_USAGE_KRB4);
 #endif
-#if HAVE_SDRGETOBJECTS
+#ifdef _PATH_SDRGETOBJECTS
 	err(OPT_USAGE_SDR);
 #endif
 #if HAVE_GENDERS
