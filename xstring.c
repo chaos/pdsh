@@ -234,7 +234,7 @@ xstrcatchar(char **str, char c)
 void 
 xstrerrorcat(char **buf)
 {
-#if HAVE_STRERROR_R
+#if HAVE_STRERROR_R && HAVE_WORKING_STRERROR_R
         char errbuf[64];
         char *err = strerror_r(errno, errbuf, 64);
 #elif HAVE_STRERROR
