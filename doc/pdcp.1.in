@@ -36,8 +36,10 @@ can be used to set this value.
 .LP
 .I "-a"
 Target "all" nodes in the cluster.
-.if @HAVE_MACHINES@ The list of hostnames is taken from the MPICH machines file.
-.el \{
+.if @HAVE_MACHINES@ \{
+The list of hostnames is taken from the MPICH machines file.
+\}
+.if !@HAVE_MACHINES@ \{
 .if @HAVE_SDR@ \{
 .I "-v"
 In combination with -a, eliminate nodes that the SDR thinks are down.
@@ -47,17 +49,16 @@ In combination with -a, include all partitions.
 .LP
 .I "-i"
 In combination with -a, use SDR initial_hostname instead of reliable_hostname.
-\}
-\}
+\} \}
 .if @HAVE_GENDERS@ \{
 .I "-g attribute"
 Target nodes that have the specified genders attribute.	
+.if !@HAVE_MACHINES@ \{
 .if !@HAVE_SDR@ \{
 .I "-i"
 In combination with -a or -g, use a hostname specified as the value of the
 ``altname'' genders attribute instead of the normal one.
-\}
-\}
+\} \} \}
 .LP
 If none of the above options are specified, the WCOLL environment variable
 must point to a file that contains a list of nodes, one per line.  

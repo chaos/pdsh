@@ -27,6 +27,10 @@ RELEASE="`perl -ne 'print,exit if s/^\s*RELEASE:\s*(\S*).*/\1/i' $srcdir/META`"
 AC_DEFINE_UNQUOTED(RELEASE, "$RELEASE", [Define the project's release.])
 AC_SUBST(RELEASE)
 
+# determine the system type
+AC_CANONICAL_HOST
+AC_SUBST(host_cpu)
+
 # Check for debug vs. production compilation.
 # This must be done before AC_PROG_CC defines its own defaults.
 AC_MSG_CHECKING(whether debugging is enabled)
@@ -238,7 +242,7 @@ AC_ARG_WITH(rangeop,
 	    ;;
     esac ]
 )
-AC_MSG_RESULT(${RANGE_OP="-"})
+AC_MSG_RESULT(${RANGE_OP=-})
 AC_DEFINE_UNQUOTED(RANGE_OP, "$RANGE_OP", [Range operator])
 AC_SUBST(RANGE_OP)
 
