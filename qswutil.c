@@ -7,6 +7,7 @@
 
 #include "conf.h"
 
+#include <sys/param.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <syslog.h>
@@ -17,11 +18,14 @@
 #include <ctype.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include <elan3/elan3.h>
 #include <elan3/elanvp.h>
 #include <rms/rmscall.h>
 
+#include "xmalloc.h"
+#include "xstring.h"
 #include "list.h"
 #include "qswutil.h"
 #include "err.h"
@@ -284,7 +288,7 @@ qsw_get_prgnum(void)
 
 /*
  * Prepare a capability that will be passed to all the tasks in a parallel job.
- * Function returns a progam number to use for the job on success, -1 = fail.
+ * Function returns a 0 on success, -1 = fail.
  */
 int
 qsw_init_capability(ELAN_CAPABILITY *cap, int tasks_per_node, list_t nodelist)
@@ -385,7 +389,7 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 	int task_index;
 
 	if (qi->nprocs > ELAN_MAX_VPS) /* should catch this in client */
-		errx("%p: too many tasks requested");
+		errx("%p: too many tasks requested\n");
 
 	/* 
 	 * First fork.  Parent waits for child to terminate, then cleans up.
@@ -393,15 +397,15 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 	pid = fork();
 	switch (pid) {
 		case -1:	/* error */
-			errx("%p: fork: %m");
+			errx("%p: fork: %m\n");
 		case 0:		/* child falls thru */
 			break;
 		default:	/* parent */
 			if (waitpid(pid, NULL, 0) < 0)
-				errx("%p: waitpid: %m");
+				errx("%p: waitpid: %m\n");
 			while (rms_prgdestroy(qi->prgnum) < 0) {
 				if (errno != ECHILD)
-					errx("%p: rms_prgdestroy: %m");
+					errx("%p: rms_prgdestroy: %m\n");
 				sleep(1); /* waitprg would be nice! */
 			}
 			exit(0);
@@ -410,24 +414,22 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 
 	/* obtain an Elan context to use in call to elan3_create */
 	if ((ctx = _elan3_init(0)) == NULL)
-		errx("%p: _elan3_init failed: %m");
+		errx("%p: _elan3_init failed: %m\n");
 
 	/* associate this process and its children with prgnum */
 	if (rms_prgdestroy(qi->prgnum) == 0) 
 		err("%p: cleaned up old prgnum %d", qi->prgnum);
 	if (rms_prgcreate(qi->prgnum, uid, 1) < 0)	/* 1 cpu (bogus!) */
-		errx("%p: rms_prgcreate %d failed: %m", qi->prgnum);
+		errx("%p: rms_prgcreate %d failed: %m\n", qi->prgnum);
 
 	/* make cap known via rms_getcap/rms_ncaps to members of this prgnum */
 	if (elan3_create(ctx, cap) < 0)
-		errx("%p: elan3_create failed: %m");
+		errx("%p: elan3_create failed: %m\n");
 	if (rms_prgaddcap(qi->prgnum, 0, cap) < 0)
-		errx("%p: rms_prgaddcap failed: %m");
+		errx("%p: rms_prgaddcap failed: %m\n");
 
 	syslog(LOG_DEBUG, "prg %d cap %s bitmap 0x%.8x", qi->prgnum,
 			elan3_capability_string(cap, tmpstr), cap->Bitmap[0]);
-
-
 
 	/* 
 	 * Second fork - once for each task.
@@ -438,7 +440,7 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 	for (task_index = 0; task_index < tasks_per_node; task_index++) {
 		cpid[task_index] = fork();
 		if (cpid[task_index] < 0)
-			errx("%p: fork (%d): %m", task_index);
+			errx("%p: fork (%d): %m\n", task_index);
 		else if (cpid[task_index] == 0)
 			break;
 	}
@@ -450,7 +452,7 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 		while (waiting > 0) {
 			pid = waitpid(0, NULL, 0); /* any in pgrp */
 			if (pid < 0)
-				errx("%p: waitpid: %m");
+				errx("%p: waitpid: %m\n");
 			for (i = 0; i < tasks_per_node; i++) {
 				if (cpid[i] == pid)
 					waiting--;
@@ -469,12 +471,12 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 	 *   [cap->LowContext, cap->HighContext]
 	 */
 	if (rms_setcap(0, task_index) < 0)
-		errx("%p: rms_setcap (%d): %m", task_index);
+		errx("%p: rms_setcap (%d): %m\n", task_index);
 
 	/* set RMS_ environment vars */
 	qi->procid = qi->rank = (qi->nodeid * tasks_per_node) + task_index;
 	if (qsw_rms_setenv(qi) < 0)
-		errx("%p: failed to set environment variables: %m");
+		errx("%p: failed to set environment variables: %m\n");
 
 	/*
 	 * Third fork.  XXX Necessary but I don't know why.
@@ -482,12 +484,12 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 	pid = fork();
 	switch (pid) {
 		case -1:	/* error */
-			errx("%p: fork: %m");
+			errx("%p: fork: %m\n");
 		case 0:		/* child falls thru */
 			break;
 		default:	/* parent */
 			if (waitpid(pid, NULL, 0) < 0)
-				errx("%p: waitpid: %m");
+				errx("%p: waitpid: %m\n");
 			exit(0);
 	}
 	/* child continues here */
@@ -496,59 +498,134 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 }
 
 #ifdef TEST_MAIN
-/* test */
+/* encode info, then decode and check that the result is what we started with */
+static void
+verify_info_encoding(qsw_info_t *qi)
+{
+	int err;
+	char tmpstr[1024];
+	qsw_info_t qicpy;
+
+	err = qsw_encode_info(tmpstr, sizeof(tmpstr), qi);
+	assert(err >= 0);
+	err = qsw_decode_info(tmpstr, &qicpy);
+	assert(memcmp(qi, &qicpy, sizeof(qicpy)) == 0);
+}
+
+/* encode cap, then decode and check that the result is what we started with */
+static void
+verify_cap_encoding(ELAN_CAPABILITY *cap)
+{
+	ELAN_CAPABILITY capcpy;
+	char tmpstr[1024];
+	int err;
+
+	err = qsw_encode_cap(tmpstr, sizeof(tmpstr), cap);
+	assert(err >= 0);
+	err = qsw_decode_cap(tmpstr, &capcpy);
+	assert(err >= 0);
+	/*assert(ELAN_CAP_MATCH(&cap, &cap2)); *//* broken - see GNATS #3875 */
+	assert(memcmp(cap, &capcpy, sizeof(capcpy)) == 0);
+}
+
+/* concatenate args into a single string */
+static void 
+strcatargs(char *buf, int len, int argc, char *argv[])
+{
+	if (len > 0) {
+		buf[0] = '\0';
+	}
+	while (len > 1 && argc > 0) {
+		strncat(buf, argv[0], len);
+		argv++;
+		argc--;
+		if (argc > 0)
+			strncat(buf, " ", len);
+	}
+	buf[len - 1] = '\0';
+}
+
+static void
+usage(void)
+{
+	errx("Usage %p [ -n procs ] [ -u uid ] command args...\n");
+}
+
+/* 
+ * Test program for qsw runtime routines.
+ * Run one or more tasks locally, e.g. for MPI ping test across shared memory:
+ *    qrun -n 2 -u 5588 mping 1 32768
+ */
 int
 main(int argc, char *argv[])
 {
+	extern char *optarg;
+	extern int optind;
+
+	char cmdbuf[1024];
 	ELAN_CAPABILITY cap;
-	ELAN_CAPABILITY cap2;
-	char tmpstr[1024];
+	int c;
 	char *p;
-	int err;
-	qsw_info_t qi, qi2;
+	uid_t uid;
 	list_t wcoll = list_new();
+	char hostname[MAXHOSTNAMELEN];
+ 	qsw_info_t qinfo = {
+		nnodes: 1,
+		nprocs: 1,
+	};
 
-	/* test encoding/decoding/initializing Elan capabilities */
-	list_push(wcoll, "foo0");
-	list_push(wcoll, "foo1");
-	list_push(wcoll, "foo6");
-	list_push(wcoll, "foo7");
-	err = qsw_init_capability(&cap, 4, wcoll);
-	assert(err >= 0);
-	printf("%s %x\n", elan3_capability_string(&cap, tmpstr), cap.Bitmap[0]);
-	err = qsw_encode_cap(tmpstr, sizeof(tmpstr), &cap);
-	assert(err >= 0);
-	err = qsw_decode_cap(tmpstr, &cap2);
-	assert(err >= 0);
-	/* ELAN_CAP_MATCH is broken (see QSW GNATS#3875) */
-	/*assert(ELAN_CAP_MATCH(&cap, &cap2)); */ 
-	assert(memcmp(&cap, &cap2, sizeof(cap));
+	err_init(xbasename(argv[0]));	/* init err package */
 
-	/* test qsw_setenvf function */
-	err = qsw_setenvf("SNERG=%d%s", 42, "blah");
-	assert(err == 0);
-	err = qsw_setenvf("BLURG=%s%d", "sniff", 11);
-	assert(err == 0);
-	p = getenv("SNERG");
-	assert(p != NULL);
-	assert(strcmp(p, "42blah") == 0);
-	p = getenv("BLURG");
-	assert(p != NULL);
-	assert(strcmp(p, "sniff11") == 0);
+	while ((c = getopt(argc, argv, "u:n:")) != EOF) {
+		switch (c) {
+			case 'u':
+				uid = atoi(optarg);
+				break;
+			case 'n':
+				qinfo.nprocs = atoi(optarg);
+				break;
+			default:
+				usage();
+		}
+	}
 
-	/* test encoding/decoding qsw_info_t struct */
-	qi.prgnum = qsw_get_prgnum();
-	qi.rank = 0;
-	qi.nodeid = 0;
-	qi.procid = 0;
-	qi.nnodes = 4;
-	qi.nprocs = 16;
-	err = qsw_encode_info(tmpstr, sizeof(tmpstr), &qi);
-	assert(err >= 0);
-	err = qsw_decode_info(tmpstr, &qi2);
-	assert(memcmp(&qi, &qi2, sizeof(qi)) == 0);
+	argc -= optind;
+	argv += optind;
 
-	printf("All tests passed.\n");
+	if (argc == 0)
+		usage();
+
+	/* prep arg for the shell */
+	strcatargs(cmdbuf, sizeof(cmdbuf), argc, argv);
+
+	/* create working collective containing only this host */
+	if (gethostname(hostname, sizeof(hostname)) < 0)
+		errx("%p: gethostname: %m\n");
+	if ((p = strchr(hostname, '.')))
+		*p = '\0';
+	list_push(wcoll, hostname);
+
+	/* initialize capability for this "program" */
+	if (qsw_init_capability(&cap, qinfo.nprocs / qinfo.nnodes, wcoll) < 0)
+		errx("%p: failed to initialize Elan capability\n");
+
+	/* assert encode/decode routines work (we don't use them here) */
+	verify_info_encoding(&qinfo);
+	verify_cap_encoding(&cap);
+
+	/* generate random program number */
+	qinfo.prgnum = qsw_get_prgnum();
+
+	/* do elan stuff: qinfo.nprocs threads will continue after this */
+	qsw_setup_program(&cap, &qinfo, uid);
+
+	if (seteuid(uid) < 0)
+		errx("%p: seteuid: %m\n");
+	err("%p: %d:%d executing /bin/bash -c %s\n", 
+			qinfo.prgnum, qinfo.procid, cmdbuf);
+	execl("/bin/bash", "bash", "-c", cmdbuf, 0);
+	errx("%p: exec of shell failed: %m\n");
+
 	exit(0);
 }
 #endif
