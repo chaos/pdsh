@@ -1,3 +1,7 @@
+2004-11-22  Mark Grondona <mgrondona@llnl.gov>
+
+	* README.QsNet : Update location of libelanhosts. Describe "slurm" module.
+	
 2004-09-21  Albert Chu <chu11@llnl.gov>
 
 	Added large file support to pdcp (gnat pdsh/497).

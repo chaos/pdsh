@@ -18,6 +18,14 @@ the list of allocated nodes out of the RMS database using the rmsquery
 command. This functionality is provided by the "rms" pdsh module
 (--with-rms).
 
+slurm pdsh module
+---------------------------------------
+Similar to the rms pdsh module, the slurm module allows pdsh to target
+nodes based on SLURM allocations, either targetting an already running job
+or by running under ``srun --allocate'' The SLURM jobid can be passed to
+pdsh using the `-j' option provided by the module, or via the SLURM_JOBID
+environment variable, which is set by --allocate.
+
 
 The `/etc/elanhosts' config file
 ---------------------------------------
@@ -31,5 +39,5 @@ man page for a description of the /etc/elanhosts file format.
 
 The libelanhosts package may be obtained from
 
-  ftp://ftp.llnl.gov/pub/libelanhosts
+  ftp://ftp.llnl.gov/pub/linux/libelanhosts/
 
