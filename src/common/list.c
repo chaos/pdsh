@@ -207,23 +207,25 @@ list_t list_split(char *sep, char *str)
  */
 list_t list_split_range(char *sep, char *r_op, char *str)
 {
-	char *tok, *prefix, buf[256], *cur;
-	int fmt, pos;
-	int high, low;
-	int error = 0;
+	char *tok, *cur; 
+	int high, low, fmt;
+	char prefix[256] = ""; 
+	char buf[256]    = ""; 
+	int pos          = 0;
+	int error        = 0;
+	int i            = 0;
 	char range_op = r_op[0]; /* XXX support > 1 char range ops in future? */
 
 	list_t new = list_new();
 
+	/* remove characters to support Quadrics hostname ranges */
+	for (cur = str; *cur != '\0'; cur++) {
+		if (strchr("[]\n\t", *cur) == '\0')
+			str[i++] = cur[0];
+	}
+	str[i] = '\0';
+
 	while ((tok = next_tok(sep, &str)) != NULL) {
-
-		while (strstr(tok, r_op) == '\0') { /* no range in this field */
-			if (strlen(tok) > 0)
-				list_push(new, tok);
-
-			if ((tok = next_tok(sep, &str)) == NULL) 
-				return(new);
-		}
 
 		/* save the current string for error messages */
 		cur = tok;
@@ -233,23 +235,33 @@ list_t list_split_range(char *sep, char *r_op, char *str)
 		/* find end of alpha part */
 		/* do this by finding last occurence of range_op in str */
 		pos = strlen(tok) - 1;
-		while((char)tok[--pos] != range_op) {;}
+		if (strstr(tok, r_op) != '\0')
+			while(pos >= 0 && (char)tok[pos--] != range_op) {;}
 
 		/* now back up past any digits */
-		while(isdigit((char)tok[--pos])) {;}
+		while(pos >= 0 && isdigit((char)tok[--pos])) {;}
 
 		pos++;
 
-		/* create prefix string */
-		prefix = (char *) xmalloc((pos+1)*sizeof(char));
-		memcpy(prefix, tok, (size_t) pos*sizeof(char));
-		prefix[pos] = '\0';
+		/* create prefix string 
+		 * if prefix will be zero length, but prefix already exists
+		 * use the previous prefix and fmt
+		 */
+		if ((pos > 0) || (prefix[0] == '\0')) {
+			memcpy(prefix, tok, (size_t) pos*sizeof(char));
+			prefix[pos] = '\0';
 
-		/* push pointer past prefix */
-		tok += pos;
+			/* push pointer past prefix */
+			tok += pos;
 
-		/* count number of digits for ouput fmt */
-		for (fmt=0; isdigit(tok[fmt]); ++fmt) {;}
+			/* count number of digits for ouput fmt */
+			for (fmt=0; isdigit(tok[fmt]); ++fmt) {;}
+
+			if (fmt == 0) 
+				error = 1;
+
+		} else
+			tok += pos;
 
 		/* get lower bound */
 		low = strtoul(tok, (char**)&tok, 10);
@@ -270,7 +282,8 @@ list_t list_split_range(char *sep, char *r_op, char *str)
 					error = 1;
 			}
 
-			tok+=pos;
+			if (*tok != '\0')
+				tok+=pos;
 
 			/* make sure we have digits to the end */
 			for(pos=0; tok[pos] && isdigit((char)tok[pos]); ++pos);
@@ -284,8 +297,8 @@ list_t list_split_range(char *sep, char *r_op, char *str)
 			if ((low > high) || (high - low > MAX_RANGE))
 				error = 1;
 
-		} else {
-			error = 1;
+		} else {		/* single value */
+			high = 0; 	/* special case, ugh. */
 		}
 
 		/* error if: 
@@ -300,14 +313,13 @@ list_t list_split_range(char *sep, char *r_op, char *str)
 		} else {
 
 			/* generate range and push elements onto list */
-			for (; low<=high; low++) {
+			do {
 				snprintf(buf, 256, "%s%0*d", prefix, fmt, low);
 				list_push(new, buf);
-			}
+			} while (++low <= high);
 
 		}
 
-		xfree((void **)&prefix);
 		error = 0;
 
 	}
