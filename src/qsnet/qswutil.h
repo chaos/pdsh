@@ -38,6 +38,9 @@ typedef struct {
     int nprocs;
 } qsw_info_t;
 
+int qsw_init(void);
+void qsw_fini(void);
+
 int qsw_encode_cap(char *s, int len, ELAN_CAPABILITY * cap);
 int qsw_encode_cap_bitmap(char *s, int len, ELAN_CAPABILITY * cap, int i);
 int qsw_decode_cap(char *s, ELAN_CAPABILITY * cap);
@@ -49,6 +52,8 @@ int qsw_init_capability(ELAN_CAPABILITY * cap, int nprocs,
                         hostlist_t nodelist, int cyclic_alloc);
 int qsw_get_prgnum(void);
 void qsw_setup_program(ELAN_CAPABILITY * cap, qsw_info_t * qi, uid_t uid);
+
+int qsw_spawn_neterr_thr(void);
 
 #endif                          /* _QSWUTIL_INCLUDED */
 

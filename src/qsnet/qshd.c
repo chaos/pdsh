@@ -775,8 +775,14 @@ int main(int argc, char *argv[])
                "pam_rhosts_auth in /etc/pam.conf");
 #endif                          /* USE_PAM */
 
+    qsw_init();
+    qsw_spawn_neterr_thr();
+
     network_init(0, &from);
     doit(&from);
+
+    qsw_fini();
+
     return 0;
 }
 

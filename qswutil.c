@@ -51,6 +51,7 @@
 #include "xstring.h"
 #include "hostlist.h"
 #include "qswutil.h"
+#include "elanhosts.h"
 #include "err.h"
 
 /* we will allocate program descriptions in this range */
@@ -60,25 +61,150 @@
 
 static int debug_syslog = 1;    /* syslog program setup at LOG_DEBUG level */
 
-/* 
- * Convert hostname to elan node number.  This version just returns
- * the numerical part of the hostname, true on our current systems.
- * Other methods such as a config file or genders attribute might be 
- * more appropriate for wider use.
- * 	host (IN)		hostname
- *	nodenum (RETURN)	elanid (-1 on failure)
+/*
+ *  Static "Elan Host" configuration
  */
-static int _host2elanid(char *host)
+static elanhost_config_t elanconf = NULL;
+
+
+/* 
+ *  Static function prototypes:
+ */
+static int _set_elan_ids(elanhost_config_t ec);
+static void *neterr_thr(void *arg);
+
+
+int qsw_init(void)
 {
-    char *p = host;
-    int id;
+    assert(elanconf == NULL);
 
-    while (*p != '\0' && !isdigit(*p))
-        p++;
-    id = (*p == '\0') ? -1 : atoi(p);
+    elanconf = elanhost_config_create();
 
-    return id;
+    if (elanhost_config_read(elanconf, NULL) < 0) 
+        errx("%p: error: %s\n", elanhost_config_err(elanconf));
+
+    return 0;
 }
+
+void qsw_fini(void)
+{
+    elanhost_config_destroy(elanconf);
+}
+
+
+struct neterr_args {
+    pthread_mutex_t *mutex;
+    pthread_cond_t  *cond;
+    int             neterr_rc;
+};
+
+int qsw_spawn_neterr_thr(void)
+{
+    struct neterr_args args;
+    pthread_attr_t attr;
+    pthread_t neterr_tid;
+    pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+    pthread_cond_t  cond  = PTHREAD_COND_INITIALIZER;
+
+    args.mutex = &mutex;
+    args.cond  = &cond;
+
+    if ((errno = pthread_attr_init(&attr)))
+        errx("%p: pthread_attr_init: %m\n");
+
+    errno = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+    if (errno)
+        err("%p: pthread_attr_setdetachstate: %m");
+
+    pthread_mutex_lock(&mutex);
+
+    if ((errno = pthread_create(&neterr_tid, &attr, neterr_thr, &args)))
+        return -1;
+
+    /*
+     *  Wait for successful startup of neterr resolver thread before 
+     *    returning control to main thread.
+     */
+    pthread_cond_wait(&cond, &mutex);
+    pthread_mutex_unlock(&mutex);
+
+    return args.neterr_rc;
+}
+
+static int
+_set_elan_ids(elanhost_config_t ec)
+{
+    int i;
+
+    for (i = 0; i <= elanhost_config_maxid(ec); i++) {
+        char *host = elanhost_elanid2host(ec, ELANHOST_EIP, i);
+        if (!host)
+            continue;
+        
+		if (elan3_load_neterr_svc(i, host) < 0)
+			err("%p: elan3_load_neterr_svc(%d, %s): %m", i, host);
+	}
+
+    return 0;
+}
+
+
+static void *neterr_thr(void *arg)
+{	
+    struct neterr_args *args = arg;
+
+	if (!elan3_init_neterr_svc(0)) {
+		err("%p: elan3_init_neterr_svc: %m");
+		goto fail;
+	}
+
+	/* 
+	 *  Attempt to register the neterr svc thread. If the address 
+	 *   cannot be bound, then there is already a thread running, and
+	 *   we should just exit with success.
+	 */
+	if (!elan3_register_neterr_svc()) {
+		if (errno != EADDRINUSE) {
+			err("%p: elan3_register_neterr_svc: %m");
+			goto fail;
+		}
+		err("%p: Warning: Elan error resolver thread already running");
+        goto done;
+	}
+
+    /* 
+     * Attempt to register elan ids with kernel if we successfully 
+     *  registered the error resolver service.
+     */
+    _set_elan_ids(elanconf);
+
+	/* 
+	 *  Signal main thread that we've successfully initialized
+	 */
+	pthread_mutex_lock(args->mutex);
+	args->neterr_rc = 0;
+	pthread_cond_signal(args->cond);
+	pthread_mutex_unlock(args->mutex);
+
+	/*
+	 *  Run the network error resolver thread. This should
+	 *   never return. If it does, there's not much we can do
+	 *   about it.
+	 */
+	elan3_run_neterr_svc();
+
+   done:
+	return NULL;
+
+   fail:
+	pthread_mutex_lock(args->mutex);
+	args->neterr_rc = -1;
+	pthread_cond_signal(args->cond);
+	pthread_mutex_unlock(args->mutex);
+
+	return NULL;
+}
+
 
 /*
  * Given a list of hostnames and the number of processes per node, 
@@ -97,15 +223,16 @@ _setbitmap(hostlist_t nodelist, int procs_per_node, ELAN_CAPABILITY * cap)
     if ((itr = hostlist_iterator_create(nodelist)) == NULL)
         errx("%p: hostlist_iterator_create failed\n");
     while ((host = hostlist_next(itr)) != NULL) {
-        node = _host2elanid(host);
-        if (node < 0) {
-            err("%p: _setbitmap: bad conversion to elanid\n");
+        if ((node = elanhost_host2elanid(elanconf, host)) < 0) {
+            err("%p: _setbitmap: Unable to get ElanId for \"%s\"\n", host);
             return -1;
         }
         if (node < cap->LowNode || cap->LowNode == -1)
             cap->LowNode = node;
         if (node > cap->HighNode || cap->HighNode == -1)
             cap->HighNode = node;
+
+        free(host);
     }
     hostlist_iterator_destroy(itr);
     if (cap->HighNode == -1 || cap->LowNode == -1)
@@ -124,9 +251,8 @@ _setbitmap(hostlist_t nodelist, int procs_per_node, ELAN_CAPABILITY * cap)
     while ((host = hostlist_next(itr)) != NULL) {
         int i, proc0;
 
-        node = _host2elanid(host);
-        if (node < 0) {
-            err("%p: _setbitmap: bad conversion to elanid\n");
+        if ((node = elanhost_host2elanid(elanconf, host)) < 0) {
+            err("%p: _setbitmap: Unable to get ElanId for \"%s\"\n", host);
             return -1;
         }
         for (i = 0; i < procs_per_node; i++) {
@@ -137,6 +263,8 @@ _setbitmap(hostlist_t nodelist, int procs_per_node, ELAN_CAPABILITY * cap)
             }
             BT_SET(cap->Bitmap, proc0 + i);
         }
+
+        free(host);
     }
     hostlist_iterator_destroy(itr);
 
@@ -714,8 +842,7 @@ int main(int argc, char *argv[])
     hostlist_push(wcoll, hostname);
 
     /* initialize capability for this "program" */
-    if (qsw_init_capability(&cap, qinfo.nprocs / qinfo.nnodes, wcoll, 0) <
-        0)
+    if (qsw_init_capability(&cap, qinfo.nprocs / qinfo.nnodes, wcoll, 0) < 0)
         errx("%p: failed to initialize Elan capability\n");
 
     /* assert encode/decode routines work (we don't use them here) */

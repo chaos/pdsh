@@ -298,11 +298,15 @@ static int mqcmd_init(opt_t * opt)
     return -1;
   }
 
+  qsw_init();
+
   /* initialize Elan capability structure. */
   if (qsw_init_capability(&cap, totprocs, opt->wcoll, cyclic) < 0) {
     err("%p: mqcmd: failed to initialize Elan capability\n");
     return -1;
   }
+
+  qsw_fini();
 
   /* initialize elan info structure */
   qinfo.prgnum = qsw_get_prgnum();    /* call after qsw_init_capability */

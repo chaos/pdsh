@@ -285,6 +285,8 @@ static int qcmd_init(opt_t * opt)
 {
     int totprocs = nprocs * hostlist_count(opt->wcoll);
 
+    qsw_init();
+
     /*
      *  Verify constraints for running Elan jobs
      *    and initialize options.
@@ -303,6 +305,8 @@ static int qcmd_init(opt_t * opt)
     qinfo.nnodes = hostlist_count(opt->wcoll);
     qinfo.nprocs = totprocs;
     qinfo.nodeid = qinfo.procid = qinfo.rank = 0;
+
+    qsw_fini();
     
     return 0;
 }
