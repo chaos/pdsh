@@ -189,15 +189,18 @@ static void fwd_signal(int signum)
 				case RCMD_BSD:
 					xrcmd_signal(t[i].efd, signum);
 					break;
-				case RCMD_K4:
 #if KRB4
+				case RCMD_K4:
 					k4cmd_signal(t[i].efd, signum);
-#endif
 					break;
+#endif
+#if HAVE_ELAN3
 				case RCMD_QSHELL:
 					qcmd_signal(t[i].efd, signum);
 					break;
+#endif
 				default:
+					errx("%p: unknown rcmd type\n");
 					break;
 			}
 		}
@@ -502,23 +505,29 @@ static void *rcp(void *args)
 	a->start = time(NULL);
 	a->state = DSH_RCMD;
 	switch (a->rcmd_type) {
-		case RCMD_K4:
 #if KRB4
+		case RCMD_K4:
 			a->fd = k4cmd(a->host, a->luser, a->ruser, 
 					cmd, a->nodeid, efdp);
-#endif
 			break;
+#endif
 		case RCMD_BSD:
 			a->fd = xrcmd(a->host, a->luser, a->ruser, 
 					cmd, a->nodeid, efdp);
 			break;
+#if HAVE_ELAN3
 		case RCMD_QSHELL:
 			a->fd = qcmd(a->host, a->luser, a->ruser, 
 					cmd, a->nodeid, efdp);
 			break;
+#endif
 		case RCMD_SSH:
 			a->fd = sshcmdrw(a->host, a->luser, a->ruser, 
 					cmd, a->nodeid, efdp);
+			break;
+		default:
+			errx("%p: unknown rcmd type\n");
+			break;
 	}
 	if (a->fd == -1) 
 		result = DSH_FAILED;
@@ -592,23 +601,28 @@ static void *rsh(void *args)
 	/* establish the connection */
 	a->state = DSH_RCMD;
 	switch (a->rcmd_type) {
-		case RCMD_K4:
 #if KRB4
+		case RCMD_K4:
 			a->fd = k4cmd(a->host, a->luser, a->ruser, 
 					a->dsh_cmd, a->nodeid, efdp);
-#endif
 			break;
+#endif
 		case RCMD_BSD:
 			a->fd = xrcmd(a->host, a->luser, a->ruser, 
 					a->dsh_cmd, a->nodeid, efdp);
 			break;
+#if HAVE_ELAN3
 		case RCMD_QSHELL:
 			a->fd = qcmd(a->host, a->luser, a->ruser, 
 					a->dsh_cmd, a->nodeid, efdp);
 			break;
+#endif
 		case RCMD_SSH:
 			a->fd = sshcmd(a->host, a->luser, a->ruser, 
 			    		a->dsh_cmd, a->nodeid, efdp);
+			break;
+		default:
+			errx("%p: unknown rcmd type\n");
 			break;
 	}
 
@@ -764,20 +778,24 @@ int dsh(opt_t *opt)
 	list_t pcp_infiles = NULL;
 
 	switch (opt->rcmd_type) {
+#if HAVE_ELAN3
 		case RCMD_QSHELL:
 			qcmd_init(opt->wcoll, opt->tasks_per_node);
 			break;
-		case RCMD_K4:
-#if KRB4
-			k4cmd_init(opt->wcoll);
 #endif
+#if KRB4
+		case RCMD_K4:
+			k4cmd_init(opt->wcoll);
 			break;
+#endif
 		case RCMD_SSH:
 			sshcmd_init(opt->wcoll);
 			break;
 		case RCMD_BSD:
 			xrcmd_init(opt->wcoll);
 			break;
+		default:
+			errx("%p: unknown rcmd type\n");
 	}
 
 	/* install signal handlers */

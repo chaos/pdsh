@@ -181,7 +181,7 @@ qcmd_send_extra_args(int s, int nodeid)
  *	locuser (IN)		local username
  *	remuser (IN)		remote username
  *	cmd (IN)		remote command to execute under shell
- *	rank (IN)		MPI rank for this connection
+ *	nodeid (IN)		node index for this connection
  *	fd2p (IN)		if non NULL, return stderr file descriptor here
  *	int (RETURN)		-1 on error, socket for I/O on success
  */

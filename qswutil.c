@@ -19,7 +19,6 @@
 #include <rms/rmscall.h>
 
 #include "list.h"
-#include "base64.h"
 #include "qswutil.h"
 
 /* we will allocate program descriptions in this range */
@@ -143,7 +142,8 @@ qsw_qshell_setenv(qsw_info_t *qi)
 int
 qsw_pack_cap(char *s, int len, ELAN_CAPABILITY *cap)
 {
-	int err;
+	assert(sizeof(cap->UserKey.Values[0]) == 4);
+	assert(sizeof(cap->UserKey) / sizeof(cap->UserKey.Values[0]) == 4);
 
 	snprintf(s, len, "%x.%x.%x.%x.%hx.%hx.%x.%x.%x.%x.%x.%x.%x:", 
 				cap->UserKey.Values[0],
@@ -160,13 +160,22 @@ qsw_pack_cap(char *s, int len, ELAN_CAPABILITY *cap)
 				cap->Entries,
 				cap->RailMask);
 
+	assert(sizeof(cap->Bitmap[0]) == 4);
+	assert(sizeof(cap->Bitmap) / sizeof(cap->Bitmap[0]) == 16); 
+
 	len -= strlen(s);
 	s += strlen(s);
 
-	err = encode_base64((unsigned char const *)&cap->Bitmap, 
-			sizeof(cap->Bitmap), s, len);
-	assert(err >= 0);
-	assert(strlen(s) < len);
+	snprintf(s, len, "%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x",
+				cap->Bitmap[0], cap->Bitmap[1], 
+				cap->Bitmap[2], cap->Bitmap[3],
+				cap->Bitmap[4], cap->Bitmap[5], 
+				cap->Bitmap[6], cap->Bitmap[7],
+				cap->Bitmap[8], cap->Bitmap[9], 
+				cap->Bitmap[10], cap->Bitmap[11],
+				cap->Bitmap[12], cap->Bitmap[13],
+				cap->Bitmap[14], cap->Bitmap[15]);
+
 
 	return 0;
 }
@@ -177,9 +186,6 @@ qsw_pack_cap(char *s, int len, ELAN_CAPABILITY *cap)
 int
 qsw_unpack_cap(char *s, ELAN_CAPABILITY *cap)
 {
-	char *p;
-	int err;
-
 	/* initialize capability - not sure if this is necessary */
 	elan3_nullcap(cap);
 
@@ -201,16 +207,20 @@ qsw_unpack_cap(char *s, ELAN_CAPABILITY *cap)
 		return -1;
 	}
 
-	p = strchr(s, ':');
-	if (p == NULL)
+	if ((s = strchr(s, ':')) == NULL)
 		return -1;
 
-	/* XXX bug in decode_base64 requires > original size in target */
-	err = decode_base64(p + 1, (unsigned char *)&cap->Bitmap, 
-			sizeof(cap->Bitmap) + 4);
-	assert(err <= sizeof(cap->Bitmap));
-	if (err != sizeof(cap->Bitmap))
+	if (sscanf(s, ":%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x",
+				&cap->Bitmap[0], &cap->Bitmap[1], 
+				&cap->Bitmap[2], &cap->Bitmap[3],
+				&cap->Bitmap[4], &cap->Bitmap[5], 
+				&cap->Bitmap[6], &cap->Bitmap[7],
+				&cap->Bitmap[8], &cap->Bitmap[9], 
+				&cap->Bitmap[10], &cap->Bitmap[11],
+				&cap->Bitmap[12], &cap->Bitmap[13],
+				&cap->Bitmap[14], &cap->Bitmap[15]) != 16) {
 		return -1;
+	}
 
 	return 0;
 }

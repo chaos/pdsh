@@ -8,7 +8,7 @@ PDSH_OBJS=	list.o xmalloc.o xstring.o err.o \
 		dsh.o main.o opt.o wcoll.o xrcmd.o sshcmd.o \
 		$(ELAN_OBJS) $(KRB_OBJS)
 
-QSHD_OBJS=	list.o xmalloc.o xstring.o err.o qswutil.o base64.o qshd.o 
+QSHD_OBJS=	list.o xmalloc.o xstring.o err.o qswutil.o qshd.o 
 
 PREFIX=		/usr/local
 
@@ -24,7 +24,7 @@ PREFIX=		/usr/local
 # Uncomment and set HAVE_ELAN3 to 1 in conf.h for Quadrics Elan support
 #
 ELAN_TARGS=	qshd
-ELAN_OBJS=	qswutil.o qcmd.o base64.o
+ELAN_OBJS=	qswutil.o qcmd.o
 ELAN_LIB=	-lelan3 -lrmscall
 
 # Solaris
@@ -56,7 +56,7 @@ install:
 	#install -m 444  -o root -g root dshbak.1 $(PREFIX)/man/man1/dshbak.1
 
 clean:
-	rm -f *.o core a.out pdsh qshd qswutil base64
+	rm -f *.o core a.out pdsh qshd
 	rm -f *.rpm *.tgz 
 
 $(OBJS): $(HDRS)

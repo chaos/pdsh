@@ -459,7 +459,7 @@ doit(struct sockaddr_in *fromp)
 
 	/* 
 	 * A single \0 written back on the socket indicates success.  Error 
-	 * would be inidicated by a nonzero code followed by error string,
+	 * would be indicated by a nonzero code followed by error string,
 	 * e.g. through calling error() or fail() above.
 	 */
 	(void) write(2, "\0", 1);
