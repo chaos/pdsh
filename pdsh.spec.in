@@ -150,7 +150,7 @@ Pdsh module for genders functionality using the nodeattr program.
 %package   mod-nodeupdown
 Summary:   Provides libnodeupdown support for pdsh.
 Group:     System Environment/Base
-Requires:  whatsup
+Requires:  whatsup >= 1.3
 %description mod-nodeupdown
 Pdsh module providing -v functionality using libnodeupdown.
 

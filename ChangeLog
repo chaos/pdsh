@@ -1,3 +1,11 @@
+2003-12-09  Albert Chu <chu11@llnl.gov>
+
+	* src/modules/nodeupdown.c (remove_all_down_nodes): Updated for
+	change in nodeupdown API version 1.3.
+
+	* pdsh.spec.in: Added requirement that nodeupdown module requires
+	whatsup >= 1.3 package.
+
 2003-12-02  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/dsh.c (dsh): Reinstall old SIGINT handler before
