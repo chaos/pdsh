@@ -1,8 +1,22 @@
+2004-03-08  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/modules/sdr.c : Rewrite module so that -a, -i, and -v can be
+	used independently of eachother and along with other node selection
+	options.
+
+	* src/modules/genders.c : Modified behavior of -a such that all 
+	nodes are targeted =except= those with "pdsh_all_skip" attribute.
+	New "-A" option provides old -a behavior. Added -F option to point
+	pdsh to a non-default genders file.
+
+	* src/modules/nodeattr.c : Added -A option and changed semantics
+	of -a to match genders module.
+
 2004-03-03  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/qsnet/qswutil.c (qsw_spawn_neterr_thr) : Dlopen libelan3.so 
 	when needed on Elan3 systems for running the network error thread. 
-	Allows single qshd/mqshd binary to run on Elan3 or Elan4 (QsNetII).
+	Allows single qshd/mqshd binary to run on Elan3 or Elan4.
 
 	* doc/pdsh.1.in, doc/pdcp.1.in : Rewrite of pdsh/pdcp documentation.
 

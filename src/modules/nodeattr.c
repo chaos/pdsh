@@ -58,7 +58,8 @@ static int nodeattr_postop (opt_t *opt);
 
 /*
  *  nodeattr module options
- *   -a      select all nodes
+ *   -a      select all nodes except those with pdsh_all_skip attr
+ *   -A      select all nodes.
  *   -i      select alternate hostnames from genders
  *   -g attr select all nodes with genders attribute "attr"
  *   -X attr deselect all nodes with genders attribute "attr"
@@ -92,8 +93,11 @@ struct pdsh_module_option nodeattr_module_options[] =
      DSH | PCP, (optFunc) nodeattr_process_opt 
    },
 #if !GENDERS_G_ONLY
-   { 'a', NULL,        "target all nodes", 
+   { 'a', NULL,        "target all nodes except those with \"pdsh_all_skip\" attr", 
      DSH | PCP, (optFunc) nodeattr_process_opt 
+   },
+   { 'A', NULL,        "target all nodes",
+     DSH | PCP, (optFunc) nodeattr_process_opt
    },
    { 'i', NULL,        "request canonical hostnames if applicable",
      DSH | PCP, (optFunc) nodeattr_process_opt
@@ -140,6 +144,8 @@ nodeattr_process_opt(opt_t *pdsh_opts, int opt, char *arg)
     switch (opt) {
 #if !GENDERS_G_ONLY
     case 'a': 
+        excllist = _attrlist_append (excllist, "pdsh_all_skip");
+    case 'A':
         allnodes = true;
         break;
     case 'i':

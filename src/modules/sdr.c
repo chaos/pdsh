@@ -53,32 +53,21 @@
 
 int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
 
-static hostlist_t read_sdr(opt_t *opt);
+static int sdr_init (void);
+static int sdr_exit (void);
+static hostlist_t read_sdr (opt_t *opt);
+static int sdr_postop (opt_t *);
 
 static int sdr_process_opt(opt_t *, int, char *);
-
-static bool allnodes = false;
-static bool altnames = false;
-static bool verify   = false;
-static bool global   = false;
 
 /*
  *  Export generic module functions
  */
 struct pdsh_module_operations sdr_module_ops = {
-    (ModInitF)       NULL, 
-    (ModExitF)       NULL, 
+    (ModInitF)       sdr_init, 
+    (ModExitF)       sdr_exit, 
     (ModReadWcollF)  read_sdr,
-    (ModPostOpF)     NULL,
-};
-
-/* 
- * Export rcmd module operations
- */
-struct pdsh_rcmd_operations sdr_rcmd_ops = {
-    (RcmdInitF)  NULL,
-    (RcmdSigF)   NULL,
-    (RcmdF)      NULL,
+    (ModPostOpF)     sdr_postop,
 };
 
 /* 
@@ -88,10 +77,10 @@ struct pdsh_module_option sdr_module_options[] =
  { { 'a', NULL, "target all nodes", 
      DSH | PCP, (optFunc) sdr_process_opt
    },
-   { 'v', NULL, "with -a, verify nodes are up using host/switch_responds",
+   { 'v', NULL, "verify nodes are up using host/switch_responds",
      DSH | PCP, (optFunc) sdr_process_opt
    },
-   { 'i', NULL, "use alternate hostnames from SDR",
+   { 'i', NULL, "translate to alternate/initial hostnames from SDR (if applicable)",
      DSH | PCP, (optFunc) sdr_process_opt
    },
    { 'G', NULL, "with -a, run on all SP partitions",
@@ -111,9 +100,74 @@ struct pdsh_module pdsh_module_info = {
   DSH | PCP, 
 
   &sdr_module_ops,
-  &sdr_rcmd_ops,
+  NULL,
   &sdr_module_options[0],
 };
+
+
+
+/*
+ *  Data cache for SDR information.
+ *  XXX: Hash by node number instead of leaving room for
+ *       all possible nodes
+ */
+struct sdr_info {
+    char *hostname;
+    char *reliable_hostname;
+    bool switch_responds;
+    bool host_responds;
+};
+
+static bool sdr_initialized = false;
+static struct sdr_info * sdrcache[MAX_SP_NODE_NUMBER];
+
+/* 
+ *  Global options
+ */
+static bool allnodes = false;
+static bool altnames = false;
+static bool verify   = false;
+static bool global   = false;
+
+
+/*
+ *  Required static forward declarations
+ */
+static struct sdr_info * sdr_info_create (char *host, char *rhost);
+static void sdr_info_destroy (struct sdr_info *s);
+
+static hostlist_t _sdr_filter (hostlist_t hl, bool iopt, bool verify);
+static hostlist_t _sdr_wcoll(bool Gopt);
+static struct sdr_info * _find_node (const char *name, int *rhost);
+static hostlist_t _sdr_reliable_names (void);
+static void _sdr_getnames(bool Gopt);
+static void _sdr_getresp (bool Gopt);
+
+static List _list_split(char *sep, char *str);
+static char *_list_nth(List l, int n);
+static void _free_name(void *name);
+static char *_next_tok(char *sep, char **str);
+
+
+/*
+ * module interface functions
+ */
+
+static int sdr_init (void)
+{
+	int i;
+	for (i = 0; i < MAX_SP_NODE_NUMBER; i++)
+		sdrcache[i] = NULL;
+	return (0);
+}
+
+static int sdr_exit (void)
+{
+    int i;
+    for (i = 0; i < MAX_SP_NODE_NUMBER; i++)
+        sdr_info_destroy (sdrcache[i]);
+    return (0);
+}
 
 static int sdr_process_opt(opt_t *pdsh_opt, int opt, char *arg)
 {
@@ -137,59 +191,96 @@ static int sdr_process_opt(opt_t *pdsh_opt, int opt, char *arg)
     return 0;
 }
 
-static List _list_split(char *sep, char *str);
-static char *_list_nth(List l, int n);
-static void _free_name(void *name);
-static char *_next_tok(char *sep, char **str);
-static void _sdr_getnames(bool Gopt, char *nameType, char *nodes[]);
-static void _sdr_getresp(bool Gopt, char *nameType, bool resp[]);
-static void _sdr_getswitchname(char *switchName, int len);
-static int _sdr_numswitchplanes(void);
-static hostlist_t sdr_wcoll(bool Gopt, bool iopt, bool vopt);
 
 static hostlist_t read_sdr(opt_t *opt)
 {
+	if (!allnodes)
+		return (NULL); 
+
     if (allnodes && opt->wcoll)
         errx("%p: Do not specify -a with other node selection options\n");
 
-    if (altnames && !allnodes)
-        err("%p: Warning: Ignoring -i without -a\n");
+    return _sdr_wcoll (global);
+}
 
-    if (verify && !allnodes)
-        err("%p: Warning: Ignoring -v without -a\n");
+static int sdr_postop (opt_t *opt)
+{
+    hostlist_t hl; 
 
-    if (!allnodes)
-        return NULL;
+    if (!verify && !altnames)
+        return (0);
 
-    return sdr_wcoll(global, altnames, verify);
+    if (!opt->wcoll || (hostlist_count (opt->wcoll) == 0))
+        return (0);
+
+    if (!sdr_initialized)
+        _sdr_getnames (global);
+
+    if (verify) 
+        _sdr_getresp (global);
+
+    hl = _sdr_filter (opt->wcoll, altnames, verify);
+    hostlist_destroy (opt->wcoll);
+    opt->wcoll = hl;
+
+    return (0);
+}
+
+/*
+ * Other functions
+ */
+
+
+/*
+ * Get the wcoll from the SDR.  
+ *      Gopt (IN)       pass -G to SDRGetObjects
+ *      RETURN          new list containing hostnames (reliable by default)
+ */
+static hostlist_t _sdr_wcoll (bool Gopt)
+{
+	/*
+	 *  Cache SDR reliable and initial hostnames
+	 */
+	_sdr_getnames (Gopt);
+
+    return _sdr_reliable_names ();
 }
 
 
-static int _sdr_numswitchplanes(void)
+/*
+ * Filter hostlist `hl' using SDR attributes.
+ *     iopt     convert reliable hostnames to initial and vice versa.
+ *     verify   remove hosts that are not responding on the corresponding
+ *              interface (i.e. switch for initial hostnames, eth otherwise)
+ *     RETURN   new list containing filtered hosts.
+ */
+static hostlist_t _sdr_filter (hostlist_t hl, bool iopt, bool verify)
 {
-    FILE *f;
-    List words;
-    char cmd[LINEBUFSIZE];
-    char buf[LINEBUFSIZE];
-    int n;
+    char *host = NULL;
+    hostlist_t new  = hostlist_create (NULL);
+    hostlist_iterator_t i = hostlist_iterator_create (hl);
+    struct sdr_info *s = NULL;
 
-    snprintf(cmd, sizeof(cmd), "%s -x SP number_switch_planes",
-             _PATH_SDRGETOBJECTS);
+    while ((host = hostlist_next (i))) {
+        int r = 0;
 
-    f = xpopen(cmd, "r");
+        if ((s = _find_node (host, &r)) == NULL) {
+            hostlist_push_host (new, host);
+            continue;
+        }
 
-    if (f == NULL)
-        errx("%p: error running %s\n", _PATH_SDRGETOBJECTS);
-    while (fgets(buf, LINEBUFSIZE, f) != NULL) {
-        words = _list_split(NULL, buf);
-        assert(list_count(words) == 1);
-        n = atoi(_list_nth(words, 0));
-        list_destroy(words);
+        if (iopt) 
+            r = !r;
+
+        if (!verify || (r ? s->host_responds : s->switch_responds))
+           hostlist_push_host (new, r ? s->reliable_hostname : s->hostname);
+
+        free (host);
     }
-    if (xpclose(f) != 0)
-        err("%p: nonzero return code from %s\n", _PATH_SDRGETOBJECTS);
 
-    return n;
+    hostlist_iterator_destroy (i);
+
+    return (new);
 }
 
 static void _sdr_getswitchname(char *switchName, int len)
@@ -213,162 +304,186 @@ static void _sdr_getswitchname(char *switchName, int len)
     xpclose(f);
 }
 
-/*
- * Query the SDR for switch_responds or host_responds for all nodes and return
- * the results in an array indexed by node number.
- *      Gopt (IN)       pass -G to SDRGetObjects
- *      nameType (IN)   either "switch_responds" or "host_responds"
- *      resp (OUT)      array of boolean, indexed by node number
- */
-static void _sdr_getresp(bool Gopt, char *nameType, bool resp[])
+static char * _sdr_switch_attr (int *numswitchplanes)
 {
-    int nn, switchplanes;
     FILE *f;
     List words;
     char cmd[LINEBUFSIZE];
     char buf[LINEBUFSIZE];
-    char *attr = "host_responds";
+    int n;
 
-    switchplanes = 1;
+	static char * attr[] = {
+		"switch_responds",
+		"switch_responds0",
+		"switch_responds0 switch_responds1"
+	};
 
-    /* deal with Colony switch attribute name change */
-    if (!strcmp(nameType, "switch_responds")) {
-        _sdr_getswitchname(buf, sizeof(buf));
-        if (!strcmp(buf, "SP_Switch2")) {
-            switchplanes = _sdr_numswitchplanes();
-            attr = (switchplanes == 1) ? "switch_responds0" :
-                "switch_responds0 switch_responds1";
-        } else
-            attr = "switch_responds";
-    }
+	_sdr_getswitchname(buf, sizeof(buf));
+	if (strcmp(buf, "SP_Switch2") != 0) {
+		*numswitchplanes = 1;
+		return (attr[0]);
+	}
+ 
+    snprintf(cmd, sizeof(cmd), "%s -x SP number_switch_planes",
+             _PATH_SDRGETOBJECTS);
 
-    snprintf(cmd, sizeof(cmd), "%s %s -x %s node_number %s",
-             _PATH_SDRGETOBJECTS, Gopt ? "-G" : "", nameType, attr);
     f = xpopen(cmd, "r");
+
     if (f == NULL)
         errx("%p: error running %s\n", _PATH_SDRGETOBJECTS);
     while (fgets(buf, LINEBUFSIZE, f) != NULL) {
         words = _list_split(NULL, buf);
-        assert(list_count(words) == (1 + switchplanes));
-        nn = atoi(_list_nth(words, 0));
-        assert(nn >= 0 && nn <= MAX_SP_NODE_NUMBER);
-        if (switchplanes == 1)
-            resp[nn] = (atoi(_list_nth(words, 1)) == 1);
-        else if (switchplanes == 2)
-            resp[nn] = (atoi(_list_nth(words, 1)) == 1 ||
-                        atoi(_list_nth(words, 1)) == 1);
-        else
-            errx("%p: number_switch_planes > 2 not supported\n");
+        assert(list_count(words) == 1);
+        n = atoi(_list_nth(words, 0));
         list_destroy(words);
     }
-    xpclose(f);
+    if (xpclose(f) != 0)
+        err("%p: nonzero return code from %s\n", _PATH_SDRGETOBJECTS);
+
+	*numswitchplanes = n;
+	return (attr[n]);
+}
+
+static void _sdr_cache_hresp_line (char *buf)
+{
+	List words = NULL;
+	int  nn    = -1;
+
+	words = _list_split (NULL, buf);
+	assert(list_count (words) == 2);
+
+	nn = atoi (_list_nth (words, 0));
+	assert (nn >= 0 && nn <= MAX_SP_NODE_NUMBER);
+	assert (sdrcache[nn] != NULL);
+
+	sdrcache[nn]->host_responds = (atoi (_list_nth (words, 1)) == 1);
+
+	return;
+}
+
+static void _sdr_cache_sresp_line (char *buf, int switchplanes)
+{
+	List words = NULL;
+	int  nn    = -1;
+	struct sdr_info *s;
+
+	words = _list_split (NULL, buf);
+	assert(list_count (words) == (1 + switchplanes));
+
+	nn = atoi (_list_nth (words, 0));
+	assert (nn >= 0 && nn <= MAX_SP_NODE_NUMBER);
+	assert (sdrcache[nn] != NULL);
+
+	s = sdrcache[nn];
+
+	s->switch_responds = (atoi(_list_nth(words, 1)) == 1);
+	if (switchplanes == 2)
+		s->switch_responds = s->switch_responds || (atoi(_list_nth (words, 1)));
+
+	return;
+}
+
+static void _sdr_cache_name_line (char *buf)
+{
+	char *name  = NULL;
+	char *rname = NULL;
+	List words  = NULL;
+	int  nn     = -1; 
+    char *p;
+
+	words = _list_split (NULL, buf);
+	assert (list_count(words) == 3);
+
+	nn = atoi (_list_nth (words, 0));
+	assert (nn >= 0 && nn <= MAX_SP_NODE_NUMBER);
+
+	name = _list_nth (words, 1);
+	rname = _list_nth (words, 2);
+
+	if ((p = strchr (name, '.')))
+		*p = '\0';
+
+	if ((p = strchr (rname, '.')))
+		*p = '\0';
+
+	sdrcache[nn] = sdr_info_create (name, rname);
+
+	list_destroy (words);
+	return;
+}
+
+static void _sdr_getresp (bool Gopt)
+{
+    FILE *f;
+    char cmd[LINEBUFSIZE];
+    char buf[LINEBUFSIZE];
+	int nswitchplanes;
+
+    snprintf (cmd, sizeof(cmd), 
+			 "%s %s -x host_responds node_number host_responds",
+             _PATH_SDRGETOBJECTS, Gopt ? "-G" : "");
+
+    if ((f = xpopen (cmd, "r")) == NULL)
+        errx("%p: error running %s\n", _PATH_SDRGETOBJECTS);
+
+    while (fgets (buf, LINEBUFSIZE, f) != NULL) 
+		_sdr_cache_hresp_line (buf);
+
+    snprintf (cmd, sizeof(cmd), 
+			 "%s %s -x switch_responds node_number %s",
+             _PATH_SDRGETOBJECTS, Gopt ? "-G" : "", 
+			 _sdr_switch_attr (&nswitchplanes));
+
+    if ((f = xpopen (cmd, "r")) == NULL)
+        errx("%p: error running %s\n", _PATH_SDRGETOBJECTS);
+
+    while (fgets (buf, LINEBUFSIZE, f) != NULL) 
+		_sdr_cache_sresp_line (buf, nswitchplanes);
+
+	xpclose (f);
+
+	return;
 }
 
 /*
  * Query the SDR for hostnames of all nodes and return the results in an 
  * array indexed by node number.
  *      Gopt (IN)       pass -G to SDRGetObjects
- *      nameType (IN)   either "initial_hostname" or "reliable_hostname"
- *      resp (OUT)      array of hostnames indexed by node number (heap cpy)
  */
-static void _sdr_getnames(bool Gopt, char *nameType, char *nodes[])
+static void _sdr_getnames(bool Gopt)
 {
-    int nn;
     FILE *f;
-    char *p;
-    List words;
     char cmd[LINEBUFSIZE];
     char buf[LINEBUFSIZE];
 
-    snprintf(cmd, sizeof(cmd), "%s %s -x Node node_number %s",
-             _PATH_SDRGETOBJECTS, Gopt ? "-G" : "", nameType);
-    f = xpopen(cmd, "r");
-    if (f == NULL)
+    snprintf (cmd, sizeof(cmd), 
+			 "%s %s -x Node node_number initial_hostname reliable_hostname",
+             _PATH_SDRGETOBJECTS, Gopt ? "-G" : "");
+
+    if ((f = xpopen (cmd, "r")) == NULL)
         errx("%p: error running %s\n", _PATH_SDRGETOBJECTS);
-    while (fgets(buf, LINEBUFSIZE, f) != NULL) {
-        words = _list_split(NULL, buf);
-        assert(list_count(words) == 2);
 
-        nn = atoi(_list_nth(words, 0));
-        assert(nn >= 0 && nn <= MAX_SP_NODE_NUMBER);
-        nodes[nn] =  Strdup(_list_nth(words, 1));
+    while (fgets (buf, LINEBUFSIZE, f) != NULL) 
+		_sdr_cache_name_line (buf);
 
-        /*  
-         *  Truncate any domain
-         */
-        if ((p = strchr (nodes[nn], '.')))
-            *p = '\0';
-        
-        list_destroy(words);
-    }
     xpclose(f);
+
+    sdr_initialized = true;
 }
 
-
-/*
- * Get the wcoll from the SDR.  
- *      Gopt (IN)       pass -G to SDRGetObjects
- *      altnames (IN)   ask for initial_hostname instead of reliable_hostname
- *      vopt (IN)       verify switch_responds/host_responds
- *      RETURN          new list containing hostnames
- */
-static hostlist_t sdr_wcoll(bool Gopt, bool iopt, bool vopt)
+static hostlist_t _sdr_reliable_names ()
 {
-    hostlist_t new;
-    char *inodes[MAX_SP_NODE_NUMBER + 1], *rnodes[MAX_SP_NODE_NUMBER + 1];
-    bool sresp[MAX_SP_NODE_NUMBER + 1], hresp[MAX_SP_NODE_NUMBER + 1];
-    int nn;
+	hostlist_t hl = hostlist_create (NULL);
+	int i;
 
-    /*
-     * Build arrays of hostnames indexed by node number.  Array is size 
-     * MAX_SP_NODE_NUMBER, with NULL pointers set for unused nodes.
-     */
-    for (nn = 0; nn <= MAX_SP_NODE_NUMBER; nn++) {
-        inodes[nn] = NULL;
-        rnodes[nn] = NULL;
-    }
-    if (iopt)
-        _sdr_getnames(Gopt, "initial_hostname", inodes);
-    else
-        _sdr_getnames(Gopt, "reliable_hostname", rnodes);
+	for (i = 0; i < MAX_SP_NODE_NUMBER; i++) {
+		if (sdrcache[i] != NULL)
+			hostlist_push_host (hl, sdrcache[i]->reliable_hostname);
+	}
 
-    /*
-     * Gather data needed to process -v.
-     */
-    if (vopt) {
-        if (iopt)
-            _sdr_getresp(Gopt, "switch_responds", sresp);
-        _sdr_getresp(Gopt, "host_responds", hresp);
-    }
-
-    /*
-     * Collect and return the nodes.  If -v was specified and a node is 
-     * not responding, substitute the alternate name; if that is not 
-     * responding, skip the node.
-     */
-    new = hostlist_create("");
-    for (nn = 0; nn <= MAX_SP_NODE_NUMBER; nn++) {
-        if (inodes[nn] != NULL || rnodes[nn] != NULL) {
-            if (vopt) {         /* initial_host */
-                if (iopt && sresp[nn] && hresp[nn])
-                    hostlist_push(new, inodes[nn]);
-                else if (!iopt && hresp[nn])    /* reliable_host */
-                    hostlist_push(new, rnodes[nn]);
-            } else {
-                if (iopt)       /* initial_host */
-                    hostlist_push(new, inodes[nn]);
-                else            /* reliable_host */
-                    hostlist_push(new, rnodes[nn]);
-            }
-            if (inodes[nn] != NULL)     /* free heap cpys */
-                Free((void **) &inodes[nn]);
-            if (rnodes[nn] != NULL)
-                Free((void **) &rnodes[nn]);
-        }
-    }
-
-    return new;
+	return (hl);
 }
+
 
 /* 
  * Helper function for list_split(). Extract tokens from str.  
@@ -444,6 +559,60 @@ static void _free_name(void *name)
     Free(&name);
 }
 
+static struct sdr_info * sdr_info_create (char *host, char *rhost)
+{
+	struct sdr_info *s = Malloc (sizeof (*s));
+
+	s->hostname = Strdup (host);
+	s->reliable_hostname = Strdup (rhost);
+
+	s->host_responds = false;
+	s->switch_responds = false;
+
+	return (s);
+}
+
+static void sdr_info_destroy (struct sdr_info *s)
+{
+    if (s == NULL)
+        return;
+
+	if (s->hostname)
+		Free ((void **) &s->hostname);
+	if (s->reliable_hostname)
+		Free ((void **) &s->reliable_hostname);
+
+	Free ((void **) &s);
+
+	return;
+}
+
+static struct sdr_info * _find_node (const char *name, int *rhost)
+{
+    int i;
+
+    for (i = 0; i < MAX_SP_NODE_NUMBER; i++) {
+        struct sdr_info *s = sdrcache[i];
+
+        if (s == NULL)
+            continue;
+
+        if (strncmp (name, s->reliable_hostname, 
+                     strlen (s->reliable_hostname)) == 0) {
+            if (rhost != NULL)
+                *rhost = 1;
+            return (s);
+        }
+
+        if (strncmp (name, s->hostname, strlen (s->hostname)) == 0) {
+            if (rhost != NULL)
+                *rhost = 0;
+            return (s);
+        }
+    }
+
+    return (NULL);
+}
 
 /*
  * vi: tabstop=4 shiftwidth=4 expandtab

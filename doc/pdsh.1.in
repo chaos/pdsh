@@ -171,9 +171,15 @@ block.
 Target all nodes from machines file.
 
 .SH "genders module options"
+.TP 
+.I "-A"
+Target all nodes in genders database. The \fI-A\fR option will target
+every host listed in genders -- if you want to omit some hosts by default,
+see the \fI-a\fR option below.
 .TP
 .I "-a"
-Target "all" nodes in genders database.
+Target all nodes in genders database except those with the "pdsh_all_skip"
+attribute. This is shorthand for running "pdsh -A -X pdsh_all_skip ..."
 .TP 
 .I "-g attribute[,attribute,...]"
 Target nodes that have any of the specified genders attributes. Conflicts
@@ -189,6 +195,10 @@ selection options (e.g. \fI-w\fR, \fI-g\fR, \fI-a\fR, ...).
 .TP
 .I "-i"
 Request translation between canonical and alternate hostnames. 
+.TP
+.I "-F filename"
+Read genders information from \fIfilename\fR instead of the system
+default genders file. 
 
 .SH "nodeupdown module options"
 .TP
@@ -221,14 +231,21 @@ The SDR module supports targeting hosts via the System Data Repository
 on IBM SPs.
 .TP
 .I "-a"
-Target all nodes in the SDR.
+Target all nodes in the SDR. The list is generated from the 
+"reliable hostname" in the SDR by default.
 .TP
 .I "-i"
-Use "reliable" hostnames.
+Translate hostnames between reliable and initial in the SDR, when applicable. 
+If the a target hostname matches either the initial or reliable hostname
+in the SDR, the alternate name will be substitued. Thus a list composed
+of initial hostnames will instead be replaced with a list of reliable hostnames.
+For example, when used with \fI-a\fR above, all initial hostnames in 
+the SDR are targeted.
 .TP
 .I "-v"
 Do not target nodes that are marked as not responding in the SDR on
-the targeted interface.
+the targeted interface. (If a hostname does not appear in the SDR, then
+that name will remain in the target hostlist.)
 .TP
 .I "-G"
 In combination with \fI-a\fR, include all partitions.
@@ -239,7 +256,7 @@ via the nodeattr(1) command. See the \fBgenders\fR section above
 for a list of support options with this module. The option usage
 with the \fBnodeattr\fR module is the same as \fBgenders\fR, above,
 with the exception that the \fI-i\fR option may only be used
-with \fI-a\fR or \fI-g\fR.
+with \fI-a\fR or \fI-g\fR, and the \fI-F\fR option is not available.
 
 .SH "ENVIRONMENT VARIABLES"
 .PP

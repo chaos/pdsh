@@ -68,6 +68,7 @@ static bool opt_i      = false;
 #endif /* !GENDERS_G_ONLY */
 
 static genders_t gh    = NULL;
+static char *gfile     = NULL;
 static List attrlist   = NULL;
 static List excllist   = NULL;
 
@@ -101,12 +102,18 @@ struct pdsh_module_option genders_module_options[] =
    { 'X', "attribute,...", "exclude nodes with specified genders attributes",
      DSH | PCP, (optFunc) genders_process_opt
    },
-#if !GENDERS_G_ONLY
-   { 'i', NULL,        "request alternate or canonical hostnames if applicable",
+   { 'F', "file",          "use alternate genders file `file'",
      DSH | PCP, (optFunc) genders_process_opt
    },
-   { 'a', NULL,        "target all nodes", 
+#if !GENDERS_G_ONLY
+   { 'i', NULL, "request alternate or canonical hostnames if applicable",
+     DSH | PCP, (optFunc) genders_process_opt
+   },
+   { 'a', NULL, "target all nodes except those with \"pdsh_all_skip\" attribute", 
      DSH | PCP, (optFunc) genders_process_opt 
+   },
+   { 'A', NULL, "target all nodes listed in genders database",
+     DSH | PCP, (optFunc) genders_process_opt
    },
 #endif /* !GENDERS_G_ONLY */
    PDSH_OPT_TABLE_END
@@ -151,7 +158,10 @@ genders_process_opt(opt_t *pdsh_opts, int opt, char *arg)
 {
     switch (opt) {
 #if !GENDERS_G_ONLY
-    case 'a': 
+    case 'a':  
+        /* For -a, exclude nodes with "pdsh_all_skip" */ 
+        excllist = _attrlist_append (excllist, "pdsh_all_skip");
+    case 'A':
         allnodes = true;
         break;
     case 'i':
@@ -163,6 +173,9 @@ genders_process_opt(opt_t *pdsh_opts, int opt, char *arg)
         break;
     case 'X':
         excllist = _attrlist_append (excllist, arg);
+        break;
+    case 'F':
+        gfile = Strdup (arg);
         break;
     default:
         err("%p: genders_process_opt: invalid option `%c'\n", opt);
@@ -359,7 +372,7 @@ static genders_t _handle_create()
         errx("%p: Unable to create genders handle: %m\n");
 
     /* assumes genders file in default location */
-    if (genders_load_data(gh, NULL) < 0)
+    if (genders_load_data(gh, gfile) < 0)
         errx("%p: Unable to open genders file: %s\n", genders_errormsg(gh));
 
     return gh;
