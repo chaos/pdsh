@@ -142,6 +142,10 @@ static int mcmd_init(opt_t *);
 static int mcmd_signal(int, int);
 static int mcmd(char *, char *, char *, char *, char *, int, int *); 
 
+/* random num for all jobs in this group */
+unsigned int randy = -1;
+char num_seq[12] = {0};
+
 /* 
  * Export pdsh module operations structure
  */
@@ -187,7 +191,40 @@ struct pdsh_module pdsh_module_info = {
 static int
 mcmd_init(opt_t * opt)
 {
-  /* not implemented */
+  int rand_fd;
+  ssize_t m_rv;
+
+  /*
+   * Generate a random number to send in our package to the 
+   * server.  We will see it again and compare it when the
+   * server sets up the stderr socket and sends it to us.
+   */
+  rand_fd = open ("/dev/urandom", O_RDONLY | O_NONBLOCK);
+  if ( rand_fd < 0 ) {
+    err("%p: mcmd: Open of /dev/urandom failed\n");
+    return -1;
+  }
+
+  m_rv = read (rand_fd, &randy, sizeof(uint32_t));
+  if (m_rv < 0) {
+    close(rand_fd);
+    err("%p: mcmd: Read of /dev/urandom failed\n");
+    return -1;
+  }
+
+  if (m_rv < (int) (sizeof(uint32_t))) {
+    close(rand_fd);
+    err("%p: mcmd: Read of /dev/urandom returned too few bytes\n");
+    return -1;
+  }
+
+  close(rand_fd);
+
+  /*
+   * Convert to decimal string...
+   */
+  snprintf(num_seq, sizeof(num_seq),"%d",randy);
+
   return 0;
 }
 
@@ -236,9 +273,9 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
   struct sockaddr_in sin, from;
   struct sockaddr_storage ss;
   struct in_addr m_in;
-  unsigned int randy, rand, randl;
+  unsigned int rand, randl;
   unsigned char *hptr;
-  int s, lport, rv, rand_fd;
+  int s, lport, rv;
   int mcount;
   int s2, s3;
   char c;
@@ -248,7 +285,6 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
   char *tmbuf;
   char haddrdot[16] = {0};
   char *m;
-  char num_seq[12] = {0};
   size_t len;
   ssize_t m_rv;
   sigset_t blockme;
@@ -266,36 +302,6 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     err("%p: %S: mcmd: Can't use localhost\n", ahost);
     EXIT_PTHREAD();
   }
-
-  /*
-   * Generate a random number to send in our package to the 
-   * server.  We will see it again and compare it when the
-   * server sets up the stderr socket and sends it to us.
-   */
-  rand_fd = open ("/dev/urandom", O_RDONLY | O_NONBLOCK);
-  if ( rand_fd < 0 ) {
-    err("%p: %S: mcmd: Open of /dev/urandom failed: %m\n", ahost);
-    EXIT_PTHREAD();
-  }
-
-  m_rv = read (rand_fd, &randy, sizeof(uint32_t));
-  if (m_rv < 0) {
-    close(rand_fd);
-    err("%p: %S: mcmd: Read of /dev/urandom failed: %m\n", ahost);
-    EXIT_PTHREAD();
-  }
-  if (m_rv < (int) (sizeof(uint32_t))) {
-    close(rand_fd);
-    err("%p: %S: mcmd: Read of /dev/urandom returned too few bytes\n", ahost);
-    EXIT_PTHREAD();
-  }
-
-  close(rand_fd);
-
-  /*
-   * Convert to decimal string...
-   */
-  snprintf(num_seq, sizeof(num_seq),"%d",randy);
 
   /*
    * Start setup of the stdin/stdout socket...
