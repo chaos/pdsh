@@ -196,12 +196,13 @@ if test -n "$NODEATTR"; then
     AC_DEFINE_UNQUOTED(_PATH_NODEATTR, "$NODEATTR", [Path to nodeattr])
 fi
 
-AC_PATH_PROG(RMSQUERY, rmsquery, [], /usr/bin:$PATH)
-if test -n "$RMSQUERY"; then
-    AC_DEFINE_UNQUOTED(_PATH_RMSQUERY, "$RMSQUERY", [Path to rmsquery])
-fi
-if test "$withrms" = yes && test -z "$RMS"; then
-    AC_MSG_ERROR([--with-rms specified but rmsquery program is not found])
+if test "$withrms" = yes; then
+    AC_PATH_PROG(RMSQUERY, rmsquery, [], /usr/bin:$PATH)
+    if test -n "$RMSQUERY"; then
+        AC_DEFINE_UNQUOTED(_PATH_RMSQUERY, "$RMSQUERY", [Path to rmsquery])
+    else
+        AC_MSG_ERROR([--with-rms specified but rmsquery program is not found])
+    fi
 fi
 
 AC_PATH_PROG(SDRGETOBJECTS, SDRGetObjects, "", /usr/lpp/ssp/bin:$PATH)
