@@ -93,39 +93,39 @@ a machine, or if the fanout is set too high.
 
 2) When pdsh is using a remote shell service that is wrapped with TCP wrappers,
 there are three areas where bottlenecks can be created: IDENT, DNS, and SYSLOG.
-If your hosts.allow includes {users}@, e.g.  "in.rshd : ALL@ALL : ALLOW"
+If your hosts.allow includes "user@", e.g.  "in.rshd : ALL@ALL : ALLOW"
 and TCP wrappers is configured to support IDENT, each simultaneous remote shell
 connection will result in an IDENT query back to the source.  For large fanouts
 this can quickly overwhelm the source.  Similarly, if TCP wrappers is
-configured to query the DNS on every connection, there is the possibility
-of overwhelming the DNS server.  Finally, if every remote shell connection
-results in a remote syslog entry, syslogd on your loghost may see bursts
-of high activity and logs may grow excessively long when pdsh runs.  
+configured to query the DNS on every connection, pdsh may overwhelmi the 
+DNS server.  Finally, if every remote shell connection results in a remote 
+syslog entry, syslogd on your loghost may be overwhelmed and logs may grow
+excessively long.
 
 If local security policy permits, consider configuring TCP wrappers to avoid 
 calling IDENT, DNS, or SYSLOG on every remote shell connection.  Configuring
-without the "PARANOID" option (require all connections to be registered in
-the DNS, permitting a simple list of IP addresses or a subnet (no names, and 
-no user@ prefix), and setting the SYSLOG severity for the remote shell to
-a level that is not remotely logged will avoid these pitfalls.  If these
-actions are not possible, you may wish to mitigate them by configuring
-pdsh with a smaller default fanout (change DFLT_FANOUT in dsh.h).
+without the "PARANOID" option (which requires all connections to be 
+registered in the DNS), permitting a simple list of IP addresses or a 
+subnet (no names, and no user@ prefix), and setting the SYSLOG severity for 
+the remote shell service to a level that is not remotely logged will avoid 
+these pitfalls.  If these actions are not possible, you may wish to 
+reduce pdsh's default fanout (configure --with-fanout=N).
 
 +---------------------+
 | THEORY OF OPERATION |
 +---------------------+
-A separate thread is created for each rsh connection to a node.  Each thread 
-opens a connection to a node using an MT-safe rcmd() or kcmd() [kerberos IV] 
-function, then copies stdin/stderr and terminates.
+A thread is created for each rsh connection to a node.  Each thread opens 
+a connection using an MT-safe rcmd-like function, then copies stdin/stderr 
+and terminates.
 
-The main thread starts fanout number of rsh threads and waits on a condition
+The mainline starts fanout number of rsh threads and waits on a condition
 variable that is signalled by the rsh threads as they terminate.  When 
 the condition variable is signalled, the main thread starts a new rsh thread
-to maintain the fanout (until all the nodes have been contacted).
+to maintain the fanout, until all remote commands have been executed.
 
-A special timeout thread is created that monitors the state of the threads and
-terminates any that take too much time connecting or (optionally) executing the
-remote command.
+A timeout thread is created that monitors the state of the threads and
+terminates any that take too much time connecting or, if requested on the
+command line, take too long to complete.
 
 Typing ^C causes pdsh to list threads that are in the connected state.
 Another ^C immediately following the first one terminates the program.
@@ -143,8 +143,8 @@ cluster).
 | NOTE |
 +------+
 This product includes software developed by the University of California, 
-Berkeley and its contributors [rcmd.c, k4cmd.c].  Modifications have been
-made, however, and bugs are probably mine.
+Berkeley and its contributors (xrcmd.c, k4cmd.c, qcmd.c).  Modifications 
+have been made and bugs are probably mine.
 
 The PDSH software package has no affiliation with the Democratic Party of 
 Albania (www.pdsh.org).
