@@ -724,6 +724,12 @@ static void *rsh(void *args)
 	/* clean up */
 	xfree((void **)&buf);
 
+	/* if a single qshell thread fails, terminate whole job */
+	if (a->rcmd_type == RCMD_QSHELL) {
+		fwd_signal(SIGTERM);
+		errx("%p: terminating Elan program\n");
+	}
+
 	/* Signal dsh() so another thread can replace us */
 	pthread_mutex_lock(&threadcount_mutex);
 	threadcount--;
