@@ -1,3 +1,8 @@
+2003-11-24  Mark Grondona <mgrondona@llnl.gov>
+
+	* configure.ac, config/Make-rpm.mk: Allow date-tagged builds off 
+	unstable branches.
+
 2003-11-19  Albert Chu <chu11@llnl.gov>
 
 	* config/ac_static_modules.m4: Fixed variable names.  Variable

@@ -200,8 +200,17 @@ fi
 if echo "$RELEASE" | grep -q '^[[0-9]][[0-9]]*$' ; then
    PDSH_VERSION="$PACKAGE-$VERSION"
 else
-   PDSH_RELEASE="`echo $RELEASE | sed 's/^[[^\.]]*\.//'`"
-   PDSH_VERSION="$PACKAGE-$VERSION-$PDSH_RELEASE"
+   if echo "$RELEASE" | grep -q -e "pre0" -e "UNSTABLE"; then
+      if test "$RELEASE" = "UNSTABLE"; then
+	     DATE=`date +"%Y%m%d%H%M"`
+      else
+	     DATE=`echo $RELEASE | cut -d. -f3`
+      fi
+      PDSH_VERSION="$PACKAGE-$VERSION (unstable cvs build $DATE)"
+   else
+      PDSH_RELEASE="`echo $RELEASE | sed 's/^[[^\.]]*\.//'`"
+      PDSH_VERSION="$PACKAGE-$VERSION-$PDSH_RELEASE"
+   fi
 fi
 test "$ac_static_modules" = "yes" && EXTRA_VERS="+static-modules"
 test "$ac_with_readline"  = "yes" && EXTRA_VERS="${EXTRA_VERS}+readline"

@@ -73,7 +73,11 @@ tar rpm:
 	ver=`perl -ne 'print,exit if s/^\s*VERSION:\s*(\S*).*/\1/i' $$meta`; \
 	rver="$$ver"; \
 	rel=`perl -ne 'print,exit if s/^\s*RELEASE:\s*(\S*).*/\1/i' $$meta`; \
-	test "$$tag" = "HEAD" && rel="`date +%Y%m%d%H%M`"; \
+	if test "$$tag" = "HEAD"; then \
+	  if test "$$rel" = "UNSTABLE"; then rel="0.pre0"; fi; \
+	  if echo $$rel | grep "pre"; then \
+	     rel="$$rel.`date +%Y%m%d%H%M`"; else rel="`date +%Y%m%d%H%M`"; fi; \
+	  perl -pi -e "s/^(\s*Release:\s*).*/\$${1}$$rel/i" $$meta; fi; \
 	if test -z "$$rel"; then \
 	  pkg=$$name-$$ver; rel=1; else pkg=$$name-$$ver-$$rel; fi; \
 	if test -x "$$tmp/$$proj/autogen.sh"; then \
