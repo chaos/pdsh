@@ -553,7 +553,7 @@ static int _is_wrapped_qshell_env_var (const char *var)
 int get_qshell_info(ELAN_CAPABILITY *cap, qsw_info_t *qinfo, 
                     char *cwd, int cwdlen) {
     int i, envcount;
-    char envstr[1024];
+    char envstr[4096];
     char tmpstr[1024];
 
     /* read cwd of client - will change to cwd on remote side */

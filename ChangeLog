@@ -1,3 +1,8 @@
+2004-04-27  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/qsnet/qshell.c (get_qshell_info) : Increase max environment
+	string from 1k to 4k.
+
 2004-04-26  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/qsnet/qswutil.c : Add missing variable in #ifdef HAVE_LIBELAN3
