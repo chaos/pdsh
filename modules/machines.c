@@ -30,6 +30,7 @@
 
 #include "wcoll.h"
 #include "mod.h"
+#include "hostlist.h"
 
 #if STATIC_MODULES
 #  define pdsh_module_info machines_module_info
