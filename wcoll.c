@@ -320,8 +320,12 @@ rms_rid_to_nodes(char *part, int rid)
 			list_push(result, tmp);
 		}
 		list_free(&nums);
-	} else
-		list_push(result, tmp);
+	} else {
+		char *p = tmp;
+
+		xstrcln(&p, NULL);
+		list_push(result, p);
+	}
 
 	return result;
 }
