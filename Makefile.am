@@ -12,7 +12,7 @@ EXTRA_PROGRAMS =           in.qshd in.mqshd
 man_MANS =                 pdsh.1 pdcp.1 dshbak.1
 noinst_LTLIBRARIES =       libqsw.la
 
-if WITH_ELAN
+if WITH_QSW
 libqsw_la_SOURCES =        qswutil.c qswutil.h
 endif
 
@@ -31,29 +31,29 @@ pdsh_inst_LDFLAGS =        $(pdsh_LDFLAGS)
 
 
 COMMON_SOURCES = \
-    main.c \
-    opt.c opt.h \
-    xmalloc.c xmalloc.h \
-    xstring.c xstring.h \
-    list.c list.h \
-    wcoll.c wcoll.h \
-    dsh.c dsh.h \
-    err.c err.h \
-    xpopen.c xpopen.h \
-    hostlist.c hostlist.h \
-    testcase.c \
-    mod_rcmd.c mod_rcmd.h \
-    ltdl.h ltdl.c \
-    mod.c mod.h \
-	fd.c fd.h	
+	main.c \
+	opt.c opt.h \
+	xmalloc.c xmalloc.h \
+	xstring.c xstring.h \
+	list.c list.h \
+	wcoll.c wcoll.h \
+	dsh.c dsh.h \
+	err.c err.h \
+	xpopen.c xpopen.h \
+	hostlist.c hostlist.h \
+	testcase.c \
+	mod_rcmd.c mod_rcmd.h \
+	ltdl.h ltdl.c \
+	mod.c mod.h \
+	fd.c fd.h       
 
 in_qshd_SOURCES = \
-    qshd.c \
-    list.c list.h \
-    xmalloc.c xmalloc.h \
-    xstring.c xstring.h \
-    err.c err.h \
-    hostlist.c hostlist.h
+	qshd.c \
+	list.c list.h \
+	xmalloc.c xmalloc.h \
+	xstring.c xstring.h \
+	err.c err.h \
+	hostlist.c hostlist.h
 
 in_qshd_LDADD = libqsw.la
 
@@ -67,7 +67,7 @@ in_mqshd_SOURCES = \
 
 in_mqshd_LDADD = libqsw.la net-toollib/lib/libnettools.la
 
-in_mqshd_LDFLAGS = $(MQSH_LIBS)
+in_mqshd_LDFLAGS = $(MRSH_LIBS)
 
 # Makefile rule for building rpm directly from CVS repository
 include $(top_srcdir)/Make-rpm.mk

@@ -30,17 +30,19 @@ AC_DEFUN([AC_ELAN],
     ]
   )
   AC_MSG_RESULT([${ac_with_elan=no}])
+
   if test "$ac_with_elan" = yes; then
-      AC_CHECK_LIB([rmscall], [rms_prgcreate],
-			       [ELAN_LIBS="$ELAN_LIBS -lrmscall"],
-				   AC_MSG_ERROR([No librmscall!]))
 
-	  AC_CHECK_LIB([elan3], [elan3_create],
-			       [ELAN_LIBS="$ELAN_LIBS -lelan3"],
-				   AC_MSG_ERROR([No libelan3!]))
+     AC_CHECK_LIB([rmscall], [rms_prgcreate], 
+        AC_CHECK_LIB([elan3], [elan3_create], [ac_have_elan=yes]))
 
-	  AC_DEFINE_UNQUOTED(HAVE_ELAN, [1], [Define for Elan support.])
-	  PROG_QSHD=in.qshd
+     if test "$ac_have_elan" = "yes" ; then
+        # compile libqsw
+        ac_have_qsw=yes
+        ELAN_LIBS="-lrmscall -lelan3"
+        AC_DEFINE_UNQUOTED(HAVE_ELAN, [1], [Define for Elan support.])
+	PROG_QSHD=in.qshd
+     fi
   fi
   AC_SUBST(HAVE_ELAN)
   AC_SUBST(PROG_QSHD)

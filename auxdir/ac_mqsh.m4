@@ -16,24 +16,23 @@
 
 AC_DEFUN([AC_CHECK_AF_DECL],
 [
-  # IEEE standard says they should be in sys/socket.h
+  # IEEE standard says AF_X definitions should be in sys/socket.h
   AC_CHECK_DECL($1, AC_DEFINE($2,1,[have $1]),,[#include <sys/socket.h>])
 ])
 
-
 AC_DEFUN([AC_NETTOOLS],
 [
-  # The net-tools library originally came from the net-tools package
-  # (which includes netstat, ipconfig, and some other commands) .  It is
-  # not autoconf/automaked to begin with and #defines are set through
-  # manual configuration.
+  # The net-tools library was originally not autoconf/automake
+  # configured and configuration #defines were set through manual
+  # configuration.
   #
-  # By pure magic luck, the net-tools library does "#include "config.h" 
-  # for its configuration.  So we can configure net-tools by having them
-  # include our config.h instead.
+  # Luckily, the net-tools library does use "#include "config.h""
+  # for its configuration.  So we can autoconf configure net-tools by 
+  # having the source files use our config.h instead.
   #
-  # However, we must create #defines that the library specifically
-  # uses.  We can't use the standard ones created from autoconf macros.
+  # However, we must create #defines that match the ones the library
+  # specifically uses.  We can't use the standard ones created from
+  # autoconf macros.
   #
 
   # check for domain types 
@@ -77,11 +76,11 @@ AC_DEFUN([AC_MQSH],
 [
   #
   # Check for whether to include mqsh module
+  # Assumes this is AFTER --with-elan and --with-mrsh checks
   #
   AC_MSG_CHECKING([for whether to build mqsh module])
   AC_ARG_WITH([mqsh],
-    AC_HELP_STRING([--with-mqsh], 
-        [Build mqsh module, requires --with-elan and --with-mrsh]),
+    AC_HELP_STRING([--with-mqsh], [Build mqsh module and mqshd daemon]),
     [ case "$withval" in
         no)  ac_with_mqsh=no ;;
         yes) ac_with_mqsh=yes ;;
@@ -92,17 +91,68 @@ AC_DEFUN([AC_MQSH],
   )
   AC_MSG_RESULT([${ac_with_mqsh=no}])
    
-  # following already guaranteed to exist by earlier check
-  MQSH_LIBS="-lmunge"
-
   if test "$ac_with_mqsh" = "yes"; then
-     ac_have_mqsh=yes
-     PROG_MQSHD=in.mqshd   
-     AC_NETTOOLS
+        
+    # check for elan libs if --with-elan was not specified
+    if test "$ac_have_elan" = "yes"; then 
+       ac_mqsh_elan=yes
+    else
+       AC_CHECK_LIB([rmscall], [rms_prgcreate], 
+              AC_CHECK_LIB([elan3], [elan3_create], [ac_mqsh_have_elan=yes]))
+        
+       if test "$ac_mqsh_have_elan" = "yes" ; then
+          ELAN_LIBS="-lrmscall -lelan3" 
+          AC_SUBST(ELAN_LIBS)
+          ac_mqsh_elan=yes
+       else
+          ac_mqsh_elan=no
+       fi
+    fi
+
+    # check for munge libs if --with-mrsh was not specified
+    if test "$ac_have_libmunge" = "yes"; then 
+       ac_mqsh_munge=yes
+    else
+       AC_CHECK_LIB([munge], [munge_encode], [ac_mqsh_have_munge=yes])
+
+       if test "$ac_mqsh_have_munge" = "yes" ; then
+          MRSH_LIBS="-lmunge" 
+          AC_SUBST(MRSH_LIBS)
+          ac_mqsh_munge=yes
+       else
+          ac_mqsh_munge=no
+       fi
+    fi
+                         
+    # check if mrsh is installed if --with-mrsh was not specified
+    if test "$ac_have_mrsh" = "yes" ; then
+       ac_mqsh_mrsh=yes
+    else
+       AC_MSG_CHECKING([for mshell in /etc/services])
+       if grep "^mshell" /etc/services > /dev/null 2>&1; then
+          ac_mqsh_mrsh=yes
+       else
+          ac_mqsh_mrsh=no
+       fi     
+       AC_MSG_RESULT([${ac_mqsh_mrsh=no}])
+    fi
+
+    # do we have everything we want?
+    if test "$ac_mqsh_elan" = "yes" &&
+       test "$ac_mqsh_munge" = "yes" &&
+       test "$ac_mqsh_mrsh" = "yes" ; then
+       ac_have_mqsh=yes
+       AC_DEFINE([HAVE_MQSH], [1], [Define if you have mqsh.])
+       PROG_MQSHD=in.mqshd   
+       AC_NETTOOLS
+
+       # compile libqsw
+       ac_have_qsw=yes
+    fi
   else
-     ac_have_mqsh=no
+    ac_have_mqsh=no
   fi      
 
-  AC_SUBST(MQSH_LIBS)
   AC_SUBST(PROG_MQSHD)
+  AC_SUBST(HAVE_MQSH)
 ])

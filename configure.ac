@@ -89,14 +89,19 @@ AC_CONNECT_TIMEOUT
 # Test for support of QSW Elan. If requested and available, build
 #  qshd and qcmd connect module.
 #
+# achu - WITH_QSW builds libqsw.  It is a separate conditional, b/c
+#        libqsw may be needed for mqsh (--with-mqsh) even if 
+#        --with-elan is not specified
+#
 AC_ELAN
-AM_CONDITIONAL(WITH_ELAN, [test $ac_with_elan = yes])
+AM_CONDITIONAL(WITH_ELAN, [test "$ac_have_elan" = "yes"])
+AM_CONDITIONAL(WITH_QSW,  [test "$ac_have_qsw"  = "yes"])
 
 #
 # Test for whether to build "machines" module.
 #
 AC_MACHINES
-AM_CONDITIONAL(WITH_MACHINES, [test $ac_with_machines = yes])
+AM_CONDITIONAL(WITH_MACHINES, [test "$ac_with_machines" = "yes"])
 
 #
 # Check for genders and libnodeupdown support
@@ -114,14 +119,12 @@ AM_CONDITIONAL(WITH_LIBMUNGE,   [test "$ac_have_libmunge"      = "yes"])
 AM_CONDITIONAL(WITH_MRSH,       [test "$ac_have_mrsh"          = "yes"])
 
 #
-# Check --with-mqsh, only allowed if user also --with-elan and --with-mrsh
+# Check if user wants to build mqsh
+# Run only after checks for --with-elan and --with-mrsh 
 #
-if test "$ac_with_elan" = "yes"; then
-   if test "$ac_with_mrsh" = "yes"; then
-      AC_MQSH
-   fi
-fi
-AM_CONDITIONAL(WITH_MQSH, [test "$ac_have_mqsh"          = "yes"])
+AC_MQSH
+AM_CONDITIONAL(WITH_MQSH,       [test "$ac_have_mqsh"          = "yes"])
+AM_CONDITIONAL(WITH_QSW,        [test "$ac_have_qsw"           = "yes"])
 
 #
 # Determine whether to build RMS module (Support for RMS allocate)

@@ -69,7 +69,7 @@ qcmd_la_LDFLAGS =         $(MODULE_FLAGS) $(top_builddir)/libqsw.la
 mcmd_la_SOURCES =         mcmd.c
 mcmd_la_LDFLAGS =         $(MODULE_FLAGS) $(MRSH_LIBS)
 mqcmd_la_SOURCES =        mqcmd.c
-mqcmd_la_LDFLAGS =        $(MODULE_FLAGS)
+mqcmd_la_LDFLAGS =        $(MODULE_FLAGS) $(MRSH_LIBS) $(top_builddir)/libqsw.la
 
 machines_la_SOURCES =     machines.c
 machines_la_LDFLAGS =     $(MODULE_FLAGS)

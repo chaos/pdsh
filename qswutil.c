@@ -28,8 +28,6 @@
 #include "config.h"
 #endif
 
-#if	HAVE_ELAN
-
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -741,7 +739,6 @@ int main(int argc, char *argv[])
     exit(0);
 }
 #endif                          /* TEST_MAIN */
-#endif                          /* HAVE_ELAN */
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
