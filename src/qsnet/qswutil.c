@@ -487,33 +487,30 @@ qsw_init_capability(ELAN_CAPABILITY *cap, int nprocs, hostlist_t nodelist,
  * Take necessary steps to set up to run an Elan MPI "program" 
  * (set of processes) on a node.  
  *
- * Process 1	Process 2	|	Process 3	Process 4
+ * Process 1	Process 2	|	Process 3
  * read args			|
  * fork	-------	rms_prgcreate	|
  * waitpid 	elan3_create	|
  * 		rms_prgaddcap	|
  *		fork N procs ---+------	rms_setcap
  *		wait all	|	setup RMS_ env	
- *				|	fork ----------	setuid, etc.
- *				|	wait		exec mpi process
- *				|	exit
+ *				|	setuid, etc.
+ *				|	exec mpi process
  *		exit		|
  * rms_prgdestroy		|
  * exit				|     (one pair of processes per mpi proc!)
  *
- * Excessive forking seems to be required!  
+ * Explanation of the two fork(2) calls:
  * - The first fork is required because rms_prgdestroy can't occur in the 
  *   process that calls rms_prgcreate (since it is a member, ECHILD).
  * - The second fork is required when running multiple processes per node 
  *   because each process must announce its use of one of the hw contexts 
  *   in the range allocated in the capability.
- * - The third fork seems required after the rms_setcap or else elan3_attach
- *   will fail with EINVAL.
  *
  * One process:
- *    init-xinetd-+-in.qshd---in.qshd---in.qshd---in.qshd---sleep
+ *    init-xinetd-+-in.qshd---in.qshd---in.qshd---sleep
  * Two processes:
- *    init-xinetd-+-in.qshd---in.qshd---2*[in.qshd---in.qshd---sleep]
+ *    init-xinetd-+-in.qshd---in.qshd---2*[in.qshd---sleep]
  * (if stderr backchannel is active, add one in.qshd)
  *   
  * Any errors result in a message on stderr and program exit.
@@ -649,23 +646,6 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 	qi->rank = qi->procid;
 	if (_rms_setenv(qi) < 0)
 		errx("%p: failed to set environment variables: %m\n");
-#if 0
-	/*
-	 * Third fork.  XXX Necessary but I don't know why.
-	 */
-	pid = fork();
-	switch (pid) {
-		case -1:	/* error */
-			errx("%p: fork: %m\n");
-		case 0:		/* child falls thru */
-			break;
-		default:	/* parent */
-			if (waitpid(pid, NULL, 0) < 0)
-				errx("%p: waitpid: %m\n");
-			exit(0);
-	}
-	/* child continues here */
-#endif
 	/* Exec the process... */
 }
 
