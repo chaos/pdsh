@@ -220,7 +220,7 @@ mcmd_init(opt_t * opt)
 
         if (rv < (int) (sizeof(uint32_t))) {
             close(rand_fd);
-            err("%p: mcmd: Read of returned too few bytes\n");
+            err("%p: mcmd: Read returned too few bytes\n");
             return -1;
         }
     } while (randy == 0);
