@@ -144,6 +144,8 @@ static SigFunc *_xsignal(int signal, SigFunc *handler)
     sigaddset(&sa.sa_mask, signal);
     sa.sa_flags = 0;
     sigaction(signal, &sa, &old_sa);
+
+    return ((SigFunc *) old_sa.sa_handler);
 }
 
 /*
