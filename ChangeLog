@@ -1,3 +1,7 @@
+2003-08-07 achu
+	* mqshd daemon now properly uses remote hostname with PAM
+	* Tagged pdsh-2-0-0-pre4
+	
 2003-08-04 achu
 	* Re-worked mcmd/mqcmd to handle stderr & stdout in one stream
 	* Tagged pdsh-2-0-0-pre3
