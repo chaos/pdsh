@@ -16,6 +16,28 @@ VERSION="`perl -ne 'print,exit if s/^\s*VERSION:\s*(\S*).*/\1/i' $srcdir/META`"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Define the project's version.])
 AC_SUBST(VERSION)
 
+# Check for debug vs. production compilation.
+# This must be done before AC_PROG_CC defines its own defaults.
+AC_MSG_CHECKING(whether debugging is enabled)
+AC_ARG_ENABLE(debug,
+  AC_HELP_STRING([--enable-debug], [enable debugging for development work]),
+  [ case "$enableval" in
+      yes) debug=yes ;;
+      no)  debug=no ;;
+      *)   AC_MSG_RESULT(doh!)
+           AC_MSG_ERROR([bad value "$enableval" for --enable-debug]) ;;
+    esac
+  ]
+)
+if test "$debug" = yes; then
+  CFLAGS="${CFLAGS--g -Wall}"
+else
+  CFLAGS="${CFLAGS--O3}"
+  LDFLAGS="${LDFLAGS--s}"
+  AC_DEFINE(NDEBUG, 1, [Define if you are building a production release.])
+fi
+AC_MSG_RESULT(${debug=no})
+
 # Enable features taht interact with external software
 # --with-elan
 AC_MSG_CHECKING(whether to support Elan interconnect)
