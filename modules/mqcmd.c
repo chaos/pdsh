@@ -199,6 +199,7 @@ struct pdsh_module pdsh_module_info = {
   "mqsh",
   "Mike Haskell <haskell5@llnl.gov> and Jim Garlick <garlick1@llnl.gov>",
   "Run MPI jobs over QsNet with mrsh authentication",
+  DSH, 
 
   &mqcmd_module_ops,
   &mqcmd_rcmd_ops,
@@ -208,6 +209,9 @@ struct pdsh_module pdsh_module_info = {
 static int
 mqcmd_opt_m(opt_t *pdsh_opts, int opt, char *arg)
 {
+    if (pdsh_opts->personality != DSH)
+        errx("%p: illegal option -- %c\n", (char)opt); 
+
     if (strcmp(arg, "block") == 0)
         cyclic = false;
     else if (strcmp(arg, "cyclic") == 0)
@@ -223,6 +227,9 @@ mqcmd_opt_m(opt_t *pdsh_opts, int opt, char *arg)
 static int
 mqcmd_opt_n(opt_t *pdsh_opts, int opt, char *arg)
 {
+    if (pdsh_opts->personality != DSH)
+        errx("%p: illegal option -- %c\n", (char)opt); 
+
     nprocs = atoi(arg);
     return 0;
 }

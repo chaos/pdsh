@@ -102,6 +102,7 @@ struct pdsh_module pdsh_module_info = {
   "sdr",
   "Jim Garlick <garlick@llnl.gov>",
   "Support for SDR on IBM SP",
+  DSH | PCP, 
 
   &sdr_module_ops,
   &sdr_rcmd_ops,

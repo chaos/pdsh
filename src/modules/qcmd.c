@@ -176,6 +176,7 @@ struct pdsh_module pdsh_module_info = {
   "qsh",
   "Jim Garlick <garlick@llnl.gov>",
   "Run MPI jobs over QsNet",
+  DSH, 
 
   &qcmd_module_ops,
   &qcmd_rcmd_ops,
@@ -185,6 +186,9 @@ struct pdsh_module pdsh_module_info = {
 static int
 qcmd_opt_m(opt_t *pdsh_opts, int opt, char *arg)
 {
+    if (pdsh_opts->personality != DSH)
+        errx("%p: illegal option -- %c\n", (char)opt); 
+
     if (strcmp(arg, "block") == 0)
         cyclic = false;
     else if (strcmp(arg, "cyclic") == 0)
@@ -200,6 +204,9 @@ qcmd_opt_m(opt_t *pdsh_opts, int opt, char *arg)
 static int 
 qcmd_opt_n(opt_t *pdsh_opts, int opt, char *arg)
 {
+    if (pdsh_opts->personality != DSH)
+        errx("%p: illegal option -- %c\n", (char)opt); 
+
     nprocs = atoi(arg);
     return 0;
 }

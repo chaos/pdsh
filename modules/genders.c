@@ -110,6 +110,7 @@ struct pdsh_module pdsh_module_info = {
 #endif /* GENDERS_G_ONLY */
     "Jim Garlick <garlick@llnl.gov>",
     "target nodes using libgenders and genders attributes",
+    DSH | PCP, 
 
     &genders_module_ops,
     &genders_rcmd_ops,

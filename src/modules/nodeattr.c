@@ -120,6 +120,7 @@ struct pdsh_module pdsh_module_info = {
 #else
   "target nodes using \"nodeattr -[ai] [-g attr]\"",
 #endif /* GENDERS_G_ONLY */
+  DSH | PCP, 
 
   &nodeattr_module_ops,
   &nodeattr_rcmd_ops,

@@ -118,6 +118,7 @@ struct pdsh_module pdsh_module_info = {
   "ssh",
   "Jim Garlick <garlick@llnl.gov>",
   "ssh based rcmd connect method",
+  DSH | PCP, 
 
   &sshcmd_module_ops,
   &sshcmd_rcmd_ops,

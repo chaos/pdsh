@@ -88,6 +88,7 @@ struct pdsh_module pdsh_module_inf = {
   "rms",
   "Jim Garlick <garlick@llnl.gov>",
   "Attempt to read wcoll from RMS_RESOURCEID env var",
+  DSH | PCP, 
 
   &rms_module_ops,
   &rms_rcmd_ops,

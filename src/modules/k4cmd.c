@@ -137,6 +137,7 @@ struct pdsh_module pdsh_module_info = {
     "k4",
     "Jim Garlick <garlick@llnl.gov>",
     "kerberos based rcmd connect method",
+    DSH | PCP, 
 
     &k4cmd_module_ops,
     &k4cmd_rcmd_ops,

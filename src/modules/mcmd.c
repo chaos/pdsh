@@ -177,6 +177,7 @@ struct pdsh_module pdsh_module_info = {
   "mrsh",
   "Mike Haskell <haskell5@llnl.gov>",
   "mrsh rcmd connect method",
+  DSH | PCP, 
 
   &mcmd_module_ops,
   &mcmd_rcmd_ops,

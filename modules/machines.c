@@ -75,6 +75,7 @@ struct pdsh_module pdsh_module_info = {
   "machines",
   "Jim Garlick <garlick@llnl.gov>",
   "Read list of all nodes from a machines file",
+  DSH | PCP, 
 
   &machines_module_ops,
   &machines_rcmd_ops,

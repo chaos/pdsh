@@ -155,6 +155,7 @@ struct pdsh_module pdsh_module_info = {
   "bsd",
   "Jim Garlick <garlick@llnl.gov>",
   "BSD rcmd connect method",
+  DSH | PCP, 
 
   &xrcmd_module_ops,
   &xrcmd_rcmd_ops,

@@ -87,6 +87,7 @@ struct pdsh_module pdsh_module_info = {
   "nodeupdown",
   "Al Chu <chu11@llnl.gov>",
   "remove targets if down according to libnodeupdown",
+  DSH | PCP, 
 
   &nodeupdown_module_ops,
   &nodeupdown_rcmd_ops,
