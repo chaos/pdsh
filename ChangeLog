@@ -191,3 +191,6 @@ Release 1.6+
 	Additional configure options: --with-fanout=N, --with-timeout=N, 
 	--with-rangeop=c.  Removed -x and -X options since this is now
 	configurable at compile time.
+
+	Print "timed out" message instead of "interrupted system call" if
+	xrcmd/qcmd times out waiting for a response from the server (gnats:45).

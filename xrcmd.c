@@ -220,8 +220,18 @@ xrcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd, int rank
 	(void)write(s, locuser, strlen(locuser)+1);
 	(void)write(s, remuser, strlen(remuser)+1);
 	(void)write(s, cmd, strlen(cmd)+1);
-	if (read(s, &c, 1) != 1) {
-		err("%p: %S: read: %m\n", ahost);
+	rv = read(s, &c, 1);
+	if (rv < 0) {
+		if (errno == EINTR)
+			err("%p: %S: read: protocol failure: %s\n", 
+					ahost, "timed out");
+		else
+			err("%p: %S: read: protocol failure: %m\n", 
+					ahost);
+		goto bad2;
+	} else if (rv != 1) {
+		err("%p: %S: read: protocol failure: %s\n",
+				ahost, "invalid response");
 		goto bad2;
 	}
 	if (c != 0) {
