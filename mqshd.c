@@ -274,6 +274,7 @@ int get_interface_addresses()
     goto bad;
   }
 
+  /* get all active interfaces */
   while(1) {
     if ((buf = (char *)malloc(len)) == NULL) {
       syslog(LOG_ERR, "malloc failed: %m");
@@ -304,6 +305,7 @@ int get_interface_addresses()
     free(buf);
   }
 
+  /* get IP addresses for all interfaces */
   for (ptr = buf; ptr < buf + ifc.ifc_len; ) {
 
     ifr = (struct ifreq *)ptr;

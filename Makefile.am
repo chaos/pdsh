@@ -2,7 +2,16 @@
 
 AUTOMAKE_OPTIONS =         foreign dist-bzip2
 
-SUBDIRS =                  @BASE_SUBDIRS@
+#
+# SUBDIR ordering different due to dependencies.  A static pdsh
+# executable requires modules to be built first.  Dynamically loaded
+# modules require pdsh convenience libraries to be built first.
+#
+if WITH_STATIC_MODULES
+SUBDIRS =                  modules . testsuite
+else
+SUBDIRS=                   . modules testsuite
+endif
 
 noinst_PROGRAMS=           pdsh 
 bin_PROGRAMS =		   pdsh.inst

@@ -48,19 +48,10 @@ AC_ARG_ENABLE([static-modules],
               ac_static_modules=yes)
 AM_CONDITIONAL(WITH_STATIC_MODULES, test "$ac_static_modules" = "yes")
 
-#
-# SUBDIR ordering different due to dependencies.  A static pdsh
-# executable requires modules to be built first.  Dynamically loaded
-# modules require pdsh convenience libraries to be built first.
-#
 if test "$ac_static_modules" = "yes" ; then
    AC_DEFINE_UNQUOTED(STATIC_MODULES, [1], [Use Static Modules])
-   BASE_SUBDIRS="modules . testsuite" 
    AC_STATIC_MODULES_INIT
-else
-   BASE_SUBDIRS=". modules testsuite"
 fi
-AC_SUBST(BASE_SUBDIRS)
 
 # Checks for libraries.
 AC_CHECK_LIB([socket], [socket], LIBS="-lsocket -lnsl $LIBS",, [-lsocket -lnsl])
