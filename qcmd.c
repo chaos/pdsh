@@ -2,6 +2,7 @@
  * $Id$  
  */
 
+
 /*
  * Started with BSD rcmd.c.
  */
@@ -44,6 +45,8 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #endif /* LIBC_SCCS and not lint */
 
 #include "conf.h"
+
+#if	HAVE_ELAN3
 
 #include <sys/param.h>
 #include <sys/types.h>
@@ -359,4 +362,4 @@ bad:
 	pthread_sigmask(SIG_SETMASK, &oldset, NULL);
 	return (-1);
 }
-
+#endif /* HAVE_ELAN3 */

@@ -7,6 +7,8 @@
 
 #include "conf.h"
 
+#if	HAVE_ELAN3
+
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -655,4 +657,5 @@ main(int argc, char *argv[])
 
 	exit(0);
 }
-#endif
+#endif /* TEST_MAIN */
+#endif /* HAVE_ELAN3 */

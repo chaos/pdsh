@@ -1,5 +1,5 @@
 dnl autoconf configure.ac >configure
-dnl autoheader configure.ac >config.h.in
+dnl autoheader configure.ac >conf.h.in
 dnl
 dnl $Id$
 dnl
@@ -8,9 +8,10 @@ dnl See ./DISCLAIMER
 
 dnl Prologue.
 dnl
-AC_INIT(conf.h)
+AC_PREREQ(2.50)
+AC_INIT(dsh.h)
 AC_CONFIG_AUX_DIR(auxdir)
-AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADER(conf.h)
 AC_PREFIX_DEFAULT(/usr)
 
 
@@ -23,6 +24,7 @@ VERSION="`perl -ne 'print,exit if s/^\s*VERSION:\s*(\S*).*/\1/i' $srcdir/META`"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Define the project's version.])
 AC_SUBST(VERSION)
 
+AC_AIX
 
 dnl Check for debug vs. production compilation.
 dnl This must be done before AC_PROG_CC defines its own defaults.
@@ -54,11 +56,15 @@ AC_ARG_WITH(elan,
   [ case "$withval" in
       yes) with_elan=yes ;;
       no)  with_elan=no ;;
-      *)   AC_MSG_RESULT(doh!)
-           AC_MSG_ERROR([bad value "$withval" for --with-elan]) ;;
+      *)   AC_MSG_ERROR([bad value "$withval" for --with-elan]) ;;
     esac
   ]
 )
+if test "$with_elan" = yes; then
+  ELAN_PROGS=qshd
+  AC_SUBST(ELAN_PROGS) 
+fi
+
 
 dnl Determine if we are compiling for RMS 
 dnl
@@ -67,8 +73,7 @@ AC_ARG_WITH(rms,
   [ case "$withval" in
       yes) with_rms=yes ;;
       no)  with_rms=no ;; 
-      *)   AC_MSG_RESULT(doh!)
-           AC_MSG_ERROR([bad value "$withval" for --with-rms]) 
+      *)   AC_MSG_ERROR([bad value "$withval" for --with-rms]) 
            ;;
     esac
   ]
@@ -79,11 +84,9 @@ dnl
 AC_ARG_WITH(krb4,
   AC_HELP_STRING([--with-krb4], [enable pdsh to use Kerberos IV kcmd]),
   [ case "$withval" in
-      yes) with_krb4=yes ;;
+      yes) with_krb4=yes; KRB4DIR=/usr/local/krb4 ;;
       no)  with_krb4=no ;; 
-      *)   AC_MSG_RESULT(doh!)
-           AC_MSG_ERROR([bad value "$withval" for --with-krb4]) 
-           ;;
+      *)   KRB4DIR=$withval; with_krb4=yes ;;
     esac
   ]
 )
@@ -95,9 +98,22 @@ AC_ARG_WITH(genders,
   [ case "$withval" in
       yes) with_genders=yes ;;
       no)  with_genders=no ;; 
-      *)   AC_MSG_RESULT(doh!)
-           AC_MSG_ERROR([bad value "$withval" for --with-genders]) 
+      *)   AC_MSG_ERROR([bad value "$withval" for --with-genders]) 
            ;;
+    esac
+  ]
+)
+
+dnl Determine path to MPICH machines file
+dnl
+AC_ARG_WITH(mpich-machines,
+  AC_HELP_STRING([--with-mpich-machines], [get nodes from MPICH machines file]),
+  [ case "$withval" in
+      no)  with_mpich_machines=no ;; 
+      yes) with_mpich_machines=yes;
+	   MACHINES=/usr/local/etc/machines ;;
+      *)   with_mpich_machines=yes;
+	   MACHINES=$withval ;;
     esac
   ]
 )
@@ -127,13 +143,11 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 AC_CHECK_FILES
-AC_CHECK_PROGS(PATH_SSH, /usr/bin/ssh /usr/local/bin/ssh, nada)
-if test "$with-genders" = yes; then
-  AC_CHECK_PROGS(path_nodeattr, nodeattr)
-fi
-if test "$with-rms" = yes; then
-  AC_CHECK_PROGS(path_rmsquery, rmsquery)
-fi
+AC_PATH_PROG(SSH,ssh,[],/admin/bin:/usr/bin:/usr/local/bin:$PATH)
+AC_PATH_PROG(NODEATTR,nodeattr,[],/admin/scripts:/usr/bin:$PATH)
+AC_PATH_PROG(RMSQUERY,rmsquery,[],/usr/bin:$PATH)
+AC_PATH_PROG(SDRGETOBJECTS,SDRGetObjects,[],/usr/lpp/ssp/bin:$PATH)
+AC_PATH_PROG(RCP,rcp,[],/usr/bin:$PATH)
 
 dnl Check for libraries.
 dnl
@@ -151,19 +165,28 @@ if test "$with_elan" = yes; then
   AC_CHECK_LIB(rmscall, rms_prgcreate)
 fi
 if test "$with_rms" = yes; then
-  AC_CHECK_LIB(rmsapi, rms_allocateResource, "LIBS=-lrmsapi -lrms $LIBS")
+  AC_CHECK_LIB(rmsapi, rms_numNodes)
+  AC_CHECK_LIB(rms, __builtin_new)
 fi
 if test "$with_krb4" = yes; then
-  AC_CHECK_LIB(krb, krb_sendauth, "LIBS=-lkrb -ldes $LIBS")
+  LIBS="$LIBS -lkrb4 -ldes";
 fi
 
 dnl Check for header files.
 dnl
-
+AC_HEADER_DIRENT
+AC_HEADER_STDC
+AC_HEADER_SYS_WAIT
+AC_CHECK_HEADERS(fcntl.h sys/file.h sys/time.h unistd.h)
+AC_CHECK_HEADERS(krb.h kparse.h)
 
 dnl Check for typedefs.
 dnl
 AC_CHECK_TYPES(socklen_t, [], [], [#include <sys/socket.h>])
+AC_C_CONST
+AC_TYPE_PID_T
+AC_TYPE_SIZE_T
+AC_TYPE_UID_T
 
 
 dnl Check for structures.
@@ -180,6 +203,9 @@ dnl
 AC_CHECK_FUNCS( \
   gethostbyname_r \
   strerror_r \
+  strerror \
+  pthread_sigmask \
+  strstr
 )
 
 dnl Check for system services.
@@ -188,26 +214,49 @@ dnl
 dnl Check for system-specific stuff.
 dnl
 
-dnl Check for random silliness.
-dnl
-AC_CACHE_CHECK([for a sense of humor], ac_cv_humor, ac_cv_humor=yes)
-
-
 dnl Add defs to config.h.
 dnl
 if test "$with_elan" = yes; then
-  AC_DEFINE(WITH_ELAN, 1, [Define if building with Elan support.])
+  AC_DEFINE(HAVE_ELAN3, 1, [Define if building with Elan support.])
 fi
 if test "$with_rms" = yes; then
-  AC_DEFINE(WITH_RMS, 1, [Define if building with RMS support.])
-  AC_DEFINE(PATH_RMSQUERY, path_rmsquery, [Path to the rmsquery command])
+  AC_DEFINE(HAVE_RMS_PMANAGER, 1, [Define if building with RMS support.])
 fi
 if test "$with_krb4" = yes; then
-  AC_DEFINE(WITH_KRB4, 1, [Define if building with Kerberos IV support.])
+  AC_DEFINE(KRB4, 1, [Define if building with Kerberos IV support.])
 fi
 if test "$with_genders" = yes; then
-  AC_DEFINE(WITH_GENDERS, 1, [Define if building with Genders support.])
+  AC_DEFINE(HAVE_GENDERS, 1, [Define if building with Genders support.])
 fi
+if test "$with_mpich_machines" = yes; then
+  AC_DEFINE(HAVE_MACHINES, 1, [Define if building with MPICH machines support.])
+fi
+
+if test -n "$SSH"; then
+  AC_DEFINE_UNQUOTED(_PATH_SSH, "$SSH", 
+    [Define the path to the ssh program.])
+fi
+if test -n "$SDRGETOBJECTS"; then
+  AC_DEFINE_UNQUOTED(_PATH_SDRGETOBJECTS, "$SDRGETOBJECTS", 
+    [Define the path to the SDRGetObjects program.])
+fi
+if test -n "$NODEATTR"; then
+  AC_DEFINE_UNQUOTED(_PATH_NODEATTR, "$NODEATTR", 
+    [Define the path to the nodeattr program.])
+fi
+if test -n "$RMSQUERY"; then
+  AC_DEFINE_UNQUOTED(_PATH_RMSQUERY, "$RMSQUERY", 
+    [Define the path to the rmsquery program.])
+fi
+if test -n "$RCP"; then
+  AC_DEFINE_UNQUOTED(_PATH_RCP, "$RCP", 
+    [Define the path to the rcp program.])
+fi
+if test -n "$MACHINES"; then
+  AC_DEFINE_UNQUOTED(_PATH_MACHINES, "$MACHINES", 
+    [Define the path to the MPICH machines machines.])
+fi
+AC_DEFINE_UNQUOTED(RANGE_OP, "-", [Define the range separator string.])
 
 dnl Epilogue.
 dnl

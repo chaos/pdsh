@@ -372,7 +372,7 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 		    opt->altnames, opt->sdr_verify);
 #elif HAVE_GENDERS
 		opt->wcoll = read_genders("all", opt->altnames);
-#else
+#elif HAVE_MACHINES
 		opt->wcoll = read_wcoll(_PATH_MACHINES, NULL);
 #endif
 	} 
@@ -624,6 +624,22 @@ static void usage(opt_t *opt)
 
 static void show_version(void)
 {
-	printf("pdsh version %s\n", PDSH_VERSION);
+	printf("%s-%s", PROJECT, VERSION);
+#if	HAVE_GENDERS
+	printf("+genders");
+#endif
+#if	HAVE_ELAN3
+	printf("+elan");
+#endif
+#if	HAVE_RMS_PMANAGER
+	printf("+rms");
+#endif
+#if	KRB4
+	printf("+krb4");
+#endif
+#if	HAVE_MACHINES
+	printf("+mpich");
+#endif
+	printf("\n");
 	exit(0);
 }

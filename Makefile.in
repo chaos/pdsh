@@ -25,9 +25,11 @@ bindir=         @bindir@
 sbindir=        @sbindir@
 libdir=         @libdir@
 
+ELAN_PROGS=	@ELAN_PROGS@
+
 PDSH_OBJS=	list.o xmalloc.o xstring.o err.o xpopen.o \
 		dsh.o main.o opt.o wcoll.o xrcmd.o sshcmd.o \
-		$(ELAN_OBJS) $(KRB_OBJS)
+		k4cmd.o qswutil.o qcmd.o
 
 QSHD_OBJS=	list.o xmalloc.o xstring.o err.o qswutil.o qshd.o 
 
@@ -44,7 +46,7 @@ PREFIX=		/usr/local
 #
 # Uncomment and set HAVE_ELAN3 to 1 in conf.h for Quadrics Elan support
 #
-#ELAN_TARGS=	qshd
+#ELAN_PROGS=	qshd
 #ELAN_OBJS=	qswutil.o qcmd.o
 #ELAN_LIB=	-lelan3 -lrmscall -lrmsapi -lrms
 
@@ -53,13 +55,13 @@ PREFIX=		/usr/local
 # AIX 4.2
 #LIBS =	-lbsd_r $(KRB_LIB) -lpthreads
 # Linux RH 6.2, AIX 4.3.x, OSF
-LIBS = $(KRB_LIB)  -lpthread $(ELAN_LIB)
+# LIBS = $(KRB_LIB)  -lpthread $(ELAN_LIB)
 
 CPPFLAGS=	$(KRB_INC)
 
 PROGS =	pdsh
 
-all: pdsh $(ELAN_TARGS)
+all: pdsh $(ELAN_PROGS)
 
 pdsh: $(PDSH_OBJS)
 	$(CC) -o $@ $(PDSH_OBJS) $(LDFLAGS) $(LIBS)
