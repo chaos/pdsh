@@ -6,6 +6,7 @@ Copyright: none
 Group: System Environment/Base
 Source: pdsh-1.4.tgz
 BuildRoot: /var/tmp/%{name}-buildroot
+Prereq: genders
 
 %description
 Pdsh is a reimplementation of the dsh command supplied with the IBM PSSP

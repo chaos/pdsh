@@ -34,6 +34,15 @@
 #endif
 
 /*
+ * Path definitions
+ */
+#define _PATH_SDRGETOBJECTS 	"/usr/lpp/ssp/bin/SDRGetObjects"
+#define _PATH_RCP		"/usr/bin/rcp" /* path to remote rcp command */
+#define _PATH_NODEATTR		"/usr/bin/nodeattr"
+#define _PATH_MACHINES		"/usr/local/etc/machines"
+#define _PATH_SSH		"/usr/local/bin/ssh"
+
+/*
  * Default values.
  */
 #ifndef HAVE_FCNTL_H

@@ -17,11 +17,6 @@
 #include "list.h"
 #include "opt.h"
 
-#define _PATH_RCP		"/usr/bin/rcp" /* path to remote rcp command */
-#define _PATH_NODEATTR		"/admin/scripts/nodeattr"
-#define _PATH_MACHINES		"/usr/local/etc/machines"
-#define _PATH_SSH		"/usr/local/bin/ssh"
-
 #define DFLT_FANOUT 		64
 
 #define LINEBUFSIZE     	2048
@@ -31,7 +26,6 @@
 #define WDOG_POLL 		2	/* secs */
 
 #ifdef HAVE_SDRGETOBJECTS
-#define _PATH_SDRGETOBJECTS 	"/usr/lpp/ssp/bin/SDRGetObjects"
 #define MAX_SP_NODES 		512
 #define MAX_SP_NODES_PER_FRAME	16
 #define MAX_SP_NODE_NUMBER (MAX_SP_NODES * MAX_SP_NODES_PER_FRAME - 1)
