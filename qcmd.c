@@ -152,6 +152,7 @@ qcmd_send_extra_args(int s, int nodeid)
 	char **ep;
 	char tmpstr[1024];
 	int count = 0;
+	int i;
 
 	/* send current working dir */
 	(void)write(s, cwd, strlen(cwd)+1);
@@ -168,6 +169,11 @@ qcmd_send_extra_args(int s, int nodeid)
 	if (qsw_encode_cap(tmpstr, sizeof(tmpstr), &cap) < 0)
 		return -1;
 	(void)write(s, tmpstr, strlen(tmpstr)+1);
+	for (i = 0; i < qsw_cap_bitmap_count(); i++) {
+		if (qsw_encode_cap_bitmap(tmpstr, sizeof(tmpstr), &cap, i) < 0)
+			return -1;
+		(void)write(s, tmpstr, strlen(tmpstr)+1);
+	}
 
 	/* send elan info */
 	qinfo.nodeid = qinfo.rank = qinfo.procid = nodeid;

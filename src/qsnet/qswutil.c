@@ -191,7 +191,21 @@ qsw_rms_setenv(qsw_info_t *qi)
 }
 
 /*
- * capability -> string
+ * Return the number of times qsw_encode_cap_bitamp/qsw_decode_cap_bitmap
+ * must be called.
+ */
+int
+qsw_cap_bitmap_count(void)
+{
+	ELAN_CAPABILITY cap;
+	int count = sizeof(cap.Bitmap) / sizeof(cap.Bitmap[0]);
+
+	assert(count % 16 == 0);
+	return count;
+}
+
+/*
+ * Convert capability (all but cap->Bitmap) to string.
  */
 int
 qsw_encode_cap(char *s, int len, ELAN_CAPABILITY *cap)
@@ -199,7 +213,7 @@ qsw_encode_cap(char *s, int len, ELAN_CAPABILITY *cap)
 	assert(sizeof(cap->UserKey.Values[0]) == 4);
 	assert(sizeof(cap->UserKey) / sizeof(cap->UserKey.Values[0]) == 4);
 
-	snprintf(s, len, "%x.%x.%x.%x.%hx.%hx.%x.%x.%x.%x.%x.%x.%x:", 
+	snprintf(s, len, "%x.%x.%x.%x.%hx.%hx.%x.%x.%x.%x.%x.%x.%x", 
 				cap->UserKey.Values[0],
 				cap->UserKey.Values[1],
 				cap->UserKey.Values[2],
@@ -214,28 +228,31 @@ qsw_encode_cap(char *s, int len, ELAN_CAPABILITY *cap)
 				cap->Entries,
 				cap->RailMask);
 
-	assert(sizeof(cap->Bitmap[0]) == 4);
-	assert(sizeof(cap->Bitmap) / sizeof(cap->Bitmap[0]) == 16); 
-
-	len -= strlen(s);
-	s += strlen(s);
-
-	snprintf(s, len, "%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x",
-				cap->Bitmap[0], cap->Bitmap[1], 
-				cap->Bitmap[2], cap->Bitmap[3],
-				cap->Bitmap[4], cap->Bitmap[5], 
-				cap->Bitmap[6], cap->Bitmap[7],
-				cap->Bitmap[8], cap->Bitmap[9], 
-				cap->Bitmap[10], cap->Bitmap[11],
-				cap->Bitmap[12], cap->Bitmap[13],
-				cap->Bitmap[14], cap->Bitmap[15]);
-
-
 	return 0;
 }
 
 /*
- * string -> capability
+ * Convert cap->Bitmap to string.
+ */
+int
+qsw_encode_cap_bitmap(char *s, int len, ELAN_CAPABILITY *cap, int i)
+{
+	assert(sizeof(cap->Bitmap[0]) == 4);
+
+	snprintf(s, len, "%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x",
+				cap->Bitmap[i+0], cap->Bitmap[i+1], 
+				cap->Bitmap[i+2], cap->Bitmap[i+3],
+				cap->Bitmap[i+4], cap->Bitmap[i+5], 
+				cap->Bitmap[i+6], cap->Bitmap[i+7],
+				cap->Bitmap[i+8], cap->Bitmap[i+9], 
+				cap->Bitmap[i+10], cap->Bitmap[i+11],
+				cap->Bitmap[i+12], cap->Bitmap[i+13],
+				cap->Bitmap[i+14], cap->Bitmap[i+15]);
+	return 0;
+}
+
+/*
+ * Convert string to capability (all but cap->Bitmap).
  */
 int
 qsw_decode_cap(char *s, ELAN_CAPABILITY *cap)
@@ -246,7 +263,7 @@ qsw_decode_cap(char *s, ELAN_CAPABILITY *cap)
 	elan3_nullcap(cap);
 
 	/* fill in values sent from remote */
-	if (sscanf(s, "%x.%x.%x.%x.%hx.%hx.%x.%x.%x.%x.%x.%x.%x:", 
+	if (sscanf(s, "%x.%x.%x.%x.%hx.%hx.%x.%x.%x.%x.%x.%x.%x", 
 				&cap->UserKey.Values[0],
 				&cap->UserKey.Values[1],
 				&cap->UserKey.Values[2],
@@ -262,22 +279,26 @@ qsw_decode_cap(char *s, ELAN_CAPABILITY *cap)
 				&cap->RailMask) != 13) {
 		return -1;
 	}
+	return 0;
+}
 
-	if ((s = strchr(s, ':')) == NULL)
-		return -1;
-
+/*
+ * Convert string to cap->Bitmap.
+ */
+int
+qsw_decode_cap_bitmap(char *s, ELAN_CAPABILITY *cap, int i)
+{
 	if (sscanf(s, ":%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x",
-				&cap->Bitmap[0], &cap->Bitmap[1], 
-				&cap->Bitmap[2], &cap->Bitmap[3],
-				&cap->Bitmap[4], &cap->Bitmap[5], 
-				&cap->Bitmap[6], &cap->Bitmap[7],
-				&cap->Bitmap[8], &cap->Bitmap[9], 
-				&cap->Bitmap[10], &cap->Bitmap[11],
-				&cap->Bitmap[12], &cap->Bitmap[13],
-				&cap->Bitmap[14], &cap->Bitmap[15]) != 16) {
+				&cap->Bitmap[i+0], &cap->Bitmap[i+1], 
+				&cap->Bitmap[i+2], &cap->Bitmap[i+3],
+				&cap->Bitmap[i+4], &cap->Bitmap[i+5], 
+				&cap->Bitmap[i+6], &cap->Bitmap[i+7],
+				&cap->Bitmap[i+8], &cap->Bitmap[i+9], 
+				&cap->Bitmap[i+10], &cap->Bitmap[i+11],
+				&cap->Bitmap[i+12], &cap->Bitmap[i+13],
+				&cap->Bitmap[i+14], &cap->Bitmap[i+15]) != 16) {
 		return -1;
 	}
-
 	return 0;
 }
 
@@ -341,7 +362,7 @@ qsw_init_capability(ELAN_CAPABILITY *cap, int nprocs, hostlist_t nodelist,
 		int cyclic_alloc)
 {
 	int i;
-	int num_nodes = list_length(nodelist);
+	int num_nodes = hostlist_count(nodelist);
 	int procs_per_node = nprocs / num_nodes;
 	
 

@@ -41,7 +41,10 @@ typedef struct {
 } qsw_info_t;
 
 int 	qsw_encode_cap(char *s, int len, ELAN_CAPABILITY *cap);
+int 	qsw_encode_cap_bitmap(char *s, int len, ELAN_CAPABILITY *cap, int i);
 int 	qsw_decode_cap(char *s, ELAN_CAPABILITY *cap);
+int 	qsw_decode_cap_bitmap(char *s, ELAN_CAPABILITY *cap, int i);
+int	qsw_cap_bitmap_count(void);
 int 	qsw_encode_info(char *s, int len, qsw_info_t *qi);
 int 	qsw_decode_info(char *s, qsw_info_t *qi);
 int 	qsw_init_capability(ELAN_CAPABILITY *cap, int nprocs,

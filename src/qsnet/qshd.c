@@ -390,6 +390,7 @@ doit(struct sockaddr_in *fromp)
 	int envcount;
 	ELAN_CAPABILITY cap;
 	qsw_info_t qinfo;
+	int i;
 
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
@@ -456,6 +457,14 @@ doit(struct sockaddr_in *fromp)
 	if (qsw_decode_cap(tmpstr, &cap) < 0) {
 		errlog("error reading capability: %s", tmpstr);
 		exit(1);
+	}
+
+	for (i = 0; i < qsw_cap_bitmap_count(); i++) {
+		getstr(tmpstr, sizeof(tmpstr), "capability");
+		if (qsw_decode_cap_bitmap(tmpstr, &cap, i) < 0) {
+			errlog("error reading capability: %s", tmpstr);
+			exit(1);
+		}
 	}
 
 	/* read info structure */
