@@ -87,7 +87,6 @@ MAINTAINERCLEANFILES = 		\
 	Makefile.in aclocal.m4  \
 	config.h.in configure   \
 	stamp-h stamp-h.in      \
-	autom4te.cache 		\
 	$(AUX_DIST)
 
 # Extra files to distribute with `make dist'
