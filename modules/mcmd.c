@@ -154,6 +154,7 @@ void
 mcmd_init(opt_t * opt)
 {
         /* not implemented */
+        return;
 }
 
 void 
@@ -514,10 +515,12 @@ void
 pdsh_signal(int fd, int signum)
 {   
         mcmd_signal(fd, signum); 
+        return;
 }
 
 void 
 pdsh_rcmd_init(opt_t * opt)
 {   
         mcmd_init(opt);
+        return;
 }
