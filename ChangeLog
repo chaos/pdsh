@@ -19,7 +19,7 @@
 	* Fixed scalability issues with select() by using poll()
 	* Updated rcmd for new mrshd protocol 
 	* Fixed possible race condition in mqcmd/mqshd
-	* Tweaked of configuration, makefiles, manpages, and documents for
+	* Tweaked configuration, makefiles, manpages, and documents for
 	  readability and portability.
 	
 2003-06-24 achu
