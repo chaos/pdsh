@@ -3,6 +3,9 @@
 	* src/qsnet/Makfile.am : Need to link libqsw with libdl when not using 
 	PAM. (Reported by Nicholas Henke <nic@clusterfs.com>)
 
+	* src/common/hostlist.c : Update to latest hostlist code from
+	LSD-Tools project.
+
 2004-03-30  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/dsh.c (_rsh_thread) : Remove calls to xfgets() and

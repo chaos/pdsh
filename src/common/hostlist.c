@@ -1,7 +1,7 @@
 /*****************************************************************************\
  *  $Id$
  *****************************************************************************
- *  $LSDId: hostlist.c,v 1.15 2004/02/02 19:09:04 grondo Exp $
+ *  $LSDId: hostlist.c,v 1.16 2004/04/02 00:28:49 grondo Exp $
  *****************************************************************************
  *  Copyright (C) 2002 The Regents of the University of California.
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
@@ -2173,7 +2173,7 @@ static void _iterator_advance(hostlist_iterator_t i)
     assert(i->magic == HOSTLIST_MAGIC);
     if (i->idx > i->hl->nranges - 1)
         return;
-    if (++(i->depth) > i->hr->hi - i->hr->lo) {
+    if (++(i->depth) > (i->hr->hi - i->hr->lo)) {
         i->depth = 0;
         i->hr = i->hl->hr[++i->idx];
     }
@@ -2257,12 +2257,10 @@ int hostlist_remove(hostlist_iterator_t i)
     if (new) {
         hostlist_insert_range(i->hl, new, i->idx + 1);
         hostrange_destroy(new);
-        i->hr = i->hl->hr[i->idx];
+        i->hr = i->hl->hr[++i->idx];
         i->depth = -1;
     } else if (hostrange_empty(i->hr)) {
         hostlist_delete_range(i->hl, i->idx);
-        i->hr = i->hl->hr[i->idx];
-        i->depth = -1;
     } else
         i->depth--;
 
