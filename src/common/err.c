@@ -15,7 +15,9 @@
 #include <netdb.h>
 #include <string.h>
 #include <assert.h>
+#if	HAVE_UNISTD_H
 #include <unistd.h>	/* gethostname */
+#endif
 #include <ctype.h>
 #include <stdlib.h>	/* exit */
 

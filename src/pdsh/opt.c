@@ -13,7 +13,9 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>	/* stat */
+#if	HAVE_UNISTD_H
 #include <unistd.h>	/* getopt */
+#endif
 
 #include "dsh.h"
 #include "opt.h"

@@ -12,7 +12,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #if	HAVE_UNISTD_H
-#include <sys/unistd.h>	/* seteuid */
+#include <unistd.h>	/* seteuid */
 #endif
 #include <sys/wait.h>	/* wait */
 #include <string.h>	/* strcmp */

@@ -13,8 +13,9 @@
 
 #include <string.h>
 #include <errno.h>
+#if	HAVE_UNISTD_H
 #include <unistd.h>
-
+#endif
 #include <assert.h>
 
 #include "xmalloc.h"

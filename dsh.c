@@ -47,7 +47,9 @@
 #include <sys/stat.h>
 #include <sys/param.h>
 #include <dirent.h>
+#if	HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <signal.h>

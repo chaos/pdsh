@@ -10,7 +10,9 @@
  
 #include <string.h>
 #include <assert.h>
+#if	HAVE_UNISTD_H
 #include <unistd.h>	/* for R_OK, access() */
+#endif
  
 #include "dsh.h"
 #include "err.h"

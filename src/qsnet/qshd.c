@@ -79,7 +79,9 @@ char rcsid[] =
 #include <grp.h>
 #include <syslog.h>
 #include <resolv.h>
+#if	HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <errno.h>
 #include <stdio.h>  /* for vsnprintf */
 #include <stdlib.h>

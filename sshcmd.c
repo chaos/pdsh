@@ -21,7 +21,9 @@
 #include <netdb.h>
 #include <sys/types.h>
 #include <stdlib.h>	/* putenv */
+#if	HAVE_UNISTD_H
 #include <unistd.h>	
+#endif
 #include <pthread.h>
 #include <string.h>	/* memset */
 
