@@ -1,8 +1,13 @@
-2003-06-20 achu
+2003-06-24 achu
 	* added ability to compile modules in statically with
 	  --enable-static-modules option
 	* ssh no longer compiled automatically, needs --with-ssh option
 	* mqshd built to be independent of net-toollib library 
+	* added checks to differentiate between options/modules suitable for 
+	  pdsh vs. pdcp
+	* added several error/warning messages to specific modules
+	* minor tweaking of configuration, makefiles, documents, and manpages
+	  for readability and portability.
 
 2003-06-13 achu
 	* added support for mqsh rcmd and mqshd daemon
