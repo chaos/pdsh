@@ -518,6 +518,31 @@ int pamauth(struct passwd *pwd, char *service, char *remuser,
 #endif /* USE_PAM */
 
 
+#define REMOTE_PREFIX "QSHELL_REMOTE_"
+
+/*
+ * Return nonzero if environment variable 'var' is a qshell "wrapped"
+ *  environment variable, i.e. one that should be reset in the environment
+ *  without the REMOTE_PREFIX
+ */
+static int _is_wrapped_qshell_env_var (const char *var)
+{
+    const char * valid_vars[] = { "LD_LIBRARY_PATH", "LD_PREOPEN", NULL };
+    const char *p, *q;
+
+    if (strncmp (var, REMOTE_PREFIX, strlen (REMOTE_PREFIX)) != 0)
+        return (0);
+
+    p = var + strlen (REMOTE_PREFIX);
+
+    for (q = valid_vars[0]; q != NULL;  q++) {
+        if (strncmp (p, q, strlen (q)) == 0)
+            return (1);
+    }
+
+    return (0);
+}
+
 /*
  *  Read Qshell arguments from remote side (via stdin)
  *
@@ -547,7 +572,15 @@ int get_qshell_info(ELAN_CAPABILITY *cap, qsw_info_t *qinfo,
         /* Following is a mem-leak on some systems, on others it is
          * the proper way to call putenv.
          */
-        putenv(strdup(envstr));
+
+        /*
+         * For variables with REMOTE_PREFIX, set the real environment
+         *  variable (e.g. LD_LIBRARY_PATH)
+         */
+        if (_is_wrapped_qshell_env_var (envstr)) 
+            putenv(strdup(envstr + strlen(REMOTE_PREFIX)));
+        else 
+            putenv(strdup(envstr));
     }
 
     /* read elan capability */
