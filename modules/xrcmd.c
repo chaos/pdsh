@@ -152,7 +152,7 @@ struct pdsh_module_option xrcmd_module_options[] =
  */
 struct pdsh_module pdsh_module_info = {
   "rcmd",
-  "bsd",
+  "rsh",
   "Jim Garlick <garlick@llnl.gov>",
   "BSD rcmd connect method",
   DSH | PCP, 

@@ -27,7 +27,7 @@
 #define _HAVE_MOD_RCMD_H
 
 /*
- *  Get the default rcmd module name (e.g. "bsd" "ssh" etc.)
+ *  Get the default rcmd module name (e.g. "rsh" "ssh" etc.)
  */
 char * mod_rcmd_get_default_module(void);
 
