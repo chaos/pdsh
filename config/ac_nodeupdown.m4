@@ -35,7 +35,12 @@ AC_DEFUN([AC_NODEUPDOWN],
   if test "$ac_with_libnodeupdown" = "yes"; then
     AC_CHECK_LIB([nodeupdown], [nodeupdown_handle_create], 
                  [ac_have_libnodeupdown=yes], [])
-    if test "$ac_have_libnodeupdown" = "yes" ; then
+
+   if test "$ac_have_libnodeupdown" != "yes" ; then
+      AC_MSG_NOTICE([Cannot support nodeupdown without libnodeupdown])
+   fi 
+
+   if test "$ac_have_libnodeupdown" = "yes" ; then
       AC_ADD_STATIC_MODULE("nodeupdown")
       AC_DEFINE([HAVE_LIBNODEUPDOWN], [1], 
                 [Define if you have libnodeupdown.])

@@ -37,6 +37,10 @@ AC_DEFUN([AC_GENDERS],
     AC_CHECK_LIB([genders], [genders_handle_create], 
                  [ac_have_libgenders=yes], [])
 
+    if test "$ac_have_libgenders" != "yes" ; then
+       AC_MSG_NOTICE([Cannot support genders without libgenders])
+    fi 
+
     if test "$ac_have_libgenders" = "yes"; then
       AC_ADD_STATIC_MODULE("genders")
       AC_DEFINE([HAVE_LIBGENDERS], [1], [Define if you have libgenders.])

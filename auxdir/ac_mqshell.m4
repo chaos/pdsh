@@ -54,15 +54,36 @@ AC_DEFUN([AC_MQSHELL],
     if test "$ac_have_qshell" = "yes"; then 
        ac_mqshell_qshell=yes
     else
-       AC_CHECK_LIB([rmscall], [rms_prgcreate], 
-              AC_CHECK_LIB([elan3], [elan3_create], [ac_mqshell_have_qshell=yes]))
+       AC_CHECK_LIB([rmscall], [rms_prgcreate], [ac_mqshell_have_rms=yes])
+       AC_CHECK_LIB([elan3],   [elan3_create],  [ac_mqshell_have_elan=yes])
         
-       if test "$ac_mqshell_have_qshell" = "yes" ; then
+       if test "$ac_mqshell_have_rms" != "yes" ; then
+          AC_MSG_NOTICE([Cannot support mqshell without librmscall])        
+       fi
+
+       if test "$ac_mqshell_have_elan" != "yes" ; then
+          AC_MSG_NOTICE([Cannot support mqshell without libelan3])
+       fi
+
+       if test "$ac_with_pam" = "yes" ; then
+          AC_CHECK_LIB([pam], [pam_start], [ac_mqshell_have_pam=yes])
+          if test "$ac_mqshell_have_pam" != "yes" ; then
+             AC_MSG_NOTICE([Cannot support qshell without libpam])
+          fi
+       else
+          ac_mqshell_have_pam=yes
+       fi
+
+       if test "$ac_mqshell_have_rms" = "yes" && 
+          test "$ac_mqshell_have_elan" = "yes" &&
+          test "$ac_mqshell_have_pam" = "yes" ; then
           QSHELL_LIBS="-lrmscall -lelan3" 
+          if test "$ac_with_pam" = "yes" ; then
+             QSHELL_LIBS="$QSHELL_LIBS -lpam -lpam_misc"
+             AC_DEFINE_UNQUOTED(USE_PAM, [1])
+          fi
           AC_SUBST(QSHELL_LIBS)
           ac_mqshell_qshell=yes
-       else
-          ac_mqshell_qshell=no
        fi
     fi
 
@@ -71,6 +92,10 @@ AC_DEFUN([AC_MQSHELL],
        ac_mqshell_munge=yes
     else
        AC_CHECK_LIB([munge], [munge_encode], [ac_mqshell_have_munge=yes])
+
+       if test "$ac_mqshell_have_munge" != "yes" ; then
+          AC_MSG_NOTICE([Cannot support mqshell without libmunge])
+       fi 
 
        if test "$ac_mqshell_have_munge" = "yes" ; then
           MRSH_LIBS="-lmunge" 
@@ -86,7 +111,7 @@ AC_DEFUN([AC_MQSHELL],
        test "$ac_mqshell_munge" = "yes" ; then
        ac_have_mqshell=yes
        AC_ADD_STATIC_MODULE("mqcmd")
-       AC_DEFINE([HAVE_MQSHELL], [1], [Define if you have mqshell.])
+       AC_DEFINE_UNQUOTED([HAVE_MQSHELL], [1], [Define if you have mqshell.])
        PROG_MQSHD=in.mqshd   
 
        # check for IPv6, IEEE standard says it should be in sys/socket.h 

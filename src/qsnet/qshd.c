@@ -204,11 +204,11 @@ static void fail(const char *errorstr,
                  const char *remuser, const char *hostname,
                  const char *locuser, const char *cmdbuf)
 {
-    /* log the (failed) rsh request */
-    syslog(LOG_INFO | LOG_AUTH, "rsh denied to %s@%s as %s: %s",
+    /* log the (failed) qshell request */
+    syslog(LOG_INFO | LOG_AUTH, "qshell denied to %s@%s as %s: %s",
            remuser, hostname, locuser, errorstr);
     if (paranoid) {
-        syslog(LOG_INFO | LOG_AUTH, "rsh command was '%s'", cmdbuf);
+        syslog(LOG_INFO | LOG_AUTH, "qshell command was '%s'", cmdbuf);
     }
     error(errorstr, hostname);
     exit(1);
@@ -316,14 +316,14 @@ static struct passwd *doauth(const char *remuser,
         paranoid = 1;
 
 #ifdef USE_PAM
-    retcode = pam_start("rsh", locuser, &conv, &pamh);
+    retcode = pam_start("qshell", locuser, &conv, &pamh);
     if (retcode != PAM_SUCCESS) {
         syslog(LOG_ERR, "pam_start: %s\n", pam_strerror(pamh, retcode));
         exit(1);
     }
     pam_set_item(pamh, PAM_RUSER, remuser);
     pam_set_item(pamh, PAM_RHOST, hostname);
-    pam_set_item(pamh, PAM_TTY, "tty");
+    pam_set_item(pamh, PAM_TTY, "qshell");
 
     retcode = pam_authenticate(pamh, 0);
     if (retcode == PAM_SUCCESS) {

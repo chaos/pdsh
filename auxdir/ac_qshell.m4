@@ -33,18 +33,42 @@ AC_DEFUN([AC_QSHELL],
 
   if test "$ac_with_qshell" = yes; then
 
-     AC_CHECK_LIB([rmscall], [rms_prgcreate], 
-        AC_CHECK_LIB([elan3], [elan3_create], [ac_have_qshell=yes]))
+     AC_CHECK_LIB([rmscall], [rms_prgcreate], [ac_have_rms=yes])
+     AC_CHECK_LIB([elan3],   [elan3_create],  [ac_have_elan=yes])
 
-     if test "$ac_have_qshell" = "yes" ; then
-        # compile libqsw
+     if test "$ac_have_rms" != "yes" ; then
+        AC_MSG_NOTICE([Cannot support qshell without librmscall])
+     fi
+
+     if test "$ac_have_elan" != "yes" ; then
+        AC_MSG_NOTICE([Cannot support qshell without libelan3])
+     fi
+
+     if test "$ac_with_pam" = "yes" ; then
+        AC_CHECK_LIB([pam], [pam_start], [ac_have_pam=yes])
+        if test "$ac_have_pam" != "yes" ; then
+           AC_MSG_NOTICE([Cannot support qshell without libpam])
+        fi
+     else
+        ac_have_pam=yes         
+     fi
+
+     if test "$ac_have_rms" = "yes" && 
+        test "$ac_have_elan" = "yes" &&
+        test "$ac_have_pam" = "yes" ; then
+        ac_have_qshell=yes
         ac_have_qsw=yes
         AC_ADD_STATIC_MODULE("qcmd")
         QSHELL_LIBS="-lrmscall -lelan3"
         AC_DEFINE_UNQUOTED(HAVE_QSHELL, [1], [Define for Qshell support.])
-	PROG_QSHD=in.qshd
+        PROG_QSHD=in.qshd
+        if test "$ac_with_pam" = "yes" ; then
+           QSHELL_LIBS="$QSHELL_LIBS -lpam -lpam_misc"
+           AC_DEFINE_UNQUOTED(USE_PAM, [1], [Define for Qshell PAM support.])
+        fi
      fi
   fi
+
   AC_SUBST(HAVE_QSHELL)
   AC_SUBST(PROG_QSHD)
   AC_SUBST(QSHELL_LIBS)

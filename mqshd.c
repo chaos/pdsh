@@ -141,6 +141,12 @@ char rcsid[] = "$Id$";
 #define _check_rhosts_file  __check_rhosts_file
 #endif
 
+#ifdef USE_PAM
+#include <security/pam_appl.h>
+#include <security/pam_misc.h>
+static pam_handle_t *pamh;
+#endif /* USE_PAM */
+
 #define OPTIONS "ahlLn"
 
 static int keepalive = 1;
@@ -158,7 +164,7 @@ struct if_ipaddr_list *list_head;
 
 /* error codes */
 enum stderr_err {__NONE = 0, __READ, __MUNGE, __PAYLOAD, 
-                 __PORT, __CRED, __SYSTEM, __INTERNAL};
+                 __PORT, __CRED, __AUTH, __SYSTEM, __INTERNAL};
 
 enum stderr_err errnum = __NONE;
 
@@ -433,6 +439,17 @@ static void stderr_parent(int sock, int pype, int pid) {
       else write(sock, buf, cc);
     }
   }
+
+#ifdef USE_PAM
+  /*
+   * This does not strike me as the right place for this; this is
+   * in a child process... what does this need to accomplish?
+   *
+   * No, it's not the child process, the code is just confusing.
+   */
+  pam_close_session(pamh, 0);
+  pam_end(pamh, PAM_SUCCESS);
+#endif
     
   exit(0);
 }
@@ -440,6 +457,10 @@ static void stderr_parent(int sock, int pype, int pid) {
 static void
 doit(struct sockaddr_in *fromp)
 {
+#ifdef USE_PAM
+  static struct pam_conv conv = { misc_conv, NULL };
+  int retcode;
+#endif
   struct sockaddr_in sin;
   struct hostent *m_hostent;
   struct in_addr *h_ptr;
@@ -574,6 +595,56 @@ doit(struct sockaddr_in *fromp)
     }
   }
 
+#ifdef USE_PAM
+  retcode = pam_start("mqshell", pwd->pw_name, &conv, &pamh);
+  if (retcode != PAM_SUCCESS) {
+    syslog(LOG_ERR, "pam_start: %s\n", pam_strerror(pamh, retcode));
+    errnum = __AUTH;
+    goto error_out;
+  }
+
+  pam_set_item (pamh, PAM_RUSER, pwd->pw_name);
+  if (gethostname(&m_hostname[0], HOSTNAME_MAX_LEN) < 0) {
+    syslog(LOG_ERR, "failed gethostname: %m");
+    errnum = __SYSTEM;
+    goto error_out;
+  }
+  pam_set_item (pamh, PAM_RHOST, hostname);
+  pam_set_item (pamh, PAM_TTY, "mqshell");
+
+  retcode = pam_authenticate(pamh, 0);
+  if (retcode == PAM_SUCCESS) {
+    retcode = pam_acct_mgmt(pamh, 0);
+  }
+
+  if (retcode == PAM_SUCCESS) {
+    if (setgid(pwd->pw_gid) != 0) {
+      pam_end(pamh, PAM_SYSTEM_ERR);
+      errnum = __SYSTEM;
+      goto error_out;
+    }
+    if (initgroups(m_arg_ptr, pwd->pw_gid) != 0) {
+      pam_end(pamh, PAM_SYSTEM_ERR);
+      errnum = __SYSTEM;
+      goto error_out;
+    }
+    retcode = pam_setcred(pamh, PAM_ESTABLISH_CRED);
+  }
+
+  if (retcode == PAM_SUCCESS) {
+    retcode = pam_open_session(pamh,0);
+  }
+
+  if (retcode != PAM_SUCCESS) {
+    pam_end(pamh, retcode);
+    syslog(LOG_ERR | LOG_AUTH, "%s\n", pam_strerror(pamh, retcode));
+    errnum = __AUTH;
+    goto error_out;
+  }
+
+  syslog(LOG_ERR | LOG_AUTH, "fffffooooooo\n");
+#endif
+
   /*
    * Now we check to make sure that we are the intended host...
    */
@@ -585,11 +656,13 @@ doit(struct sockaddr_in *fromp)
   }
 
   m_arg_char_ctr = strlen(m_parser);
+#ifndef USE_PAM
   if (gethostname(&m_hostname[0], HOSTNAME_MAX_LEN) < 0) {
     syslog(LOG_ERR, "failed gethostname: %m");
     errnum = __SYSTEM;
     goto error_out;
   }
+#endif
 
   chrptr = strchr(&m_hostname[0],'.');
   if (chrptr == NULL) {
@@ -746,6 +819,8 @@ doit(struct sockaddr_in *fromp)
                              " is not the same as the encrypted one.");
         break;
       case __CRED: errorsock(sock,"mqshd: failed credential check.");
+        break;
+      case __AUTH: errorsock(sock, "mqshd: failed authentication.");
         break;
       case __SYSTEM: errorsock(sock,"mqshd: internal system error.");
         break;
@@ -921,7 +996,7 @@ doit(struct sockaddr_in *fromp)
     exit(1);
   }
 #endif
-
+#ifndef USE_PAM
   if (setgid(pwd->pw_gid)) {
     errlog("setgid: %s", strerror(errno));
     exit(1);
@@ -931,6 +1006,7 @@ doit(struct sockaddr_in *fromp)
     errlog("initgroups: %s", strerror(errno));
     exit(1);
   }
+#endif
 
   if (setuid(pwd->pw_uid)) {
     errlog("setuid: %s", strerror(errno));
@@ -1096,6 +1172,12 @@ main(int argc, char *argv[])
   }
   argc -= optind;
   argv += optind;
+
+#ifdef USE_PAM
+  if (_check_rhosts_file == 0 || allow_root_rhosts)
+    syslog(LOG_ERR, "-l and -h functionality has been moved to "
+           "pam_rhosts_auth in /etc/pam.conf");
+#endif /* USE_PAM */
 
   network_init(0, &from);
  
