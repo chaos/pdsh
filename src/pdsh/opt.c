@@ -83,6 +83,7 @@ Usage: pdcp [-options] src [src2...] dest\n\
 -x host,host,...  set node exclusion list on command line\n\
 -n n              set number of tasks per node\n"
 /* undocumented "-T testcase" option */
+/* undocumented "-Q" option */
 
 #define OPT_USAGE_SDR "\
 -G                for -a, include all partitions of SP System\n\
@@ -97,7 +98,7 @@ Usage: pdcp [-options] src [src2...] dest\n\
 
 #define DSH_ARGS	"sS"
 #define PCP_ARGS	"pr"
-#define GEN_ARGS	"n:at:csqf:w:x:l:u:bI:ideVT:"
+#define GEN_ARGS	"n:at:csqf:w:x:l:u:bI:ideVT:Q"
 #define SDR_ARGS	"Gv"
 #define GEND_ARGS	"g:"
 #define ELAN_ARGS	"Em:"
@@ -128,6 +129,7 @@ opt_default(opt_t *opt)
 #endif
 
 	opt->info_only = false;
+	opt->test_range_expansion = false;
 	opt->wcoll = NULL;
 	opt->progname = NULL;
 	opt->connect_timeout = CONNECT_TIMEOUT;
@@ -327,6 +329,10 @@ opt_args(opt_t *opt, int argc, char *argv[])
 			case 'T':	/* execute testcase */
 				testcase(atoi(optarg));
 				break;
+			case 'Q':	/* info only, expand host ranges */
+				opt->info_only = true;
+				opt->test_range_expansion = true;
+				break;
 			case 'h':	/* display usage message */
 			default:
 				_usage(opt);
@@ -515,6 +521,7 @@ opt_list(opt_t *opt)
 {
 	char *infile_str;
 	char wcoll_str[1024];
+	int n;
 
 	if (opt->personality == DSH) {
 	out("-- DSH-specific options --\n");
@@ -549,13 +556,22 @@ opt_list(opt_t *opt)
 	out("Use alt hostname	%s\n", BOOLSTR(opt->altnames));
 	out("Debugging       	%s\n", BOOLSTR(opt->debug));
 
+#if HAVE_SDR
 	out("\n-- SDR options --\n");
 	out("Verify SDR nodes  	%s\n", BOOLSTR(opt->sdr_verify));
 	out("All SDR partitions	%s\n", BOOLSTR(opt->sdr_global));
+#endif /* HAVE_SDR */
 
 	out("\n-- Target nodes --\n");
-	if (hostlist_ranged_string(opt->wcoll, sizeof(wcoll_str), 
-				wcoll_str) > sizeof(wcoll_str))
+	if (opt->test_range_expansion) {
+		n = hostlist_deranged_string(opt->wcoll, sizeof(wcoll_str),
+					     wcoll_str);
+	} else {
+		n = hostlist_ranged_string(opt->wcoll, sizeof(wcoll_str), 
+				           wcoll_str); 
+	}
+
+	if (n < 0)
 		out("%s[truncated]\n", wcoll_str);
 	else
 		out("%s\n", wcoll_str);

@@ -61,6 +61,7 @@ typedef struct {
 	pers_t personality;
 	bool debug;		/* -d */
 	bool info_only;		/* -q */
+	bool test_range_expansion;	/* -Q (implies -q) */
 	bool allnodes;		/* -a */
 	char gend_attr[MAX_GENDATTR];	/* -g */
 	bool sdr_verify;	/* -v */
