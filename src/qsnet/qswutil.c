@@ -28,6 +28,7 @@
 #include "config.h"
 #endif
 
+#include <stdio.h>
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -42,8 +43,25 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <limits.h>             /* INT_MAX */
+#include <pthread.h>
 
+#ifdef HAVE_LIBELANCTRL
+#include <elan/elanctrl.h>
+#include <elan/capability.h>
+
+#define HighNode    cap_highnode
+#define LowNode     cap_lownode
+#define HighContext cap_highcontext
+#define LowContext  cap_lowcontext
+#define Bitmap      cap_bitmap
+#define Type        cap_type
+#define UserKey     cap_userkey
+#define RailMask    cap_railmask
+#define Values      key_values
+
+#else
 #include <elan3/elan3.h>
+#endif
 #include <elan3/elanvp.h>
 #include <rms/rmscall.h>
 
@@ -138,6 +156,7 @@ _set_elan_ids(elanhost_config_t ec)
 {
     int i;
 
+#if defined(HAVE_LIBELAN3)
     for (i = 0; i <= elanhost_config_maxid(ec); i++) {
         char *host = elanhost_elanid2host(ec, ELANHOST_EIP, i);
         if (!host)
@@ -146,6 +165,7 @@ _set_elan_ids(elanhost_config_t ec)
 		if (elan3_load_neterr_svc(i, host) < 0)
 			err("%p: elan3_load_neterr_svc(%d, %s): %m", i, host);
 	}
+#endif
 
     return 0;
 }
@@ -155,6 +175,7 @@ static void *neterr_thr(void *arg)
 {	
     struct neterr_args *args = arg;
 
+#if defined(HAVE_LIBELAN3)
 	if (!elan3_init_neterr_svc(0)) {
 		syslog(LOG_ERR, "elan3_init_neterr_svc: %m");
 		goto fail;
@@ -196,6 +217,7 @@ static void *neterr_thr(void *arg)
 	 */
 	elan3_run_neterr_svc();
 
+#endif
     return NULL;
 
    fail:
@@ -346,12 +368,43 @@ int qsw_encode_cap(char *s, int len, ELAN_CAPABILITY * cap)
         err("%p: qsw_encode_cap: UserKey array is unexpected size\n");
         return -1;
     }
-    n = snprintf(s, len, "%x.%x.%x.%x.%hx.%hx.%x.%x.%x.%x.%x.%x.%x", cap->UserKey.Values[0], cap->UserKey.Values[1], cap->UserKey.Values[2], cap->UserKey.Values[3], cap->Type, /* short */
-                 0,             /* short */
-                 cap->LowContext,
-                 cap->HighContext,
-                 cap->MyContext,
-                 cap->LowNode, cap->HighNode, cap->Entries, cap->RailMask);
+#if defined(HAVE_LIBELANCTRL)
+    cap->cap_spare = ELAN_CAP_UNINITIALISED ;
+    n = snprintf(s, len, "%x.%x.%x.%x.%hx.%x.%x.%x.%x.%x.%x.%x",
+                           cap->UserKey.Values[0],
+                           cap->UserKey.Values[1], 
+                           cap->UserKey.Values[2], 
+                           cap->UserKey.Values[3], 
+                           cap->Type, /* short */
+#ifdef ELAN_CAP_ELAN3
+                           cap->cap_elan_type, /* char */
+#else
+                           cap->cap_spare,
+#endif
+                           cap->LowContext,
+                           cap->HighContext,
+                           cap->cap_mycontext,
+                           cap->LowNode,
+                           cap->HighNode,
+                           cap->RailMask);
+#elif defined(HAVE_LIBELAN3)
+    n = snprintf(s, len, "%x.%x.%x.%x.%hx.%x.%x.%x.%x.%x.%x.%x",
+                           cap->UserKey.Values[0],
+                           cap->UserKey.Values[1],
+                           cap->UserKey.Values[2],
+                           cap->UserKey.Values[3],
+                           cap->Type,      /* short */
+                           cap->LowContext,
+                           cap->HighContext,
+                           cap->MyContext,
+                           cap->LowNode,
+                           cap->HighNode,
+                           cap->Entries,
+                           cap->RailMask);
+#else
+#error "Neither LIBELAN3 nor LIBELANCTRL defined!"
+#endif
+
     if (n < 0 || n > strlen(s)) {
         err("%p: qsw_encode_cap: string overflow\n");
         return -1;
@@ -400,20 +453,53 @@ int qsw_encode_cap_bitmap(char *s, int len, ELAN_CAPABILITY * cap, int i)
 int qsw_decode_cap(char *s, ELAN_CAPABILITY * cap)
 {
     int n;
-    short dummy;
+
+#if defined(HAVE_LIBELANCTRL)
+    /* initialize capability */
+    elan_nullcap(cap);
+
+    n =  sscanf(s, "%x.%x.%x.%x.%hx.%x.%x.%x.%x.%x.%x.%x",
+                     &cap->UserKey.Values[0],
+                     &cap->UserKey.Values[1],
+                     &cap->UserKey.Values[2],
+                     &cap->UserKey.Values[3],
+                     &cap->cap_type, /* short */
+#  ifdef ELAN_CAP_ELAN3
+                     &cap->cap_elan_type, /* char */
+#  else
+                     &cap->cap_spare,
+#  endif
+                     &cap->LowContext,
+                     &cap->HighContext,
+                     &cap->cap_mycontext,
+                     &cap->LowNode,
+                     &cap->HighNode,
+                     &cap->RailMask);
+
+#elif defined(HAVE_LIBELAN3)
 
     /* initialize capability */
     elan3_nullcap(cap);
 
     /* fill in values sent from remote */
-    n = sscanf(s, "%x.%x.%x.%x.%hx.%hx.%x.%x.%x.%x.%x.%x.%x", &cap->UserKey.Values[0], &cap->UserKey.Values[1], &cap->UserKey.Values[2], &cap->UserKey.Values[3], &cap->Type,   /* short */
-               &dummy,          /* short */
-               &cap->LowContext,
-               &cap->HighContext,
-               &cap->MyContext,
-               &cap->LowNode,
-               &cap->HighNode, &cap->Entries, &cap->RailMask);
-    if (n != 13) {
+    n = sscanf(s, "%x.%x.%x.%x.%hx.%hx.%x.%x.%x.%x.%x.%x.%x", 
+                    &cap->UserKey.Values[0], 
+                    &cap->UserKey.Values[1],
+                    &cap->UserKey.Values[2],
+                    &cap->UserKey.Values[3],
+                    &cap->Type, /* short */
+                    &cap->LowContext,
+                    &cap->HighContext,
+                    &cap->MyContext,
+                    &cap->LowNode,
+                    &cap->HighNode, 
+                    &cap->Entries, 
+                    &cap->RailMask);
+#else
+#  error "Neither LIBELANCTRL nor LIBELAN3 set!"
+#endif
+
+    if (n != 12) {
         err("%p: qsw_decode_cap: scan error\n");
         return -1;
     }
@@ -517,13 +603,28 @@ qsw_init_capability(ELAN_CAPABILITY * cap, int nprocs, hostlist_t nodelist,
      * Initialize for multi rail and either block or cyclic allocation.  
      * Set ELAN_CAP_TYPE_BROADCASTABLE later if appropriate.
      */
+#if defined(HAVE_LIBELANCTRL)
+    elan_nullcap(cap);
+#elif defined(HAVE_LIBELAN3)
     elan3_nullcap(cap);
+#else
+#  error
+#endif
+
     if (cyclic_alloc)
         cap->Type = ELAN_CAP_TYPE_CYCLIC;
     else
         cap->Type = ELAN_CAP_TYPE_BLOCK;
     cap->Type |= ELAN_CAP_TYPE_MULTI_RAIL;
     cap->RailMask = 1;
+
+#if defined(HAVE_LIBELANCTRL)
+#  ifdef ELAN_CAP_ELAN3
+    cap->cap_elan_type = ELAN_CAP_ELAN3;
+#  else
+    cap->cap_spare = ELAN_CAP_UNINITIALISED;
+#  endif
+#endif
 
     /*
      * UserKey is 128 bits of randomness which should be kept private.
@@ -554,6 +655,7 @@ qsw_init_capability(ELAN_CAPABILITY * cap, int nprocs, hostlist_t nodelist,
         return -1;
     }
 
+#if defined(HAVE_LIBELAN3)
     /* 
      * Set cap->Entries and add broadcast bit to cap->type based on 
      * cap->HighNode and cap->LowNode values set above.
@@ -561,9 +663,10 @@ qsw_init_capability(ELAN_CAPABILITY * cap, int nprocs, hostlist_t nodelist,
     cap->Entries = nprocs;
     if (cap->Entries > ELAN_MAX_VPS) {
         err("%p: program would have too many processes (max %d)\n",
-            ELAN_MAX_VPS);
+                ELAN_MAX_VPS);
         return -1;
     }
+#endif
 
     /* 
      * As we now support segmented broadcast, always flag the capability
@@ -643,7 +746,28 @@ void qsw_setup_program(ELAN_CAPABILITY * cap, qsw_info_t * qi, uid_t uid)
      */
     {
         int i, nrails;
+#if defined(HAVE_LIBELANCTRL)
+        /* MULTI-RAIL: Extract rail info from capability */
+        nrails = elan_nrails(cap);
 
+        /* MULTI-RAIL: Create the capability in all rails */
+        for (i = 0; i < nrails; i++) {
+            ELANCTRL_HANDLE handle;
+
+            /* 
+             * Open up the Elan control device so we can create 
+             * a new capability.  
+             */
+            if (elanctrl_open(&handle) != 0)
+                errx("%p: elanctrl_open(): %m\n");
+
+            /* Push capability into device driver */
+            if (elanctrl_create_cap(handle, cap) < 0)
+                errx("%p: elancrtl_create_cap failed: %m\n");
+
+        }
+
+#elif defined(HAVE_LIBELAN3)
         /* MULTI-RAIL: Extract rail info from capability */
         nrails = elan3_nrails(cap);
 
@@ -663,6 +787,9 @@ void qsw_setup_program(ELAN_CAPABILITY * cap, qsw_info_t * qi, uid_t uid)
             if (elan3_create(ctx, cap) < 0)
                 errx("%p: elan3_create failed: %m\n");
         }
+#else
+#  error
+#endif
     }
 
     /* associate this process and its children with prgnum */
@@ -677,7 +804,12 @@ void qsw_setup_program(ELAN_CAPABILITY * cap, qsw_info_t * qi, uid_t uid)
         char tmpstr[1024];
 
         syslog(LOG_DEBUG, "prg %d cap %s bitmap 0x%.8x", qi->prgnum,
-               elan3_capability_string(cap, tmpstr), cap->Bitmap[0]);
+#if defined(HAVE_LIBELANCTRL)
+                elan_capability_string(cap, tmpstr),
+#elif defined(HAVE_LIBELAN3)
+                elan3_capability_string(cap, tmpstr), 
+#endif
+                cap->Bitmap[0]);
     }
 
     /* 
@@ -725,14 +857,14 @@ void qsw_setup_program(ELAN_CAPABILITY * cap, qsw_info_t * qi, uid_t uid)
 
     /* set RMS_ environment vars */
     switch (cap->Type & ELAN_CAP_TYPE_MASK) {
-    case ELAN_CAP_TYPE_BLOCK:
-        qi->procid = (qi->nodeid * procs_per_node) + proc_index;
-        break;
-    case ELAN_CAP_TYPE_CYCLIC:
-        qi->procid = qi->nodeid + (proc_index * qi->nnodes);
-        break;
-    default:
-        errx("%p: unsupported Elan capability type\n");
+        case ELAN_CAP_TYPE_BLOCK:
+            qi->procid = (qi->nodeid * procs_per_node) + proc_index;
+            break;
+        case ELAN_CAP_TYPE_CYCLIC:
+            qi->procid = qi->nodeid + (proc_index * qi->nnodes);
+            break;
+        default:
+            errx("%p: unsupported Elan capability type\n");
     }
     qi->rank = qi->procid;
     if (_rms_setenv(qi) < 0)
