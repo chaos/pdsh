@@ -50,9 +50,9 @@ remote shell services, including standard "rsh", Kerberos IV, and ssh.
 %{!?_with_ssh: %{!?_without_ssh: %define _with_ssh 1}}
 %{!?_with_bsd: %{!?_without_bsd: %define _with_bsd 1}}
 
+%{!?_with_rms: %{!?_without_rms: %define _with_rms --with-rms}}
+%{!?_with_genders:  %{!?_without_genders: %define _with_genders --with-genders}}
 %{!?_with_nodeattr: %{!?_without_nodeattr: %define _with_nodeattr --with-nodeattr}}
-%{!?_with_rmsquery: %{!?_without_rmsquery: %define _with_rmsquery --with-rmsquery}}
-%{!?_with_genders: %{!?_without_genders: %define _with_genders --with-genders}}
 %{!?_with_machines: %{!?_without_machines: %define _with_machines --with-machines}}
 %{!?_with_nodeupdown:  %{!?_without_nodeupdown: %define _with_nodeupdown --with-nodeupdown}}
 
@@ -110,6 +110,19 @@ Group:    System Environment/Base
 %description mod-nodeupdown
 Pdsh module providing -v functionality using libnodeupdown.
 
+%package  mod-rms
+Summary:  Provides RMS support for pdsh.
+Group:    System Environment/Base
+%description mod-rms
+Pdsh module providing support for gathering the list of target nodes
+from an allocated RMS resource.
+
+%package  mod-machines
+Summary:  Pdsh module for gathering list of target nodes from a machines file.
+Group:    System Environment/Base
+%description mod-machines
+Pdsh module for gathering list of all target nodes from a machines file.
+
 
 ##############################################################################
 
@@ -128,6 +141,8 @@ Pdsh module providing -v functionality using libnodeupdown.
     %{?_without_machines}   \
     %{?_with_genders}       \
     %{?_without_genders}    \
+    %{?_with_rms}           \
+    %{?_without_rms}        \
     %{?_with_nodeupdown}    \
     %{?_without_nodeupdown} \
     %{?_with_nodeattr}      \
@@ -204,6 +219,20 @@ rm -rf "$RPM_BUILD_ROOT"
 %files mod-nodeupdown
 %defattr(-,root,root)
 %{_libdir}/pdsh/nodeupdown.*
+%endif
+##############################################################################
+
+%if %{?_with_rms:1}%{!?_with_rms:0}
+%files mod-rms
+%defattr(-,root,root)
+%{_libdir}/pdsh/rms.*
+%endif
+##############################################################################
+
+%if %{?_with_machines:1}%{!?_with_machines:0}
+%files mod-machines
+%defattr(-,root,root)
+%{_libdir}/pdsh/machines.*
 %endif
 ##############################################################################
 

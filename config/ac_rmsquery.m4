@@ -28,6 +28,7 @@ AC_DEFUN([AC_RMSQUERY],
   if test "$ac_with_rms" = "yes"; then
     AC_PATH_PROG([RMSQUERY], [rmsquery], [], [/usr/bin:$PATH])
     if test -n "$RMSQUERY"; then
+        ac_have_rmsquery=yes
         AC_DEFINE_UNQUOTED(_PATH_RMSQUERY, "$RMSQUERY", [Path to rmsquery.])
     fi
 
