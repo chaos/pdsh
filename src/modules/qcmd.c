@@ -265,7 +265,7 @@ static int qcmd_postop(opt_t *opt)
             errors++;
         }
         if ((railmask == 0) || (railmask > QSW_RAILMASK_MAX)) {
-            err ("%p: mqcmd: invalid value for -r (nrails)\n");
+            err ("%p: qcmd: invalid value %d for -r (railmask)\n", railmask);
             errors++;
         }
     } else {
@@ -280,7 +280,7 @@ static int qcmd_postop(opt_t *opt)
         }
 
         if (railmask_set) {
-            err("%p: mqcmd: -r may only be specified with -R mqsh\n");
+            err("%p: qcmd: -r may only be specified with -R mqsh\n");
             errors++;
         }
     }
