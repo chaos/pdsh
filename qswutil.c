@@ -438,8 +438,8 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 	if ((ctx = _elan3_init(0)) == NULL)
 		errx("%p: _elan3_init failed: %m\n");
 #else
-	if ((ctx = elan3_control_open(0)) == NULL)
-		errx("%p: _elan3_control_open failed: %m\n");
+	if ((ctx = elan3_control_open(0)) == (void *)-1)
+		errx("%p: elan3_control_open failed: %m\n");
 #endif
 
 	/* associate this process and its children with prgnum */
