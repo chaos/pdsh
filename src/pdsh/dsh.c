@@ -292,11 +292,6 @@ static void *_wdog(void *args)
     return NULL;
 }
 
-static void _strlist_destroy(char *str)
-{
-    free(str);
-}
-
 static void _rexpand_dir(List list, char *name)
 {
     DIR *dir;
