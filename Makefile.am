@@ -1,10 +1,11 @@
 # $Id$
 
-AUTOMAKE_OPTIONS = foreign
+AUTOMAKE_OPTIONS = foreign 
 
 SUBDIRS = . testsuite
 
 EXTRA_DIST = 		\
+	auxdir		\
 	dshbak dshbak.1 \
 	README.KRB4 	\
 	README.QsNet 	\
@@ -66,6 +67,6 @@ MAINTAINERCLEANFILES = 		\
 	config.h.in config.sub configure install-sh \
 	missing mkinstalldirs stamp-h.in
 
-include Make-rpm.mk
+include $(top_srcdir)/Make-rpm.mk
 
 
