@@ -145,7 +145,7 @@ int elanhost_host2elanid(elanhost_config_t ec, char *host)
     ei = list_find_first(ec->elanid_list, (ListFindF) _find_host, host);
 
     if (!ei) {
-        _elanhost_err(ec, "Unable to find host \"%s\" in configuration", host);
+        _elanhost_err(ec, "Host not found in elanhosts file");
         return -1;
     }
 

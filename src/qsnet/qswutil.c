@@ -266,7 +266,8 @@ _hostlist_to_elanids (hostlist_t nodelist)
         int *id = Malloc (sizeof(int));
         
         if ((*id = elanhost_host2elanid (elanconf, host)) < 0) {
-            err ("%p: Unable to get ElanId for \"%s\"\n", host);
+            err ("%p: Unable to get ElanId for \"%s\": %s\n", 
+                 host, elanhost_config_err (elanconf));
             goto fail;
         }
 
