@@ -2987,7 +2987,7 @@ lt_dlopenext (filename)
      failed, it is better to return an error message here than to
      report FILE_NOT_FOUND when the alternatives (foo.so etc) are not
      in the module search path.  */
-  if (handle || ((errors > 0) && !file_not_found ()))
+  if (handle || ((errors > 0) && file_not_found ()))
     {
       LT_DLFREE (tmp);
       return handle;
@@ -3014,7 +3014,7 @@ lt_dlopenext (filename)
 
   /* As before, if the file was found but loading failed, return now
      with the current error message.  */
-  if (handle || ((errors > 0) && !file_not_found ()))
+  if (handle || ((errors > 0) && file_not_found ()))
     {
       LT_DLFREE (tmp);
       return handle;

@@ -1,3 +1,10 @@
+2003-11-06  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/ltdl.c, config/libtool.m4 : Update to libtool 1.4.3.
+
+	* src/pdsh/opt.c (_show_version, _usage) : Created common function
+	to print list of loaded rcmd modules.
+
 2003-10-28  Mark Grondona <mgrondona@llnl.gov>
 	
 	* src/pdsh/Makefile.am : Removed QSW_LIBS from pdsh binaries.
