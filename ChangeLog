@@ -102,3 +102,5 @@ Release 1.5pre
 	Fixed handling of numerical ranges with multiple root names (dshbak)
 
 	Fix %S handling to avoid truncating dotted quads (err.c)
+
+	Rename pcp to pdcp - avoid conflict with SGI Performance Co-Pilot RPM.
