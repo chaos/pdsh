@@ -96,6 +96,9 @@ Usage: pdcp [-options] src [src2...] dest\n\
 -E                run Quadrics Elan job using qshell\n\
 -m block|cyclic   (qshell) control assignment of procs to nodes\n"
 
+#define OPT_USAGE_NODEUPDOWN "\
+-v                for -a, skip node if host_responds is false\n"
+
 #define DSH_ARGS	"sS"
 #define PCP_ARGS	"pr"
 #define GEN_ARGS	"n:at:csqf:w:x:l:u:bI:ideVT:Q"
@@ -640,6 +643,11 @@ static void _usage(opt_t * opt)
 #if	HAVE_GENDERS
     err(OPT_USAGE_GEND);
 #endif
+#ifdef HAVE_LIBGENDERS
+#ifdef HAVE_LIBNODEUPDOWN
+    err(OPT_USAGE_NODEUPDOWN);
+#endif /* HAVE_LIBNODEUPDOWN */
+#endif /* HAVE_LIBGENDERS */
     exit(1);
 }
 
