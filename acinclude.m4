@@ -224,4 +224,3 @@ else
 fi
 AC_LANG_RESTORE
 ])dnl ACX_PTHREAD
-

@@ -62,12 +62,6 @@
  * SUCH DAMAGE.
  */
 
-/*
- * Changes:
- *  - MT save 
- *  - changed functional interface.
- */
-
 #if defined(LIBC_SCCS) && !defined(lint)
 static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #endif                          /* LIBC_SCCS and not lint */
@@ -76,19 +70,19 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #include "config.h"
 #endif
 
+#if	HAVE_ELAN
+
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-#include <stdio.h>
 #if	HAVE_PTHREAD_H
 #include <pthread.h>
 #endif
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
 #include <signal.h>
 #if HAVE_FCNTL_H
 #include <fcntl.h>
@@ -101,47 +95,40 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #include <errno.h>
 #include <ctype.h>
 #include <string.h>
-#if HAVE_STRINGS_H
-#include <strings.h>            /* AIX FD_SET calls bzero */
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#include <elan3/elanvp.h>
+
+#include "xmalloc.h"
+#include "xstring.h"
+#include "list.h"
+#include "qswutil.h"
+#include "err.h"
+
+#include "dsh.h"                /* LINEBUFSIZE */
+
+
+#define QSHELL_PORT 523
+
+#if HAVE_GETHOSTBYNAME_R
+#define HBUF_LEN	1024
 #endif
 
-#include "dsh.h"
-#include "err.h"
-#include "list.h"
-#include "mod.h"
+extern char **environ;
 
-#define RSH_PORT 514
-
-MODULE_TYPE(        "rcmd"                           );
-MODULE_NAME(        "bsd"                            );
-MODULE_DESCRIPTION( "BSD rcmd connect method"        );
-MODULE_AUTHOR(      "Jim Garlick <garlick@llnl.gov>" );
-
-
-struct pdsh_module_operations pdsh_module_ops = {
-    NULL, 
-    NULL, 
-    NULL, 
-    NULL
-};
-
-#define xrcmd_init   pdsh_rcmd_init
-#define xrcmd        pdsh_rcmd
-#define xrcmd_signal pdsh_signal
-
-
-int xrcmd_init(opt_t * opt)
-{
-    /* not implemented */
-	return 0;
-}
+static char cwd[MAXPATHLEN + 1];
+static qsw_info_t qinfo;
+static ELAN_CAPABILITY cap;
 
 /*
  * Use rcmd backchannel to propagate signals.
- * 	efd (IN)	file descriptor connected socket (-1 if not used)
- *	signum (IN)	signal number to send
+ *      efd (IN)        file descriptor connected socket (-1 if not used)
+ *      signum (IN)     signal number to send
  */
-int xrcmd_signal(int efd, int signum)
+void qcmd_signal(int efd, int signum)
 {
     char c;
 
@@ -152,23 +139,89 @@ int xrcmd_signal(int efd, int signum)
         c = (char) signum;
         write(efd, &c, 1);
     }
+}
+
+/* 
+ * Intialize elan capability and info structures that will be used when
+ * running the job.
+ * 	wcoll (IN)	list of nodes
+ */
+void qcmd_init(opt_t * opt)
+{
+    int totprocs = opt->nprocs * hostlist_count(opt->wcoll);
+
+    if (getcwd(cwd, sizeof(cwd)) == NULL)       /* cache working directory */
+        errx("%p: getcwd failed\n");
+
+    /* initialize Elan capability structure. */
+    if (qsw_init_capability(&cap, totprocs, opt->wcoll,
+                            (opt->q_allocation == ALLOC_CYCLIC)) < 0)
+        errx("%p: failed to initialize Elan capability\n");
+
+    /* initialize elan info structure */
+    qinfo.prgnum = qsw_get_prgnum();    /* call after qsw_init_capability */
+    qinfo.nnodes = hostlist_count(opt->wcoll);
+    qinfo.nprocs = totprocs;
+    qinfo.nodeid = qinfo.procid = qinfo.rank = 0;
+}
+
+/*
+ * Send extra arguments to qshell server
+ *	s (IN)		socket 
+ *	nodeid (IN)	node index for this connection
+ */
+static int _qcmd_send_extra_args(int s, int nodeid)
+{
+    char **ep;
+    char tmpstr[1024];
+    int count = 0;
+    int i;
+
+    /* send current working dir */
+    (void) write(s, cwd, strlen(cwd) + 1);
+
+    /* send environment (count followed by variables, each \0-term) */
+    for (ep = environ; *ep != NULL; ep++)
+        count++;
+    snprintf(tmpstr, sizeof(tmpstr), "%d", count);
+    (void) write(s, tmpstr, strlen(tmpstr) + 1);
+    for (ep = environ; *ep != NULL; ep++)
+        (void) write(s, *ep, strlen(*ep) + 1);
+
+    /* send elan capability */
+    if (qsw_encode_cap(tmpstr, sizeof(tmpstr), &cap) < 0)
+        return -1;
+    (void) write(s, tmpstr, strlen(tmpstr) + 1);
+    for (i = 0; i < qsw_cap_bitmap_count(); i += 16) {
+        if (qsw_encode_cap_bitmap(tmpstr, sizeof(tmpstr), &cap, i) < 0)
+            return -1;
+        (void) write(s, tmpstr, strlen(tmpstr) + 1);
+    }
+
+    /* send elan info */
+    qinfo.nodeid = qinfo.rank = qinfo.procid = nodeid;
+    if (qsw_encode_info(tmpstr, sizeof(tmpstr), &qinfo) < 0)
+        return -1;
+    (void) write(s, tmpstr, strlen(tmpstr) + 1);
+
     return 0;
 }
 
 /*
- * The rcmd call itself.
- * 	ahost (IN)	remote hostname
- *	addr (IN)	4 byte internet address
- *	locuser (IN)	local username
- *	remuser (IN)	remote username
- *	cmd (IN)	command to execute
- *	rank (IN)	MPI rank for this process
- *	fd2p (IN/OUT)	if non-NULL, open stderr backchannel on this fd
- *	s (RETURN)	socket for stdout/sdin or -1 on failure
+ * Derived from the rcmd() libc call, with modified interface.
+ * This version is MT-safe.  Errors are displayed in pdsh-compat format.
+ * Connection can time out.
+ *	ahost (IN)		target hostname
+ *	locuser (IN)		local username
+ *	remuser (IN)		remote username
+ *	cmd (IN)		remote command to execute under shell
+ *	nodeid (IN)		node index for this connection
+ *	fd2p (IN)		if non NULL, return stderr file descriptor here
+ *	int (RETURN)		-1 on error, socket for I/O on success
  */
 int
-xrcmd(char *ahost, char *addr, char *locuser, char *remuser,
-      char *cmd, int rank, int *fd2p)
+qcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
+     int nodeid, int *fd2p)
 {
     struct sockaddr_in sin, from;
     fd_set reads;
@@ -176,8 +229,8 @@ xrcmd(char *ahost, char *addr, char *locuser, char *remuser,
     pid_t pid;
     int s, lport, timo, rv, maxfd;
     char c;
-    pid = getpid();
 
+    pid = getpid();
     sigemptyset(&blockme);
     sigaddset(&blockme, SIGURG);
     pthread_sigmask(SIG_BLOCK, &blockme, &oldset);
@@ -194,7 +247,7 @@ xrcmd(char *ahost, char *addr, char *locuser, char *remuser,
         fcntl(s, F_SETOWN, pid);
         sin.sin_family = AF_INET;
         memcpy(&sin.sin_addr, addr, IP_ADDR_LEN);
-        sin.sin_port = htons(RSH_PORT);
+        sin.sin_port = htons(QSHELL_PORT);
         rv = connect(s, (struct sockaddr *) &sin, sizeof(sin));
         if (rv >= 0)
             break;
@@ -227,7 +280,7 @@ xrcmd(char *ahost, char *addr, char *locuser, char *remuser,
         if (s2 < 0)
             goto bad;
         listen(s2, 1);
-        snprintf(num, sizeof(num), "%d", lport);
+        (void) snprintf(num, sizeof(num), "%d", lport);
         if (write(s, num, strlen(num) + 1) != strlen(num) + 1) {
             err("%p: %S: rcmd: write (setting up stderr): %m\n", ahost);
             (void) close(s2);
@@ -269,6 +322,9 @@ xrcmd(char *ahost, char *addr, char *locuser, char *remuser,
     (void) write(s, locuser, strlen(locuser) + 1);
     (void) write(s, remuser, strlen(remuser) + 1);
     (void) write(s, cmd, strlen(cmd) + 1);
+    if (_qcmd_send_extra_args(s, nodeid) < 0)
+        goto bad2;
+
     rv = read(s, &c, 1);
     if (rv < 0) {
         if (errno == EINTR)
@@ -308,6 +364,7 @@ xrcmd(char *ahost, char *addr, char *locuser, char *remuser,
     pthread_sigmask(SIG_SETMASK, &oldset, NULL);
     return (-1);
 }
+#endif                          /* HAVE_ELAN */
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

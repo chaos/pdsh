@@ -42,7 +42,10 @@
 #include "config.h"
 #endif
 
+#if 	HAVE_SSH
 
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <sys/wait.h>
 #include <signal.h>
 #include <errno.h>
@@ -57,58 +60,12 @@
 #endif
 #include <string.h>             /* memset */
 
-#include <stddef.h>
-#include <sys/socket.h> 
-
 #include "xstring.h"
 #include "err.h"
 #include "dsh.h"
 #include "list.h"
-#include "mod.h"
 
 #define HBUF_LEN	1024
-
-/*
- * use_rw will be set to true for PCP mode
- */
-static bool use_rw = false;
-
-MODULE_TYPE        ( "rcmd"                            );
-MODULE_NAME        ( "ssh"                             );
-MODULE_AUTHOR      ( "Jim Garlick <garlick@llnl.gov>"  );
-MODULE_DESCRIPTION ( "ssh based rcmd connect method"   );
-
-/*
- *  Export generic pdsh module operations:
- */
-
-static int mod_ssh_postop(opt_t *opt);
-
-struct pdsh_module_operations pdsh_module_ops = {
-    NULL,
-    NULL,
-    NULL,
-    (ModPostOpF) mod_ssh_postop
-};
-
-
-static int mod_ssh_postop(opt_t *opt)
-{
-    if (strcmp(opt->rcmd_name, "ssh") == 0) {
-        if (opt->connect_timeout != CONNECT_TIMEOUT) {
-            err("%p: Cannot specify -t with \"-R ssh\"\n");
-            return 1;
-        }
-
-        /*
-         *  Don't need hostname resolution for ssh
-         */
-        opt->resolve_hosts = false;
-    }
-
-    return 0;
-}
-
 
 /*
  * This is a replacement rcmd() function that uses an arbitrary
@@ -169,7 +126,7 @@ static int _pipecmd(char *path, char *args[], const char *ahost, int *fd2p)
         if (cpid > 0)
             _exit(0);
         /* in grandchild here. */
-        execvp(path, args);
+        execv(path, args);
         err("%p: execlp %s failed for %S: %m.", path, ahost);
         _exit(255);
     }
@@ -192,7 +149,7 @@ int
 sshcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
        int rank, int *fd2p)
 {
-    char *prog = "ssh"; /* xbasename(_PATH_SSH); */
+    char *prog = xbasename(_PATH_SSH);
     char *args[] = { 0, "-q", "-a", "-x", "-f", "-l", 0, 0, 0, 0 };
 
     /* -f args changed for ssh2 (-fo didn't do the same thing as ssh1 -f) */
@@ -204,7 +161,7 @@ sshcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
     args[7] = ahost;            /*     initializers */
     args[8] = cmd;
 
-    return _pipecmd("ssh", args, ahost, fd2p);
+    return _pipecmd(_PATH_SSH, args, ahost, fd2p);
 }
 
 /* pdcp uses this version */
@@ -212,7 +169,7 @@ int
 sshcmdrw(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
          int rank, int *fd2p)
 {
-    char *prog = "ssh"; /* xbasename(_PATH_SSH); */
+    char *prog = xbasename(_PATH_SSH);
     char *args[] = { 0, "-q", "-a", "-x", "-l", 0, 0, 0, 0 };
 
     args[0] = prog;
@@ -220,7 +177,7 @@ sshcmdrw(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
     args[6] = ahost;            /*     initializers */
     args[7] = cmd;
 
-    return _pipecmd("ssh", args, ahost, fd2p);
+    return _pipecmd(_PATH_SSH, args, ahost, fd2p);
 }
 
 void sshcmd_init(opt_t * opt)
@@ -232,44 +189,6 @@ void sshcmd_signal(int fd, int signum)
 {
     /* not implemented */
 }
-
-int
-pdsh_rcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
-         int rank, int *fd2p)
-{
-	if (use_rw)
-		return sshcmdrw(ahost, addr, luser, ruser, cmd, rank, fd2p);
-	else
-		return sshcmd(ahost, addr, luser, ruser, cmd, rank, fd2p);
-}
-
-int pdsh_signal(int fd, int signum)
-{
-	sshcmd_signal(fd, signum);
-    return 0;
-}
-
-static void
-_drop_privileges()
-{
-    if (geteuid() == (uid_t) 0) {
-        setuid(getuid());
-        setgid(getgid());
-    }
-}
-
-int 
-pdsh_rcmd_init(opt_t * opt)
-{
-	if (opt->personality == PCP)
-		use_rw = true;
-
-    /*
-     * Drop privileges if we're running setuid
-     */
-    _drop_privileges();
-}
-
 
 #if 0
 int rshcmd(char *ahost, char *luser, char *ruser, char *cmd, int *fd2p)
@@ -283,6 +202,8 @@ int rshcmd(char *ahost, char *luser, char *ruser, char *cmd, int *fd2p)
     return _pipecmd(_PATH_RSH, args, ahost, fd2p);
 }
 #endif
+
+#endif                          /* HAVE_SSH */
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
