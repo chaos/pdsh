@@ -50,7 +50,7 @@ install:
 	install -m 444  -o root -g root dshbak.1 $prefix/man/man1/dshbak.1
 
 clean:
-	rm -f $(OBJS) $(LIBOBJS) core a.out pdsh
+	rm -f $(OBJS) $(LIBOBJS) core a.out pdsh *.rpm *.tgz
 
 $(OBJS): $(HDRS)
 

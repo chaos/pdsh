@@ -93,7 +93,7 @@ Release 1.4
 
 	Added wcoll hack to deal with changed SDR attributes for Colony switch
 
-Release 1.5pre
+Release 1.5
 
 	Renamed spec file to pdsh.spec.  Gzip installed man pages on Linux.
 
@@ -105,4 +105,4 @@ Release 1.5pre
 
 	Rename pcp to pdcp - avoid conflict with SGI Performance Co-Pilot RPM.
 
-	Updated RPM rules.
+	Updated RPM rules for chaos release.
