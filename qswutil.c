@@ -437,8 +437,6 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 		errx("%p: _elan3_init failed: %m\n");
 
 	/* associate this process and its children with prgnum */
-	if (rms_prgdestroy(qi->prgnum) == 0) 
-		err("%p: cleaned up old prgnum %d", qi->prgnum);
 	if (rms_prgcreate(qi->prgnum, uid, 1) < 0)	/* 1 cpu (bogus!) */
 		errx("%p: rms_prgcreate %d failed: %m\n", qi->prgnum);
 
