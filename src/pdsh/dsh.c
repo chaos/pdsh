@@ -572,11 +572,7 @@ static void *_rcp_thread(void *args)
     int *efdp = a->dsh_sopt ? &a->efd : NULL;
 
     /* construct remote rcp command */
-#if 0
-    /* DEBUGGING */
     xstrcat(&cmd, a->pcp_progname); 
-#endif
-    xstrcat(&cmd, "/home/achu/cvscode/pdsh/pdcp");
     if (a->pcp_ropt)
         xstrcat(&cmd, " -r");
     if (a->pcp_popt)
