@@ -53,7 +53,7 @@
 
 #include "xmalloc.h"
 #include "xstring.h"
-#include "list.h"
+#include "hostlist.h"
 #include "qswutil.h"
 #include "err.h"
 
@@ -91,14 +91,18 @@ qsw_host2elanid(char *host)
  * low node id's.
  */
 static int
-qsw_setbitmap(list_t nodelist, int procs_per_node, ELAN_CAPABILITY *cap)
+qsw_setbitmap(hostlist_t nodelist, int procs_per_node, ELAN_CAPABILITY *cap)
 {
-	int i, j, proc0, node;
+	int node;
+	char *host;
+	hostlist_iterator_t itr;
 
 	/* determine high and low node numbers */
 	cap->HighNode = cap->LowNode = -1;
-	for (i = 0; i < list_length(nodelist); i++) {
-		node = qsw_host2elanid(list_nth(nodelist, i));
+	if ((itr = hostlist_iterator_create(nodelist)) == NULL)
+		errx("%p: hostlist_iterator_create failed\n");
+	while ((host = hostlist_next(itr)) != NULL) {
+		node = qsw_host2elanid(host);
 		if (node < 0)
 			return -1;
 		if (node < cap->LowNode || cap->LowNode == -1)
@@ -106,6 +110,7 @@ qsw_setbitmap(list_t nodelist, int procs_per_node, ELAN_CAPABILITY *cap)
 		if (node > cap->HighNode || cap->HighNode == -1)
 			cap->HighNode = node;
 	}
+	hostlist_iterator_destroy(itr);
 	if (cap->HighNode == -1 || cap->LowNode == -1)
 		return -1;
 
@@ -117,16 +122,20 @@ qsw_setbitmap(list_t nodelist, int procs_per_node, ELAN_CAPABILITY *cap)
 	 * bits 0,1 (corresponding to the two processes on node 4) and bits 4,5
 	 * (corresponding to the two processes running no node 6) are set.
 	 */
-	for (i = 0; i < list_length(nodelist); i++) {
-		node = qsw_host2elanid(list_nth(nodelist, i));
-		for (j = 0; j < procs_per_node; j++) {
+	if ((itr = hostlist_iterator_create(nodelist)) == NULL)
+		errx("%p: hostlist_iterator_create failed\n");
+	while ((host = hostlist_next(itr)) != NULL) {
+		int i, proc0;
+		
+		node = qsw_host2elanid(host);
+		for (i = 0; i < procs_per_node; i++) {
 			proc0 = (node - cap->LowNode) * procs_per_node;
-			if (proc0 + j >= (sizeof(cap->Bitmap) * 8))  {
+			if (proc0 + i >= (sizeof(cap->Bitmap) * 8))  {
 				printf("Bit %d too big for %d byte bitmap\n",
-					proc0 + j, sizeof(cap->Bitmap));
+					proc0 + i, sizeof(cap->Bitmap));
 				return -1;
 			}
-			BT_SET(cap->Bitmap, proc0 + j);
+			BT_SET(cap->Bitmap, proc0 + i);
 		}
 	}
 
@@ -326,7 +335,7 @@ qsw_get_prgnum(void)
  * Function returns a 0 on success, -1 = fail.
  */
 int
-qsw_init_capability(ELAN_CAPABILITY *cap, int nprocs, list_t nodelist,
+qsw_init_capability(ELAN_CAPABILITY *cap, int nprocs, hostlist_t nodelist,
 		int cyclic_alloc)
 {
 	int i;
@@ -653,7 +662,7 @@ main(int argc, char *argv[])
 	int c;
 	char *p;
 	uid_t uid = 0;
-	list_t wcoll = list_new();
+	hostlist_t wcoll = hostlist_create("");
 	char hostname[MAXHOSTNAMELEN];
  	qsw_info_t qinfo = {
 		nnodes: 1,
@@ -689,7 +698,7 @@ main(int argc, char *argv[])
 		errx("%p: gethostname: %m\n");
 	if ((p = strchr(hostname, '.')))
 		*p = '\0';
-	list_push(wcoll, hostname);
+	hostlist_push(wcoll, hostname);
 
 	/* initialize capability for this "program" */
 	if (qsw_init_capability(&cap, qinfo.nprocs/qinfo.nnodes, wcoll, 0) < 0)

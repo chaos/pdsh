@@ -121,7 +121,7 @@ qcmd_signal(int efd, int signum)
 void
 qcmd_init(opt_t *opt)
 {
-	int totprocs = opt->nprocs * list_length(opt->wcoll);
+	int totprocs = opt->nprocs * hostlist_count(opt->wcoll);
 
 	if (getcwd(cwd, sizeof(cwd)) == NULL)	/* cache working directory */
 		errx("%p: getcwd failed\n");
@@ -133,7 +133,7 @@ qcmd_init(opt_t *opt)
 
 	/* initialize elan info structure */
 	qinfo.prgnum = qsw_get_prgnum(); /* call after qsw_init_capability */
-	qinfo.nnodes = list_length(opt->wcoll);
+	qinfo.nnodes = hostlist_count(opt->wcoll);
 	qinfo.nprocs = totprocs;
 	qinfo.nodeid = qinfo.procid = qinfo.rank = 0;
 }

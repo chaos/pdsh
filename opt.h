@@ -35,7 +35,8 @@
 
 #include <sys/types.h>	/* for uid_t */
 
-#include "list.h"	/* for list_t */
+#include "list.h"	
+#include "hostlist.h"	
 
 #ifndef _BOOL_DEFINED
 #define _BOOL_DEFINED
@@ -67,8 +68,7 @@ typedef struct {
 	bool altnames; 		/* -i */
 	bool sigint_terminates;	/* -b */
 	rcmd_t rcmd_type;
-	list_t wcoll;		/* target node list (-w, WCOLL, or stdin) */
-	list_t exclude;		/* exclusion node list (-x) */
+	hostlist_t wcoll;	/* target node list (-w, WCOLL, or stdin) */
 	char *range_op;		/* range expansion operator (environment) */
 	char luser[MAX_USERNAME];/* local username */	
 	uid_t luid;		/* uid for above */
@@ -80,7 +80,6 @@ typedef struct {
 
 	/* DSH-specific options */
 	bool separate_stderr;	/* -s */
-	bool delete_nextpass;	/* -c */
 	bool stdin_unavailable; /* set if stdin used for WCOLL */
 	char *cmd;
 	char *dshpath;		/* optional PATH command prepended to cmd */

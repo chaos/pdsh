@@ -32,9 +32,9 @@ mandir=         @mandir@
 
 PDSH_OBJS=	list.o xmalloc.o xstring.o err.o xpopen.o \
 		dsh.o main.o opt.o wcoll.o xrcmd.o sshcmd.o \
-		k4cmd.o qswutil.o qcmd.o testcase.o hostlist.o hostlist_wrap.o
+		k4cmd.o qswutil.o qcmd.o testcase.o hostlist.o
 
-QSHD_OBJS=	list.o xmalloc.o xstring.o err.o qswutil.o qshd.o 
+QSHD_OBJS=	list.o xmalloc.o xstring.o err.o qswutil.o qshd.o hostlist.o
 
 PREFIX=		/usr/local
 

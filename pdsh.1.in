@@ -98,9 +98,6 @@ Set the connect timeout.  Default is @CONNECT_TIMEOUT@ seconds.
 Put a limit on the amount of time a remote command is allowed to execute.
 Default is no limit.
 .LP
-.I "-c"
-In interactive mode, do not remove failed hosts from the target node list.
-.LP
 .I "-n tasks_per_node"
 Set the number of tasks spawned per node.  The underlying remote shell service
 must support spawning multiple tasks for this to be effective.

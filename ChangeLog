@@ -190,5 +190,9 @@
 2002-08-10 garlick
 	* Broke TODO out of ChangeLog
 	* Removed aborted attempt at QsNet cleanup (libqsw dir)
-	* Added wrapped support for Mark's hostlist.[ch].
+	* Added support for Mark's hostlist.[ch].
 	* Added COPYING and added GPL headers to source modules.
+	* Removed code that deleted unreachable hosts from the target list in
+	  interactive mode.  This didn't work because we fork for each
+	  round.  Got rid of -c option which was used to disable this behavior.
+	  As this has not worked for a long time, probably not a problem.

@@ -920,6 +920,7 @@ dsh(opt_t *opt)
 	pthread_t thread_wdog;
 	pthread_attr_t attr_wdog;
 	list_t pcp_infiles = NULL;
+	hostlist_iterator_t itr;
 
 	switch (opt->rcmd_type) {
 #if HAVE_ELAN
@@ -951,7 +952,7 @@ dsh(opt_t *opt)
 	else
 		xsignal(SIGINT, int_handler);
 
-	rshcount = list_length(opt->wcoll);
+	rshcount = hostlist_count(opt->wcoll);
 
 	/* expand directories, if any, and verify access for all files */
 	if (opt->personality == PCP)
@@ -982,12 +983,15 @@ dsh(opt_t *opt)
 	/* build thread array--terminated with t[i].host == NULL */
 	t = (thd_t *)Malloc(sizeof(thd_t) * (rshcount + 1));
 
-	for (i = 0; i < rshcount; i++) {
+	if (!(itr = hostlist_iterator_create(opt->wcoll))) 
+		errx("%p: hostlist_iterator_create failed\n");
+	i = 0;
+	while ((t[i].host = hostlist_next(itr))) {
+		assert(i < rshcount);
 		t[i].luser = opt->luser;		/* general */
 		t[i].ruser = opt->ruser;
 		t[i].rcmd_type = opt->rcmd_type;
 		t[i].state = DSH_NEW;
-		t[i].host = list_nth(opt->wcoll, i);
 		t[i].labels = opt->labels;
 		t[i].fd = t[i].efd = -1;
 		t[i].nodeid = i;
@@ -1004,8 +1008,10 @@ dsh(opt_t *opt)
 		if (opt->rcmd_type != RCMD_SSH)
 			gethost(t[i].host, t[i].addr);
 #endif
+		i++;
 	} 
-	t[i].host = NULL;
+	assert(i == rshcount);
+	hostlist_iterator_destroy(itr);
 
 	/* set timeout values for wdog() */
 	connect_timeout = opt->connect_timeout;
@@ -1047,13 +1053,6 @@ dsh(opt_t *opt)
 	pthread_mutex_lock(&threadcount_mutex);
      	while (threadcount > 0)
 		pthread_cond_wait(&threadcount_cond, &threadcount_mutex);
-
-	/* if no -c, remove any failed commands from target node list */
-	if (opt->delete_nextpass) {
-		for (i = 0; t[i].host != NULL; i++)
-			if (t[i].state == DSH_FAILED)
-				del_wcoll(opt->wcoll, t[i].host);
-	}
 
 	if (debug)
 		dump_debug_stats(rshcount);

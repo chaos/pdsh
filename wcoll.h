@@ -40,17 +40,16 @@
 typedef enum {false, true} bool;
 #endif
 
-list_t read_wcoll(char *, FILE *, char *);
-void del_wcoll(list_t, char *);
+hostlist_t read_wcoll(char *, FILE *, char *);
 
 #if	HAVE_SDR
-list_t sdr_wcoll(bool, bool, bool);
+hostlist_t sdr_wcoll(bool, bool, bool);
 #endif
 #if 	HAVE_GENDERS
-list_t read_genders(char *attr, int ropt);
+hostlist_t read_genders(char *attr, int ropt);
 #endif
 #if 	HAVE_RMS
-list_t rms_wcoll(void);
+hostlist_t rms_wcoll(void);
 #endif
 
 #endif

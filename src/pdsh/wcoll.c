@@ -44,31 +44,12 @@
 #include "xstring.h"
 #include "xpopen.h"	/* for xpopen/close */
 #include "wcoll.h"
-#include "hostlist_wrap.h"
+#include "hostlist.h"
 
 #if	HAVE_RMS
 #include <qsw/types.h>
 #include <rms/rmsapi.h>
 #endif
-
-/*
- * Delete the first occurence of the specified host from the wcoll.
- *	wcoll (IN)	list of target nodes
- *	host (IN)	hostname to delete
- */
-void 
-del_wcoll(list_t wcoll, char *host)
-{
-	int wcoll_nitems = list_length(wcoll);
-	int n;
-
-	for (n = 0; n < wcoll_nitems; n++)
-		if (strcmp(list_nth(wcoll, n), host) == 0) {
-			list_del(wcoll, n);
-			break;
-		}
-	assert(n < wcoll_nitems);
-}
 
 /* 
  * Read wcoll from specified file or from the specified FILE pointer.
@@ -78,43 +59,31 @@ del_wcoll(list_t wcoll, char *host)
  *	range_op (IN)	string containing single-char range delimiter
  *	RETURN		new list containing hostnames
  */
-list_t 
+hostlist_t 
 read_wcoll(char *file, FILE *f, char *range_op)
 {
-	list_t new = list_new();
-	list_t words;
 	char buf[LINEBUFSIZE], *p, *word;
+	hostlist_t new = hostlist_create("");
 	FILE *fp;
 
-	assert(f == NULL || file == NULL);
+	assert(f == NULL ^^ file == NULL);
+	if (!new)
+		errx("%p: hostlist_create failed\n");
 
 	if (f == NULL) {		/* read_wcoll("file", NULL) */
-		if (access(file, R_OK) == -1)
-			errx("%p: can't open %s for reading\n", file);
-		fp = fopen(file, "r");
-		if (!fp)
-			errx("%p: can't open %s for reading\n", file);
-	} else				/* read_wcoll(NULL, fp) */
+		if (access(file, R_OK) == -1 || !(fp = fopen(file, "r")))
+			errx("%p: %s: %m\n", file);
+	} else				/* read_wcoll(NULL, fp) */ 
 		fp = f;
 
 	while (fgets(buf, LINEBUFSIZE, fp) != NULL) {
-		words = list_split(NULL, buf);
-		if (list_length(words) > 0) {
-			word = list_nth(words, 0);
-			if ((p = strchr(word, '#')) != NULL)
-				*p = '\0';
-			xstrcln(word, NULL);
-			if (strlen(word) > 0) {
-				list_t tmp;
-				/* indiv entries can be ranges */
-				tmp = (range_op == NULL) 
-					? list_split(",", word) 
-					: range_split(",", range_op, word);
-				list_pushl(new, tmp);
-				list_free(&tmp);
-			}
-		}
-		list_free(&words);
+		/* zap text following comment char and whitespace */
+		if ((p = strchr(buf, '#')) != NULL)
+			*p = '\0';
+		xstrcln(buf, NULL);
+
+		if (hostlist_push(new, buf) == 0)
+			err("%p: warning: target '%s' not parsed\n", buf);
 	}
 	if (f == NULL)
 		fclose(fp);
@@ -123,11 +92,11 @@ read_wcoll(char *file, FILE *f, char *range_op)
 }
 
 #if	HAVE_GENDERS
-list_t 
+hostlist_t 
 read_genders(char *attr, int iopt)
 {
 	FILE *f;
-	list_t new = list_new();
+	hostlist_t new = hostlist_create("");
 	char cmd[LINEBUFSIZE];
 	char buf[LINEBUFSIZE];
 
@@ -137,7 +106,8 @@ read_genders(char *attr, int iopt)
 		errx("%p: error running %s\n", _PATH_NODEATTR);
 	while (fgets(buf, LINEBUFSIZE, f) != NULL) {
 		xstrcln(buf, NULL);
-		list_push(new, buf);
+		if (hostlist_push(new, buf) == 0)
+			err("%p: warning: target '%s' not parsed\n", buf);
 	}
 	if (xpclose(f) != 0) 
 		errx("%p: error running %s\n", _PATH_NODEATTR);
@@ -288,7 +258,7 @@ sdr_getnames(bool Gopt, char *nameType, char *nodes[])
  *	vopt (IN)	verify switch_responds/host_responds
  *	RETURN		new list containing hostnames
  */
-list_t 
+hostlist_t 
 sdr_wcoll(bool Gopt, bool iopt, bool vopt)
 {
 	list_t new;
@@ -357,7 +327,7 @@ sdr_wcoll(bool Gopt, bool iopt, bool vopt)
  * rid (IN)		resource id
  * result (RETURN)	NULL or a list of hostnames
  */
-static list_t
+static hostlist_t
 rms_rid_to_nodes(char *part, int rid)
 {
 	FILE *f;
@@ -382,7 +352,7 @@ rms_rid_to_nodes(char *part, int rid)
  * If RMS_RESOURCE is set, return wcoll corresponding to RMS res allocation.
  * result (RETURN)	NULL or a list of hostnames
  */
-list_t
+hostlist_t
 rms_wcoll(void)
 {
 	char *rhs;

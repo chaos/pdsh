@@ -41,13 +41,13 @@
 #endif
 
 #include "dsh.h"
+#include "hostlist.h"
 #include "opt.h"
 #include "err.h"
 #include "list.h"
 #include "wcoll.h"
 #include "xstring.h"
 #include "xmalloc.h"	
-#include "hostlist_wrap.h"
 
 static void usage(opt_t *opt);
 static void show_version(void);
@@ -95,7 +95,7 @@ Usage: pdcp [-options] src [src2...] dest\n\
 -E                run Quadrics Elan job using qshell\n\
 -m block|cyclic   (qshell) control assignment of procs to nodes\n"
 
-#define DSH_ARGS	"csS"
+#define DSH_ARGS	"sS"
 #define PCP_ARGS	"pr"
 #define GEN_ARGS	"n:at:csqf:w:x:l:u:bI:ideVT:"
 #define SDR_ARGS	"Gv"
@@ -129,7 +129,6 @@ opt_default(opt_t *opt)
 
 	opt->info_only = false;
 	opt->wcoll = NULL;
-	opt->exclude = NULL;
 	opt->range_op = RANGE_OP;
 	opt->progname = NULL;
 	opt->connect_timeout = CONNECT_TIMEOUT;
@@ -151,7 +150,6 @@ opt_default(opt_t *opt)
 	opt->getstat = NULL;
 	opt->cmd = NULL;
 	opt->stdin_unavailable = false;
-	opt->delete_nextpass = true;
 #if	HAVE_MAGIC_RSHELL_CLEANUP
 	opt->separate_stderr = false; /* save a socket per connection on aix */
 #else
@@ -307,9 +305,6 @@ opt_args(opt_t *opt, int argc, char *argv[])
 				err("%p: warning: -i will have no effect\n");
 #endif
 				break;
-			case 'c':	/* pdsh> continue to try failed hosts */
-				opt->delete_nextpass = false;
-				break;
 			case 't':	/* set connect timeout */
 				opt->connect_timeout = atoi(optarg);
 				break;
@@ -345,18 +340,8 @@ opt_args(opt_t *opt, int argc, char *argv[])
 
 	/* expand wcoll if needed */
 	if (wcoll_buf != NULL) {
-		opt->wcoll = (opt->range_op == NULL) ? 
-			list_split(",", wcoll_buf) :
-			range_split(",", opt->range_op, wcoll_buf);
+		opt->wcoll = hostlist_create(wcoll_buf);
 		Free((void **)&wcoll_buf);
-	}
-
-	/* expand exclusion list if needed */
-	if (exclude_buf != NULL) {
-		opt->exclude = (opt->range_op == NULL) ? 
-			list_split(",", exclude_buf) :
-			range_split(",", opt->range_op, exclude_buf);
-		Free((void **)&exclude_buf);
 	}
 
 	/* DSH: build command */
@@ -404,7 +389,7 @@ opt_args(opt_t *opt, int argc, char *argv[])
 #if 	HAVE_ELAN
 	if (opt->rcmd_type == RCMD_QSHELL) {
 		if (opt->fanout == DFLT_FANOUT && opt->wcoll != NULL)
-			opt->fanout = list_length(opt->wcoll);
+			opt->fanout = hostlist_count(opt->wcoll);
 		if (opt->q_allocation == ALLOC_UNSPEC)
 			opt->q_allocation = ALLOC_BLOCK;
 		opt->labels = false;
@@ -414,9 +399,9 @@ opt_args(opt_t *opt, int argc, char *argv[])
 #endif /* HAVE_ELAN */
 
 	/* handle -x option */
-	if (opt->exclude && opt->wcoll) {
-		list_subtract(opt->wcoll, opt->exclude);
-		list_free(&opt->exclude);
+	if (exclude_buf != NULL && opt->wcoll) {
+		hostlist_delete_host(opt->wcoll, exclude_buf);
+		Free((void **)&exclude_buf);
 	}
 }
 
@@ -437,7 +422,7 @@ opt_verify(opt_t *opt)
 	}
 
 	/* wcoll is required */
-	if (opt->wcoll == NULL || list_length(opt->wcoll) == 0) {
+	if (opt->wcoll == NULL || hostlist_count(opt->wcoll) == 0) {
 		err("%p: no remote hosts specified\n");
 		verified = false;
 	}
@@ -493,7 +478,7 @@ opt_verify(opt_t *opt)
 	/* Constraints when running Elan jobs */
 	if (opt->rcmd_type == RCMD_QSHELL) {
 		if (opt->wcoll != NULL) {
-			if (opt->fanout != list_length(opt->wcoll)) {
+			if (opt->fanout != hostlist_count(opt->wcoll)) {
 				err("%p: fanout must = target node list length with -E\n");
 				verified = false;
 			}
@@ -533,12 +518,12 @@ opt_verify(opt_t *opt)
 void 
 opt_list(opt_t *opt)
 {
-	char *wcoll_str, *infile_str;
+	char *infile_str;
+	char wcoll_str[1024];
 
 	if (opt->personality == DSH) {
 	out("-- DSH-specific options --\n");
 	out("Separate stderr/stdout	%s\n", BOOLSTR(opt->separate_stderr));
-	out("Delete on next pass	%s\n", BOOLSTR(opt->delete_nextpass));
 	out("Procs per node       	%d\n", opt->nprocs);
 	out("(elan) allocation     	%s\n", ALLOCSTR(opt->q_allocation));
 	out("Path prepended to cmd	%s\n", STRORNULL(opt->dshpath));
@@ -576,10 +561,11 @@ opt_list(opt_t *opt)
 	out("All SDR partitions	%s\n", BOOLSTR(opt->sdr_global));
 
 	out("\n-- Target nodes --\n");
-	wcoll_str = list_join(",", opt->wcoll);
-	out("%s\n", wcoll_str);
-
-	Free((void **)&wcoll_str);
+	if (hostlist_ranged_string(opt->wcoll, sizeof(wcoll_str), 
+				wcoll_str) > sizeof(wcoll_str))
+		out("%s[truncated]\n", wcoll_str);
+	else
+		out("%s\n", wcoll_str);
 }
 
 /*
@@ -590,7 +576,7 @@ void
 opt_free(opt_t *opt)
 {
 	if (opt->wcoll != NULL)
-		list_free(&opt->wcoll);
+		hostlist_destroy(opt->wcoll);
 	if (opt->cmd != NULL)
 		Free((void **)&opt->cmd);		
 }
