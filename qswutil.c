@@ -453,7 +453,10 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 	if ((ctx = _elan3_init(0)) == NULL)
 		errx("%p: _elan3_init failed: %m\n");
 #else
-	if ((ctx = elan3_control_open(0)) == (void *)-1)
+	if ((ctx = elan3_control_open(0)) == NULL)
+		errx("%p: elan3_control_open failed: %m\n");
+	/* XXX work around libelan3/control.c bug 2002-6-2 */
+	if (ctx == (void *)-1) 
 		errx("%p: elan3_control_open failed: %m\n");
 #endif
 

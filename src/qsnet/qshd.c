@@ -597,12 +597,8 @@ doit(struct sockaddr_in *fromp)
 	 * Close all fds, in case libc has left fun stuff like 
 	 * /etc/shadow open.
 	 */
-#if OLD_ELAN_DRIVER
-#define NUMFDS 2
-#else
-#define NUMFDS 5
-#endif
-	for (ifd = getdtablesize()-1; ifd > NUMFDS; ifd--) 
+#define FDS_INUSE 2
+	for (ifd = getdtablesize()-1; ifd > FDS_INUSE; ifd--) 
 		close(ifd);
 
 	execl(theshell, shellname, "-c", cmdbuf, 0);
