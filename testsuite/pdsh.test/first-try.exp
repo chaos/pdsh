@@ -1,6 +1,11 @@
 set pdsh "$objdir/pdsh"
 set dshbak "$objdir/dshbak"
 
+expect_after {
+	timeout				{ unresolved "$test" }
+	eof				{ unresolved "$test" }
+}
+
 # This test suite is for version 1.6.  Other versions cause a failure.
 set test "version"
 spawn $pdsh -V
@@ -11,7 +16,7 @@ expect {
 
 # gnats:35 pdsh does not properly display errors on AIX
 set test "xstrerrorcat gnats:35"
-spawn $pdsh -T 0
+spawn $pdsh -T 1
 expect  {
 	-re ".*PASS"			{ pass "$test" }
 	-re ".*FAIL"			{ fail "$test" }
