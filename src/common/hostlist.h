@@ -1,5 +1,5 @@
 /*****************************************************************************\
- *  hostlist.h - hostname list manipulation routines
+ *  $Id$
  *****************************************************************************
  *  Copyright (C) 2002 The Regents of the University of California.
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
@@ -27,6 +27,26 @@
 #ifndef _HOSTLIST_H
 #define _HOSTLIST_H
 
+/* Notes:
+ *
+ * If WITH_LSD_FATAL_ERROR_FUNC is defined, the linker will expect to
+ * find and external lsd_fatal_error(file,line,mesg) function. By default,
+ * lsd_fatal_error(file,line,mesg) is a macro definition that outputs an
+ * error message to stderr. This macro may be redefined to invoke another
+ * routine instead. e.g.:
+ *
+ *    #define lsd_fatal_error(file,line,mesg)  \
+ *              error("%s:%s %s\n",file,line,mesg);
+ *
+ * If WITH_LSD_NOMEM_ERROR_FUNC is defined, the linker will expect to 
+ * find an external lsd_nomem_error(file,line,mesg) function. By default,
+ * lsd_nomem_error(file,line,mesg) is a macro definition that returns NULL.
+ * This macro may be redefined to invoke another routine instead.
+ *
+ * If WITH_PTHREADS is defined, these routines will be thread-safe.
+ *
+ */
+
 /* The hostlist opaque data type 
  *
  * A hostlist is a list of hostnames optimized for a prefixXXXX style 
@@ -48,12 +68,6 @@ typedef struct hostset * hostset_t;
  * 
  */
 typedef struct hostlist_iterator * hostlist_iterator_t;
-
-/* ----[ general node name functions: ]---- */
-
-/* getnodename - equivalent to gethostname, but return only the first component of the fully 
- *	qualified name (e.g. "linux123.foo.bar" becomes "linux123") */
-extern int getnodename (char *name, size_t len);
 
 /* ----[ hostlist_t functions: ]---- */
 
@@ -85,14 +99,14 @@ extern int getnodename (char *name, size_t len);
  * The returned hostlist must be freed with hostlist_destroy()
  *
  */
-hostlist_t hostlist_create(char *str);
+hostlist_t hostlist_create(const char *hostlist);
 
 /* hostlist_copy(): 
  *
  * Allocate a copy of a hostlist object. Returned hostlist must be freed
  * with hostlist_destroy.
  */
-hostlist_t hostlist_copy(hostlist_t hl);
+hostlist_t hostlist_copy(const hostlist_t hl);
 
 /* hostlist_destroy():
  *
@@ -112,7 +126,7 @@ void hostlist_destroy(hostlist_t hl);
  * Returns the number of hostnames inserted into the list, 
  * or 0 on failure.
  */
-int hostlist_push(hostlist_t hl, char *hosts);
+int hostlist_push(hostlist_t hl, const char *hosts);
 
 
 /* hostlist_push_host():
@@ -123,7 +137,7 @@ int hostlist_push(hostlist_t hl, char *hosts);
  *
  * return value is 1 for success, 0 for failure.
  */
-int hostlist_push_host(hostlist_t hl, char *host);
+int hostlist_push_host(hostlist_t hl, const char *host);
 
 
 /* hostlist_push_list():
@@ -189,7 +203,7 @@ char * hostlist_shift_range(hostlist_t hl);
  * Returns -1 if host is not found.
  *
  */
-int hostlist_find(hostlist_t hl, char *hostname);
+int hostlist_find(hostlist_t hl, const char *hostname);
 
 /* hostlist_delete():
  *
@@ -197,7 +211,7 @@ int hostlist_find(hostlist_t hl, char *hostname);
  *
  * Returns the number of hosts successfully deleted
  */
-int hostlist_delete(hostlist_t hl, char *hosts);
+int hostlist_delete(hostlist_t hl, const char *hosts);
 
 
 /* hostlist_delete_host():
@@ -208,7 +222,7 @@ int hostlist_delete(hostlist_t hl, char *hosts);
  *
  * Returns 1 if successful, 0 if hostname is not found in list.
  */
-int hostlist_delete_host(hostlist_t hl, char *hostname);
+int hostlist_delete_host(hostlist_t hl, const char *hostname);
 
 
 /* hostlist_delete_nth():
@@ -348,7 +362,7 @@ int hostlist_remove(hostlist_iterator_t i);
  * Create a new hostset object from a string representation of a list of
  * hosts. See hostlist_create() for valid hostlist forms.
  */
-hostset_t hostset_create(char *hostlist);
+hostset_t hostset_create(const char *hostlist);
 
 /* hostset_copy():
  *
@@ -366,19 +380,19 @@ void hostset_destroy(hostset_t set);
  * Returns number of hosts successfully added to "set"
  * (insertion of a duplicate is not considered successful)
  */
-int hostset_insert(hostset_t set, char *hosts);
+int hostset_insert(hostset_t set, const char *hosts);
 
 /* hostset_delete():
  * Delete a host or list of hosts from hostset "set."
  * Returns number of hosts deleted from set.
  */
-int hostset_delete(hostset_t set, char *hosts);
+int hostset_delete(hostset_t set, const char *hosts);
 
 /* hostset_within():
  * Return 1 if all hosts specified by "hosts" are within the hostset "set"
  * Retrun 0 if every host in "hosts" is not in the hostset "set"
  */
-int hostset_within(hostset_t set, char *hosts);
+int hostset_within(hostset_t set, const char *hosts);
 
 /* hostset_shift():
  * hostset equivalent to hostlist_shift()
