@@ -1,10 +1,10 @@
+Name: 
+Version: 
+Release: 
 Summary: Parallel remote shell program.
-Name: pdsh
-Version: 1.5
-Release: 1
 Copyright: none
 Group: System Environment/Base
-Source: pdsh-1.5.tgz
+Source: %{name}-%{version}-%{release}.tgz
 BuildRoot: /var/tmp/%{name}-buildroot
 Prereq: genders
 
@@ -15,7 +15,7 @@ performance while using fewer system resources (in particular, privileged
 sockets and process slots).
 
 %prep
-%setup
+%setup -n %{name}-%{version}-%{release}
 
 %build
 make
@@ -25,22 +25,20 @@ rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/usr/bin
 mkdir -p $RPM_BUILD_ROOT/usr/man/man1
-install -s -o root -m 4755 pdsh $RPM_BUILD_ROOT/usr/bin
-install -s -o root -m 4755 pdsh $RPM_BUILD_ROOT/usr/bin/pdcp
-install -m 755 dshbak $RPM_BUILD_ROOT/usr/bin
+cp pdsh $RPM_BUILD_ROOT/usr/bin/pdsh
+cp pdsh $RPM_BUILD_ROOT/usr/bin/
+cp dshbak $RPM_BUILD_ROOT/usr/bin/
 gzip pdsh.1 pdcp.1 dshbak.1
-install -m 644 pdsh.1.gz $RPM_BUILD_ROOT/usr/man/man1
-install -m 644 pdcp.1.gz $RPM_BUILD_ROOT/usr/man/man1
-install -m 644 dshbak.1.gz $RPM_BUILD_ROOT/usr/man/man1
+cp pdsh.1.gz $RPM_BUILD_ROOT/usr/man/man1
+cp pdcp.1.gz $RPM_BUILD_ROOT/usr/man/man1
+cp dshbak.1.gz $RPM_BUILD_ROOT/usr/man/man1
 
 %files
+%defattr(-,root,root)
 %doc README ChangeLog DISCLAIMER README.KRB4
-
-/usr/bin/pdsh
-/usr/bin/pdcp
+%attr(4755, root, root) /usr/bin/pdsh
+%attr(4755, root, root) /usr/bin/pdcp 
 /usr/bin/dshbak
 /usr/man/man1/pdsh.1.gz
 /usr/man/man1/pdcp.1.gz
 /usr/man/man1/dshbak.1.gz
-
-%changelog
