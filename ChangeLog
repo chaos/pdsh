@@ -220,3 +220,5 @@ Wed May 29 16:03:12 PDT 2002
 	Add fcntl call to k4cmd.c and qcmd.c.
 
 	Turn on USE_PAM for qshd and link qshd with -lpam -lpam_misc.
+
+	Added include <qsw/types.h> to compile with RMS 2.73.
