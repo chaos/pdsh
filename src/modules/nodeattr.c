@@ -66,11 +66,12 @@ static int nodeattr_postop (opt_t *opt);
  *
  */
 #if !GENDERS_G_ONLY
-static bool allnodes   = false;
-static bool altnames   = false;
+static bool allnodes  = false;
+static bool altnames  = false;
 #endif /* !GENDERS_G_ONLY */
 static List attrlist = NULL;
 static List excllist = NULL;
+static char *gfile   = NULL;
 
 /* 
  * Export pdsh module operations structure
@@ -91,6 +92,9 @@ struct pdsh_module_option nodeattr_module_options[] =
    },
    { 'X', "attribute", "exclude nodes with specified genders attribute",
      DSH | PCP, (optFunc) nodeattr_process_opt 
+   },
+   { 'F', "file",      "use alternate genders file `file'",
+     DSH | PCP, (optFunc) nodeattr_process_opt
    },
 #if !GENDERS_G_ONLY
    { 'a', NULL,        "target all nodes except those with \"pdsh_all_skip\" attr", 
@@ -157,6 +161,9 @@ nodeattr_process_opt(opt_t *pdsh_opts, int opt, char *arg)
         break;
     case 'X':
 		excllist = _attrlist_append (excllist, arg);
+        break;
+    case 'F':
+        gfile = Strdup (arg);
         break;
     default:
         err("%p: genders_process_opt: invalid option `%c'\n", opt);
@@ -253,7 +260,9 @@ _read_genders_attr(char *attr, int iopt)
      *   xpopen sets uid back to real user id, so it is ok to use 
      *     "nodeattr" from user's path here
      */
-    snprintf(cmd, sizeof(cmd), "%s -%sn %s", _PATH_NODEATTR, 
+    snprintf(cmd, sizeof(cmd), "%s %s%s -%sn %s", _PATH_NODEATTR, 
+             gfile ? "-f " : "",
+             gfile ? gfile : "",
              iopt ? "" : "r", attr);
 
     f = xpopen(cmd, "r");
