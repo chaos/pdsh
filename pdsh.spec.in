@@ -30,37 +30,41 @@ remote shell services, including standard "rsh", Kerberos IV, and ssh.
 %endif
 
 #
-# Defaults are --with-qshell --with-readline 
-# (Use --without [qshell|readline] to disable)
+# Enabling and disabling pdsh options
+#  defaults:
+#  enabled:  readline, rsh, ssh
+#  disabled: rms, mrsh, qshell, mqshell, genders, nodeattr, machines,
+#            nodeupdown
+
+#  To build the various module subpackages, pass --with <pkg> on
+#   the rpmbuild command line (if your rpm is a recent enough version)
+#  
+#  Similarly, to disable various pdsh options pass --without <pkg> on
+#   the rpmbuild command line.
 #
-%{!?_with_qshell: %{!?_without_qshell:     %define _with_qshell --with-qshell}}
+
+# readline, rsh, and ssh are built by default:
+#
 %{!?_with_readline: %{!?_without_readline: %define _with_readline --with-readline}}
-
-
-
-#
-# Other pdsh modules to build
-# Defaults:
-#  without: rms
-#  with:    genders, nodeupdown, nodeattr, rmsquery, machines
-#           mrsh, mqshell 
-# 
-#
 %{!?_with_rsh: %{!?_without_rsh: %define _with_rsh 1}}
-
-%{!?_without_rms: %{!?_with_rms: %define _without_rms --without-rms}}
-
 %{!?_with_ssh: %{!?_without_ssh: %define _with_ssh --with-ssh}}
-%{!?_with_mrsh:  %{!?_without_mrsh: %define _with_mrsh --with-mrsh}}
-%{!?_with_genders:  %{!?_without_genders: %define _with_genders --with-genders}}
-%{!?_with_nodeattr: %{!?_without_nodeattr: %define _with_nodeattr --with-nodeattr}}
-%{!?_with_machines: %{!?_without_machines: %define _with_machines --with-machines}}
-%{!?_with_nodeupdown:  %{!?_without_nodeupdown: %define _with_nodeupdown --with-nodeupdown}}
-%{!?_with_mqshell:  %{!?_without_mqshell: %define _with_mqshell --with-mqshell}}
+
+# everything else is disabled
+#
+%{!?_without_rms: %{!?_with_rms: %define _without_rms --without-rms}}
+%{!?_without_mrsh: %{!?_with_mrsh: %define _without_mrsh --without-mrsh}}
+%{!?_without_qshell: %{!?_with_qshell: %define _without_qshell --without-qshell}}
+%{!?_without_mqshell: %{!?_with_mqshell: %define _without_mqshell --without-mqshell}}
+%{!?_without_genders: %{!?_with_genders: %define _without_genders --without-genders}}
+%{!?_without_nodeattr: %{!?_with_nodeattr: %define _without_nodeattr --without-nodeattr}}
+%{!?_without_machines: %{!?_with_machines: %define _without_machines --without-machines}}
+%{!?_without_nodeupdown: %{!?_with_nodeupdown: %define _without_nodeupdown --without-nodeupdown}}
 
 %{?_with_qshell:BuildRequires: qsnetlibs}
 %{?_with_mqshell:BuildRequires: qsnetlibs}
 %{?_with_readline:BuildRequires: readline-devel}
+%{?_with_nodeupdown:BuildRequires: whatsup}
+%{?_with_genders:BuildRequires: genders >1.0}
 ##############################################################################
 
 %package qshd
