@@ -50,12 +50,12 @@ PDSH_SOURCES = \
     xpopen.h
 
 config.c: $(top_srcdir)/META $(top_builddir)/config.h
-	@(echo "char *pdsh_version = \"$(PDSH_VERSION)\";";\
+	@(echo "char *pdsh_version = \"$(PDSH_VERSION_FULL)\";";\
           echo "char *pdsh_module_dir = \"$(pkglibdir)\";"\
          )> config.c
 
 testconfig.c: $(top_srcdir)/META $(top_builddir)/config.h
-	@(echo "char *pdsh_version = \"$(PDSH_VERSION)\";";\
+	@(echo "char *pdsh_version = \"$(PDSH_VERSION_FULL)\";";\
           moddir=`cd $(top_builddir)/src/modules && pwd`; \
           echo "char *pdsh_module_dir = \"$$moddir\";"\
          )> testconfig.c

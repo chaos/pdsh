@@ -66,6 +66,8 @@
 #  define ELAN_USER_BASE_CONTEXT_NUM 0x020
 #  define ELAN_USER_TOP_CONTEXT_NUM  0x7ff
 
+#include <sys/stat.h>
+
 #elif HAVE_LIBELAN3
 #  include <elan3/elan3.h>
 #  include <elan3/elanvp.h>
@@ -74,6 +76,8 @@
 #endif
 
 #include <rms/rmscall.h>
+
+#include <dlfcn.h>
 
 #include "src/common/xmalloc.h"
 #include "src/common/xstring.h"
@@ -99,10 +103,8 @@ static elanhost_config_t elanconf = NULL;
 /* 
  *  Static function prototypes:
  */
-#if HAVE_LIBELAN3
 static int _set_elan_ids(elanhost_config_t ec);
 static void *neterr_thr(void *arg);
-#endif 
 
 
 int qsw_init(void)
@@ -124,6 +126,20 @@ void qsw_fini(void)
     elanhost_config_destroy(elanconf);
 }
 
+static int qsw_have_elan3(void)
+{
+#if HAVE_LIBELAN3
+    return (1);
+#else
+    struct stat st;
+
+    if (stat("/proc/qsnet/elan3", &st) < 0)
+        return (0);
+
+    return (1);
+#endif /* HAVE_LIBELAN3 */
+    return (0);
+}
 
 struct neterr_args {
     pthread_mutex_t *mutex;
@@ -133,12 +149,17 @@ struct neterr_args {
 
 int qsw_spawn_neterr_thr(void)
 {
-#if HAVE_LIBELAN3
     struct neterr_args args;
     pthread_attr_t attr;
     pthread_t neterr_tid;
     pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     pthread_cond_t  cond  = PTHREAD_COND_INITIALIZER;
+
+    /* 
+     * Only need to run neterr thread on Elan3 HW.
+     */
+    if (!qsw_have_elan3()) 
+        return (0);
 
     args.mutex = &mutex;
     args.cond  = &cond;
@@ -163,12 +184,67 @@ int qsw_spawn_neterr_thr(void)
     pthread_mutex_unlock(&mutex);
 
     return args.neterr_rc;
-#endif /* HAVE_LIBELAN3 */
 
     return 0;
 }
 
-#if HAVE_LIBELAN3
+/*
+ * Use dlopen () for libelan3.so (when needed)
+ *   This allows us to build a single version of the qsnet modules
+ *   for Elan3 and Elan4 QsNetII systems.
+ */
+
+/* 
+ * libelan3.so handle:
+ */
+static void * elan3h = NULL; 
+
+/*
+ * Wrapper functions for needed libelan3 functions
+ */
+static int _elan3_init_neterr_svc (int dbglvl)
+{
+    static int (*init_svc) (int);
+
+    if (!(init_svc = dlsym (elan3h, "elan3_init_neterr_svc"))) 
+        return (0);
+
+    return (init_svc (dbglvl));
+}
+
+
+static int _elan3_register_neterr_svc (void)
+{
+    static int (*reg_svc) (void);
+
+    if (!(reg_svc = dlsym (elan3h, "elan3_register_neterr_svc"))) 
+        return (0);
+
+    return (reg_svc ());
+}
+
+static int _elan3_run_neterr_svc (void)
+{
+    static int (*run_svc) ();
+
+    if (!(run_svc = dlsym (elan3h, "elan3_run_neterr_svc"))) 
+        return (0);
+
+    return (run_svc ());
+}
+
+
+static int _elan3_load_neterr_svc (int i, char *host)
+{
+    static int (*load_svc) (int, char *);
+
+    if (!(load_svc = dlsym (elan3h, "elan3_load_neterr_svc"))) 
+        return (0);
+
+    return (load_svc (i, host));
+}
+
+
 static int
 _set_elan_ids(elanhost_config_t ec)
 {
@@ -178,19 +254,23 @@ _set_elan_ids(elanhost_config_t ec)
         if (!host)
             continue;
         
-		if (elan3_load_neterr_svc(i, host) < 0)
+		if (_elan3_load_neterr_svc(i, host) < 0)
 			err("%p: elan3_load_neterr_svc(%d, %s): %m", i, host);
 	}
 
     return 0;
 }
 
-
 static void *neterr_thr(void *arg)
 {	
     struct neterr_args *args = arg;
 
-	if (!elan3_init_neterr_svc(0)) {
+    if (!(elan3h = dlopen ("libelan3.so", RTLD_LAZY))) {
+        syslog(LOG_ERR, "unable to open libelan3.so: %s", dlerror());
+        goto fail;
+    }
+
+	if (!_elan3_init_neterr_svc(0)) {
 		syslog(LOG_ERR, "elan3_init_neterr_svc: %m");
 		goto fail;
 	}
@@ -200,7 +280,7 @@ static void *neterr_thr(void *arg)
 	 *   cannot be bound, then there is already a thread running, and
 	 *   we should just exit with success.
 	 */
-	if (!elan3_register_neterr_svc()) {
+	if (!_elan3_register_neterr_svc()) {
 		if (errno != EADDRINUSE) {
 			syslog(LOG_ERR, "elan3_register_neterr_svc: %m");
 			goto fail;
@@ -229,7 +309,7 @@ static void *neterr_thr(void *arg)
 	 *   never return. If it does, there's not much we can do
 	 *   about it.
 	 */
-	elan3_run_neterr_svc();
+	_elan3_run_neterr_svc();
 
     return NULL;
 
@@ -241,7 +321,6 @@ static void *neterr_thr(void *arg)
 
 	return NULL;
 }
-#endif /* HAVE_ELAN_3 */
 
 static void
 _free_it (void *item)

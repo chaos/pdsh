@@ -1,190 +1,142 @@
 \." $Id$
 .\"
-.TH "@PACKAGE@" "1" "@host_os@" "Version @VERSION@-@RELEASE@"
+.\"
+.\"
+.TH "@PACKAGE@" "1" "@host_os@" "@PDSH_VERSION@"
+
 .SH NAME
 pdcp \- copy files to groups of hosts in parallel
+
 .SH SYNOPSIS
-.B pdcp
-.I "[-options] src [src2...] dest"
-.br
+\fBpdcp\fR [\fIoptions\fR]... src [src2...] dest
+
 .SH DESCRIPTION
-.B pdcp
-is a variant of the rcp(1) command.  Unlike rcp(1), which copies files
-to a single remote host, pdcp(1) can copy files to multiple remote
-hosts in parallel.  Unlike rcp(1), pdcp(1) does not recognize files in
-the format ``rname@rhost:path''.  Therefore, all sources files must be
-on the local host machine.  Destination nodes must be listed using the
-options listed under TARGET NODE LIST OPTIONS below.  Other pdcp
-options are described under OTHER OPTIONS.  When pdcp receives SIGINT
-(ctrl-C), it lists the status of current threads.  A second SIGINT
-within one second terminates the program.
+\fBpdcp\fR is a variant of the rcp(1) command.  Unlike rcp(1), which
+copies files to a single remote host, \fBpdcp\fR can copy files to
+multiple remote hosts in parallel.  However, \fBpdcp\fR does
+not recognize files in the format ``rname@rhost:path,'' therefore all
+source files must be on the local host machine.  Destination nodes must
+be listed on the \fBpdcp\fR command line using a suitable target
+nodelist option (See the \fIOPTIONS\fR section below).
 .LP
-A number of the options and features for pdcp are dependent on how
-pdcp has been built and installed.  See MODULES below for further
-explanation.
-.SH MODULES
-A number of options and features in pdcp depend n the modules
-that have been built or installed with pdcp.  The following is a list of
-modules that can be installed with pdsh and the command line options
-available when that module is installed.  A list of all module types
-installed can be found using the -L option.
+When \fBpdcp\fR receives SIGINT (ctrl-C), it lists the status of current
+threads.  A second SIGINT within one second terminates the program.
+.LP 
+Like pdsh(1), the functionality of \fBpdcp\fR may be supplemented by
+dynamically loadable modules. In \fBpdcp\fR, the modules may provide
+a new connect protocol (replacing the standard rsh(1) protocol), filtering
+options (e.g. excluding hosts that are down), and/or host selection 
+options (e.g. \fI-a\fR selects all nodes from a local config file). 
+By default, \fBpdcp\fR requires at least one "rcmd" module to be
+loaded (to provide the channel for remote copy).
+
+.SH "RCMD MODULES"
+The method by which \fBpdcp\fR connects to remote hosts may be
+selected at runtime using the \fI-R\fR option (See \fIOPTIONS\fR below). 
+This functionality is ultimately implemented via dynamically loadable
+modules, and so the list of available options may be different
+from installation to installation. A list of currently available rcmd 
+modules is printed when using any of the \fI-h\fR, \fI-V\fR, or \fI-L\fR 
+options. The default rcmd module will also be displayed with the
+\fI-h\fR and \fI-V\fR options.
 .LP
-Note that the same command line options are offered by several
-different modules.  If two installed modules offer the same command line
-option, pdsh will default to only one of modules.  A list of all
-available command line options can be listed with the -h
-option.
-.LP
-.IP "\fBRCMD MODULES\fR" 0
-.LP
-.B Pdcp 
-originally executed remote copies through rcmd(3) (the library
-routine used by rsh(1)).  Depending on the modules installed, remote
-copies can now be executed through several different services.  The
-user can select the service using the -R option.  Atleast one of the
-following must be installed on the system in order for pdcp to
-function.  If multiple rcmd modules are installed on the same system,
-the default service selected by pdcp is based on the order listed below.
-A list of all available rcmd modules is listed with the -h option.
-.LP
-.B rsh
-.LP
-The rsh module allows users to remote copy through rsh(1).  
-.LP
-.B mrsh
-.LP
-The mrsh module allows users to remote copy through mrsh(1).
-.LP
-.B ssh
-.LP
-The ssh module allows users to remote copy through ssh(1).
-.LP
-.B krb4
-.LP
-The k4b4 module allows users to execute remote commands after
-authenticating with kerberos.
-.LP
-.IP "\fBFEATURE MODULES\fR" 0
-.LP
-The following modules may be available to pdcp.  They give the
-user a number of other possible options when running pdcp.
-.LP
-.B genders
-.LP
-The genders module allows pdsh to access the genders database through
-the genders(3) library.  The -g, -a, and -i options are available when
-this module is installed.  The -i option will only work if the genders
-database has alternate node names listed as the value of the "altname"
-attribute.
-.LP
-.B machines
-.LP
-The machines modules loads a list of all cluster nodes from a file
-location specified during compile time.  The -a option is available 
-when this module is installed.
-.LP
-.B nodeattr
-.LP
-The nodeattr module allows pdsh to access the genders database through
-the nodeattr(1) command.  This module is primarily needed for older
-systems that do not yet have the gender(3) library installed.  The -g,
--a, and -i options are available when this module is installed.  The
--i option will only work if the genders database has alternate node
-names listed as the value of the "altname" attribute and if the
-nodeattr command has the -r option available.
-.LP
-.B nodeupdown
-.LP
-The nodeupdown module allows pdcp to interact with the nodeupdown(3)
-library.  The -v option is available when this module is
-installed.
-.LP
-.B rms
-.LP
-The rms module allows pdsh to target nodes based on an RMS resource.
-See TARGET NODE LIST OPTIONS below for additional details.
-.LP
-.B SDR
-.LP
-The SDR module supports SDR on IBM SPs.  The -a, -i, -v, and -G
-options are available when this module is installed.
-.LP
-.SH TARGET NODE LIST OPTIONS
+A list of \fIrcmd\fR modules currently distributed with \fBpdcp\fR     
+follows.
+.TP 8
+rsh
+Uses an internal, thread-safe implementation of BSD rcmd(3)
+to run commands using the standard rsh(1) protocol.
+.TP
+ssh
+Uses a variant of popen(3) to run multiple copies of the ssh(1)
+command.
+.TP
+mrsh
+This module uses the mrsh(1) protocol to execute jobs on remote hosts.
+The mrsh protocol uses a credential based authentication, forgoing
+the need to allocate reserved ports. In other aspects, it acts just
+like rsh.
+.TP
+krb4
+THe krb4 module allows users to execute remote commands after
+authenticating with kerberos. Of course, the remote rshd daemons
+must be kerberized.
+
+.SH OPTIONS
+The list of available \fBpdcp\fR options is determined at runtime
+by supplementing the list of standard \fBpdcp\fR options with
+any options provided by loaded \fIrcmd\fR and \fImisc\fR modules.
+In some cases, options provided by modules may conflict with
+each other. In these cases, the modules are incompatible and
+the first module loaded wins.
+
+.SH "Standard target nodelist options"
+.TP
 .I "-w host,host,..."
-Target the specified hosts.  Conflicts with -a and -g options.  No
-spaces are allowed in the comma-separated list.  A list consisting of
-a single "-" character causes the target hosts to be read from stdin,
-one per line.  The host list may contain hostname ranges of the form
-``host[1-5]''. For more information about hostname ranges, see the
-HOST RANGES section below.
-.LP
+Target the specified list of hosts. Do not use with any other
+node selection options (e.g. \fI\-a\fR, \fI\-g\fR if they are
+available). No spaces are allowed in the comma-separated list.
+A list consisting of a single `-' character causes the target
+hosts to be read from stdin, one per line. The host list may
+contain hostlist expressions of the form ``host[1-5,7]''. For
+more information about the hostlist format, see the
+\fBHOSTLIST EXPRESSIONS\fR section below.
+.TP
 .I "-x host,host,..."
-Exclude the specified hosts.  May be specified in conjunction with
-other target node list options such as -a and -g. Hostname ranges may
-also be specified to the -x option (see HOST RANGES section below)
-.LP
-.I "-a"
-Target "all" nodes in the cluster.  Conflicts with -w and -g options.
-Available only if the genders, nodeattr, SDR, or machines module is
-installed.
-.LP
-.I "-v"
-Eliminate target nodes that are down.  Available only if the SDR or
-nodeupdown module is installed.  On AIX, the -v option can only be
-used in conjunction with the -a option.
-.LP
-.I "-G"
-In combination with -a, include all partitions. Available only 
-if the SDR module is installed.
-.LP
-.I "-g attribute"
-Target nodes that have the specified genders attribute.  Conflicts
-with -a and -w options.  Available only if the genders or nodeattr
-module is installed.
-.LP
-.I "-i"
-In conjunction with -a or -g, request canonical hostnames.  The
-default is to use reliable hostnames.  Available only if the
-genders or nodeattr module is installed.  On AIX, the -i option
-can only be used in conjunction with the -a option.
-.LP
-If none of the above options are specified, the WCOLL environment variable
-must point to a file that contains a list of nodes, one per line.  
-.SH OTHER OPTIONS
-.I "-h" 
-Output usage menu and quit.
-.LP
-.I "-L"
-List info on all loaded modules and exit.
-.LP
-.I "-R name"
-Set rcmd module to name.
-.LP
+Exclude the specified hosts. May be specified in conjunction with
+other target node list options such as \fI\-a\fR and \fI\-g\fR (when
+available). Hostlists may also be specified to the \fI\-x\fR option
+(see \fBHOSTLIST EXPRESSIONS\fI secion below).
+
+.SH "Standard pdcp options"
+.TP
+.I "-h"
+Output usage menu and quit. A list of available rcmd modules
+will be printed at the end of the usage message.
+.TP
+.I "-q"
+List option values and the target nodelist and exit without action.
+.TP
+.I "-b"
+Disable ctrl-C status feature so that a single ctrl-C kills parallel
+copy. (Batch Mode)
+.TP
 .I "-r"
-Copy recursively.
-.LP
+Copy directories recursively.
+.TP
 .I "-p"
 Preserve modification time and modes.
-.LP
-.I "-q"
-List option values and the target host list and exit without action.
-.LP
-.I "-f number"
-Set the maximum number of simultaneous remote copies.  The default is 
-@FANOUT@.
-.LP
+.TP
 .I "-l user"
 This option may be used to copy files as another user, subject to
-authorization.  For BSD rcmd, this means the invoking user and system must
+authorization. For BSD rcmd, this means the invoking user and system must
 be listed in the user\'s .rhosts file (even for root).
-.LP
+.TP
 .I "-t seconds"
-Set the connect timeout.  Default is @CONNECT_TIMEOUT@ seconds.  
-.LP
+Set the connect timeout. Default is @CONNECT_TIMEOUT@ seconds.
+.TP
+.I "-f number"
+Set the maximum number of simultaneous remote copies to \fInumber\fR.
+The default is @FANOUT@.
+.TP
+.I "-R name"
+Set rcmd module to \fIname\fR. This option may also be set via the
+PDSH_RCMD_TYPE environment variable. A list of available rcmd
+modules may be obtained via either the \fI-h\fR or \fI-L\fR options.
+.TP
+.I "-L"
+List info on all loaded \fBpdcp\fR modules and quit.
+.TP
 .I "-d"
 Include more complete thread status when SIGINT is received, and display
 connect and command time statistics on stderr when done.
-.SH "HOST RANGES"
+.TP
+.I "-V"
+Output \fBpdcp\fR version information, along with list of currently
+loaded modules, and exit.
+
+
+.SH "HOSTLIST EXPRESSIONS"
 As noted in sections above, 
 .B pdcp 
 accepts ranges of hostnames in
@@ -201,6 +153,8 @@ foo1,foo9 could be specified as such, or by the range foo[1,9].
 
 Some examples of range usage follow:
 
+.nf
+
 Copy /etc/hosts to foo01,foo02,...,foo05
     pdcp -w foo[01-05] /etc/hosts /etc
 
@@ -209,6 +163,8 @@ Copy /etc/hosts to foo7,foo9,foo10
 
 Copy /etc/hosts to foo0,foo4,foo5
     pdcp -w foo[0-5] -x foo[1-3] /etc/hosts /etc
+
+.fi
 
 As a reminder to the reader, some shells will interpret brackets ('['
 and ']') for pattern matching.  Depending on your shell, it may be
@@ -219,9 +175,7 @@ tcsh, the first example above should be executed as:
 
 .SH "ORIGIN"
 Pdsh/pdcp was originally a rewrite of IBM dsh(1) by Jim Garlick
-.br
-<garlick@llnl.gov>
-on LLNL's ASCI Blue-Pacific IBM SP system.  
+<garlick@llnl.gov> on LLNL's ASCI Blue-Pacific IBM SP system.  
 It is now also used on Linux clusters at LLNL.
 
 .SH "LIMITATIONS"
@@ -236,19 +190,5 @@ timeout is not adjustable when ssh is used.
 Host range parsing assumes numerical part of hostname is at the end,
 e.g.  specifying foo[0-5]bar will not work.
 
-.SH "FILES"
-.if @HAVE_NODEATTR@ \{
-@NODEATTR@
-.br
-\}
-.if @HAVE_SDR@ \{
-@SDRGETOBJECTS@
-.br
-\}
-.if @HAVE_MACHINES@ \{
-@MACHINES@
-.br
-\}
-.br
 .SH "SEE ALSO"
-rcp(1), pdsh(1)
+pdsh(1)

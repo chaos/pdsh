@@ -1,325 +1,329 @@
 \." $Id$
 .\"
-.TH "@PACKAGE@" "1" "@host_os@" "Version @VERSION@-@RELEASE@"
+.\"
+.TH "@PACKAGE@" "1" "@host_os@" "@PDSH_VERSION@"
 
 .SH NAME
 pdsh \- issue commands to groups of hosts in parallel
 
 .SH SYNOPSIS
-.B pdsh
-.I "[-options] command"
+\fBpdsh\fR [\fIoptions\fR]... command
 
 .SH DESCRIPTION
-
-.B pdsh
-is a variant of the rsh(1) command.  Unlike rsh(1) which runs commands
-on a single remote host, pdsh(1) can run multiple remote commands in
-parallel.  A number of options and features for pdsh are dependent on
-how pdsh has been built and installed.  See MODULES below for further
-explanation.  Pdsh options are described in TARGET NODE LIST OPTIONS
-and OTHER OPTIONS below.
+\fBpdsh\fR is a variant of the rsh(1) command. Unlike rsh(1), which runs
+commands on a single remote host, \fBpdsh\fR can run multiple remote commands
+in parallel. \fBpdsh\fR uses a "sliding window" (or \fIfanout\fR) of threads
+to conserve resources on the the initiating host while allowing some 
+connections to time out. 
 .LP
-When pdsh receives SIGINT (ctrl-C), it lists the status of current threads.
-A second SIGINT within one second terminates the program.
+When \fBpdsh\fR receives SIGINT (ctrl-C), it lists the status of current 
+threads. A second SIGINT within one seconds terminates the program.
 .LP
-The DSHPATH environment variable, if set, will be the PATH for the remote shell.
-.LP
-If a command is not specified on the command line, 
-.B pdsh
+If a remote command is not specified on the command line, \fBpdsh\fR
 runs interactively, prompting for commands and executing them when
-terminated with a carriage return.  In interactive mode, target nodes that 
-time out on the first command are not contacted for subsequent commands,
-and commands prefaced with an exclamation point will be executed on the local 
-system.
+terminated with a carriage return. In interactive mode, target nodes
+that time out on the first command are not contacted for subsequent
+commands, and commands prefaced with an exclamation point will be 
+executed on the local system.
+.LP
+The core functionality of \fBpdsh\fR may be supplemented by dynamically
+loadable modules. The modules may provide a new connect protocol
+(replacing the standard rcmd(3) protocol used by rsh(1)), filtering
+options (e.g. removing hosts that are "down" from the target list),
+and/or host selection options (e.g. \fI\-a\fR selects all hosts from
+a configuration file.). By default, \fBpdsh\fR must have at least
+one "rcmd" module loaded. See the \fBRCMD MODULES\fR section for more 
+information.
 
-.SH MODULES
-A number of options and features in pdsh depend on the modules that
-have been built or installed with pdsh.  The following is a list of
-modules that may be installed with pdsh and the command line options
-available when that module is installed.  A list of all module types
-installed can be found using the -L option.
+.SH "RCMD MODULES"
+The method by which \fBpdsh\fR runs commands on remote hosts may be
+selected at runtime using the \fI-R\fR option (See \fIOPTIONS\fR below).
+This functionality is ultimately implemented via dynamically loadable
+modules, and so the list of available options may be different
+from installation to installation. A list of currently available rcmd 
+modules is printed when using any of the \fI-h\fR, \fI-V\fR, or \fI-L\fR 
+options. The default rcmd module will also be displayed with the
+\fI-h\fR and \fI-V\fR options.
 .LP
-Note that the same command line options are offered by several
-different modules.  If two installed modules offer the same command line
-option, pdsh will default to only one of modules. Available command line 
-options can be listed with the \fI-h\fR option.
-.LP
-.IP "\fBRCMD MODULES\fR" 0
-.LP
-.B Pdsh 
-originally executed remote commands through rcmd(3) (the library
-routine used by rsh(1)).  Depending on the modules installed, remote
-commands can now be executed through several different services.  The
-user can select the service type using the -R option. At least one of the
-following must be installed on the system in order for pdsh to
-function.  If multiple rcmd modules are installed on the same system,
-the default service selected by pdsh is based on the order listed below.
-A list of all available rcmd modules is listed with the -h option.
-.LP
-.B rsh
-.LP
-The rsh module allows users to execute remote commands through rsh(1).  
-.LP
-.B mrsh
-.LP
-The mrsh module allows users to execute remote commands through mrsh(1).
-.LP
-.B ssh
-.LP
-The ssh module allows users to execute remote commands through ssh(1).
-.LP
-.B krb4
-.LP
-The krb4 module allows users to execute remote commands after
-authenticating with kerberos.
-.LP
-.B qshell
-.LP
-The qshell module allows users to execute remote commands through
-Qshell.  Qshell allows users to run MPI jobs over QsNet.  Qshell
-propagates the current working directory, pdsh environment, and Elan
-capabilities to the remote process. The following environment
-variables are also set in the remote process: RMS_RANK, RMS_NODEID,
-RMS_PROCID, RMS_NNODES, and RMS_NPROCS.  The -m and -n options are
-available when this module is installed.
-.LP
-.B mqshell
-.LP
-The mqshell module allows users to execute remote commands through
-Mqshell.  Mqshell is identical to Qshell (explained above), but remote
-executition is first authenticated through the same means as mrsh(1).
-The -m and -n options are available when this module is
-installed.
-.LP
-.IP "\fBFEATURE MODULES\fR" 0
-.LP
-The following modules may be available to pdsh.  They give the
-user a number of other possible options when running pdsh.
-.LP
-.B genders
-.LP
-The genders module allows pdsh to access the genders database through
-the genders(3) library.  The -g, -a, and -i options are available when
-this module is installed.  The -i option will only work if the genders
-database has alternate node names listed as the value of the "altname"
-attribute.
-.LP
-.B machines
-.LP
-The machines modules loads a list of all cluster nodes from a file
-location specified during compile time.  The -a option is available 
-when this  module is installed.
-.LP
-.B nodeattr
-.LP
-The nodeattr module allows pdsh to access the genders database through
-the nodeattr(1) command.  This module is primarily needed for older
-systems that do not yet have the gender(3) library installed.  The -g,
--a, and -i options are available when this module is installed.  The
--i option will only work if the genders database has alternate node
-names listed as the value of the "altname" attribute and if the
-nodeattr command has the -r option available.
-.LP
-.B nodeupdown
-.LP
-The nodeupdown module allows pdsh to interact with the nodeupdown(3)
-library.  The -v option is available when this module is
-installed.
-.LP
-.B rms
-.LP
-The rms module allows pdsh to target nodes based on an RMS resource.
-See TARGET NODE LIST OPTIONS below for additional details.
-.LP
-.B slurm
-.LP
-The slurm module allows pdsh to target nodes based on currently running
-SLURM jobs. The target jobid may be set via the SLURM_JOBID environment
-variable (which is set when running under a SLURM allocation), or via
-the -j option which this module provides.
-.LP
-.B SDR
-.LP
-The SDR module supports SDR on IBM SPs.  The -a, -i, -v, and -G
-options are available when this module is installed.
-.LP
-.SH TARGET NODE LIST OPTIONS
+A list of \fIrcmd\fR modules currently distributed with \fBpdsh\fR 
+follows.
+.TP 8
+rsh
+Uses an internal, thread-safe implementation of BSD rcmd(3)
+to run commands using the standard rsh(1) protocol.
+.TP
+ssh
+Uses a variant of popen(3) to run multiple copies of the ssh(1)
+command.
+.TP
+mrsh
+This module uses the mrsh(1) protocol to execute jobs on remote hosts.
+The mrsh protocol uses a credential based authentication, forgoing
+the need to allocate reserved ports. In other aspects, it acts just
+like rsh. Remote nodes must be running mrshd(8) in order for the mrsh
+module to work.
+.TP
+qshell
+Allows \fBpdsh\fR to execute MPI jobs over QsNet. Qshell propagates
+the current working directory, pdsh environment, and Elan capabilities
+to the remote process. The following environment variable are also
+appended to the environment: RMS_RANK, RMS_NODEID, RMS_PROCID, RMS_NNODES,
+and RMS_NPROCS.
+.TP
+mqshell
+Similar to qshell, but uses the mrsh protocol instead of the rsh protocol.
+.TP
+krb4
+THe krb4 module allows users to execute remote commands after 
+authenticating with kerberos. Of course, the remote rshd daemons
+must be kerberized.
+
+.SH OPTIONS
+The list of available options is determined at runtime
+by supplementing the list of standard \fBpdsh\fR options with
+any options provided by loaded \fIrcmd\fR and \fImisc\fR modules.
+In some cases, options provided by modules may conflict with
+each other. In these cases, the modules are incompatible and
+the first module loaded wins.
+
+.SH "Standard target nodelist options"
+.TP
 .I "-w host,host,..."
-Target the specified hosts.  Conflicts with -a and -g options.  No
-spaces are allowed in the comma-separated list.  A list consisting of
-a single "-" character causes the target hosts to be read from stdin,
-one per line.  The host list may contain hostname ranges of the form
-``host[1-5]''. For more information about hostname ranges, see the
-HOST RANGES section below.
-.LP
+Target the specified list of hosts. Do not use with any other
+node selection options (e.g. \fI\-a\fR, \fI\-g\fR if they are
+available). No spaces are allowed in the comma-separated list.
+A list consisting of a single `-' character causes the target
+hosts to be read from stdin, one per line. The host list may 
+contain hostlist expressions of the form ``host[1-5,7]''. For
+more information about the hostlist format, see the 
+\fBHOSTLIST EXPRESSIONS\fR section below.
+.TP
 .I "-x host,host,..."
-Exclude the specified hosts.  May be specified in conjunction with
-other target node list options such as -a and -g. Hostname ranges may
-also be specified to the -x option (see HOST RANGES section below)
-.LP
-.I "-a"
-Target "all" nodes in the cluster.  Conflicts with -w and -g options.
-Available only if the genders, nodeattr, SDR, or machines module is
-installed.
-.LP
-.I "-v"
-Eliminate target nodes that are down.  Available only if the SDR or
-nodeupdown module is installed.  On AIX, the -v option can only be
-used in conjunction with the -a option.
-.LP
-.I "-G"
-In combination with -a, include all partitions. Available only 
-if the SDR module is installed.
-.LP
-.I "-g attribute[,attribute,...]"
-Target nodes that have any of the specified genders attributes.  Conflicts
-with -a and -w options.  Available only if the genders or nodeattr
-module is installed.  This option targets the alternate hostnames
-in the genders database by default. The -i option may be used to
-translate these to canonical/genders hostnames.
-.LP
-.I "-X attribute[,attribute,...]"
-Exclude nodes that have any of the specified list of attributes.
-.LP
-.I "-i"
-Request translation between canonical and alternate hostnames. 
-Available only if the genders or nodeattr module is installed.  
-On AIX, the -i option can only be used in conjunction with the 
--a option.
-.LP
-.I "-j jobid"
-If the slurm module is installed, target list of nodes allocated to
-SLURM jobid.
-.LP
-If the rms module is installed, and the RMS_RESOURCEID environment
-variable is set to an allocated RMS resource, RMS will be queried for
-the list of target nodes.  Likewise, if the slurm module is installed,
-and the SLURM_JOBID environment variable references a valid job, the
-list of targets will be set to the nodes in the running job. If none of 
-the above options are specified, the WCOLL environment variable must 
-point to a file that contains a list of nodes, one per line.
-.SH OTHER OPTIONS
-.I "-h" 
-Output usage menu and quit.
-.LP
-.I "-L"
-List info on all loaded modules and exit.
-.LP
-.I "-R name"
-Set rcmd module to name. This option may also be set through the
-PDSH_RCMD_TYPE environment variable.
-.LP
-.I "-q"
-List option values and the target nodes and exit without action.
-.LP
-.I "-f number"
-Set the maximum number of simultaneous remote commands.  The default is 
-@FANOUT@.
-.LP
+Exclude the specified hosts. May be specified in conjunction with
+other target node list options such as \fI\-a\fR and \fI\-g\fR (when
+available). Hostlists may also be specified to the \fI\-x\fR option
+(see the \fBHOSTLIST EXPRESSIONS\fR section below).
+
+.SH "Standard pdsh options"
+.TP 
+.I "-S"
+Return the largest of the remote command return values.
+.TP
+.I "-h"
+Output usage menu and quit. A list of available rcmd modules
+will also be printed at the end of the usage message.
+.TP
 .I "-s"
-Only on AIX, separate remote command stderr and stdout into two sockets.  
-.LP
+Only on AIX, separate remote command stderr and stdout into two sockets.
+.TP
+.I "-q"
+List option values and the target nodelist and exit without action.
+.TP
+.I "-b"
+Disable ctrl-C status feature so that a single ctrl-C kills parallel
+job. (Batch Mode)
+.TP
 .I "-l user"
-This option may be used to run remote comands as another user, subject to
-authorization.  For BSD rcmd, this means the invoking user and system must
+This option may be used to run remote commands as another user, subject to
+authorization. For BSD rcmd, this means the invoking user and system must
 be listed in the user\'s .rhosts file (even for root).
-.LP
+.TP
 .I "-t seconds"
-Set the connect timeout.  Default is @CONNECT_TIMEOUT@ seconds.  
-.LP
+Set the connect timeout. Default is @CONNECT_TIMEOUT@ seconds.
+.TP
 .I "-u seconds"
-Put a limit on the amount of time a remote command is allowed to execute.
+Set a limit on the amount of time a remote command is allowed to execute.
 Default is no limit.
-.LP
-.I "-n tasks_per_node"
-Set the number of tasks spawned per node.  Available only if the
-qshell or mqshell modules is installed.
-.LP
-.I "-m block | cyclic"
-Set block versus cyclic allocation of processes to nodes.  Default is
-block.  Available only if the qshell or mqshell modules is installed.
-.LP
+.TP
+.I "-f number"
+Set the maximum number of simultaneous remote commands to \fInumber\fR.
+The default is @FANOUT@. 
+.TP
+.I "-R name"
+Set rcmd module to \fIname\fR. This option may also be set via the
+PDSH_RCMD_TYPE environment variable. A list of available rcmd
+modules may be obtained via the \fI-h\fR, \fI-V\fR, or \fI-L\fR options. 
+The default will be listed with \fI-h\fR or \fI-V\fI.
+.TP
+.I "-L"
+List info on all loaded \fBpdsh\fR modules and quit.
+.TP
 .I "-d"
 Include more complete thread status when SIGINT is received, and display
 connect and command time statistics on stderr when done.
-.LP
-.I "-S"
-Return largest of the remote command return values.
-.SH "HOST RANGES"
-As noted in sections above, 
-.B pdsh 
-accepts ranges of hostnames in
-the general form: prefix[n-m,l-k,...], where n < m and l < k, etc.,
-as an alternative to explicit lists of hosts.  This form should not
-be confused with regular expression character classes (also denoted
-by ``[]''). For example, foo[19] does not represent foo1 or foo9, but
-rather represents a degenerate range: foo19. 
+.TP
+.I "-V"
+Output \fBpdsh\fR version information, along with list of currently
+loaded modules, and exit.
 
-This range syntax is meant
-only as a convenience on clusters with a prefixNN naming convention and
-specification of ranges should not be considered necessary -- the list
-foo1,foo9 could be specified as such, or by the range foo[1,9].
+.SH "qshell/mqshell module options"
+.TP
+.I "-n tasks_per_node"
+Set the number of tasks spawned per node. Default is 1.
+.TP
+.I "-m block | cyclic"
+Set block versus cyclic allocation of processes to nodes. Default is
+block. 
 
-Some examples of range usage follow:
+.SH "machines module options"
+.TP
+.I "-a"
+Target all nodes from machines file.
+
+.SH "genders module options"
+.TP
+.I "-a"
+Target "all" nodes in genders database.
+.TP 
+.I "-g attribute[,attribute,...]"
+Target nodes that have any of the specified genders attributes. Conflicts
+with \fI\-a\fR and \fI\-w\fR options. This option targets the alternate
+hostnames in the genders database by default. The \fI\-i\fR option provided
+by the genders module may be used to translate these to the canonical
+genders hostnames.
+.TP
+.I "-X attribute[,attribute,...]"
+Exclude nodes that have any of the specified list of attributes.
+This option may be used in combination with any other of the node 
+selection options (e.g. \fI-w\fR, \fI-g\fR, \fI-a\fR, ...).
+.TP
+.I "-i"
+Request translation between canonical and alternate hostnames. 
+
+.SH "nodeupdown module options"
+.TP
+.I "-v"
+Eliminate target nodes that are considered "down" by libnodeupdown.
+
+.SH "slurm module options"
+The \fBslurm\fI module allows \fBpdsh\fR to target nodes based on 
+currently running SLURM jobs. The \fBslurm\fR module is typically
+called after all other node selection options have been processed, 
+and if no nodes have been selected, the module will attempt to
+read a running jobid from the SLURM_JOBID environment variable 
+(which is set when running under a SLURM allocation). If SLURM_JOBID
+references an invlalid job, it will be silently ignored.
+.TP
+.I "-j jobid"
+Target list of nodes allocated to the SLURM job \fIjobid\fR.
+
+.SH "rms module options"
+The \fBrms\fR module allows pdsh to target nodes based on an RMS 
+resource. The \fBrms\fR module is typically called after all other
+node selection options, and if no nodes have been selected, the 
+module will examine the RMS_RESOURCEID environment variable and
+attempt to set the target list of hosts to the nodes in the 
+RMS resource. If an invalid resource is denoted, the variable is
+silently ignored.
+
+.SH "SDR module options"
+The SDR module supports targeting hosts via the System Data Repository
+on IBM SPs.
+.TP
+.I "-a"
+Target all nodes in the SDR.
+.TP
+.I "-i"
+Use "reliable" hostnames.
+.TP
+.I "-v"
+Do not target nodes that are marked as not responding in the SDR on
+the targeted interface.
+.TP
+.I "-G"
+In combination with \fI-a\fR, include all partitions.
+
+.SH "nodeattr module options"
+The \fBnodeattr\fR module supports access to the genders database
+via the nodeattr(1) command. See the \fBgenders\fR section above
+for a list of support options with this module. The option usage
+with the \fBnodeattr\fR module is the same as \fBgenders\fR, above,
+with the exception that the \fI-i\fR option may only be used
+with \fI-a\fR or \fI-g\fR.
+
+.SH "ENVIRONMENT VARIABLES"
+.PP
+.TP 
+PDSH_RCMD_TYPE
+Equivalent to the \fI-R\fR option, the value of this environment 
+variable will be used to set the default rcmd module for pdsh to
+use (e.g. ssh, rsh).
+.TP
+WCOLL
+If no other node selection option is used, the WCOLL environment
+variable may be set to a filename from which a list of target
+hosts will be read. The file should contain a list of hosts,
+one per line (though each line may contain a hostlist expression.
+See \fIHOSTLIST EXPRESSIONS\fR section below).
+.TP
+DSHPATH
+If set, the path in DSHPATH will be used as the PATH for the
+remote processes.
+.TP
+FANOUT
+Set the \fBpdsh\fR fanout (See description of \fI-f\fR above).
+
+.SH "HOSTLIST EXPRESSIONS"
+As noted in sections above \fBpdsh\fR accepts lists of hosts the general
+form: prefix[n-m,l-k,...], where n < m and l < k, etc., as an alternative
+to explicit lists of hosts. This form should not be confused with regular
+expression character classes (also denoted by ``[]''). For example, foo[19]
+does not represent an expression matching foo1 or foo9, but rather 
+represents the degenerate hostlist: foo19.
+
+The hostlist syntax is meant only as a convenience on clusters with a 
+"prefixNNN" naming convention and specification of ranges should not be
+considered necessary -- this foo1,foo9 could be specified as such, or
+by the hostlist foo[1,9].
+
+Some examples of usage follow:
+
+.nf
 
 Run command on foo01,foo02,...,foo05
-    pdsh -w foo[01-05] command 
+    pdsh -w foo[01-05] command
 
 Run command on foo7,foo9,foo10
-    pdsh -w foo[7,9-10] command
+	pdsh -w foo[7,9-10] command
 
 Run command on foo0,foo4,foo5
-    pdsh -w foo[0-5] -x foo[1-3] command
+	pdsh -w foo[0-5] -x foo[1-3] command
+
+.fi
 
 As a reminder to the reader, some shells will interpret brackets ('['
 and ']') for pattern matching.  Depending on your shell, it may be
 necessary to enclose ranged lists within quotes.  For example, in
 tcsh, the first example above should be executed as:
 
-    pdsh -w "foo[01-05]" command 
+	pdsh -w "foo[01-05]" command
 
 .SH "ORIGIN"
 Originally a rewrite of IBM dsh(1) by Jim Garlick <garlick@llnl.gov>
-on LLNL's ASCI Blue-Pacific IBM SP system.  
-It is now also used on Linux clusters at LLNL.
+on LLNL's ASCI Blue-Pacific IBM SP system. It is now used on Linux clusters
+at LLNL.
+
 .SH "LIMITATIONS"
 .LP
-When using 
-.B ssh
-for remote execution, expect the 
-stderr of ssh to be folded in with that of the remote 
-command.  When invoked by pdsh, it is not possible for ssh to prompt for 
-confirmation if a host key changes, prompt for passwords if RSA keys are not 
-configured properly, etc..  Finally, the connect timeout is not adjustable 
+When using \fBssh\fR for remote execution, expect the stderr of ssh to be
+folded in with that of the remote command. When invoked by \fBpdsh\fR, it
+is not possible for \fBssh\fR to prompt for passwords if RSA/DSA keys
+are configured properly, etc.. Finally, the connect timeout is not adjustable
 when ssh is used.
 
-Qshell and Mqshell assume Elan3 single rail only.  Output from multiple
-processes per node may be interspersed when using Qshell or Mqshell.
+Output from multiple processes per node may be interspersed when using qshell
+or mqshell rcmd modules.
 
-Host range parsing assumes numerical part of hostname is at the end, e.g.
-specifying foo[0-5]bar will not work.
+Hostlist parsing assumes numerical part of hostname is at the end only, 
+e.g. specifying foo[0-5]bar will not work.
 
-The number of nodes that pdsh can simultaneously execute remote jobs
-on is limited by the maximum number of threads that can be created
-concurrently.  On systems that implement Posix threads, the limit is
-typically defined by the constant PTHREADS_THREADS_MAX.
+The number of nodes that \fBpdsh\fR can simultaneously execute remote
+jobs on is limited by the maximum number of threads that can be created
+concurrently, as well as the availability of reserved ports in the rsh 
+and qshell rcmd modules. On systems that implement Posix threads, the limit
+is typically defined by the constant PTHREADS_THREADS_MAX.
 
 .SH "FILES"
-.if @HAVE_RMSQUERY@ \{
-@RMSQUERY@ 
-.br
-\}
-.if @HAVE_NODEATTR@ \{
-@NODEATTR@
-.br
-\}
-.if @HAVE_SDR@ \{
-@SDRGETOBJECTS@
-.br
-\}
-.if @HAVE_MACHINES@ \{
-@MACHINES@
-.br
-\}
+
 .SH "SEE ALSO"
 rsh(1), ssh(1), dshbak(1), pdcp(1)

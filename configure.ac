@@ -234,10 +234,11 @@ test "$ac_debug"          = "yes" && EXTRA_VERS="${EXTRA_VERS}+debug"
 test "$ac_with_dmalloc"   = "yes" && EXTRA_VERS="${EXTRA_VERS}+dmalloc"
 
 if test -n "$EXTRA_VERS" ; then
-   PDSH_VERSION="$PDSH_VERSION ($EXTRA_VERS)"
+   PDSH_VERSION_FULL="$PDSH_VERSION ($EXTRA_VERS)"
 fi
 
 AC_SUBST(PDSH_VERSION)
+AC_SUBST(PDSH_VERSION_FULL)
 
 AH_BOTTOM(
 [#ifdef WITH_DMALLOC

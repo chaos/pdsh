@@ -75,8 +75,10 @@ Usage: pdcp [-options] src [src2...] dest\n\
 
 #define OPT_USAGE_COMMON "\
 -h                output usage menu and quit\n\
+-V                output version information and quit\n\
 -q                list the option settings and quit\n\
 -b                disable ^C status feature (batch mode)\n\
+-d                enable extra debug information from ^C status\n\
 -l user           execute remote commands as user\n\
 -t seconds        set connect timeout (default is 10 sec)\n\
 -u seconds        set command timeout (no default)\n\
