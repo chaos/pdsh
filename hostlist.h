@@ -203,6 +203,8 @@ int hostlist_delete(hostlist_t hl, char *hosts);
 /* hostlist_delete_host():
  *
  * Deletes the first host that matches `hostname' from the hostlist hl.
+ * Note: "hostname" argument cannot contain a range of hosts 
+ *       (see hostlist_delete() for this functionality.)
  *
  * Returns 1 if successful, 0 if hostname is not found in list.
  */

@@ -407,7 +407,7 @@ static hostname_t hostname_create(char *hostname)
 	hn->suffix = NULL;
 
 	if (idx == strlen(hostname) - 1) {
-		/* hn->prefix = strdup(hostname); */
+		 hn->prefix = strdup(hostname);
 		return hn;
 	}
 
@@ -419,7 +419,7 @@ static hostname_t hostname_create(char *hostname)
 		memcpy(hn->prefix, hostname, idx + 1);
 		hn->prefix[idx + 1] = '\0';
 	} else {
-		/* hn->prefix = strdup(hostname); */
+		hn->prefix = strdup(hostname); 
 		hn->suffix = NULL;
 	}
 
@@ -789,7 +789,7 @@ static int hostrange_hn_within(hostrange_t hr, hostname_t hn)
 	int retval = 0;
 
 	if (strcmp(hr->prefix, hn->prefix) == 0) {
-		if (hr->singlehost || !hostname_suffix_is_valid)
+		if (hr->singlehost || !hostname_suffix_is_valid(hn))
 			retval = 1;
 		else if (hn->num <= hr->hi && hn->num >= hr->lo) {
 			int width = hostname_suffix_width(hn);
