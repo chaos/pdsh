@@ -6,17 +6,15 @@ expect_after {
 	eof				{ unresolved "$test" }
 }
 
-# This test suite is for version 1.6.  Other versions cause a failure.
-set test "version"
+set test "pdsh: version (if this fails beware that testsuite is outdated)"
 spawn $pdsh -V
 expect {
 	-re "pdsh-1.6.*"		{ pass "$test" }
 	eof				{ fail "$test" }
 }
 
-# gnats:35 pdsh does not properly display errors on AIX
-set test "xstrerrorcat gnats:35"
-spawn $pdsh -T 1
+set test "pdsh: xstrerrorcat obtains text for errnos (gnats:35)"
+spawn $pdsh -T 0
 expect  {
 	-re ".*PASS"			{ pass "$test" }
 	-re ".*FAIL"			{ fail "$test" }
@@ -24,8 +22,44 @@ expect  {
 	-re ".*unknown"			{ unsupported "$test" }
 }
 
-# gnats:36 dshbak -c doesn't show difference between mult length output
-set test "dshbak -c gnats:36"
+set test "pdsh: hostname range expansion works"
+spawn $pdsh -qw foo0-2
+expect  {
+	-re "foo0,foo1,foo2" 		{ pass "$test" }
+	eof	 			{ fail "$test" }
+}
+
+set test "pdsh: hostname range expansion does not strip leading zeros"
+spawn $pdsh -qw foo00-02
+expect  {
+	-re "foo00,foo01,foo02"		{ pass "$test" }
+	eof	 			{ fail "$test" }
+}
+
+set test "pdsh: hostname range expansion handles mixed size suffixes"
+spawn $pdsh -qw foo9-11
+expect  {
+	-re "foo9,foo10,foo11"		{ pass "$test" }
+	eof	 			{ fail "$test" }
+}
+
+set test "pdsh: -x option works"
+spawn $pdsh -qw foo9-11 -x foo10
+expect  {
+	-re "foo9,foo11"		{ pass "$test" }
+	eof	 			{ fail "$test" }
+}
+
+set test "pdsh: ranges can be embedded in wcoll files"
+spawn $pdsh -qw-
+send "foo9-11\n"
+send \004
+expect  {
+	-re "foo9,foo10,foo11"		{ pass "$test" }
+	eof	 			{ fail "$test" }
+}
+
+set test "dshbak: -c does not coalesce different length output (gnats:36)"
 spawn $dshbak -c
 send "foo1: bar\n"
 send "foo2: bar\n"
@@ -34,4 +68,40 @@ send \004
 expect {
 	-re "foo1-2"			{ fail "$test" }
 	eof	 			{ pass "$test" }
+}
+
+set test "dshbak: -c properly compresses multi-digit hostname suffixes"
+spawn $dshbak -c
+send "foo8: bar\n"
+send "foo9: bar\n"
+send "foo10: bar\n"
+send "foo11: bar\n"
+send \004
+expect {
+	-re "foo8-11"			{ pass "$test" }
+	eof	 			{ fail "$test" }
+}
+
+set test "dshbak: -c properly compresses prefix with embedded numerals"
+spawn $dshbak -c
+send "foo1x8: bar\n"
+send "foo1x9: bar\n"
+send "foo1x10: bar\n"
+send "foo1x11: bar\n"
+send \004
+expect {
+	-re "foo1x8-11"			{ pass "$test" }
+	eof	 			{ fail "$test" }
+}
+
+set test "dshbak: -c does not strip leading zeros"
+spawn $dshbak -c
+send "foo00: bar\n"
+send "foo03: bar\n"
+send "foo01: bar\n"
+send "foo02: bar\n"
+send \004
+expect {
+	-re "foo00-03"			{ pass "$test" }
+	eof	 			{ fail "$test" }
 }

@@ -1,227 +1,162 @@
-Release 1.0	4 Sept 1998 <garlick@llnl.gov>
-
-	Initial release.
-
-Release 1.1 	13 Apr 1999 <garlick@llnl.gov>
-
-	Portability to linux, OSF1, AIX4.3.2, Solaris 2.5.
-
-	Request 1:1 mapping to kernel threads, if M:N available.
-
-	Kerberos IV off by default.
-
-Release 1.2	22 June 2000 <garlick@llnl.gov>
-
-	-b option to cause single SIGINT to terminate pdsh (needed when pdsh
-	is run from a script).
-
-	1:1 feature in release 1.1 was actually #ifdefed out.
-
-	Call sigaction() instead of signal() to avoid old-style signal
-	semantics.  (Was avoiding on AIX by linking with -lbsd).  Also, block
-	SIGINT in all but main thread to be compatible with Linux pthreads,
-	which seems to deliver that signal to all threads that don't block it.
-
-	pcp functionality added
-
-	fixed DSHPATH
-	
-	added genders support
-
-Release 1.3
-
-	Activated POSIX mode for getopt() on linux.
-
-	Abort cleanly if working collective is empty.
-
-	Fixed bug in pcp option handling (core on empty source file list).
-
-	Added install rule for pcp link to Makefiles.
-
-	Added -d (debug) option to get verbose thread status on ^C,
-	and connect/command time report at the end.
-
-	Use gethostbyname_r() on linux, but need mutex anyway for RH6.2.
-
-	Cleanup of rcmd selection code
-
-	-c option taken out of usage message due to lack of interest,
-	though still supported for SP dsh compatibility.  Took SP-isms
-	i.e. "partitions" and "working collective" out of Usage message
-	and other places.
-
-	Removed Makefile.sol and Makefile.aix42 (added commented out LIBS
-	defs to Makefile for solaris and aix42)
-
-	Fix DSHPATH handling for csh users.
-
-	Reword man entry for -l to note that even root needs to be in .rhosts
-	file of remote user.
-
-	Rework README.
-	
-	Added dshbak perl script and manpage.
-
-	Added -S option to make pdsh return largest of remote return codes,
-	or 254 if any of the rsh transactions fail.
-
-	Added pcp man page.
-
-	Added -e option and pipecmd.c to use ssh.
-
-	Convert bcopy, index, rindex -> memcpy, strchr, strrchr.
-
-	Verified working on the following platforms:
-	- Linux 2.2.14-5.0 i686
-	- Linux 2.2.14 #5 SMP alpha
-	- Linux 2.2.14-5.0smp sparc
-	- AIX 3 4
-	- SunOS 5.7 sun4u sparc SUNW,Ultra-Enterprise
-	- OSF1 V4.0 alpha
-
-Release 1.4
-
-	Added RPM spec file.
-
-	Fixed bug with opt_list dumping core on linux.
-	
-	Added pdsh -V to display version (PDSH_VERSION in conf.h).
-
-	Changed wcoll logic on SP so pdsh -aiv drops nodes which have
-	either switch_responds or host_responds false instead of falling
-	back to the reliable_hostname.
-
-	Added wcoll hack to deal with changed SDR attributes for Colony switch
-
-Release 1.5
-
-	Renamed spec file to pdsh.spec.  Gzip installed man pages on Linux.
-
-	Moved path definitions to conf.h.  Changed nodeattr path to /usr/bin.
-
-	Fixed handling of numerical ranges with multiple root names (dshbak)
-
-	Fix %S handling to avoid truncating dotted quads (err.c)
-
-	Rename pcp to pdcp - avoid conflict with SGI Performance Co-Pilot RPM.
-
-	Updated RPM rules for chaos release.
-
-	(This release was never used on the IBM SP as far as I know)
-
-Release 1.6
-
-	Call htons on hard-coded port numbers before using (rcmd.c, k4cmd.c)
-
-	Renamed rcmd.c -> xrcmd.c, pipecmd.c -> sshcmd.c.
-
-	Add -Wall to CFLAGS and eliminate all warnings on Linux.
-
-	Updated to latest Chris Dunlap RPM Make target for Linux.
-
-	Support signal propagation via rsh backchannel (dsh.c, xrcmd.c).
-
-	Added hidden magic cookie and size integers to xmalloc buffers.
-	Changed names to avoid conflict with dmalloc (now Strdup, Malloc, 
-	Free, Realloc).  Delete size pointer from various functions that
-	deal with resizeable strings.
-
-	Use memset instead of bzero.
-
-	Added qshell support for running Quadrics Elan3 jobs on Linux
-	with -E option and qshd server (added qshd subpackage to RPM target).
-
-	Stderr socket now opened by default to enable proper remote cleanup
-	after SIGINT, except on AIX where cleanup seems to work without the
-	extra socket.  Everywhere but AIX, the meaning of the -s option is now
-	reversed.
-
-	Default fanout is 64 on systems where we don't open stderr by default,
-	e.g. AIX, and 32 everywhere else.
-
-	Added support for expansion of hostname ranges passed through -w
-	(e.g. -w host1-5 means run on host1,host2,...,host5) (Mark Grondona)
-
-	Added new options -x and -X for disabling hostname range expansion
-	and defining new expansion operator, respectively. (Mark Grondona)
-
-	Added support for allocating the wcoll from an RMS partition.
-
-	Autoconfiscated. 
-
-	Added a list of configured features to pdsh -V output.
-
-	Avoid non-portable gethostbyname_r call on non-AIX system by doing 
-	all DNS lookups before threads start up.
-
-	Configure --with-ssh configures pdsh to use ssh for all connections.
-	Configure --with-krb4 configures pdsh to use krb4 for all connnections.
-	The two configuration options cannot be specified together.  In the
-	absense of either, rsh is used (the preferred option).  Got rid of 
-	-e, -R, and -k options for selecting these at runtime.  Do not use
-	rsh for non-root users if --with-krb4 specified.
-
-	Support ssh2's different option for batch mode.
-
-	If --with-machines=/path/to/machines is specified, use that for -a
-	processing no matter what.  In the absense of a machines file, if
-	SDRGetObjects exists, use that; if nodeattr exists, use that.
-	None of the above is a configure error.
-
-	Released version 1.6 to web site: http://www.llnl.gov/icc/lc/pdsh.html
-	Released version 1.6-chaos1 internally.
-
-Release 1.6+
-	
-	Misc cleanup of headers, function defs, README, and man pages.
-	Run man pages through autoconf.
-
-	Test HAVE_WORKING_STRERROR_R before using strerror_r (pdsh-1.6 %m 
-	fails on AIX).
-
-	Added HAVE_MTSAFE_GETHOSTBYNAME and HAVE_MAGIC_RSHELL_CLEANUP in
-	place of #ifdef _AIX.
-
-	Use socklen_t for accept() length argument and add a check in
-	autoconf to default it to int if undefined.
-
-	Rcp code now handles short writes on socket.  A short write would
-	have corrupted the copied file, though this has never been reported.
-
-	Additional configure options: --with-fanout=N, --with-timeout=N, 
-	--with-rangeop=c.  Removed -x and -X options since this is now
-	configurable at compile time.
-
-	Print "timed out" message instead of "interrupted system call" if
-	xrcmd/qcmd times out waiting for a response from the server (gnats:45).
-
-Thu Apr 11 05:13:08 PDT 2002
-	RMS: Get rid of -P and -N options and use RMS_RESOURCEID as set by
-	the RMS 'allocate' command instead.
-
-	Change semantics of -n option: now it is tasks per node instead of 
-	total number of tasks.  This is no longer a qshell specific argument,
-	but unless qshell is used it must be == 1.
-
-Fri May 24 15:06:47 PDT 2002
-	Allow hostname ranges in WCOLL files.
-
-	Add -x option to exclude a list of hostnames from WCOLL.
-
-	Genders: -i option now selects canonical names.  The default is to
-	get what nodeattr -r gives you (alternate names, if any).
-
-	Released version 1.6-2 to web site: http://www.llnl.gov/icc/lc/pdsh.html
-	Released version 1.6-2chaos internally.
-
-Wed May 29 16:03:12 PDT 2002
-	Pdsh would sometimes block when cleaning up after a Ctrl-C.
-	Change fcntl(efd, F_SETFD, O_NONBLOCK) to F_SETFL (xrcmd.c)
-	Add fcntl call to k4cmd.c and qcmd.c.
-
-	Added include <qsw/types.h> to compile with RMS 2.73.
-	Other API changes for new quadrics libs.
-
-	Temporarily disable --with-rms and PAM support in qshd.
-
-	Taggged pdsh-1-6-3chaos.
+1998-09-04 garlick
+	* Initial release of version 1.0
+
+1999-04-13 garlick
+	* Portability to linux, OSF1, AIX4.3.2, Solaris 2.5.
+	* Request 1:1 mapping to kernel threads, if M:N available.
+	* Kerberos IV off by default.
+	* Released version 1.1
+
+2000-06-22 garlick
+	* -b option to cause single SIGINT to terminate pdsh (needed when pdsh
+	  is run from a script).
+	* 1:1 feature in release 1.1 was actually #ifdefed out.
+	* Call sigaction() instead of signal() to avoid old-style signal
+	  semantics.  (Was avoiding on AIX by linking with -lbsd).  Also, block
+	  SIGINT in all but main thread to be compatible with Linux pthreads,
+	  which seems to deliver that signal to all threads that don't block it.
+	* Pcp functionality added.
+	* Fixed DSHPATH.
+	* Added genders support.
+	* Released version 1.2.
+
+xx-xx-xx garlick
+	* Activated POSIX mode for getopt() on linux.
+	* Abort cleanly if working collective is empty.
+	* Fixed bug in pcp option handling (core on empty source file list).
+	* Added install rule for pcp link to Makefiles.
+	* Added -d (debug) option to get verbose thread status on ^C,
+	  and connect/command time report at the end.
+	* Use gethostbyname_r() on linux, but need mutex anyway for RH6.2.
+	* Cleanup of rcmd selection code
+	* -c option taken out of usage message due to lack of interest,
+	  though still supported for SP dsh compatibility.  Took SP-isms
+	  i.e. "partitions" and "working collective" out of Usage message
+	  and other places.
+	* Removed Makefile.sol and Makefile.aix42 (added commented out LIBS
+	  defs to Makefile for solaris and aix42)
+	* Fix DSHPATH handling for csh users.
+	* Reword man entry for -l to note that even root needs to be in .rhosts
+	  file of remote user.
+	* Rework README.
+	* Added dshbak perl script and manpage.
+	* Added -S option to make pdsh return largest of remote return codes,
+	  or 254 if any of the rsh transactions fail.
+	* Added pcp man page.
+	* Added -e option and pipecmd.c to use ssh.
+	* Convert bcopy, index, rindex -> memcpy, strchr, strrchr.
+	* Verified working on the following platforms:
+	  Linux 2.2.14-5.0 i686, Linux 2.2.14 #5 SMP alpha, 
+	  Linux 2.2.14-5.0smp sparc, AIX 3 4, OSF1 V4.0 alpha,
+	  SunOS 5.7 sun4u sparc SUNW,Ultra-Enterprise
+	* Released version 1.3
+
+2001-04-25 garlick
+	* Added RPM spec file.
+	* Fixed bug with opt_list dumping core on linux.
+	* Added pdsh -V to display version (PDSH_VERSION in conf.h).
+	* Changed wcoll logic on SP so pdsh -aiv drops nodes which have
+	  either switch_responds or host_responds false instead of falling
+	  back to the reliable_hostname.
+	* Added wcoll hack to deal with changed SDR attributes for Colony switch
+	* Released version 1.4
+
+2001-06-28 garlick
+	* Renamed spec file to pdsh.spec.  Gzip installed man pages on Linux.
+	* Moved path definitions to conf.h.  Changed nodeattr path to /usr/bin.
+	* Fixed handling of numerical ranges with multiple root names (dshbak)
+	* Fix %S handling to avoid truncating dotted quads (err.c)
+	* Rename pcp to pdcp - avoid conflict with SGI Performance Co-Pilot RPM.
+	* Updated RPM rules for chaos release.
+	* Released version 1.5 (linux only)
+
+2001-12-24 garlick, grondona
+	* Call htons on hard-coded port numbers before using (rcmd.c, k4cmd.c)
+	* Renamed rcmd.c -> xrcmd.c, pipecmd.c -> sshcmd.c.
+	* Add -Wall to CFLAGS and eliminate all warnings on Linux.
+	* Updated to latest Chris Dunlap RPM Make target for Linux.
+	* Support signal propagation via rsh backchannel (dsh.c, xrcmd.c).
+	* Added hidden magic cookie and size integers to xmalloc buffers.
+	  Changed names to avoid conflict with dmalloc (now Strdup, Malloc, 
+	  Free, Realloc).  Delete size pointer from various functions that
+	  deal with resizeable strings.
+	* Use memset instead of bzero.
+	* Added qshell support for running Quadrics Elan3 jobs on Linux
+	  with -E option and qshd server (added qshd subpackage to RPM target).
+	* Stderr socket now opened by default to enable proper remote cleanup
+	  after SIGINT, except on AIX where cleanup seems to work without the
+	  extra socket.  Everywhere but AIX, the meaning of the -s option is now
+	  reversed.
+	* Default fanout is 64 on systems where we don't open stderr by default,
+	  e.g. AIX, and 32 everywhere else.
+	* Added support for expansion of hostname ranges passed through -w
+	  (e.g. -w host1-5 means run on host1,host2,...,host5) (Mark Grondona)
+	* Added new options -x and -X for disabling hostname range expansion
+	  and defining new expansion operator, respectively. (Mark Grondona)
+	* Added support for allocating the wcoll from an RMS partition.
+	* Autoconfiscated. 
+	* Added a list of configured features to pdsh -V output.
+	* Avoid non-portable gethostbyname_r call on non-AIX system by doing 
+	  all DNS lookups before threads start up.
+	* Configure --with-ssh configures pdsh to use ssh for all connections.
+	  Configure --with-krb4 configures pdsh to use krb4 for all 
+	  connnections.  The two configuration options cannot be specified 
+	  together.  In the absense of either, rsh is used (the preferred 
+	  option).  Got rid of -e, -R, and -k options for selecting these at 
+	  runtime.  Do not use rsh for non-root users if --with-krb4 specified.
+	* Support ssh2's different option for batch mode.
+	* If --with-machines=/path/to/machines is specified, use that for -a
+	  processing no matter what.  In the absense of a machines file, if
+	  SDRGetObjects exists, use that; if nodeattr exists, use that.
+	  None of the above is a configure error.
+	* Released 1.6 to http://www.llnl.gov/icc/lc/pdsh.html
+	* Chaos flag in spec file back on, tagged pdsh-1-6-1chaos
+
+2002-02-09 garlick
+	* Misc cleanup of headers, function defs, README, and man pages.
+	  Run man pages through autoconf.
+	* Test HAVE_WORKING_STRERROR_R before using strerror_r (pdsh-1.6 %m 
+	  fails on AIX).
+	* Added HAVE_MTSAFE_GETHOSTBYNAME and HAVE_MAGIC_RSHELL_CLEANUP in
+	  place of #ifdef _AIX.
+	* Use socklen_t for accept() length argument and add a check in
+	  autoconf to default it to int if undefined.
+	* Rcp code now handles short writes on socket.  A short write would
+	  have corrupted the copied file, though this has never been reported.
+	* Additional configure options: --with-fanout=N, --with-timeout=N, 
+	  --with-rangeop=c.  Removed -x and -X options since this is now
+	  configurable at compile time.
+	* Print "timed out" message instead of "interrupted system call" if
+	  xrcmd/qcmd times out waiting for a response from the server 
+	  (gnats:45).
+
+2002-04-11 garlick
+	* RMS: Get rid of -P and -N options and use RMS_RESOURCEID as set by
+	  the RMS 'allocate' command instead.
+	* Change semantics of -n option: now it is tasks per node instead of 
+	  total number of tasks.  This is no longer a qshell specific argument,
+  	  but unless qshell is used it must be == 1.
+
+2002-05-24 garlick
+	* Allow hostname ranges in WCOLL files.
+	* Add -x option to exclude a list of hostnames from WCOLL.
+	* Genders: -i option now selects canonical names.  The default is to
+	  get what nodeattr -r gives you (alternate names, if any).
+	* Tagged pdsh-1-6-2 
+	* Released 1.6-2 to http://www.llnl.gov/icc/lc/pdsh.html
+	* Chaos flag in spec file back on, tagged pdsh-1-6-2chaos
+
+2002-05-29 garlick
+	* Pdsh would sometimes block when cleaning up after a Ctrl-C.
+	  Change fcntl(efd, F_SETFD, O_NONBLOCK) to F_SETFL (xrcmd.c)
+	  Add fcntl call to k4cmd.c and qcmd.c.
+	* Added include <qsw/types.h> to compile with RMS 2.73.
+	  Other API changes for new quadrics libs.
+	* Temporarily disable --with-rms and PAM support in qshd
+	* Taggged pdsh-1-6-3chaos.
+
+2002-06-03 garlick
+	* Fixed a bug in dshbak which did not properly compress multi-digit
+	  hostname suffixes.
+	* Switch ChangeLog format.
+	* Added a few test cases to deja-gnu.
