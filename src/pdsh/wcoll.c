@@ -141,7 +141,8 @@ hostlist_t read_genders(char *attr, int iopt)
       ret = genders_testattr(handle, 
 			     nodelist[i], 
 			     GENDERS_ALTNAME_ATTRIBUTE, 
-			     altname);
+			     altname,
+			     maxvallen + 1);
       if (ret == 1) {
 	if (hostlist_push_host(new, altname) == 0) {
 	  err("%p: warning: target '%s' not parsed\n", altname);

@@ -1,6 +1,7 @@
 2003-03-12 achu
 	* tagged pdsh-1-8-3chaos
-	* updated for changes in whatsup-1-0-3 libnodeupdown API changes
+	* updated for changes in whatsup-1-0-3 libnodeupdown API
+	* updated for changes in genders-1-1-3 libgenders API
 	* minor fix on "--help" output
 	
 2003-03-07 achu
