@@ -681,6 +681,9 @@ static void _show_version(void)
 #if 	WITH_DMALLOC
     printf("+dmalloc");
 #endif
+#ifdef  HAVE_LIBNODEUPDOWN
+    printf("+ganglia");
+#endif     
     printf(")\n");
     exit(0);
 }
