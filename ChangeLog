@@ -1,3 +1,11 @@
+2003-12-18  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/qsnet/qswutil.c (_setbitmap): Fixed bug when using cyclic
+	distribution and non-contiguous nodesets.
+
+	* src/pdsh/main.c, src/pdsh/opt.c: Move mod_rcmd_exit() from main()
+	into opt_free() since mod_rcmd_load() is called in opt_args().
+
 2003-12-16  Albert Chu <chu11@llnl.gov>
 
 	* src/qsnet/qshell.c (getcommon): Renamed to readchar.
