@@ -112,7 +112,7 @@ hostlist_t read_genders(char *attr, int iopt)
          genders_strerror(genders_errnum(handle)));
   }
 
-  if (!opt) {
+  if (!iopt) {
     if ((list_len = genders_altnodelist_create(handle, &list)) == -1) {
       errx("%p: error creating genders altnodelist, %s\n",
            genders_strerror(genders_errnum(handle)));
@@ -149,7 +149,7 @@ hostlist_t read_genders(char *attr, int iopt)
       err("%p: warning: target '%s' not parsed\n", list[i]);
   }
            
-  if (!opt) {
+  if (!iopt) {
     if (genders_altnodelist_destroy(handle, list) == -1) {
       errx("%p: error destroying genders altnodelist, %s\n",
            genders_strerror(genders_errnum(handle)));
