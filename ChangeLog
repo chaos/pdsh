@@ -104,3 +104,5 @@ Release 1.5pre
 	Fix %S handling to avoid truncating dotted quads (err.c)
 
 	Rename pcp to pdcp - avoid conflict with SGI Performance Co-Pilot RPM.
+
+	Updated RPM rules.
