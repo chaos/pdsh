@@ -1,3 +1,8 @@
+2003-11-13  Albert Chu <chu11@llnl.gov>
+
+	* src/qsnet/mqshd.c (getifrlen): Added fix for ia64 portability
+	issue.
+
 2003-11-12  Mark Grondona <mgrondona@llnl.gov>
 
 	* pdsh.spec.in: Only build ssh and rsh modules by default. All
