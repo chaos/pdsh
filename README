@@ -1,12 +1,9 @@
 +-------------+
 | Description |
 +-------------+
-Pdsh is a reimplementation of the dsh command supplied with the IBM PSSP
-product that uses POSIX threads within a single process, and achieves better 
-performance while using fewer system resources (in particular, privileged 
-sockets and process slots).
-
-This version of pdsh has been tested on RedHat Linux and AIX 4.3.3.
+Pdsh is a multithreaded remote shell client which executes commands
+on multiple remote hosts in parallel.  Pdsh can use several different remote
+shell services, including standard "rsh", Kerberos IV, and ssh.
 
 See the man page in this directory for usage information.
 
@@ -43,7 +40,7 @@ list of "all" nodes for -a, transform to alternate hostnames with -i,
 etc..
 
 On Linux and other platforms, -a, -i, etc.. are handled differently.
-If the LLNL Genders system is available, the "nodeattr" command will
+If the LLNL Genders software is available, the "nodeattr" command will
 be used, with the special "altname" attribute for alternate hostnames.  
 If that is not found, an MPICH machines file can be used (it is currently 
 hard coded to /usr/local/etc/machines).
@@ -72,33 +69,6 @@ remote command.
 
 Typing ^C causes pdsh to list threads that are in the connected state.
 Another ^C immediately following the first one terminates the program.
-
-Unlike IBM dsh, pdsh attempts to conserve sockets by combining the remote 
-stdout and stderr into pdsh stdout.  This can be defeated via command line 
-option.
-
-+-------------------------+
-| PERFORMANCE PDSH VS DSH |
-+-------------------------+
-This implementation results in a pretty big performance increase over IBM dsh;
-for example, I just ran a little test on our 256-node SP [old 1997 numbers]:
-
-   Command                Real time (sec)
-   pdsh -av date          6            # stdin/stderr combined
-   pdsh -sav date         8            # separate stdin/stderr
-   dsh -av date           22
-
-Also, nodes that are responding according to the SDR but effectively out to 
-lunch can cause IBM's dsh to hang for long periods of time (sometimes forever?),
-while pdsh handles "half-way-down" nodes expeditiously with its timeout thread.
-
-Addendum: June 2001 numbers from ASCI White (512 node SP and pdsh 1.3):
-   Command                Real time (sec)
-   pdsh -avf64 hostname   4
-   dsh  -avf64 hostname   18
-   dsh -avf128 hostname   14 
-NOTE: Control workstation load is very high on this system so these tests 
-were run from a compute node (nighthawk 16 processor + 100bT ethernet)
 
 +--------+
 | AUTHOR |
