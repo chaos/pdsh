@@ -64,3 +64,4 @@ cp qshell.xinetd $RPM_BUILD_ROOT/etc/xinetd.d/qshell
 if ! grep "^qshell" /etc/services >/dev/null; then
         echo "qshell   523/tcp  # pdsh/elan3" >>/etc/services
 fi
+/etc/rc.d/init.d/xinetd restart
