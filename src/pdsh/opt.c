@@ -59,12 +59,12 @@ static void _show_version(void);
 Usage: pdsh [-options] command ...\n\
 -S                return largest of remote command return values\n"
 
+/* -s option only useful on AIX */
 #if	HAVE_MAGIC_RSHELL_CLEANUP
 #define OPT_USAGE_STDERR "\
 -s                separate stderr and stdout\n"
 #else
-#define OPT_USAGE_STDERR "\
--s                combine stderr with stdout to conserve sockets\n"
+#define OPT_USAGE_STDERR ""
 #endif
 
 
@@ -292,9 +292,12 @@ void opt_args(opt_t * opt, int argc, char *argv[])
         case 'q':              /* display fanout and wcoll then quit */
             opt->info_only = true;
             break;
+/* -s option only useful on AIX */
+#if	HAVE_MAGIC_RSHELL_CLEANUP
         case 's':              /* split stderr and stdout */
             opt->separate_stderr = true;
             break;
+#endif
         case 't':              /* set connect timeout */
             opt->connect_timeout = atoi(optarg);
             break;
