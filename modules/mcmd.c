@@ -146,18 +146,18 @@ struct pdsh_module_operations pdsh_module_ops = {
          NULL
 };
 
-void mcmd_init(opt_t *);
-void mcmd_signal(int, int);
+int mcmd_init(opt_t *);
+int mcmd_signal(int, int);
 int mcmd(char *, char *, char *, char *, int *);
 
-void 
+int
 mcmd_init(opt_t * opt)
 {
         /* not implemented */
-        return;
+        return 0;
 }
 
-void 
+int
 mcmd_signal(int fd, int signum)
 {
         char c;
@@ -169,6 +169,7 @@ mcmd_signal(int fd, int signum)
                 c = (char) signum;
                 write(fd, &c, 1);
         }
+        return 0;
 }
 
 /*
@@ -514,13 +515,11 @@ pdsh_rcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
 int
 pdsh_signal(int fd, int signum)
 {   
-        mcmd_signal(fd, signum); 
-        return 0;
+        return mcmd_signal(fd, signum); 
 }
 
 int
 pdsh_rcmd_init(opt_t * opt)
 {   
-        mcmd_init(opt);
-        return 0;
+        return mcmd_init(opt);
 }
