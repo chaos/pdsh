@@ -87,8 +87,7 @@ char copyright[] =
 /*
  * From: @(#)mqshd.c     5.38 (Berkeley) 3/2/91
  */
-char rcsid[] = 
-"$Id$";
+char rcsid[] = "$Id$";
 /* #include "version.h" */
 
 #if     HAVE_CONFIG_H
@@ -134,14 +133,15 @@ char rcsid[] =
 #include <elan3/elanvp.h>
 #include <rms/rmscall.h>
 
-#include "fd.h"
 #include <munge.h>
+
+#include "fd.h"
 #include "xstring.h"
 #include "err.h"
 #include "qswutil.h"
 
-enum stderr_err {_NONE = 0, _MUNGE, _PAYLOAD, _PORT, _DATA, 
-                 _QSW, _CRED, _SYSTEM, _INTERNAL};
+enum stderr_err {__NONE = 0, __READ, __MUNGE, __PAYLOAD, __PORT,  
+                 __CRED, __SYSTEM, __INTERNAL};
 
 #define HOSTNAME_MAX_LEN 80
 #define MAX_MBUF_SIZE 4096
@@ -237,21 +237,30 @@ errlog(const char *fmt, ...) {
   write(2, buf, strlen(buf));
 }
 
-static int getstr(char *buf, int cnt)
+static int getstr(char *buf, int cnt, const char *err)
 {
-    char c;
-    do {
-        if (read(0, &c, 1) != 1) 
-          return -1;
+  int rv;
+  char c;
 
-        *buf++ = c;
+  do {
+    if ((rv = read(0, &c, 1)) < 0) { 
+      errlog("mqshd: read %s error: %s\n", err, strerror(errno));
+      return -1;
+    }
+    *buf++ = c;
+    
+    if (rv != 1) {
+      errlog("mqshd: %s read wrong number of bytes: %d\n", err, rv);
+      return -1;
+    }
 
-        if (--cnt == 0)
-          return 0;
-
-    } while (c != 0);
-
-    return cnt;
+    if (--cnt == 0) {
+      errlog("mqshd: %s too long\n", err);
+      return -1;
+    }
+  } while (c != 0);
+  
+  return cnt;
 }
 
 void
@@ -293,7 +302,7 @@ ife_addr_list(struct interface *ptr, struct if_ipaddr_list *cookie)
     if_rv = inet_pton(AF_INET, ap->sprint(&ptr->addr,1), &cookie->ipaddr);
     if (if_rv <= 0) {
       syslog(LOG_ERR, "failed inet_pton: %m");
-      exit(EXIT_FAILURE);
+      exit(1);
     }
     return;
   }
@@ -301,13 +310,13 @@ ife_addr_list(struct interface *ptr, struct if_ipaddr_list *cookie)
     if_rv = inet_pton(AF_INET, ap->sprint(&ptr->addr,1), &cookie->next->ipaddr);
     if (if_rv <= 0) {
       syslog(LOG_ERR, "failed inet_pton: %m");
-      exit(EXIT_FAILURE);
+      exit(1);
     }
     if (cookie->next->prev == 0)
       cookie->next->prev = cookie;
   } else {
     syslog(LOG_ERR, "ife_addr_list: no memory left");
-    exit(EXIT_FAILURE);
+    exit(1);
   }
 }
 
@@ -400,7 +409,7 @@ doit(struct sockaddr_in *fromp)
   int found;
   int last, last_ipaddr;
   int i;
-  enum stderr_err errnum = _NONE;
+  enum stderr_err errnum = __NONE;
   unsigned int chrnum = 0;
   unsigned int rand;
   unsigned short port = 0;
@@ -449,7 +458,7 @@ doit(struct sockaddr_in *fromp)
     rv = read(0,&clear_port[i],1);
     if (rv != 1) {
       syslog(LOG_ERR, "%s: %m", "mqshd: Bad bad read of stderr port.");
-      exit(EXIT_FAILURE);
+      exit(1);
     }
     i++;
   } while (clear_port[i-1] != '\0');
@@ -457,11 +466,16 @@ doit(struct sockaddr_in *fromp)
   cport = strtol(clear_port, (char **)NULL, 10);
   if (cport == 0 && errno != 0) {
     syslog(LOG_ERR, "%s: %m", "mqshd: Bad stderr port received.");
-    exit(EXIT_FAILURE);
+    exit(1);
   }
 
   /* read munge blob for authentication */
   buf_length = fd_null_read_n(0, &mbuf[0], MAX_MBUF_SIZE);
+  if (buf_length < 0) {
+    syslog(LOG_ERR, "%s: %m", "mqshd: bad read error.");
+    errnum = __READ;
+    goto error_out;
+  }
 
   /*
    * We call munge_verify which will take what we read in and return a
@@ -487,10 +501,7 @@ doit(struct sockaddr_in *fromp)
    */
   mptr = &mbuf[0];
   if ((m_rv = munge_decode(mbuf,0,(void **)&mptr,&buf_length,&cred.pw_uid,&cred.pw_gid)) != EMUNGE_SUCCESS) {
-    /*
-     * Shut'er down Clancy, she's a pump'n mud...
-     */
-    errnum = _MUNGE;
+    errnum = __MUNGE;
     goto error_out;
   }
 
@@ -498,7 +509,7 @@ doit(struct sockaddr_in *fromp)
     /*
      * We got hosed somehow, or sent null payload data...
      */
-    errnum = _PAYLOAD;
+    errnum = __PAYLOAD;
     goto error_out;
   }
 
@@ -512,16 +523,14 @@ doit(struct sockaddr_in *fromp)
 
   if ((pwd = getpwnam(m_arg_ptr)) == NULL) {
     syslog(LOG_ERR, "bad getpwnam(): %m");
-    free(mptr);
-    errnum = _SYSTEM;
+    errnum = __SYSTEM;
     goto error_out;
   }
 
   if (pwd->pw_uid != cred.pw_uid) {
     if (cred.pw_uid != 0) {
       syslog(LOG_ERR, "failed credential check: %m");
-      free(mptr);
-      errnum = _CRED;
+      errnum = __CRED;
       goto error_out;
     }
   }
@@ -532,16 +541,14 @@ doit(struct sockaddr_in *fromp)
   (unsigned int) m_parser += (m_arg_char_ctr+1);
   if (m_parser >= m_end) {
     syslog(LOG_ERR, "parser went beyond valid data: %m");
-    free(mptr);
-    errnum = _INTERNAL;
+    errnum = __INTERNAL;
     goto error_out;
   }
 
   m_arg_char_ctr = strlen(m_parser);
   if (gethostname(&m_hostname[0], HOSTNAME_MAX_LEN) < 0) {
     syslog(LOG_ERR, "failed gethostname: %m");
-    free(mptr);
-    errnum = _SYSTEM;
+    errnum = __SYSTEM;
     goto error_out;
   }
 
@@ -557,8 +564,7 @@ doit(struct sockaddr_in *fromp)
   m_hostent = gethostbyname(&m_base_hostname[0]);
   if (m_hostent == NULL) {
     syslog(LOG_ERR, "failed gethostbyname: %m");
-    free(mptr);
-    errnum = _SYSTEM;
+    errnum = __SYSTEM;
     goto error_out;
   }
 
@@ -568,8 +574,7 @@ doit(struct sockaddr_in *fromp)
   m_rv = inet_pton(AF_INET, &dec_addr[0], &sin.sin_addr.s_addr);
   if (m_rv <= 0) {
     syslog(LOG_ERR, "failed inet_pton: %m");
-    free(mptr);
-    errnum = _SYSTEM;
+    errnum = __SYSTEM;
     goto error_out;
   }
 
@@ -585,16 +590,14 @@ doit(struct sockaddr_in *fromp)
     list = calloc(1,sizeof(struct if_ipaddr_list));
     if (list == NULL) {
       syslog(LOG_ERR, "failed calloc: %m");
-      free(mptr);
-      errnum = _SYSTEM;
+      errnum = __SYSTEM;
       goto error_out;
     }
     list->prev = (struct if_ipaddr_list *)(0xcafebabe);
 
     if ((skfd = sockets_open(0)) < 0) {
       syslog(LOG_ERR, "sockets_open error");
-      free(mptr);
-      errnum = _INTERNAL;
+      errnum = __INTERNAL;
       goto error_out;
     }
 
@@ -624,8 +627,7 @@ doit(struct sockaddr_in *fromp)
        */
       errno = EACCES;
       syslog(LOG_ERR, "%s: %m","addresses don't match");
-      free(mptr);
-      errnum = _PAYLOAD;
+      errnum = __INTERNAL;
       goto error_out; 
     }
   }
@@ -636,8 +638,7 @@ doit(struct sockaddr_in *fromp)
   (unsigned int) m_parser += (m_arg_char_ctr+1);
   if (m_parser >= m_end) {
     syslog(LOG_ERR, "parser went beyond valid data: %m");
-    free(mptr);
-    errnum = _INTERNAL;
+    errnum = __INTERNAL;
     goto error_out;
   }
   m_arg_char_ctr = strlen(m_parser);
@@ -646,13 +647,14 @@ doit(struct sockaddr_in *fromp)
   port = strtol(m_parser, (char **)NULL, 10);
   if (port == 0 && errno != 0) {
     syslog(LOG_ERR, "%s: %m", "mqshd: Bad port number from client.");
-    free(mptr);
-    errnum = _SYSTEM;
+    errnum = __SYSTEM;
     goto error_out;
   }
 
-  if (port != cport) 
-    errnum = _PORT;
+  if (port != cport) {
+    errnum = __PORT;
+    goto error_out;
+  }
 
   /*
    * Now we need to retrieve the random number generated by the client
@@ -661,8 +663,7 @@ doit(struct sockaddr_in *fromp)
   (unsigned int) m_parser += (m_arg_char_ctr+1);
   if (m_parser >= m_end) {
     syslog(LOG_ERR, "parser went beyond valid data: %m");
-    free(mptr);
-    errnum = _INTERNAL;
+    errnum = __INTERNAL;
     goto error_out;
   }
   m_arg_char_ctr = strlen(m_parser);
@@ -671,8 +672,7 @@ doit(struct sockaddr_in *fromp)
   rand = strtol(m_parser,(char **)NULL,10);
   if (rand == 0 && errno != 0) {
     syslog(LOG_ERR, "%s: %m", "mqshd: Bad random number from client.");
-    free(mptr);
-    errnum = _SYSTEM;
+    errnum = __SYSTEM;
     goto error_out;
   }
 
@@ -692,7 +692,7 @@ doit(struct sockaddr_in *fromp)
     if (sock < 0) {
       syslog(LOG_ERR,"%s: %m","can't get stderr port: socket call failed.");
       free(mptr);
-      exit(EXIT_FAILURE);
+      exit(1);
     }
     sin.sin_family = AF_INET;
     sin.sin_port = htons(cport);
@@ -700,44 +700,43 @@ doit(struct sockaddr_in *fromp)
     if (connect(sock, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
       syslog(LOG_ERR,"%s: %m","connect stderr port: failed.");
       free(mptr);
-      exit(EXIT_FAILURE);
+      exit(1);
     }
     if (errnum) {
       switch(errnum) {
-      case _MUNGE: errorsock(sock,"mqshd: %s", munge_strerror(m_rv));
+      case __READ: errorsock(sock, "mqshd: error reading munge blob."  );
         break;
-      case _PAYLOAD: errorsock(sock,"mqshd: Bad payload data.");
+      case __MUNGE: errorsock(sock,"mqshd: %s", munge_strerror(m_rv));
         break;
-      case _PORT: errorsock(sock,"mqshd: Cleartext stderr port number is not the same as the encrypted one.");
+      case __PAYLOAD: errorsock(sock,"mqshd: Bad payload data.");
         break;
-      case _DATA: errorsock(sock,"mqshd: error reading data.");
+      case __PORT: errorsock(sock,"mqshd: Cleartext stderr port number is not the same as the encrypted one.");
         break;
-      case _QSW: errorsock(sock,"mqshd: qsw error.");
+      case __CRED: errorsock(sock,"mqshd: failed credential check.");
         break;
-      case _CRED: errorsock(sock,"mqshd: failed credential check.");
+      case __SYSTEM: errorsock(sock,"mqshd: internal system error.");
         break;
-      case _SYSTEM: errorsock(sock,"mqshd: internal system error.");
-        break;
-      case _INTERNAL: errorsock(sock,"mqshd: internal error.");
+      case __INTERNAL: errorsock(sock,"mqshd: internal error.");
         break;
       default:
         break;
       }
       
-      free(mptr);
-      close(sock);
-      exit(EXIT_FAILURE);
+      if (errnum != __READ && errnum != __MUNGE && errnum != __PAYLOAD)
+        goto bad2;
+      goto bad;
     }
   }
 
+  /*
+   * Write random number to stderr
+   */
   rand = htonl(rand);
   rv = fd_write_n(sock,&rand,sizeof(rand));
   if (rv == -1) {
     syslog(LOG_ERR,"%s: %m","couldn't write to stderr port: ");
-    free(mptr);
-    errorsock(sock, "mqshd: internal system error.");
-    close(sock);
-    exit(EXIT_FAILURE);
+    error("mqshd: internal system error.");
+    goto bad2;
   }
 
   /*
@@ -745,73 +744,49 @@ doit(struct sockaddr_in *fromp)
    */ 
 
   /* read cwd of client - will change to cwd on remote side */
-  if (getstr(cwd, sizeof(cwd)) <= 0) {
-    errlog("mqshd: error reading cwd: %m.");
-    free(mptr);
-    close(sock);
-    exit(EXIT_FAILURE);
+  if (getstr(cwd, sizeof(cwd), "cwd") < 0) {
+    goto bad2;
   }
  
   /* read environment of client - will replicate on remote side */
-  if (getstr(tmpstr, sizeof(tmpstr)) <= 0) {
-    errlog("mqshd: error reading envcount: %m.");
-    free(mptr);
-    close(sock);
-    exit(EXIT_FAILURE);
+  if (getstr(tmpstr, sizeof(tmpstr), "envcount") < 0) {
+    goto bad2;
   }
   envcount = atoi(tmpstr);
   while (envcount-- > 0) {
-    if (getstr(envstr, sizeof(envstr)) <= 0) {
-      errlog("mqshd: error reading envstr: %m.");
-      free(mptr);
-      close(sock);
-      exit(EXIT_FAILURE);
+    if (getstr(envstr, sizeof(envstr), "envstr") < 0) {
+      goto bad2;
     }
-    putenv(strdup(envstr));             /* ahchoo, maybe mem-leak? */
+    putenv(strdup(envstr));             /* achu, mem-leak? */
   } 
  
   /* read elan capability */
-  if (getstr(tmpstr, sizeof(tmpstr)) <= 0) {
-    errlog("mqshd: error reading capability: %m.");
-    free(mptr);
-    close(sock);
-    exit(EXIT_FAILURE);
+  if (getstr(tmpstr, sizeof(tmpstr), "capability") < 0) {
+    goto bad2;
   }
   if (qsw_decode_cap(tmpstr, &cap) < 0) {
     errlog("mqshd: error decoding capability");
-    free(mptr);
-    close(sock);
-    exit(EXIT_FAILURE);
+    goto bad2;
   } 
  
   for (i = 0; i < qsw_cap_bitmap_count(); i += 16) {
-    if (getstr(tmpstr, sizeof(tmpstr)) <= 0) { 
-      errlog("mqshd: error reading capability: %m.");
-      free(mptr);
-      close(sock);
-      exit(EXIT_FAILURE);
+    if (getstr(tmpstr, sizeof(tmpstr), "capability") < 0) { 
+      goto bad2;
     }
     if (qsw_decode_cap_bitmap(tmpstr, &cap, i) < 0) {
       errlog("mqshd: error reading capability bitmap(%d): %s", i, tmpstr);
-      free(mptr);
-      close(sock);
-      exit(EXIT_FAILURE);
+      goto bad2;
     }
   }
  
   /* read info structure */
-  if (getstr(tmpstr, sizeof(tmpstr)) <= 0) {
-    errlog("mqshd: error reading qsw info: %m.");
-    free(mptr);
-    close(sock);
-    exit(EXIT_FAILURE);
+  if (getstr(tmpstr, sizeof(tmpstr), "qsw info") < 0) {
+    goto bad2;
   }
 
   if (qsw_decode_info(tmpstr, &qinfo) < 0) { 
     errlog("mqshd: error decoding qsw info.");
-    free(mptr);
-    close(sock);
-    exit(EXIT_FAILURE);
+    goto bad2;
   }
 
   /* 
@@ -819,17 +794,15 @@ doit(struct sockaddr_in *fromp)
    */ 
 
   /*
-   * Now we are ready to process the users command.
+   * Now we are ready to process the user's command.
    */
 
   /* get command */
   (unsigned int) m_parser += (m_arg_char_ctr+1);
   if (m_parser >= m_end) {
     syslog(LOG_ERR, "parser went beyond valid data: %m");
-    errorsock(sock, "mqshd: internal error.");
-    free(mptr);
-    close(sock);
-    exit(EXIT_FAILURE);
+    error("mqshd: internal error.");
+    goto bad2;
   }
   m_arg_char_ctr = strlen(m_parser);
 
@@ -839,23 +812,20 @@ doit(struct sockaddr_in *fromp)
     free(mptr);
   } else {
     errno = EOVERFLOW;
-    error("%s: not enough space allocated for command args: %s\n", &m_hostname[0], strerror(errno));
-    free(mptr);
-    close(sock);
-    exit(EXIT_FAILURE);
+    error("%s: not enough space allocated for command args: %s\n", 
+          &m_hostname[0], strerror(errno));
+    goto bad2;
   }
 
   if (pwd->pw_uid != 0 && !access(_PATH_NOLOGIN, F_OK)) {
     error("Logins are currently disabled.\n");
-    close(sock);
-    exit(1);
+    goto bad;
   }
 
   m_rv = write(1, "", 1);
   if (m_rv != 1) {
-    syslog (LOG_ERR, "%s: %m", "mqshd: bad write of null to stdout.");
-    errnum = _SYSTEM;
-    goto error_out;
+    errlog("mqshd: bad write of null to stdout: %s\n", strerror(errno));
+    exit(1);
   }
   sent_null = 1;
 
@@ -867,14 +837,12 @@ doit(struct sockaddr_in *fromp)
   if (port) {
     if (pipe(pv) < 0) {
       error("Can't make pipe.\n");
-      close(sock);
-      exit(1);
+      goto bad;
     }
     pid = fork();
     if (pid == -1)  {
       error("Can't fork; try again.\n");
-      close(sock);
-      exit(1);
+      goto bad;
     }
     if (pid) {
       close(0); 
@@ -962,7 +930,7 @@ doit(struct sockaddr_in *fromp)
   /* change to client working dir */
   if (chdir(cwd) < 0) {
     errlog("chdir to client working directory: %s: %s\n", strerror(errno), &cwd[0]);
-    exit(EXIT_FAILURE);
+    exit(1);
   }
   /*
    * Close all fds, in case libc has left fun stuff like 
@@ -974,7 +942,13 @@ doit(struct sockaddr_in *fromp)
 
   execl(theshell, shellname, "-c", cmdbuf, 0);
   errlog("failed to exec shell: %s", strerror(errno));
-  exit(EXIT_FAILURE);
+  exit(1);
+
+ bad2:
+  free(mptr);
+ bad:
+  close(sock);
+  exit(1);
 }
 
 static void network_init(int fd, struct sockaddr_in *fromp)
@@ -986,7 +960,7 @@ static void network_init(int fd, struct sockaddr_in *fromp)
   fromlen = sizeof(*fromp);
   if (getpeername(fd, (struct sockaddr *) fromp, &fromlen) < 0) {
     errlog("getpeername: %s\n", strerror(errno));
-    exit(EXIT_FAILURE);
+    exit(1);
   }
   if (keepalive &&
       setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (char *)&on,
@@ -1000,7 +974,7 @@ static void network_init(int fd, struct sockaddr_in *fromp)
 
   if (fromp->sin_family != AF_INET) {
     errlog("malformed \"from\" address (af %d): %s\n", fromp->sin_family, strerror(errno));
-    exit(EXIT_FAILURE);
+    exit(1);
   }
 
 #ifdef IP_OPTIONS
@@ -1089,6 +1063,7 @@ main(int argc, char *argv[])
     sleep(1);
   }
 #endif
+
   network_init(0, &from);
   doit(&from);
   return 0;
