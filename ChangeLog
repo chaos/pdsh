@@ -1,7 +1,9 @@
 2004-02-24  Mark Grondona <mgrondona@llnl.gov>
 	
-	* src/modules/slurm.c : Use dlopen on libslurm and resolve only
-	the symbols needed by module. 
+	* configure.ac : Export WITH_GNU_LD Automake conditional.
+
+	* src/modules/Makefile.am : Build version script for all pdsh modules
+	if using GNU linker.
 
 2004-02-17  Mark Grondona <mgrondona@llnl.gov>
 

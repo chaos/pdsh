@@ -10,10 +10,15 @@ AUTOMAKE_OPTIONS = foreign
 
 INCLUDES =         -I$(top_srcdir)
 
+if WITH_GNU_LD
+VERSION_SCRIPT =   version.map
+OTHER_FLAGS =      -Wl,--version-script=$(VERSION_SCRIPT)
+endif
+
 if WITH_STATIC_MODULES
 MODULE_FLAGS = 
 else
-MODULE_FLAGS =     -module -avoid-version -Wl,--version-script=version.map
+MODULE_FLAGS =     -module -avoid-version $(OTHER_FLAGS)
 endif
 
 nodist_libmods_la_SOURCES = $(top_builddir)/static_modules.h
@@ -116,7 +121,7 @@ pkglib_LTLIBRARIES = \
 	$(SLURM_MODULE)
 
 BUILT_SOURCES = \
-	version.map
+	$(VERSION_SCRIPT)
 
 endif
 
@@ -153,9 +158,9 @@ sdr_la_LIBADD =           $(top_builddir)/src/common/libcommon.la
 slurm_la_SOURCES =        slurm.c 
 slurm_la_LDFLAGS =        $(MODULE_FLAGS) $(SLURM_LIBS)
 
-version.map : 
+$(VERSION_SCRIPT) : 
 	(echo  "{ global:";                \
 	 echo "    pdsh_module_info;";     \
 	 echo "    pdsh_module_priority;"; \
 	 echo "  local: *;";               \
-	 echo "};") > version.map
+	 echo "};") > $(VERSION_SCRIPT)
