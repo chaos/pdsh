@@ -13,6 +13,7 @@
 AC_INIT
 AC_CONFIG_SRCDIR([dsh.h])
 AC_CONFIG_AUX_DIR(auxdir)
+AC_SUBST(ac_aux_dir)
 AC_CONFIG_SRCDIR([configure.ac])
 
 # determine the system type

@@ -2,7 +2,12 @@
 
 AUTOMAKE_OPTIONS = foreign 
 
-SUBDIRS = . testsuite
+SUBDIRS        = . testsuite
+
+auxdir         = $(srcdir)/$(ac_aux_dir)
+AUX_DIST       = $(auxdir)/config.guess $(auxdir)/config.sub \
+		 $(auxdir)/install-sh $(auxdir)/missing \
+		 $(auxdir)/mkinstalldirs $(auxdir)/depcomp
 
 bin_PROGRAMS   = pdsh	
 sbin_PROGRAMS  = @PROG_QSHD@
@@ -57,6 +62,9 @@ in_qshd_SOURCES =		\
 include $(top_srcdir)/Make-rpm.mk
 
 install-exec-hook:
+	@echo "chown root $(DESTDIR)$(bindir)/pdsh"
+	@chown root $(DESTDIR)$(bindir)/pdsh ||\
+	   echo "Unable to chown pdsh to root"
 	@echo "chmod 4755 $(DESTDIR)$(bindir)/pdsh"
 	@chmod 4755 $(DESTDIR)$(bindir)/pdsh ||\
 	   echo "Unable to set permissions on pdsh"
@@ -66,12 +74,21 @@ install-exec-hook:
 uninstall-local:
 	$(RM) $(DESTDIR)$(bindir)/pdcp
 
+#dist-hook:
+#	(cd $(distdir) && mkdir $(auxdir)) || :
+#	for file in $(AUX_DIST) ; do \
+#	  cp $$file $(distdir)/$$file; \
+#	done
+
+maintainer-clean-local:
+	(cd $(top_srcdir) && rm -rf autom4te.cache)
 
 MAINTAINERCLEANFILES = 		\
-	Makefile.in aclocal.m4 config.guess \
-	config.h.in config.sub configure install-sh \
-	missing mkinstalldirs stamp-h.in \
-	autom4te.cache
+	Makefile.in aclocal.m4  \
+	config.h.in configure   \
+	stamp-h stamp-h.in      \
+	autom4te.cache 		\
+	$(AUX_DIST)
 
 # Extra files to distribute with `make dist'
 EXTRA_DIST = 		\
@@ -82,6 +99,6 @@ EXTRA_DIST = 		\
 	META		\
 	Make-rpm.mk     \
 	pdsh.spec.in	\
-	auxdir		\
 	dshbak dshbak.1 \
-	qshell.xinetd
+	qshell.xinetd   \
+	$(AUX_DIST)
