@@ -33,6 +33,15 @@
 
 #include "list.h"               /* for list_t */
 
+#ifdef HAVE_LIBGENDERS
+#include <genders.h>
+
+#ifdef HAVE_LIBNODEUPDOWN
+#include <nodeupdown.h>
+#endif
+
+#endif
+
 #ifndef _BOOL_DEFINED
 #define _BOOL_DEFINED
 typedef enum { false, true } bool;
@@ -45,6 +54,16 @@ hostlist_t sdr_wcoll(bool, bool, bool);
 #endif
 #if 	HAVE_GENDERS
 hostlist_t read_genders(char *attr, int ropt);
+
+#ifdef HAVE_LIBGENDERS
+#ifndef GENDERS_ALTNAME_ATTRIBUTE
+#define GENDERS_ALTNAME_ATTRIBUTE   "altname"
+#endif
+#ifdef HAVE_LIBNODEUPDOWN
+hostlist_t get_verified_nodes(int iopt);
+#endif
+#endif
+
 #endif
 #if 	HAVE_RMSQUERY
 hostlist_t rms_wcoll(void);

@@ -102,6 +102,7 @@ Usage: pdcp [-options] src [src2...] dest\n\
 #define SDR_ARGS	"Gv"
 #define GEND_ARGS	"g:"
 #define ELAN_ARGS	"Em:"
+#define NODEUPDOWN_ARGS "v"
 
 /*
  * Set defaults for various options.
@@ -240,6 +241,13 @@ void opt_args(opt_t * opt, int argc, char *argv[])
 #if	HAVE_GENDERS
     xstrcat(&validargs, GEND_ARGS);
 #endif
+
+#ifdef HAVE_LIBGENDERS
+#ifdef HAVE_LIBNODEUPDOWN
+    xstrcat(&validargs, NODEUPDOWN_ARGS);
+#endif /* HAVE_LIBNODEUPDOWN */
+#endif /* HAVE_LIBGENDERS */
+
 #ifdef __linux
     /* Tell glibc getopt to stop eating after the first non-option arg */
     putenv("POSIXLY_CORRECT=1");
@@ -368,7 +376,24 @@ void opt_args(opt_t * opt, int argc, char *argv[])
         opt->wcoll = sdr_wcoll(opt->sdr_global,
                                opt->altnames, opt->sdr_verify);
 #elif 	HAVE_GENDERS
-        opt->wcoll = read_genders("all", opt->altnames);
+	if (opt->sdr_verify) {
+  #ifdef     HAVE_LIBGENDERS
+    #ifdef     HAVE_LIBNODEUPDOWN
+	  opt->wcoll = get_verified_nodes(opt->altnames);
+    #else
+	    errx("%p: this pdsh configuration does not support -v\n");
+    #endif /* HAVE_LIBNODEUPDOWN */
+  #else
+	  errx("%p: this pdsh configuration does not support -v\n");
+  #endif /* HAVE_LIBGENDERS */
+	}
+	else {
+  #ifdef     HAVE_LIBGENDERS
+	  opt->wcoll = read_genders(NULL, opt->altnames);
+  #else
+	  opt->wcoll = read_genders("all", opt->altnames);
+  #endif /* HAVE_LIBGENDERS */
+	}
 #else
         errx("%p: this pdsh configuration does not support -a\n");
 #endif

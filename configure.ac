@@ -287,6 +287,31 @@ AC_SUBST(NODEATTR)
 AM_CONDITIONAL(WITH_GENDERS, test $HAVE_GENDERS = 1)
 
 #
+# Check for genders and nodeupdown libraries
+# - by default, AC_CHECK_LIB defines HAVE_LIBGENDERS
+#   and HAVE_LIBNODEUPDOWN and add the libraries to LIBS
+#   if you don't give it a the 3rd and 4th arguments
+# - unfortunately, we also have to define a shell variable so the
+#   manpage can output the correct options.  So that's why we have to 
+#   do the funny stuff below.
+#
+AC_CHECK_LIB(genders, genders_handle_create, HAVE_LIBGENDERS=1, HAVE_LIBGENDERS=0)
+if test "$HAVE_LIBGENDERS"=1; then
+   AC_DEFINE(HAVE_LIBGENDERS, 1, [define that you have the genders library])
+   LIBS="-lgenders $LIBS" 
+fi
+AC_SUBST(HAVE_LIBGENDERS)
+
+if test "$HAVE_LIBGENDERS"=1; then
+  AC_CHECK_LIB(nodeupdown, nodeupdown_create, HAVE_LIBNODEUPDOWN=1, HAVE_LIBNODEUPDOWN=0)
+  if test "$HAVE_LIBNODEUPDOWN"=1; then
+     AC_DEFINE(HAVE_LIBNODEUPDOWN, 1, [define that you have the nodeupdown library])
+     LIBS="-lnodeupdown $LIBS" 
+  fi
+  AC_SUBST(HAVE_LIBNODEUPDOWN)
+fi
+
+#
 # Find path to rmsquery.  Support for RMS (allocate) is automatic if found.
 #
 SEARCH_PATH=/usr/bin:$PATH

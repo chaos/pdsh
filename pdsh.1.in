@@ -30,7 +30,6 @@ and commands prefaced with an exclamation point will be executed on the local
 system.
 
 .SH TARGET NODE LIST OPTIONS
-
 .I "-w host,host,..."
 Target the specified hosts.  No spaces are allowed in the comma-separated
 list.  A list consisting of a single "-" character causes the target 
@@ -52,6 +51,10 @@ In combination with -a, eliminate nodes that the SDR thinks are down.
 .I "-G"
 In combination with -a, include all partitions. 
 \}
+.if @HAVE_LIBNODEUPDOWN@ \{
+.I "-v"
+In combination with -a, eliminate nodes that the nodeupdown library thinks are down.
+\} 
 .if @HAVE_GENDERS@ \{
 .I "-g attribute"
 Target nodes that have the specified genders attribute.	

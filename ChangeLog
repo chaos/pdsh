@@ -1,3 +1,10 @@
+2002-02-26 achu
+	* Added linux support for -v option by using nodeupdown library
+	  to check for up and down nodes.
+	* Upgraded read_genders() function to use genders C library
+	* Made appropriate changes to configure.ac, manpage, etc. 
+	* Tagged pdsh-1-8-7noelan
+
 2002-12-08 garilck
 	* New release code for GPL.  Updated DISCLAIMER, source file headers.
 	* Ran through "indent --no-tabs -kr *.[ch]" and installed standard

@@ -90,6 +90,102 @@ hostlist_t read_wcoll(char *file, FILE * f)
 #if HAVE_GENDERS
 hostlist_t read_genders(char *attr, int iopt)
 {
+#ifdef HAVE_LIBGENDERS
+  hostlist_t new;
+  genders_t handle;
+  char **nodelist;
+  char *altname;
+  int maxvallen, nodelist_len, num_nodes_found, ret, i;
+
+  if ((new = hostlist_create(NULL)) == NULL) {
+    errx("%p: error creating hostlist\n");
+  }
+
+  if ((handle = genders_handle_create()) == NULL) {
+    errx("%p: error creating genders handle\n");
+  }
+  
+  /* assumes genders file in default location */
+  if (genders_open(handle, NULL) == -1) {
+    errx("%p: error opening genders files, %s\n", 
+	 genders_strerror(genders_errnum(handle)));
+  }
+
+  if ((nodelist_len = genders_nodelist_create(handle, &nodelist)) == -1) {
+    errx("%p: error creating genders nodelist, %s\n",
+	 genders_strerror(genders_errnum(handle)));
+  }
+  
+  if ((num_nodes_found = genders_getnodes(handle, 
+					  nodelist, 
+					  nodelist_len, 
+					  attr,
+					  NULL)) == -1) {
+    errx("%p: error getting genders nodes, %s\n",
+	 genders_strerror(genders_errnum(handle)));
+  }
+  
+  /* does user want alternate names? */
+  if (iopt) {
+    if ((maxvallen = genders_getmaxvallen(handle)) == -1) {
+      errx("%p: error getting max value length, %s\n",
+	 genders_strerror(genders_errnum(handle)));
+    }
+    if ((altname = (char *)malloc(maxvallen + 1)) == NULL) {
+      errx("%p: Out of memory\n");
+    }
+
+    /* get each alternate name.  If no alternate name exists, use default */
+    for (i = 0; i < num_nodes_found; i++) {
+      memset(altname, '\0', maxvallen + 1);
+      ret = genders_testattr(handle, 
+			     nodelist[i], 
+			     GENDERS_ALTNAME_ATTRIBUTE, 
+			     altname);
+      if (ret == 1) {
+	if (hostlist_push_host(new, altname) == 0) {
+	  err("%p: warning: target '%s' not parsed\n", altname);
+	}
+      }
+      else if (ret == 0) {
+	if (hostlist_push_host(new, nodelist[i]) == 0) {
+	  err("%p: warning: target '%s' not parsed\n", nodelist[i]);
+	}
+      }
+      else {
+	errx("%p: error testing genders attribute, %s\n",
+	     genders_strerror(genders_errnum(handle)));
+      }
+    }
+
+    free(altname);
+  }
+  else {
+    for (i = 0; i < num_nodes_found; i++) {
+      if (hostlist_push_host(new, nodelist[i]) == 0) {
+	err("%p: warning: target '%s' not parsed\n", nodelist[i]);
+      }
+    }
+  }
+	   
+  if (genders_nodelist_destroy(handle, nodelist) == -1) {
+    errx("%p: error destroying genders nodelist, %s\n",
+	 genders_strerror(genders_errnum(handle)));
+  }
+  
+  if (genders_close(handle) == -1) {
+    errx("%p: error closing genders handle, %s\n",
+	 genders_strerror(genders_errnum(handle)));
+  }
+
+  if (genders_handle_destroy(handle) == -1) {
+    errx("%p: error destroying genders handle, %s\n",
+	 genders_strerror(genders_errnum(handle)));
+  }
+
+  return new;
+
+#else
     FILE *f;
     hostlist_t new = hostlist_create("");
     char cmd[LINEBUFSIZE];
@@ -109,6 +205,7 @@ hostlist_t read_genders(char *attr, int iopt)
         errx("%p: error running %s\n", _PATH_NODEATTR);
 
     return new;
+#endif
 }
 #endif                          /* HAVE_GENDERS */
 
@@ -374,6 +471,59 @@ hostlist_t rms_wcoll(void)
     return result;
 }
 #endif                          /* HAVE_RMSQUERY */
+
+#ifdef HAVE_LIBGENDERS
+#ifdef HAVE_LIBNODEUPDOWN
+/* get a list of up nodes by using the nodeupdown library */
+hostlist_t get_verified_nodes(int iopt) {
+  hostlist_t new;
+  hostlist_t altnames;
+  nodeupdown_t handle;
+
+  if ((new = hostlist_create(NULL)) == NULL) {
+    errx("%p: error creating hostlist\n");
+  }
+
+  if ((handle = nodeupdown_create()) == NULL) {
+    errx("%p: error creating nodeupdown handle, %s\n", 
+	 nodeupdown_strerror(nodeupdown_errnum(handle)));
+  }
+
+  if (nodeupdown_load_data(handle, NULL, NULL, NULL, 0) == -1) {
+    errx("%p: error loading nodeupdown data, %s\n", 
+	 nodeupdown_strerror(nodeupdown_errnum(handle)));
+  }
+
+  if (nodeupdown_get_up_nodes_hostlist(handle, new) == -1) {
+    errx("%p: error getting up nodes hostlist, %s\n",
+	 nodeupdown_strerror(nodeupdown_errnum(handle)));
+  }
+
+  if (iopt) {
+    if ((altnames = hostlist_create(NULL)) == NULL) {
+      errx("%p: error creating hostlist\n");
+    }
+
+    if (nodeupdown_get_hostlist_alternate_names(handle,
+						new, 
+						altnames) == -1) {
+      errx("%p: error getting node alternate names, %s\n",
+	   nodeupdown_strerror(nodeupdown_errnum(handle)));
+    }
+
+    hostlist_destroy(new);
+    new = altnames;
+  }
+
+  if (nodeupdown_destroy(handle) == -1) {
+    errx("%p: error destroying nodeupdown handle, %s\n", 
+	 nodeupdown_strerror(nodeupdown_errnum(handle)));
+  }
+  
+  return new;
+}
+#endif /* HAVE_LIBNODEUPDOWN */
+#endif /* HAVE_LIBGENDERS */
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
