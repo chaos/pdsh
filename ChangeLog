@@ -2,8 +2,15 @@
 
         * : Reorganized pdsh code and changed sources accordingly.
 
-        * qshd_common.h, qshd_common.c: Renamed to qshell.[ch], changed	
-	main_common() to qshell() and removed references to ``doit.''
+        * src/qsnet/qshd_common.h, src/qsnet/qshd_common.c: 
+	Renamed to qshell.[ch], changed	main_common() to qshell() and 
+	removed references to ``doit.''
+
+	* src/modules/mcmd.c (mcmd) src/modules/mqcmd.c (mqcmd): 
+	Incorporated Al Chu's patch to fix potential error message
+	inconsistencies due to a close call before an errno check. 
+
+	* : Tagged pdsh-2-0-0-pre5 for testing.
 
 2003-08-19  Albert Chu  <chu11@llnl.gov>
 
