@@ -368,16 +368,14 @@ AC_ARG_WITH(readline,
 )
 AC_MSG_RESULT(${readline=no})
 if test x$readline = xyes; then
-   savedLIBS="$LIBS"
-   savedCFLAGS="$CFLAGS"
+dnl   savedLIBS="$LIBS"
    LIBS="$READLINE_LIBS $LIBS"
    AC_CHECK_LIB([readline], [readline], [], 
       AC_MSG_ERROR([Cannot find libreadline!]))
 dnl   AC_CHECK_LIB([history], [add_history], [], 
 dnl      AC_MSG_ERROR([Cannot find libhistory!]))
    AC_DEFINE(HAVE_READLINE, 1, [Define if you are compiling with readline])
-   LIBS="$savedLIBS"
-   CFLAGS="$savedCFLAGS"
+dnl   LIBS="$savedLIBS"
    AC_SUBST(READLINE_LIBS)
 fi
 AM_CONDITIONAL(WITH_READLINE, test "x$with_readline" = "xyes")
