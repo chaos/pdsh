@@ -303,7 +303,7 @@ mqcmd_signal(int fd, int signum)
  *  s (IN)      socket
  *  nodeid (IN) node index for this connection
  */
-static int _mqcmd_send_extra_args(int s, int nodeid)
+static int _mqcmd_send_extra_args(int s, int nodeid, const char *ahost)
 {
   char **ep;
   char tmpstr[1024];
@@ -684,7 +684,7 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
   }
 
   /* send extra information */
-  if (_mqcmd_send_extra_args(s, nodeid) < 0) {
+  if (_mqcmd_send_extra_args(s, nodeid, ahost) < 0) {
     err("%p: %S: mqcmd: error sending extra args\n", ahost);
     goto bad2;
   }
