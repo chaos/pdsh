@@ -20,7 +20,8 @@ AC_DEFUN([AC_SDR],
   #
   # Find path to SDRGetObjects.  SDR module is automatically build if found
   #
-  AC_PATH_PROG([SDRGETOBJECTS], [SDRGetObjects], [], [/usr/lpp/ssp/bin:$PATH])
+  AC_PATH_PROG([SDRGETOBJECTS], [SDRGetObjects], [], 
+	           [/usr/lpp/ssp/bin:/usr/sbin:$PATH])
   if test -n "$SDRGETOBJECTS"; then
       AC_ADD_STATIC_MODULE("sdr")
       AC_DEFINE([HAVE_SDR], [1], [Define if you have SDR])
