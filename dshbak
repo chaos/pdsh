@@ -118,7 +118,7 @@ sub comp
                            ) ? $i{$$_[0]} : ++$i{$$_[0]}
                          ]
               }, ($$_[1])
-        ) for map { [/(.+?)(\d*)$/] } sortn(@_);
+        ) for map { [/(.*?)(\d*)$/] } sortn(@_);
 
         for my $key (keys %s) {
                 @{$s{$key}} =
