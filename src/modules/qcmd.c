@@ -279,7 +279,7 @@ int qcmd_init(opt_t * opt)
     _qcmd_opt_init(opt);
 
     if (getcwd(cwd, sizeof(cwd)) == NULL)       /* cache working directory */
-        errx("%p: getcwd failed\n");
+        errx("%p: getcwd failed: %m\n");
 
     /* initialize Elan capability structure. */
     if (qsw_init_capability(&cap, totprocs, opt->wcoll, cyclic) < 0)
