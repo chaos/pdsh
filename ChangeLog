@@ -214,5 +214,8 @@
 	* Automake-ified
 	* Have `dshbak -c' generate bracketed ranges compatible with pdsh -w
 	* Updated testsuite for compatibility with bracketed host ranges
+
+2002-09-12 garlick
 	* Repair a file descriptor leak in rcp_thread (wasn't closing efd).
+	* More error reporting in qswutil.c, qcmd.c, qshd.c
 	* Taggged pdsh-1-7-2chaos
