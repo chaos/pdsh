@@ -71,7 +71,7 @@ if ( / (\d+)\.(\d+)\.(\d+) /) {
 	exit 1 if (\$1 < $LTLMAJOR); 
 	exit 1 if (\$1 == $LTLMAJOR && \$2 < $LTLMINOR);
         if (defined(\$3)) {
-            exit 1 if (\$1 == $LTLMAJOR && \$2 == $LTLMINOR && \$5 < $LTLPATCH); 
+            exit 1 if (\$1 == $LTLMAJOR && \$2 == $LTLMINOR && \$3 < $LTLPATCH); 
         }
 }"
 
