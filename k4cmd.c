@@ -116,7 +116,6 @@ k4cmd(char *ahost, char *locuser, char *remuser, char *cmd, int rank, int *fd2p)
 	struct sockaddr_in sin, from;
 	char            c;
 	int             lport = IPPORT_RESERVED - 1;
-	char		*host_save;
 	unsigned long	krb_options = 0L;
 	static pthread_mutex_t mylock = PTHREAD_MUTEX_INITIALIZER;
 #if HAVE_GETHOSTBYNAME_R
@@ -130,7 +129,6 @@ k4cmd(char *ahost, char *locuser, char *remuser, char *cmd, int rank, int *fd2p)
 	int             rc, rv;
 	fd_set          reads;
 	int 		maxfd;
-	char		*tmpstr;
 
 	pid = getpid();
 #if HAVE_GETHOSTBYNAME_R
@@ -301,7 +299,6 @@ k4cmd(char *ahost, char *locuser, char *remuser, char *cmd, int rank, int *fd2p)
 	(void) write(s, remuser, strlen(remuser) + 1);
 	(void) write(s, cmd, strlen(cmd) + 1);
 
-reread:
 	if ((rc = read(s, &c, 1)) != 1) {
 		if (rc == -1) {
 			err("%p: %S: read: %m\n", ahost);
