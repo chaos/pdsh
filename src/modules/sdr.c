@@ -143,11 +143,17 @@ static hostlist_t sdr_wcoll(bool Gopt, bool iopt, bool vopt);
 
 static hostlist_t read_sdr(opt_t *opt)
 {
+    if (allnodes && opt->wcoll)
+        errx("%p: Do not specify -a with other node selection options\n");
+
+    if (altnames && !allnodes)
+        err("%p: Warning: Ignoring -i without -a\n");
+
+    if (verify && !allnodes)
+        err("%p: Warning: Ignoring -v without -a\n");
+
     if (!allnodes)
         return NULL;
-
-    if (opt->wcoll)
-        errx("%p: Do not specify -a with other node selection options\n");
 
     return sdr_wcoll(global, altnames, verify);
 }

@@ -54,8 +54,10 @@ static hostlist_t genders_wcoll(opt_t *pdsh_opts);
 static int genders_process_opt(opt_t *, int, char *);
 static hostlist_t _read_genders(char *attr, int iopt);
 
+#if !GENDERS_G_ONLY
 static bool allnodes   = false;
 static bool altnames   = false;
+#endif /* !GENDERS_G_ONLY */
 static char *gend_attr = NULL;
 
 /* 
@@ -153,6 +155,7 @@ genders_process_opt(opt_t *pdsh_opts, int opt, char *arg)
 static void
 _genders_opt_verify(opt_t *opt)
 {
+#if !GENDERS_G_ONLY
     if (altnames && !allnodes && (gend_attr == NULL)) {
         err("%p: Warning: Ignoring -i without -a or -g\n");
         altnames = false;
@@ -160,10 +163,13 @@ _genders_opt_verify(opt_t *opt)
 
     if (allnodes && (gend_attr != NULL))
         errx("%p: Do not specify -a with -g\n");
+#endif /* !GENDERS_G_ONLY */
 
     if(opt->wcoll) {
+#if !GENDERS_G_ONLY
         if (allnodes)
             errx("%p: Do not specify -a with other node selection options\n");
+#endif /* !GENDERS_G_ONLY */
         if (gend_attr)
             errx("%p: Do not specify -g with other node selection options\n");
     }
@@ -174,6 +180,15 @@ genders_wcoll(opt_t *opt)
 {
     _genders_opt_verify(opt);
 
+#if GENDERS_G_ONLY
+    if (!gend_attr)
+        return NULL;
+
+    /* GENDERS_G_ONLY, altnamesnot anissue, always
+     *use genders nodenames.
+     */
+    return _read_genders(gend_attr, true);
+#else
     if (!allnodes && !altnames && !gend_attr)
         return NULL;
 
@@ -181,6 +196,7 @@ genders_wcoll(opt_t *opt)
         gend_attr = ALL_NODES;
 
     return _read_genders(gend_attr, altnames);
+#endif /* !GENDERS_G_ONLY */
 }
 
 
