@@ -162,7 +162,7 @@ fi
 rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT
 DESTDIR="$RPM_BUILD_ROOT" make install
-if [ -x %{_sbindir}/in.qshd ]; then
+if [ -x $RPM_BUILD_ROOT/%{_sbindir}/in.qshd ]; then
    install -D -m644 qshell.xinetd $RPM_BUILD_ROOT/etc/xinetd.d/qshell
 fi
 
