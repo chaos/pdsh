@@ -2,6 +2,8 @@
 
 	* src/modules/slurm.c : Allow multiple jobids to -j option.
 
+	* doc/pdsh.1.in : Change name of mqshell/qshell modules to mqsh/qsh.
+
 2004-06-23  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/opt.c (opt_args) : Do not abort when none of the 

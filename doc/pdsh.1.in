@@ -63,7 +63,7 @@ the need to allocate reserved ports. In other aspects, it acts just
 like rsh. Remote nodes must be running mrshd(8) in order for the mrsh
 module to work.
 .TP
-qshell
+qsh
 Allows \fBpdsh\fR to execute MPI jobs over QsNet. Qshell propagates
 the current working directory, pdsh environment, and Elan capabilities
 to the remote process. The following environment variable are also
@@ -74,7 +74,7 @@ and LD_PREOPEN. Instead the QSHELL_REMOTE_LD_LIBRARY_PATH and
 QSHELL_REMOTE_LD_PREOPEN environment variables will may be used and will
 be remapped to LD_LIBRARY_PATH and LD_PREOPEN by the qshell daemon if set.
 .TP
-mqshell
+mqsh
 Similar to qshell, but uses the mrsh protocol instead of the rsh protocol.
 .TP
 krb4
@@ -160,7 +160,7 @@ connect and command time statistics on stderr when done.
 Output \fBpdsh\fR version information, along with list of currently
 loaded modules, and exit.
 
-.SH "qshell/mqshell module options"
+.SH "qsh/mqsh module options"
 .TP
 .I "-n tasks_per_node"
 Set the number of tasks spawned per node. Default is 1.
@@ -225,8 +225,9 @@ read a running jobid from the SLURM_JOBID environment variable
 (which is set when running under a SLURM allocation). If SLURM_JOBID
 references an invlalid job, it will be silently ignored.
 .TP
-.I "-j jobid"
-Target list of nodes allocated to the SLURM job \fIjobid\fR.
+.I "-j jobid[,jobid,...]"
+Target list of nodes allocated to the SLURM job \fIjobid\fR. This option
+may be used multiple times to target multiple SLURM jobs.
 
 .SH "rms module options"
 The \fBrms\fR module allows pdsh to target nodes based on an RMS 
