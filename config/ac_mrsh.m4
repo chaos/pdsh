@@ -33,7 +33,6 @@ AC_DEFUN([AC_MRSH],
   AC_MSG_RESULT([${ac_with_mrsh=no}])
    
   if test "$ac_with_mrsh" = "yes"; then
-
     # is libmunge installed?    
     AC_CHECK_LIB([munge], [munge_encode], [ac_have_libmunge=yes], [])
 
@@ -42,6 +41,7 @@ AC_DEFUN([AC_MRSH],
       AC_ADD_STATIC_MODULE("mcmd")
       MRSH_LIBS="-lmunge"
       AC_DEFINE([HAVE_MRSH], [1], [Define if you have mrsh.])
+    fi
   fi
 
   AC_SUBST(HAVE_MRSH)
