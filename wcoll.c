@@ -20,6 +20,7 @@
 #include "list.h"
 #include "xmalloc.h"	/* xfree */
 #include "xstring.h"	/* for xstrdup() */
+#include "xpopen.h"	/* for xpopen/close */
 #include "wcoll.h"
 
 #if	HAVE_RMS_PMANAGER
@@ -103,7 +104,7 @@ list_t read_genders(char *attr, int iopt)
 #endif
 
 	sprintf(cmd, "%s -%sn %s", _PATH_NODEATTR, iopt ? "r" : "", attr);
-	f = popen(cmd, "r");
+	f = xpopen(cmd, "r");
 	if (f == NULL)
 		errx("%p: error running %s\n", _PATH_NODEATTR);
 	while (fgets(buf, LINEBUFSIZE, f) != NULL) {
@@ -111,7 +112,9 @@ list_t read_genders(char *attr, int iopt)
 		xstrcln(&p, NULL);
 		list_push(new, p);
 	}
-	pclose(f);
+	if (xpclose(f) != 0) 
+		errx("%p: error running %s\n", _PATH_NODEATTR);
+
 	return new;
 }
 #endif
@@ -127,7 +130,7 @@ static void sdr_getswitchname(char *switchName)
 		
 	sprintf(cmd, "%s -x Switch switch_number==1 switch_name",
 	    _PATH_SDRGETOBJECTS);
-	f = popen(cmd, "r");
+	f = xpopen(cmd, "r");
 	if (f == NULL)
        		errx("%p: error running %s\n", _PATH_SDRGETOBJECTS);
 	while (fgets(buf, LINEBUFSIZE, f) != NULL) {
@@ -136,7 +139,7 @@ static void sdr_getswitchname(char *switchName)
 		strcpy(switchName, list_nth(words, 0));
 		list_free(&words);
 	}
-	pclose(f);
+	xpclose(f);
 }
 
 /*
@@ -166,7 +169,7 @@ static void sdr_getresp(bool Gopt, char *nameType, bool resp[])
 		
 	sprintf(cmd, "%s %s -x %s node_number %s", 
 	    _PATH_SDRGETOBJECTS, Gopt ? "-G" : "", nameType, attr);
-	f = popen(cmd, "r");
+	f = xpopen(cmd, "r");
 	if (f == NULL)
        		errx("%p: error running %s\n", _PATH_SDRGETOBJECTS);
 	while (fgets(buf, LINEBUFSIZE, f) != NULL) {
@@ -178,7 +181,7 @@ static void sdr_getresp(bool Gopt, char *nameType, bool resp[])
 		resp[nn] = (atoi(list_nth(words, 1)) == 1);
 		list_free(&words);
 	}
-	pclose(f);
+	xpclose(f);
 }
 
 /*
@@ -198,7 +201,7 @@ static void sdr_getnames(bool Gopt, char *nameType, char *nodes[])
 
 	sprintf(cmd, "%s %s -x Node node_number %s", 
 	    _PATH_SDRGETOBJECTS, Gopt ? "-G" : "", nameType);
-	f = popen(cmd, "r");
+	f = xpopen(cmd, "r");
 	if (f == NULL)
 		errx("%p: error running %s\n", _PATH_SDRGETOBJECTS);
 	while (fgets(buf, LINEBUFSIZE, f) != NULL) {
@@ -210,7 +213,7 @@ static void sdr_getnames(bool Gopt, char *nameType, char *nodes[])
 		nodes[nn] = xstrdup(list_nth(words, 1), NULL);
 		list_free(&words);
 	}
-	pclose(f);
+	xpclose(f);
 }
 
 /*
@@ -293,41 +296,20 @@ rms_rid_to_nodes(char *part, int rid)
 {
 	FILE *f;
 	char tmp[256];
-	char base[256], range[256];
-	list_t result = list_new();
 
-	/* XXX for xpopen, change quoting of resource id */
 	/* XXX how to specify partition?  do we need to? */
 	sprintf(tmp, "%s \"select hostnames from resources where name='%d'\"",
 			_PATH_RMSQUERY, rid);
-	f = popen(tmp, "r");
+	f = xpopen(tmp, "r");
 	if (f == NULL)
 		errx("%p: error running %s\n", _PATH_RMSQUERY);
 	*tmp = '\0';
 	while (fgets(tmp, sizeof(tmp), f) != NULL)
 		;
-	pclose(f);
+	xpclose(f);
 	/* should either have empty string or host[n-m] range */
-
 	/* turn elanid range into list of hostnames */
-	if (sscanf(tmp, "%[^[][%[^]]]", base, range) == 2) {
-		list_t nums = list_split_range(",", "-", range);
-		int i;
-
-		for (i = 0; i < list_length(nums); i++) {
-			snprintf(tmp, sizeof(tmp), "%s%s", 
-					base, list_nth(nums, i));
-			list_push(result, tmp);
-		}
-		list_free(&nums);
-	} else {
-		char *p = tmp;
-
-		xstrcln(&p, NULL);
-		list_push(result, p);
-	}
-
-	return result;
+	return list_split_range(" ,", "-", tmp);
 }
 
 /*
@@ -353,6 +335,7 @@ rms_wcoll(char *part, int nnodes, int nprocs)
 	rid = rms_allocateResource(part, nprocs, RMS_UNASSIGNED, nnodes,
 			uid, NULL, "immediate=1,hwbcast=0,rails=1");
 	switch (rid) {
+		case -11:
 		case -1:
 			errx("%p: rms: request cannot be met\n");
 		case -2:
