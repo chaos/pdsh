@@ -482,16 +482,16 @@ int qsw_decode_cap(char *s, ELAN_CAPABILITY * cap)
     /* initialize capability */
     elan_nullcap(cap);
 
-    n =  sscanf(s, "%x.%x.%x.%x.%hx.%x.%x.%x.%x.%x.%x.%x",
+    n =  sscanf(s, "%x.%x.%x.%x.%hx.%hx.%x.%x.%x.%x.%x.%x",
                      &cap->UserKey.Values[0],
                      &cap->UserKey.Values[1],
                      &cap->UserKey.Values[2],
                      &cap->UserKey.Values[3],
-                     &cap->cap_type, /* short */
+                     &cap->cap_type,      /* short */
 #  ifdef ELAN_CAP_ELAN3
                      &cap->cap_elan_type, /* char */
 #  else
-                     &cap->cap_spare,
+                     &cap->cap_spare,     /* unsigned short */
 #  endif
                      &cap->LowContext,
                      &cap->HighContext,
@@ -999,6 +999,8 @@ int main(int argc, char *argv[])
         *p = '\0';
     hostlist_push(wcoll, hostname);
 
+    qsw_init();
+
     /* initialize capability for this "program" */
     if (qsw_init_capability(&cap, qinfo.nprocs / qinfo.nnodes, wcoll, 0) < 0)
         errx("%p: failed to initialize Elan capability\n");
@@ -1020,6 +1022,8 @@ int main(int argc, char *argv[])
         qinfo.prgnum, qinfo.procid, cmdbuf);
     execl("/bin/bash", "bash", "-c", cmdbuf, 0);
     errx("%p: exec of shell failed: %m\n");
+
+    qsw_fini();
 
     exit(0);
 }
