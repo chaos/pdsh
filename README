@@ -44,7 +44,7 @@ The following features are not enabled by default:
 --with-rms
 	Enable support for the RMS partition manager (Quadrics resource 
 	management system).  If no explicit hostnames are targeted, the
-	"-N cpus -n nodes" options may be used to allocate available nodes
+	"-N nodes -n cpus" options may be used to allocate available nodes
 	from RMS.
 
 --enable-debug
