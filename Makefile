@@ -53,12 +53,12 @@ install: $(PROG) $(MAN1) $(OTHER)
 	for man in $(MAN1); do \
 		cp $$man $(MAN1DEST)/$$man; \
 		chmod 0444 $(MAN1DEST)/$$man; \
-		chown root:root $(MAN1DEST)/$$man; \
+		chown $(OWN) $(MAN1DEST)/$$man; \
 	done
 	for file in $(OTHER); do \
 		cp $$file $(DEST)/$$file; \
 		chmod 555 $(DEST)/$$file; \
-		chown root:root $(DEST)/$$file; \
+		chown $(OWN) $(DEST)/$$file; \
 	done
 
 $(OBJS): $(HDRS)
