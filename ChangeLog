@@ -93,3 +93,6 @@ Release 1.4
 
 	Added wcoll hack to deal with changed SDR attributes for Colony switch
 
+Release 1.5pre
+
+	Renamed spec file to pdsh.spec.
