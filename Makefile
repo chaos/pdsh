@@ -12,10 +12,7 @@ OBJS= 		list.o xmalloc.o xstring.o dsh.o main.o opt.o wcoll.o \
 		rcmd.o err.o pipecmd.o qcmd.o $(KRB_OBJS)
 HDRS=		list.h xmalloc.h xstring.h dsh.h opt.h wcoll.h conf.h err.h 
 
-prefix=		/usr/local
-
-top_srcdir=     .
-mkinstalldirs=  $(SHELL) $(top_srcdir)/auxdir/mkinstalldirs
+PREFIX=		/usr/local
 
 #
 # if you wish to build with kerberos IV, uncomment these
@@ -45,12 +42,12 @@ qshd: qshd.o
 	$(CC) -o $@ $< -lelan3 -lrmscall
 
 install:
-	install -m 4755 -o root -g root pdsh 	$(prefix)/bin/pdsh
-	install -m 4755 -o root -g root pdsh 	$(prefix)/bin/pdcp
-	install -m 555  -o root -g root dshbak $(prefix)/bin/dshbak
-	install -m 444  -o root -g root pdsh.1 $(prefix)/man/man1/pdsh.1
-	install -m 444  -o root -g root pdcp.1 $(prefix)/man/man1/pdcp.1
-	install -m 444  -o root -g root dshbak.1 $(prefix)/man/man1/dshbak.1
+	install -m 4755 -o root -g root pdsh 	$(PREFIX)/bin/pdsh
+	install -m 4755 -o root -g root pdsh 	$(PREFIX)/bin/pdcp
+	install -m 555  -o root -g root dshbak $(PREFIX)/bin/dshbak
+	install -m 444  -o root -g root pdsh.1 $(PREFIX)/man/man1/pdsh.1
+	install -m 444  -o root -g root pdcp.1 $(PREFIX)/man/man1/pdcp.1
+	install -m 444  -o root -g root dshbak.1 $(PREFIX)/man/man1/dshbak.1
 
 clean:
 	rm -f *.o core a.out pdsh qshd

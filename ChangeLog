@@ -119,7 +119,7 @@ Release 1.5+
 	Added qshd subpackage to RPM target.
 
 	Todo: handle multiple Elan3 tasks per node.
-
 	Todo: qshd cleanup, packaging.
-
 	Todo: handle Elan3 multirail.
+
+	Updated to latest rpm target
