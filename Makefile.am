@@ -83,13 +83,13 @@ force-dependency-check:
 # Makefile rule for building rpm directly from CVS repository
 include $(top_srcdir)/Make-rpm.mk
 
-config.c: META
-	@(echo "char *pdsh_version = \"$(PACKAGE)-$(VERSION)-$(RELEASE)\";";\
+config.c: META config.h
+	@(echo "char *pdsh_version = \"$(PDSH_VERSION)\";";\
 	  echo "char *pdsh_module_dir = \"$(pkglibdir)\";"\
          )> config.c
 
-testconfig.c: META
-	@(echo "char *pdsh_version = \"$(PACKAGE)-$(VERSION)-$(RELEASE)\";";\
+testconfig.c: META config.h
+	@(echo "char *pdsh_version = \"$(PDSH_VERSION)\";";\
           moddir=`cd $(top_srcdir)/modules && pwd`; \
 	  echo "char *pdsh_module_dir = \"$$moddir\";"\
          )> testconfig.c
@@ -130,6 +130,7 @@ EXTRA_DIST = \
     DISCLAIMER \
     README.KRB4 \
     README.QsNet\
+    README.AIX \
     TODO \
     META \
     Make-rpm.mk \

@@ -5,9 +5,6 @@
   o -v option works like SP switch_responds/host_responds
   o borrow code from gstat
 - Implement C interface to genders
-- Need a better way to build chaos/non-chaos RPM's
-  o consider static linkage statically to avoid runtime elan dependencies?
-  o dlopen trick?
 - Addy requests more prun-like options
 - Consider defining WANT_RECKLESS_HOSTRANGE_EXPANSION to 1 on SP where
   hyphens in hostnames are less likely than linux?

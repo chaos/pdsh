@@ -41,9 +41,8 @@ installed can be found using the -L option.
 .LP
 Note that the same command line options are offered by several
 different modules.  If two installed modules offer the same command line
-option, pdsh will default to only one of modules.  A list of all
-available command line options can be listed with the -h
-option.
+option, pdsh will default to only one of modules. Available command line 
+options can be listed with the \fI-h\fR option.
 .LP
 .IP "\fBRCMD MODULES\fR" 0
 .LP
@@ -51,7 +50,7 @@ option.
 originally executed remote commands through rcmd(3) (the library
 routine used by rsh(1)).  Depending on the modules installed, remote
 commands can now be executed through several different services.  The
-user can select the service type using the -R option.  Atleast one of the
+user can select the service type using the -R option. At least one of the
 following must be installed on the system in order for pdsh to
 function.  If multiple rcmd modules are installed on the same system,
 the default service selected by pdsh is based on the order listed below.
@@ -71,7 +70,7 @@ The ssh module allows users to execute remote commands through ssh(1).
 .LP
 The krb4
 .LP
-The k4b4 module allows users to execute remote commands after
+The krb4 module allows users to execute remote commands after
 authenticating with kerberos.
 .LP
 .B qshell
@@ -189,7 +188,8 @@ Output usage menu and quit.
 List info on all loaded modules and exit.
 .LP
 .I "-R name"
-Set rcmd module to name.
+Set rcmd module to name. This option may also be set through the
+PDSH_RCMD_TYPE environment variable.
 .LP
 .I "-q"
 List option values and the target nodes and exit without action.
@@ -268,15 +268,15 @@ It is now also used on Linux clusters at LLNL.
 .LP
 When using 
 .B ssh
-for remote execution, 
+for remote execution, expect the 
 stderr of ssh to be folded in with that of the remote 
 command.  When invoked by pdsh, it is not possible for ssh to prompt for 
 confirmation if a host key changes, prompt for passwords if RSA keys are not 
 configured properly, etc..  Finally, the connect timeout is not adjustable 
 when ssh is used.
 
-Qshell and Mqshell assumes Elan3 single rail.  Output from multiple
-processes per node may be interspersed when using Qshell or Mqshell.
+Qshell and mQshell assume Elan3 single rail only.  Output from multiple
+processes per node may be interspersed when using Qshell or mQshell.
 
 Host range parsing assumes numerical part of hostname is at the end, e.g.
 specifying foo[0-5]bar will not work.

@@ -189,16 +189,19 @@ fi
 if test $RELEASE = 1; then
    PDSH_VERSION="$PACKAGE-$VERSION"
 else
-   PDSH_VERSION="$PACKAGE-$VERSION-$RELEASE"
+   PDSH_RELEASE="`echo $RELEASE | sed 's/^.*\.//'`"
+   PDSH_VERSION="$PACKAGE-$VERSION-$PDSH_RELEASE"
+fi
+test "$ac_static_modules" = "yes" && EXTRA_VERS="+static-modules"
+test "$ac_with_readline"  = "yes" && EXTRA_VERS="${EXTRA_VERS}+readline"
+test "$ac_debug"          = "yes" && EXTRA_VERS="${EXTRA_VERS}+debug"
+test "$ac_with_dmalloc"   = "yes" && EXTRA_VERS="${EXTRA_VERS}+dmalloc"
+
+if test -n "$EXTRA_VERS" ; then
+   PDSH_VERSION="$PDSH_VERSION ($EXTRA_VERS)"
 fi
 
-if test "$ac_debug" = "yes"; then
-   PDSH_VERSION="$PDSH_VERSION +debug"
-fi
-
-if test "$ac_with_dmalloc" = "yes"; then
-   PDSH_VERSION="$PDSH_VERSION +dmalloc"
-fi
+AC_SUBST(PDSH_VERSION)
 
 AH_BOTTOM(
 [#ifdef WITH_DMALLOC

@@ -627,14 +627,7 @@ static void _usage(opt_t * opt)
 static void _show_version(void)
 {
     extern char *pdsh_version;
-    printf("%s (", pdsh_version);
-#if	!NDEBUG
-    printf("+debug");
-#endif
-#if 	WITH_DMALLOC
-    printf("+dmalloc");
-#endif
-    printf(")\n");
+    printf("%s\n", pdsh_version);
     exit(0);
 }
 

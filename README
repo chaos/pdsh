@@ -12,7 +12,7 @@ See the man page in this directory for usage information.
 +---------------+
 
 Pdsh uses GNU autoconf for configuration.  Dynamically loadable
-modules of each shell services (as well as other features) will be
+modules of each shell service (as well as other features) will be
 compiled based on configuration.  By default, rsh, Kerberos IV, 
 and SDR (for IBM SPs) will be compiled if they exist on the system.
 
