@@ -223,7 +223,7 @@ _read_genders(char *attr, int iopt)
         errx("%p: error running \"%s\"\n", _PATH_NODEATTR);
     while (fgets(buf, LINEBUFSIZE, f) != NULL) {
         xstrcln(buf, NULL);
-        if (hostlist_push_host(hl, buf) <= 0)
+        if (hostlist_push(hl, buf) <= 0)
             err("%p: warning: target `%s' not parsed\n", buf);
     }
     if (xpclose(f) != 0)

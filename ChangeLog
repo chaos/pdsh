@@ -1,3 +1,12 @@
+2003-08-29  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/common/xpoll.c (_poll) : Removed variable length array
+	declaration (not yet supported in many compilers).
+
+	* src/modules/sdr.c, src/modules/nodeattr.c : Use hostlist_push
+	instead of hostlist_push_host, which doesn't get exported on AIX.
+	
+
 2003-08-28  Mark Grondona <mgrondona@llnl.gov>
 
         * : Reorganized pdsh code and changed sources accordingly.

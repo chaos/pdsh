@@ -32,7 +32,7 @@
 
 #include "src/pdsh/wcoll.h"
 #include "src/pdsh/mod.h"
-#include "src/common/xpopen.h"
+#include "src/pdsh/xpopen.h"
 #include "src/common/xmalloc.h"
 #include "src/common/err.h"
 #include "src/common/xstring.h"
@@ -340,14 +340,14 @@ static hostlist_t sdr_wcoll(bool Gopt, bool iopt, bool vopt)
         if (inodes[nn] != NULL || rnodes[nn] != NULL) {
             if (vopt) {         /* initial_host */
                 if (iopt && sresp[nn] && hresp[nn])
-                    hostlist_push_host(new, inodes[nn]);
+                    hostlist_push(new, inodes[nn]);
                 else if (!iopt && hresp[nn])    /* reliable_host */
-                    hostlist_push_host(new, rnodes[nn]);
+                    hostlist_push(new, rnodes[nn]);
             } else {
                 if (iopt)       /* initial_host */
-                    hostlist_push_host(new, inodes[nn]);
+                    hostlist_push(new, inodes[nn]);
                 else            /* reliable_host */
-                    hostlist_push_host(new, rnodes[nn]);
+                    hostlist_push(new, rnodes[nn]);
             }
             if (inodes[nn] != NULL)     /* free heap cpys */
                 Free((void **) &inodes[nn]);
