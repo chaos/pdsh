@@ -211,10 +211,10 @@ rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT
 DESTDIR="$RPM_BUILD_ROOT" make install
 if [ -x $RPM_BUILD_ROOT/%{_sbindir}/in.qshd ]; then
-   install -D -m644 qshell.xinetd $RPM_BUILD_ROOT/etc/xinetd.d/qshell
+   install -D -m644 etc/qshell.xinetd $RPM_BUILD_ROOT/etc/xinetd.d/qshell
 fi
 if [ -x $RPM_BUILD_ROOT/%{_sbindir}/in.mqshd ]; then
-   install -D -m644 mqshell.xinetd $RPM_BUILD_ROOT/etc/xinetd.d/mqshell
+   install -D -m644 etc/mqshell.xinetd $RPM_BUILD_ROOT/etc/xinetd.d/mqshell
 fi
 
 ##############################################################################
