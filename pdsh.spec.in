@@ -9,7 +9,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}
 # Prereq: 
 
 %define withmachines 0
-%define withelan 1
+%define withelan 0
 
 %description
 Pdsh is a multithreaded remote shell client which executes commands
