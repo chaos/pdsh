@@ -35,11 +35,13 @@ system.
 Target the specified hosts.  No spaces are allowed in the comma-separated
 list.  A list consisting of a single "-" character causes the target 
 hosts to be read from stdin, one per line.  The host list may contain 
-hostname ranges of the form ``host[1-5]''.
+hostname ranges of the form ``host[1-5]''. For more information about
+hostname ranges, see the HOST RANGES section below.
 .LP
 .I "-x host,host,..."
 Exclude the specified hosts.  May be specified in conjunction with other
-target node list options such as -a.
+target node list options such as -a. Hostname ranges may also be specified
+to the -x option (see HOST RANGES section below)
 .LP
 .I "-a"
 Target "all" nodes in the cluster.
@@ -119,6 +121,34 @@ connect and command time statistics on stderr when done.
 .I "-S"
 Return largest of the remote command return values.
 
+.SH "HOST RANGES"
+As noted in sections above, 
+.B pdsh 
+accepts ranges of hostnames in
+the general form: prefix[n-m,l-k,...], where n < m and l < k, etc.,
+as an alternative to explicit lists of hosts.  This form should not
+be confused with regular expression character classes (also denoted
+by ``[]''). For example, foo[19] does not represent foo1 or foo9, but
+rather represents a degenerate range: foo19. 
+
+This range syntax is meant
+only as a convenience on clusters with a prefixNN naming convention and
+specification of ranges should not be considered necessary -- the list
+foo1,foo9 could be specified as such, or by the range foo[1,9].
+
+Some examples of range usage follow:
+
+Run command on foo01,foo02,...,foo05
+    pdsh -w foo[01-05] command 
+
+Run command on foo7,foo9,foo10
+    pdsh -w foo[7,9-10] command
+
+Run command on foo0,foo4,foo5
+    pdsh -w foo[0-5] -x foo[1-3] command
+
+
+
 .SH "ORIGIN"
 Originally a rewrite of IBM dsh(1) by Jim Garlick <garlick@llnl.gov>
 on LLNL's ASCI Blue-Pacific IBM SP system.  
@@ -140,6 +170,9 @@ Qshell assumes Elan3 single rail.
 .LP
 Output from multiple processes per node may be interspersed when using Qshell.
 \}
+.LP
+Host range parsing assumes numerical part of hostname is at the end, e.g.
+specifying foo[0-5]bar will not work.
 
 .SH "FILES"
 .if @HAVE_SSH@ @SSH@
