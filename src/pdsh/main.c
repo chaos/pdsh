@@ -100,8 +100,6 @@ int main(int argc, char *argv[])
         retval = 1;
     }
 
-    mod_rcmd_exit();
-
     mod_exit(); 
 
     /*

@@ -710,6 +710,8 @@ void opt_free(opt_t * opt)
         Free((void **) &opt->path_progname);
     if (opt->infile_names)
         list_destroy(opt->infile_names);
+
+    mod_rcmd_exit();
 }
 
 /*
