@@ -358,7 +358,7 @@ qsw_init_capability(ELAN_CAPABILITY *cap, int nprocs, list_t nodelist,
 				ELAN_MAX_VPS);
 		return -1;
 	}
-	if (abs(cap->HighNode - cap->LowNode) == cap->Entries)
+	if (abs(cap->HighNode - cap->LowNode) == cap->Entries - 1)
 		cap->Type |= ELAN_CAP_TYPE_BROADCASTABLE;
 
 	return 0;
