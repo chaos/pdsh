@@ -12,6 +12,7 @@ LIBS=           @LIBS@
 RANLIB=         @RANLIB@
 INSTALL=        @INSTALL@
 LN_S=		@LN_S@
+CPPFLAGS=	@CPPFLAGS@
 mkinstalldirs=  $(SHELL) $(top_srcdir)/auxdir/mkinstalldirs
 @SET_MAKE@
 COPTS=          $(CFLAGS) $(CPPFLAGS) $(DEFS)
@@ -57,8 +58,6 @@ PREFIX=		/usr/local
 # Linux RH 6.2, AIX 4.3.x, OSF
 # LIBS = $(KRB_LIB)  -lpthread $(ELAN_LIB)
 
-CPPFLAGS=	$(KRB_INC)
-
 PROGS =	pdsh
 
 all: pdsh $(ELAN_PROGS)
@@ -97,6 +96,10 @@ depend:
 
 tags: $(PROGS)
 	-ctags * 2>/dev/null
+
+.c.o:
+	$(CC) $(COPTS) -c $<
+
 
 include Make-rpm.mk
 
