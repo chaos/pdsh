@@ -218,4 +218,5 @@
 2002-09-12 garlick
 	* Repair a file descriptor leak in rcp_thread (wasn't closing efd).
 	* More error reporting in qswutil.c, qcmd.c, qshd.c
+	* Fixed bug in sending of long bitmaps.
 	* Taggged pdsh-1-7-2chaos

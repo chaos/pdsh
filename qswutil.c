@@ -103,8 +103,10 @@ _setbitmap(hostlist_t nodelist, int procs_per_node, ELAN_CAPABILITY *cap)
 		errx("%p: hostlist_iterator_create failed\n");
 	while ((host = hostlist_next(itr)) != NULL) {
 		node = _host2elanid(host);
-		if (node < 0)
+		if (node < 0) {
+			err("%p: _setbitmap: bad conversion to elanid\n");
 			return -1;
+		}
 		if (node < cap->LowNode || cap->LowNode == -1)
 			cap->LowNode = node;
 		if (node > cap->HighNode || cap->HighNode == -1)
@@ -128,11 +130,15 @@ _setbitmap(hostlist_t nodelist, int procs_per_node, ELAN_CAPABILITY *cap)
 		int i, proc0;
 		
 		node = _host2elanid(host);
+		if (node < 0) {
+			err("%p: _setbitmap: bad conversion to elanid\n");
+			return -1;
+		}
 		for (i = 0; i < procs_per_node; i++) {
 			proc0 = (node - cap->LowNode) * procs_per_node;
 			if (proc0 + i >= (sizeof(cap->Bitmap) * 8))  {
-				printf("Bit %d too big for %d byte bitmap\n",
-					proc0 + i, sizeof(cap->Bitmap));
+				err("%p: _setbitmap: bit %d out of range\n",
+					proc0 + i);
 				return -1;
 			}
 			BT_SET(cap->Bitmap, proc0 + i);
@@ -213,14 +219,13 @@ qsw_encode_cap(char *s, int len, ELAN_CAPABILITY *cap)
 	int n;
 
 	if (sizeof(cap->UserKey.Values[0]) != 4) {
-		err("%p: qsw_encode_cap: userkey element size != 4 bytes\n");
+		err("%p: qsw_encode_cap: UserKey is unexpected size\n");
 		return -1;
 	}
-	if (sizeof(cap->UserKey) / sizeof(cap->UserKey.Values[0]) != 4) {
-		err("%p: qsw_encode_cap: userkey size != 4 elements\n");
+	if (sizeof(cap->UserKey) / 4 != 4) {
+		err("%p: qsw_encode_cap: UserKey array is unexpected size\n");
 		return -1;
 	}
-
 	n = snprintf(s, len, "%x.%x.%x.%x.%hx.%hx.%x.%x.%x.%x.%x.%x.%x", 
 				cap->UserKey.Values[0],
 				cap->UserKey.Values[1],
@@ -235,7 +240,6 @@ qsw_encode_cap(char *s, int len, ELAN_CAPABILITY *cap)
 				cap->HighNode,
 				cap->Entries,
 				cap->RailMask);
-
 	if (n < 0 || n > strlen(s)) {
 		err("%p: qsw_encode_cap: string overflow\n");
 		return -1;
@@ -251,8 +255,16 @@ qsw_encode_cap_bitmap(char *s, int len, ELAN_CAPABILITY *cap, int i)
 {
 	int n;
 
-	if (sizeof(cap->Bitmap[0]) != 4) {
-		err("%p: qsw_encode_cap_bitmap: bitmap element != 4 bytes!\n");
+	if (sizeof(cap->Bitmap[0]) != sizeof(unsigned int)) {
+		err("%p: qsw_encode_cap_bitmap: Bitmap is unexpected size\n");
+		return -1;
+	}
+	if ((sizeof(cap->Bitmap) / sizeof(cap->Bitmap[0])) % 16 != 0) {
+		err("%p: qsw_encode_cap_bitmap: Bitmap is not mult of 16\n");
+		return -1;
+	}
+	if (i < 0 || i >= (sizeof(cap->Bitmap) / sizeof(cap->Bitmap[0]))) {
+		err("%p: qsw_encode_cap_bitmap: Bitmap index out of range\n");
 		return -1;
 	}
 	n = snprintf(s, len, "%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x",
@@ -264,10 +276,11 @@ qsw_encode_cap_bitmap(char *s, int len, ELAN_CAPABILITY *cap, int i)
 				cap->Bitmap[i+10], cap->Bitmap[i+11],
 				cap->Bitmap[i+12], cap->Bitmap[i+13],
 				cap->Bitmap[i+14], cap->Bitmap[i+15]);
-	if (n == -1 || n > sizeof(s)) {
+	if (n == -1 || n > strlen(s)) {
 		err("%p: qsw_encode_cap_bitmap: string overflow\n");
 		return -1;
 	}
+	printf("%d: %s\n", i, s); /* XXX */
 	return 0;
 }
 
@@ -280,7 +293,7 @@ qsw_decode_cap(char *s, ELAN_CAPABILITY *cap)
 	int n;
 	short dummy;
 
-	/* initialize capability - not sure if this is necessary */
+	/* initialize capability */
 	elan3_nullcap(cap);
 
 	/* fill in values sent from remote */
@@ -313,6 +326,10 @@ qsw_decode_cap_bitmap(char *s, ELAN_CAPABILITY *cap, int i)
 {
 	int n;
 
+	if (i < 0 || i >= sizeof(cap->Bitmap) / sizeof(cap->Bitmap[0])) {
+		err("%p: qsw_decode_cap_bitmap: BitMap index out of range\n");
+		return -1;
+	}
 	n = sscanf(s, "%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x",
 				&cap->Bitmap[i+0], &cap->Bitmap[i+1], 
 				&cap->Bitmap[i+2], &cap->Bitmap[i+3],

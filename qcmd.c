@@ -94,8 +94,8 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 extern char **environ;
 
 static char 		cwd[MAXPATHLEN+1];
-static ELAN_CAPABILITY	cap;
 static qsw_info_t	qinfo;
+static ELAN_CAPABILITY	cap;
 
 /*
  * Use rcmd backchannel to propagate signals.
@@ -169,7 +169,7 @@ _qcmd_send_extra_args(int s, int nodeid)
 	if (qsw_encode_cap(tmpstr, sizeof(tmpstr), &cap) < 0)
 		return -1;
 	(void)write(s, tmpstr, strlen(tmpstr)+1);
-	for (i = 0; i < qsw_cap_bitmap_count(); i++) {
+	for (i = 0; i < qsw_cap_bitmap_count(); i += 16) {
 		if (qsw_encode_cap_bitmap(tmpstr, sizeof(tmpstr), &cap, i) < 0)
 			return -1;
 		(void)write(s, tmpstr, strlen(tmpstr)+1);
