@@ -145,9 +145,19 @@ static void sdr_getresp(bool Gopt, char *nameType, bool resp[])
 	list_t words;
 	char cmd[LINEBUFSIZE];
 	char buf[LINEBUFSIZE];
+	char *attr = "host_responds";
+
+	/* deal with Colony switch attribute name change */
+	if (!strcmp(nameType, "switch_responds")) {
+		sdr_getswitchname(buf);
+		if (!strcmp(buf, "SP_Switch2"))
+			attr = "switch_responds0";
+		else
+			attr = "switch_responds";
+	}
 		
 	sprintf(cmd, "%s %s -x %s node_number %s", 
-	    _PATH_SDRGETOBJECTS, Gopt ? "-G" : "", nameType, nameType);
+	    _PATH_SDRGETOBJECTS, Gopt ? "-G" : "", nameType, attr);
 	f = popen(cmd, "r");
 	if (f == NULL)
        		errx("%p: error running %s\n", _PATH_SDRGETOBJECTS);
@@ -213,12 +223,8 @@ list_t sdr_wcoll(bool Gopt, bool iopt, bool vopt)
 	bool sresp[MAX_SP_NODE_NUMBER + 1], hresp[MAX_SP_NODE_NUMBER + 1];
 	char *p;
 	int nn;
-	char *sresp_attr= "switch_responds";
+	char *sresp_attr;
 
-	/* deal with changed SDR attributes for Colony switch */
-	sdr_getswitchname(buf);
-	if (!strcmp(buf, "SP_Switch2"))
-		sresp_attr = "switch_responds0";
 
 	/*
 	 * Build arrays of hostnames indexed by node number.  Array is size 
@@ -237,7 +243,8 @@ list_t sdr_wcoll(bool Gopt, bool iopt, bool vopt)
 	 * Gather data needed to process -v.
 	 */
 	if (vopt) {
-		sdr_getresp(Gopt, sresp_attr, sresp);
+		if (iopt)
+			sdr_getresp(Gopt, "switch_responds", sresp);
 		sdr_getresp(Gopt, "host_responds", hresp);
 	}
 		
@@ -250,7 +257,7 @@ list_t sdr_wcoll(bool Gopt, bool iopt, bool vopt)
 	for (nn = 0; nn <= MAX_SP_NODE_NUMBER; nn++) {
 		if (inodes[nn] != NULL || rnodes[nn] != NULL) {
 			if (vopt) { 			    /* initial_host */
-				if (iopt && sresp[nn] && hresp[nn]) 
+				if (iopt && sresp[nn]) 
 					list_push(new, inodes[nn]);
 				else if (!iopt && hresp[nn])/* reliable_host */
 					list_push(new, rnodes[nn]);
