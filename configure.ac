@@ -79,27 +79,6 @@ AC_SUBST(PROG_QSHD)
 : ${HAVE_ELAN=0}
 AC_SUBST(HAVE_ELAN)
 
-# --with-rms
-AC_MSG_CHECKING(whether to support RMS)
-AC_ARG_WITH(rms,
-    AC_HELP_STRING([--with-rms], [Include RMS support]),
-    [ case "$withval" in
-	yes)
-	    withrms=yes
-	    HAVE_RMS=1
-	    AC_DEFINE(HAVE_RMS, 1, [define for RMS support]) ;;
-	no)
-	    ;;
-	*)
-	    AC_MSG_RESULT(doh!)
-	    AC_MSG_ERROR([bad value "$withval" for --with-rms])
-	    ;;
-    esac ]
-)
-AC_MSG_RESULT(${withrms=no})
-: ${HAVE_RMS=0}
-AC_SUBST(HAVE_RMS)
-
 # --with-ssh
 # or you can say --with-ssh=/ssh/executable
 AC_MSG_CHECKING(whether to use SSH as primary remote shell)
@@ -261,8 +240,11 @@ AC_PATH_PROG(RMSQUERY, rmsquery, [], /usr/bin:$PATH)
 if test -n "$RMSQUERY"; then
     AC_DEFINE_UNQUOTED(_PATH_RMSQUERY, "$RMSQUERY", [Path to rmsquery])
     AC_DEFINE(HAVE_RMSQUERY, 1, [Define if RMS is available]) 
-    HAVE_RMS=1
+    HAVE_RMSQUERY=1
 fi
+AC_SUBST(RMSQUERY)
+: ${HAVE_RMSQUERY=0}
+AC_SUBST(HAVE_RMSQUERY)
 AC_SUBST(RMSQUERY)
 
 AC_PATH_PROG(SDRGETOBJECTS, SDRGetObjects, "", /usr/lpp/ssp/bin:$PATH)
@@ -300,7 +282,7 @@ AC_CHECK_LIB([pthread], [pthread_create], )
 
 AC_CHECK_LIB([pthread], [__pthread_testcancel], )
 
-if test "$withelan" = yes || test "$withrms" = yes; then
+if test "$withelan" = yes; then
     AC_CHECK_LIB([rmscall], [rms_prgcreate],, AC_MSG_ERROR([No librmscall!]))
 fi
 if test "$withelan" = yes; then

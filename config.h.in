@@ -49,9 +49,6 @@
 /* Define if you have the `pthread_sigmask' function. */
 #undef HAVE_PTHREAD_SIGMASK
 
-/* define for RMS support */
-#undef HAVE_RMS
-
 /* Define if RMS is available */
 #undef HAVE_RMSQUERY
 
