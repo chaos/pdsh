@@ -1,3 +1,9 @@
+2003-10-27  Jim Garlick <garlick@llnl.gov>
+
+	* src/qsnet/qswutil.c (qsw_decode_cap) : Changed format
+	for cap->cap_elan_type/cap->cap_spare to %hx from %x. This
+ 	member is unsigned short.
+ 
 2003-10-14  Mark Grondona <mgrondona@llnl.gov>
 
 	* Makefile.am, pdsh.spec.in: Do not install pdsh/pdcp with setuid
