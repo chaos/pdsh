@@ -68,7 +68,7 @@ AC_DEFUN([AC_MQSHELL],
        if test "$ac_with_pam" = "yes" ; then
           AC_CHECK_LIB([pam], [pam_start], [ac_mqshell_have_pam=yes])
           if test "$ac_mqshell_have_pam" != "yes" ; then
-             AC_MSG_NOTICE([Cannot support qshell without libpam])
+             AC_MSG_NOTICE([Cannot support mqshell without libpam])
           fi
        else
           ac_mqshell_have_pam=yes
