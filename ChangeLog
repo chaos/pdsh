@@ -79,7 +79,7 @@ Release 1.3
 	- SunOS 5.7 sun4u sparc SUNW,Ultra-Enterprise
 	- OSF1 V4.0 alpha
 
-Release 1.4pre
+Release 1.4
 
 	Added RPM spec file.
 
@@ -92,3 +92,4 @@ Release 1.4pre
 	back to the reliable_hostname.
 
 	Added wcoll hack to deal with changed SDR attributes for Colony switch
+

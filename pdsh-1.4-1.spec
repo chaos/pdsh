@@ -1,10 +1,10 @@
 Summary: Parallel remote shell program.
 Name: pdsh
-Version: 1.3
+Version: 1.4
 Release: 1
-Copyright: GPL
+Copyright: none
 Group: System Environment/Base
-Source: pdsh-1.3.tgz
+Source: pdsh-1.4.tgz
 BuildRoot: /var/tmp/%{name}-buildroot
 
 %description
