@@ -6,7 +6,7 @@
 2003-09-18  Albert Chu <chu11@llnl.gov>
 
 	* doc/pdsh.1.in, doc/pdcp.1.in: 
-	Replaced @PROJECT@ with @PACKAPGE@, so that manpages will be
+	Replaced @PROJECT@ with @PACKAGE@, so that manpages will be
 	output properly by configure.
 
 	* src/qsnet/mqshd.c (check_interfaces): 
