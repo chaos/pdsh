@@ -1,3 +1,17 @@
+2004-02-10  Mark Grondona <mgrondona@llnl.gov>
+
+	* config/ac_rsh.m4 : added file.
+	
+	* configure.ac, config/ac_static_modules.m4, src/modules/Makefile.am : 
+	Don't unconditionally include BSD rsh module.
+
+	* src/common/hostlist.c : Update to lastest for lsd-tools.
+
+	* src/pdsh/mod.c : Workaround glibc <= 2.2.4 dl.so bug (gnats:322)
+
+	* src/pdsh/dsh.c (_int_handler) : Sanity check for NULL thread
+	info array before attempting to print stats.
+
 2003-12-30  Albert Chu <chu11@llnl.gov>
 
 	* README.modules: Removed mrshd package requirement.
