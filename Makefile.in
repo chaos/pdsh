@@ -1,99 +1,690 @@
-#
-# $Id$ 
-#
-PROJECT=	@PROJECT@
-VERSION=	@VERSION@
+# Makefile.in generated automatically by automake 1.4-p6 from Makefile.am
 
-PROG_QSHD=	@PROG_QSHD@
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
+# This Makefile.in is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
 
-SHELL=          @SHELL@
-CC=             @CC@
-DEFS=           @DEFS@
-CFLAGS=         @CFLAGS@
-LDFLAGS=        @LDFLAGS@
-LIBS=           @LIBS@
-LIBSPAM=	@LIBSPAM@
-INSTALL=        @INSTALL@
-LN_S=		@LN_S@
-CPPFLAGS=	@CPPFLAGS@
-mkinstalldirs=  $(SHELL) $(top_srcdir)/auxdir/mkinstalldirs
-@SET_MAKE@
-COPTS=          $(CFLAGS) $(CPPFLAGS) $(DEFS)
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
 
-AC_OUTPUT=	Makefile config.h pdsh.spec pdsh.1 pdcp.1
-
-top_srcdir=     @top_srcdir@
-prefix=         @prefix@
-exec_prefix=    @exec_prefix@
-bindir=         @bindir@
-sbindir=        @sbindir@
-libdir=         @libdir@
-mandir=         @mandir@
-
-PDSH_OBJS=	list.o xmalloc.o xstring.o err.o xpopen.o \
-		dsh.o main.o opt.o wcoll.o xrcmd.o sshcmd.o \
-		k4cmd.o qswutil.o qcmd.o testcase.o hostlist.o
-
-QSHD_OBJS=	list.o xmalloc.o xstring.o err.o qswutil.o qshd.o hostlist.o
-
-PREFIX=		/usr/local
+# $Id$
 
 
-PROGS =	pdsh $(PROG_QSHD)
+SHELL = @SHELL@
 
-all: $(PROGS)
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
 
-pdsh: $(PDSH_OBJS)
-	$(CC) -o $@ $(PDSH_OBJS) $(LDFLAGS) $(LIBS)
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
 
-qshd: $(QSHD_OBJS)
-	$(CC) -o $@ $(QSHD_OBJS) $(LIBS) $(LIBSPAM)
+DESTDIR =
 
-install: $(PROGS)
+pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
+pkgincludedir = $(includedir)/@PACKAGE@
+
+top_builddir = .
+
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@ $(AM_INSTALL_PROGRAM_FLAGS)
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+transform = @program_transform_name@
+
+NORMAL_INSTALL = :
+PRE_INSTALL = :
+POST_INSTALL = :
+NORMAL_UNINSTALL = :
+PRE_UNINSTALL = :
+POST_UNINSTALL = :
+host_alias = @host_alias@
+host_triplet = @host@
+CC = @CC@
+CONNECT_TIMEOUT = @CONNECT_TIMEOUT@
+FANOUT = @FANOUT@
+HAVE_ELAN = @HAVE_ELAN@
+HAVE_GENDERS = @HAVE_GENDERS@
+HAVE_KRB4 = @HAVE_KRB4@
+HAVE_MACHINES = @HAVE_MACHINES@
+HAVE_RMSQUERY = @HAVE_RMSQUERY@
+HAVE_SDR = @HAVE_SDR@
+HAVE_SSH = @HAVE_SSH@
+LIBSPAM = @LIBSPAM@
+LN_S = @LN_S@
+MACHINES = @MACHINES@
+MAKEINFO = @MAKEINFO@
+NODEATTR = @NODEATTR@
+PACKAGE = @PACKAGE@
+PROG_QSHD = @PROG_QSHD@
+PROJECT = @PROJECT@
+PTHREAD_CC = @PTHREAD_CC@
+PTHREAD_CFLAGS = @PTHREAD_CFLAGS@
+PTHREAD_LIBS = @PTHREAD_LIBS@
+RCP = @RCP@
+RELEASE = @RELEASE@
+RMSQUERY = @RMSQUERY@
+RSH = @RSH@
+SDRGETOBJECTS = @SDRGETOBJECTS@
+SSH = @SSH@
+VERSION = @VERSION@
+ac_aux_dir = @ac_aux_dir@
+host_cpu = @host_cpu@
+
+AUTOMAKE_OPTIONS = foreign 
+
+SUBDIRS = . testsuite
+
+auxdir = $(srcdir)/$(ac_aux_dir)
+AUX_DIST = $(auxdir)/config.guess $(auxdir)/config.sub 		 $(auxdir)/install-sh $(auxdir)/missing 		 $(auxdir)/mkinstalldirs $(auxdir)/depcomp
+
+
+bin_PROGRAMS = pdsh	
+sbin_PROGRAMS = @PROG_QSHD@
+bin_SCRIPTS = dshbak
+
+EXTRA_PROGRAMS = in.qshd
+
+man1_MANS = pdsh.1 pdcp.1 dshbak.1
+
+@WITH_SSH_TRUE@SSHCMD_SRC = sshcmd.c 
+@WITH_ELAN_TRUE@ELAN_SRC = qcmd.c qswutil.c qswutil.h
+@WITH_KRB4_TRUE@K4CMD_SRC = k4cmd.c
+
+pdsh_SOURCES =  	main.c				opt.c opt.h			xmalloc.c xmalloc.h		xstring.c xstring.h		list.c list.h			wcoll.c wcoll.h			dsh.c dsh.h			err.c err.h			xpopen.c xpopen.h		hostlist.c hostlist.h		testcase.c			xrcmd.c				$(SSHCMD_SRC) $(ELAN_SRC) $(K4CMD_SRC)
+
+
+# Extra sources included conditionally above must also be listed here
+EXTRA_pdsh_SOURCES =  	qswutil.c qswutil.h		qcmd.c				sshcmd.c			k4cmd.c	
+
+
+in_qshd_SOURCES =  	qshd.c 				list.c list.h			xmalloc.c xmalloc.h		xstring.c xstring.h		err.c err.h			qswutil.c qswutil.h		hostlist.c hostlist.h
+
+
+MAINTAINERCLEANFILES =  	Makefile.in aclocal.m4  	config.h.in configure   	stamp-h stamp-h.in      	autom4te.cache 			$(AUX_DIST)
+
+
+# Extra files to distribute with `make dist'
+EXTRA_DIST =  	DISCLAIMER		README.KRB4 		README.QsNet 		TODO			META			Make-rpm.mk     	pdsh.spec.in		dshbak dshbak.1 	qshell.xinetd   	autogen.sh		$(AUX_DIST)
+
+ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
+mkinstalldirs = $(SHELL) $(top_srcdir)/auxdir/mkinstalldirs
+CONFIG_HEADER = config.h
+CONFIG_CLEAN_FILES =  pdsh.spec pdcp.1 pdsh.1
+PROGRAMS =  $(bin_PROGRAMS) $(sbin_PROGRAMS)
+
+
+DEFS = @DEFS@ -I. -I$(srcdir) -I.
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+in_qshd_OBJECTS =  qshd.o list.o xmalloc.o xstring.o err.o qswutil.o \
+hostlist.o
+in_qshd_LDADD = $(LDADD)
+in_qshd_DEPENDENCIES = 
+in_qshd_LDFLAGS = 
+@WITH_SSH_FALSE@@WITH_ELAN_FALSE@@WITH_KRB4_FALSE@pdsh_OBJECTS =  main.o \
+@WITH_SSH_FALSE@@WITH_ELAN_FALSE@@WITH_KRB4_FALSE@opt.o xmalloc.o \
+@WITH_SSH_FALSE@@WITH_ELAN_FALSE@@WITH_KRB4_FALSE@xstring.o list.o \
+@WITH_SSH_FALSE@@WITH_ELAN_FALSE@@WITH_KRB4_FALSE@wcoll.o dsh.o err.o \
+@WITH_SSH_FALSE@@WITH_ELAN_FALSE@@WITH_KRB4_FALSE@xpopen.o hostlist.o \
+@WITH_SSH_FALSE@@WITH_ELAN_FALSE@@WITH_KRB4_FALSE@testcase.o xrcmd.o
+@WITH_SSH_TRUE@@WITH_ELAN_FALSE@@WITH_KRB4_FALSE@pdsh_OBJECTS =  main.o \
+@WITH_SSH_TRUE@@WITH_ELAN_FALSE@@WITH_KRB4_FALSE@opt.o xmalloc.o \
+@WITH_SSH_TRUE@@WITH_ELAN_FALSE@@WITH_KRB4_FALSE@xstring.o list.o \
+@WITH_SSH_TRUE@@WITH_ELAN_FALSE@@WITH_KRB4_FALSE@wcoll.o dsh.o err.o \
+@WITH_SSH_TRUE@@WITH_ELAN_FALSE@@WITH_KRB4_FALSE@xpopen.o hostlist.o \
+@WITH_SSH_TRUE@@WITH_ELAN_FALSE@@WITH_KRB4_FALSE@testcase.o xrcmd.o \
+@WITH_SSH_TRUE@@WITH_ELAN_FALSE@@WITH_KRB4_FALSE@sshcmd.o
+@WITH_SSH_TRUE@@WITH_ELAN_TRUE@@WITH_KRB4_FALSE@pdsh_OBJECTS =  main.o \
+@WITH_SSH_TRUE@@WITH_ELAN_TRUE@@WITH_KRB4_FALSE@opt.o xmalloc.o \
+@WITH_SSH_TRUE@@WITH_ELAN_TRUE@@WITH_KRB4_FALSE@xstring.o list.o \
+@WITH_SSH_TRUE@@WITH_ELAN_TRUE@@WITH_KRB4_FALSE@wcoll.o dsh.o err.o \
+@WITH_SSH_TRUE@@WITH_ELAN_TRUE@@WITH_KRB4_FALSE@xpopen.o hostlist.o \
+@WITH_SSH_TRUE@@WITH_ELAN_TRUE@@WITH_KRB4_FALSE@testcase.o xrcmd.o \
+@WITH_SSH_TRUE@@WITH_ELAN_TRUE@@WITH_KRB4_FALSE@sshcmd.o qcmd.o \
+@WITH_SSH_TRUE@@WITH_ELAN_TRUE@@WITH_KRB4_FALSE@qswutil.o
+@WITH_SSH_TRUE@@WITH_ELAN_FALSE@@WITH_KRB4_TRUE@pdsh_OBJECTS =  main.o \
+@WITH_SSH_TRUE@@WITH_ELAN_FALSE@@WITH_KRB4_TRUE@opt.o xmalloc.o \
+@WITH_SSH_TRUE@@WITH_ELAN_FALSE@@WITH_KRB4_TRUE@xstring.o list.o \
+@WITH_SSH_TRUE@@WITH_ELAN_FALSE@@WITH_KRB4_TRUE@wcoll.o dsh.o err.o \
+@WITH_SSH_TRUE@@WITH_ELAN_FALSE@@WITH_KRB4_TRUE@xpopen.o hostlist.o \
+@WITH_SSH_TRUE@@WITH_ELAN_FALSE@@WITH_KRB4_TRUE@testcase.o xrcmd.o \
+@WITH_SSH_TRUE@@WITH_ELAN_FALSE@@WITH_KRB4_TRUE@sshcmd.o k4cmd.o
+@WITH_SSH_FALSE@@WITH_ELAN_TRUE@@WITH_KRB4_TRUE@pdsh_OBJECTS =  main.o \
+@WITH_SSH_FALSE@@WITH_ELAN_TRUE@@WITH_KRB4_TRUE@opt.o xmalloc.o \
+@WITH_SSH_FALSE@@WITH_ELAN_TRUE@@WITH_KRB4_TRUE@xstring.o list.o \
+@WITH_SSH_FALSE@@WITH_ELAN_TRUE@@WITH_KRB4_TRUE@wcoll.o dsh.o err.o \
+@WITH_SSH_FALSE@@WITH_ELAN_TRUE@@WITH_KRB4_TRUE@xpopen.o hostlist.o \
+@WITH_SSH_FALSE@@WITH_ELAN_TRUE@@WITH_KRB4_TRUE@testcase.o xrcmd.o \
+@WITH_SSH_FALSE@@WITH_ELAN_TRUE@@WITH_KRB4_TRUE@qcmd.o qswutil.o \
+@WITH_SSH_FALSE@@WITH_ELAN_TRUE@@WITH_KRB4_TRUE@k4cmd.o
+@WITH_SSH_TRUE@@WITH_ELAN_TRUE@@WITH_KRB4_TRUE@pdsh_OBJECTS =  main.o \
+@WITH_SSH_TRUE@@WITH_ELAN_TRUE@@WITH_KRB4_TRUE@opt.o xmalloc.o \
+@WITH_SSH_TRUE@@WITH_ELAN_TRUE@@WITH_KRB4_TRUE@xstring.o list.o wcoll.o \
+@WITH_SSH_TRUE@@WITH_ELAN_TRUE@@WITH_KRB4_TRUE@dsh.o err.o xpopen.o \
+@WITH_SSH_TRUE@@WITH_ELAN_TRUE@@WITH_KRB4_TRUE@hostlist.o testcase.o \
+@WITH_SSH_TRUE@@WITH_ELAN_TRUE@@WITH_KRB4_TRUE@xrcmd.o sshcmd.o qcmd.o \
+@WITH_SSH_TRUE@@WITH_ELAN_TRUE@@WITH_KRB4_TRUE@qswutil.o k4cmd.o
+@WITH_SSH_FALSE@@WITH_ELAN_FALSE@@WITH_KRB4_TRUE@pdsh_OBJECTS =  main.o \
+@WITH_SSH_FALSE@@WITH_ELAN_FALSE@@WITH_KRB4_TRUE@opt.o xmalloc.o \
+@WITH_SSH_FALSE@@WITH_ELAN_FALSE@@WITH_KRB4_TRUE@xstring.o list.o \
+@WITH_SSH_FALSE@@WITH_ELAN_FALSE@@WITH_KRB4_TRUE@wcoll.o dsh.o err.o \
+@WITH_SSH_FALSE@@WITH_ELAN_FALSE@@WITH_KRB4_TRUE@xpopen.o hostlist.o \
+@WITH_SSH_FALSE@@WITH_ELAN_FALSE@@WITH_KRB4_TRUE@testcase.o xrcmd.o \
+@WITH_SSH_FALSE@@WITH_ELAN_FALSE@@WITH_KRB4_TRUE@k4cmd.o
+@WITH_SSH_FALSE@@WITH_ELAN_TRUE@@WITH_KRB4_FALSE@pdsh_OBJECTS =  main.o \
+@WITH_SSH_FALSE@@WITH_ELAN_TRUE@@WITH_KRB4_FALSE@opt.o xmalloc.o \
+@WITH_SSH_FALSE@@WITH_ELAN_TRUE@@WITH_KRB4_FALSE@xstring.o list.o \
+@WITH_SSH_FALSE@@WITH_ELAN_TRUE@@WITH_KRB4_FALSE@wcoll.o dsh.o err.o \
+@WITH_SSH_FALSE@@WITH_ELAN_TRUE@@WITH_KRB4_FALSE@xpopen.o hostlist.o \
+@WITH_SSH_FALSE@@WITH_ELAN_TRUE@@WITH_KRB4_FALSE@testcase.o xrcmd.o \
+@WITH_SSH_FALSE@@WITH_ELAN_TRUE@@WITH_KRB4_FALSE@qcmd.o qswutil.o
+pdsh_LDADD = $(LDADD)
+pdsh_DEPENDENCIES = 
+pdsh_LDFLAGS = 
+SCRIPTS =  $(bin_SCRIPTS)
+
+CFLAGS = @CFLAGS@
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
+DIST_COMMON =  README ./stamp-h.in COPYING ChangeLog Makefile.am \
+Makefile.in TODO acinclude.m4 aclocal.m4 config.h.in configure \
+configure.ac pdcp.1.in pdsh.1.in pdsh.spec.in
+
+
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
+
+TAR = tar
+GZIP_ENV = --best
+DEP_FILES =  .deps/dsh.P .deps/err.P .deps/hostlist.P .deps/k4cmd.P \
+.deps/list.P .deps/main.P .deps/opt.P .deps/qcmd.P .deps/qshd.P \
+.deps/qswutil.P .deps/sshcmd.P .deps/testcase.P .deps/wcoll.P \
+.deps/xmalloc.P .deps/xpopen.P .deps/xrcmd.P .deps/xstring.P
+SOURCES = $(in_qshd_SOURCES) $(pdsh_SOURCES) $(EXTRA_pdsh_SOURCES)
+OBJECTS = $(in_qshd_OBJECTS) $(pdsh_OBJECTS)
+
+all: all-redirect
+.SUFFIXES:
+.SUFFIXES: .S .c .o .s
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.ac $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign Makefile
+
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+$(ACLOCAL_M4):  configure.ac  acinclude.m4
+	cd $(srcdir) && $(ACLOCAL)
+
+config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
+	$(SHELL) ./config.status --recheck
+$(srcdir)/configure: $(srcdir)/configure.ac $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
+	cd $(srcdir) && $(AUTOCONF)
+
+config.h: stamp-h
+	@if test ! -f $@; then \
+		rm -f stamp-h; \
+		$(MAKE) stamp-h; \
+	else :; fi
+stamp-h: $(srcdir)/config.h.in $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES= CONFIG_HEADERS=config.h \
+	     $(SHELL) ./config.status
+	@echo timestamp > stamp-h 2> /dev/null
+$(srcdir)/config.h.in: $(srcdir)/stamp-h.in
+	@if test ! -f $@; then \
+		rm -f $(srcdir)/stamp-h.in; \
+		$(MAKE) $(srcdir)/stamp-h.in; \
+	else :; fi
+$(srcdir)/stamp-h.in: $(top_srcdir)/configure.ac $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOHEADER)
+	@echo timestamp > $(srcdir)/stamp-h.in 2> /dev/null
+
+mostlyclean-hdr:
+
+clean-hdr:
+
+distclean-hdr:
+	-rm -f config.h
+
+maintainer-clean-hdr:
+pdsh.spec: $(top_builddir)/config.status pdsh.spec.in
+	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
+pdcp.1: $(top_builddir)/config.status pdcp.1.in
+	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
+pdsh.1: $(top_builddir)/config.status pdsh.1.in
+	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+mostlyclean-binPROGRAMS:
+
+clean-binPROGRAMS:
+	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+
+distclean-binPROGRAMS:
+
+maintainer-clean-binPROGRAMS:
+
+install-binPROGRAMS: $(bin_PROGRAMS)
+	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	$(mkinstalldirs) $(DESTDIR)$(mandir)/man1
+	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo "  $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`"; \
+	     $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
+	  else :; fi; \
+	done
+
+uninstall-binPROGRAMS:
+	@$(NORMAL_UNINSTALL)
+	list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
+	done
+
+mostlyclean-sbinPROGRAMS:
+
+clean-sbinPROGRAMS:
+	-test -z "$(sbin_PROGRAMS)" || rm -f $(sbin_PROGRAMS)
+
+distclean-sbinPROGRAMS:
+
+maintainer-clean-sbinPROGRAMS:
+
+install-sbinPROGRAMS: $(sbin_PROGRAMS)
+	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(sbindir)
-	$(INSTALL) -m 4755 -o root pdsh $(DESTDIR)$(bindir)/pdsh
-	$(LN_S) $(DESTDIR)$(bindir)/pdsh $(DESTDIR)$(bindir)/pdcp
-	$(INSTALL) dshbak $(DESTDIR)$(bindir)/
-	$(INSTALL) pdsh.1 $(DESTDIR)$(mandir)/man1/
-	$(INSTALL) pdcp.1 $(DESTDIR)$(mandir)/man1/
-	$(INSTALL) dshbak.1 $(DESTDIR)$(mandir)/man1/
-	test -z "$(PROG_QSHD)" || $(INSTALL) qshd $(DESTDIR)$(sbindir)/in.qshd
+	@list='$(sbin_PROGRAMS)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo "  $(INSTALL_PROGRAM) $$p $(DESTDIR)$(sbindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`"; \
+	     $(INSTALL_PROGRAM) $$p $(DESTDIR)$(sbindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
+	  else :; fi; \
+	done
 
-clean:
-	rm -f $(PROGS)
-	rm -f *.o *.a *~ \#* .\#* cscope*.out core core.* *.core tags TAGS
+uninstall-sbinPROGRAMS:
+	@$(NORMAL_UNINSTALL)
+	list='$(sbin_PROGRAMS)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(sbindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
+	done
 
-realclean: clean
-	rm -f *.tgz *.rpm
+.s.o:
+	$(COMPILE) -c $<
 
-distclean: realclean
-	rm -f config.cache config.log config.status stamp-h Makefile.bak
-	rm -f $(AC_OUTPUT)
+.S.o:
+	$(COMPILE) -c $<
 
-depend:
-	-makedepend -Y -- $(COPTS) -- *.[ch] 2>/dev/null
+mostlyclean-compile:
+	-rm -f *.o core *.core
 
-tags: $(PROGS)
-	-ctags * 2>/dev/null
+clean-compile:
 
-.c.o:
-	$(CC) $(COPTS) -c $<
+distclean-compile:
+	-rm -f *.tab.c
+
+maintainer-clean-compile:
+
+in.qshd: $(in_qshd_OBJECTS) $(in_qshd_DEPENDENCIES)
+	@rm -f in.qshd
+	$(LINK) $(in_qshd_LDFLAGS) $(in_qshd_OBJECTS) $(in_qshd_LDADD) $(LIBS)
+
+pdsh: $(pdsh_OBJECTS) $(pdsh_DEPENDENCIES)
+	@rm -f pdsh
+	$(LINK) $(pdsh_LDFLAGS) $(pdsh_OBJECTS) $(pdsh_LDADD) $(LIBS)
+
+install-binSCRIPTS: $(bin_SCRIPTS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(bindir)
+	@list='$(bin_SCRIPTS)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo " $(INSTALL_SCRIPT) $$p $(DESTDIR)$(bindir)/`echo $$p|sed '$(transform)'`"; \
+	    $(INSTALL_SCRIPT) $$p $(DESTDIR)$(bindir)/`echo $$p|sed '$(transform)'`; \
+	  else if test -f $(srcdir)/$$p; then \
+	    echo " $(INSTALL_SCRIPT) $(srcdir)/$$p $(DESTDIR)$(bindir)/`echo $$p|sed '$(transform)'`"; \
+	    $(INSTALL_SCRIPT) $(srcdir)/$$p $(DESTDIR)$(bindir)/`echo $$p|sed '$(transform)'`; \
+	  else :; fi; fi; \
+	done
+
+uninstall-binSCRIPTS:
+	@$(NORMAL_UNINSTALL)
+	list='$(bin_SCRIPTS)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(bindir)/`echo $$p|sed '$(transform)'`; \
+	done
+
+# This directory's subdirectories are mostly independent; you can cd
+# into them and run `make' without going through this Makefile.
+# To change the values of `make' variables: instead of editing Makefiles,
+# (1) if the variable is set in `config.status', edit `config.status'
+#     (which will cause the Makefiles to be regenerated when you run `make');
+# (2) otherwise, pass the desired values on the `make' command line.
+
+@SET_MAKE@
+
+all-recursive install-data-recursive install-exec-recursive \
+installdirs-recursive install-recursive uninstall-recursive  \
+check-recursive installcheck-recursive info-recursive dvi-recursive:
+	@set fnord $(MAKEFLAGS); amf=$$2; \
+	dot_seen=no; \
+	target=`echo $@ | sed s/-recursive//`; \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    dot_seen=yes; \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+	done; \
+	if test "$$dot_seen" = "no"; then \
+	  $(MAKE) $(AM_MAKEFLAGS) "$$target-am" || exit 1; \
+	fi; test -z "$$fail"
+
+mostlyclean-recursive clean-recursive distclean-recursive \
+maintainer-clean-recursive:
+	@set fnord $(MAKEFLAGS); amf=$$2; \
+	dot_seen=no; \
+	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
+	  rev="$$subdir $$rev"; \
+	  test "$$subdir" != "." || dot_seen=yes; \
+	done; \
+	test "$$dot_seen" = "no" && rev=". $$rev"; \
+	target=`echo $@ | sed s/-recursive//`; \
+	for subdir in $$rev; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+	done && test -z "$$fail"
+tags-recursive:
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  test "$$subdir" = . || (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) tags); \
+	done
+
+tags: TAGS
+
+ID: $(HEADERS) $(SOURCES) $(LISP)
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	here=`pwd` && cd $(srcdir) \
+	  && mkid -f$$here/ID $$unique $(LISP)
+
+TAGS: tags-recursive $(HEADERS) $(SOURCES) config.h.in $(TAGS_DEPENDENCIES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+   if test "$$subdir" = .; then :; else \
+	    test -f $$subdir/TAGS && tags="$$tags -i $$here/$$subdir/TAGS"; \
+   fi; \
+	done; \
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(ETAGS_ARGS)config.h.in$$unique$(LISP)$$tags" \
+	  || (cd $(srcdir) && etags -o $$here/TAGS $(ETAGS_ARGS) $$tags config.h.in $$unique $(LISP))
+
+mostlyclean-tags:
+
+clean-tags:
+
+distclean-tags:
+	-rm -f TAGS ID
+
+maintainer-clean-tags:
+
+distdir = $(PACKAGE)-$(VERSION)
+top_distdir = $(distdir)
+
+# This target untars the dist file and tries a VPATH configuration.  Then
+# it guarantees that the distribution is self-contained by making another
+# tarfile.
+distcheck: dist
+	-rm -rf $(distdir)
+	GZIP=$(GZIP_ENV) $(TAR) zxf $(distdir).tar.gz
+	mkdir $(distdir)/=build
+	mkdir $(distdir)/=inst
+	dc_install_base=`cd $(distdir)/=inst && pwd`; \
+	cd $(distdir)/=build \
+	  && ../configure --srcdir=.. --prefix=$$dc_install_base \
+	  && $(MAKE) $(AM_MAKEFLAGS) \
+	  && $(MAKE) $(AM_MAKEFLAGS) dvi \
+	  && $(MAKE) $(AM_MAKEFLAGS) check \
+	  && $(MAKE) $(AM_MAKEFLAGS) install \
+	  && $(MAKE) $(AM_MAKEFLAGS) installcheck \
+	  && $(MAKE) $(AM_MAKEFLAGS) dist
+	-rm -rf $(distdir)
+	@banner="$(distdir).tar.gz is ready for distribution"; \
+	dashes=`echo "$$banner" | sed s/./=/g`; \
+	echo "$$dashes"; \
+	echo "$$banner"; \
+	echo "$$dashes"
+dist: distdir
+	-chmod -R a+r $(distdir)
+	GZIP=$(GZIP_ENV) $(TAR) chozf $(distdir).tar.gz $(distdir)
+	-rm -rf $(distdir)
+dist-all: distdir
+	-chmod -R a+r $(distdir)
+	GZIP=$(GZIP_ENV) $(TAR) chozf $(distdir).tar.gz $(distdir)
+	-rm -rf $(distdir)
+distdir: $(DISTFILES)
+	-rm -rf $(distdir)
+	mkdir $(distdir)
+	-chmod 777 $(distdir)
+	here=`cd $(top_builddir) && pwd`; \
+	top_distdir=`cd $(distdir) && pwd`; \
+	distdir=`cd $(distdir) && pwd`; \
+	cd $(top_srcdir) \
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --foreign Makefile
+	$(mkinstalldirs) $(distdir)/$(auxdir)
+	@for file in $(DISTFILES); do \
+	  d=$(srcdir); \
+	  if test -d $$d/$$file; then \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
+	  else \
+	    test -f $(distdir)/$$file \
+	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	    || cp -p $$d/$$file $(distdir)/$$file || :; \
+	  fi; \
+	done
+	for subdir in $(SUBDIRS); do \
+	  if test "$$subdir" = .; then :; else \
+	    test -d $(distdir)/$$subdir \
+	    || mkdir $(distdir)/$$subdir \
+	    || exit 1; \
+	    chmod 777 $(distdir)/$$subdir; \
+	    (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) top_distdir=../$(distdir) distdir=../$(distdir)/$$subdir distdir) \
+	      || exit 1; \
+	  fi; \
+	done
+
+DEPS_MAGIC := $(shell mkdir .deps > /dev/null 2>&1 || :)
+
+-include $(DEP_FILES)
+
+mostlyclean-depend:
+
+clean-depend:
+
+distclean-depend:
+	-rm -rf .deps
+
+maintainer-clean-depend:
+
+%.o: %.c
+	@echo '$(COMPILE) -c $<'; \
+	$(COMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-cp .deps/$(*F).pp .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm .deps/$(*F).pp
+
+%.lo: %.c
+	@echo '$(LTCOMPILE) -c $<'; \
+	$(LTCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*F).pp > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
+info-am:
+info: info-recursive
+dvi-am:
+dvi: dvi-recursive
+check-am: all-am
+check: check-recursive
+installcheck-am:
+installcheck: installcheck-recursive
+all-recursive-am: config.h
+	$(MAKE) $(AM_MAKEFLAGS) all-recursive
+
+install-exec-am: install-binPROGRAMS install-sbinPROGRAMS \
+		install-binSCRIPTS
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) install-exec-hook
+install-exec: install-exec-recursive
+
+install-data-am:
+install-data: install-data-recursive
+
+install-am: all-am
+	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
+install: install-recursive
+uninstall-am: uninstall-binPROGRAMS uninstall-sbinPROGRAMS \
+		uninstall-binSCRIPTS uninstall-local
+uninstall: uninstall-recursive
+all-am: Makefile $(PROGRAMS) $(SCRIPTS) config.h
+all-redirect: all-recursive-am
+install-strip:
+	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
+installdirs: installdirs-recursive
+installdirs-am:
+	$(mkinstalldirs)  $(DESTDIR)$(bindir) $(DESTDIR)$(sbindir) \
+		$(DESTDIR)$(bindir)
 
 
-include Make-rpm.mk
-include Make-test.mk
+mostlyclean-generic:
 
-# AUTO-REMAKE OF AUTOCONF-RELATED TARGETS
+clean-generic:
 
-Makefile: Makefile.in config.status
-	./config.status
+distclean-generic:
+	-rm -f Makefile $(CONFIG_CLEAN_FILES)
+	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
-config.status: META
-	./config.status --recheck
+maintainer-clean-generic:
+	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
+mostlyclean-am:  mostlyclean-hdr mostlyclean-binPROGRAMS \
+		mostlyclean-sbinPROGRAMS mostlyclean-compile \
+		mostlyclean-tags mostlyclean-depend mostlyclean-generic
 
-$(PROJECT).spec: $(PROJECT).spec.in
-	./config.status $@
+mostlyclean: mostlyclean-recursive
 
-# DO NOT DELETE THIS LINE -- make depend depends on it.
+clean-am:  clean-hdr clean-binPROGRAMS clean-sbinPROGRAMS clean-compile \
+		clean-tags clean-depend clean-generic mostlyclean-am
+
+clean: clean-recursive
+
+distclean-am:  distclean-hdr distclean-binPROGRAMS \
+		distclean-sbinPROGRAMS distclean-compile distclean-tags \
+		distclean-depend distclean-generic clean-am
+
+distclean: distclean-recursive
+	-rm -f config.status
+
+maintainer-clean-am:  maintainer-clean-hdr maintainer-clean-binPROGRAMS \
+		maintainer-clean-sbinPROGRAMS maintainer-clean-compile \
+		maintainer-clean-tags maintainer-clean-depend \
+		maintainer-clean-generic distclean-am \
+		maintainer-clean-local
+	@echo "This command is intended for maintainers to use;"
+	@echo "it deletes files that may require special tools to rebuild."
+
+maintainer-clean: maintainer-clean-recursive
+	-rm -f config.status
+
+.PHONY: mostlyclean-hdr distclean-hdr clean-hdr maintainer-clean-hdr \
+mostlyclean-binPROGRAMS distclean-binPROGRAMS clean-binPROGRAMS \
+maintainer-clean-binPROGRAMS uninstall-binPROGRAMS install-binPROGRAMS \
+mostlyclean-sbinPROGRAMS distclean-sbinPROGRAMS clean-sbinPROGRAMS \
+maintainer-clean-sbinPROGRAMS uninstall-sbinPROGRAMS \
+install-sbinPROGRAMS mostlyclean-compile distclean-compile \
+clean-compile maintainer-clean-compile uninstall-binSCRIPTS \
+install-binSCRIPTS install-data-recursive uninstall-data-recursive \
+install-exec-recursive uninstall-exec-recursive installdirs-recursive \
+uninstalldirs-recursive all-recursive check-recursive \
+installcheck-recursive info-recursive dvi-recursive \
+mostlyclean-recursive distclean-recursive clean-recursive \
+maintainer-clean-recursive tags tags-recursive mostlyclean-tags \
+distclean-tags clean-tags maintainer-clean-tags distdir \
+mostlyclean-depend distclean-depend clean-depend \
+maintainer-clean-depend info-am info dvi-am dvi check check-am \
+installcheck-am installcheck all-recursive-am install-exec-am \
+install-exec install-data-am install-data install-am install \
+uninstall-local uninstall-am uninstall all-redirect all-am all \
+installdirs-am installdirs mostlyclean-generic distclean-generic \
+clean-generic maintainer-clean-generic clean mostlyclean distclean \
+maintainer-clean
+
+
+# Makefile rule for building rpm directly from CVS repository
+include $(top_srcdir)/Make-rpm.mk
+
+install-exec-hook:
+	@echo "chown root $(DESTDIR)$(bindir)/pdsh"
+	@chown root $(DESTDIR)$(bindir)/pdsh ||\
+	   echo "Unable to chown pdsh to root"
+	@echo "chmod 4755 $(DESTDIR)$(bindir)/pdsh"
+	@chmod 4755 $(DESTDIR)$(bindir)/pdsh ||\
+	   echo "Unable to set permissions on pdsh"
+	$(LN_S) $(DESTDIR)$(bindir)/pdsh $(DESTDIR)$(bindir)/pdcp || \
+	   cp -p $(DESTDIR)$(bindir)/pdsh $(DESTDIR)$(bindir)/pdcp || :
+
+uninstall-local:
+	$(RM) $(DESTDIR)$(bindir)/pdcp
+
+#dist-hook:
+#	(cd $(distdir) && mkdir $(auxdir)) || :
+#	for file in $(AUX_DIST) ; do \
+#	  cp $$file $(distdir)/$$file; \
+#	done
+
+maintainer-clean-local:
+	(cd $(top_srcdir) && rm -rf autom4te.cache)
+
+# hack for automake version compatibility
+# create auxdir/depcomp if it wasn't added by automake --add-missing
+$(auxdir)/depcomp :
+	touch $@
+
+# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Otherwise a system limit (for SysV at least) may be exceeded.
+.NOEXPORT:
