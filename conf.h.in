@@ -210,6 +210,9 @@
 /* Define the project's version. */
 #undef VERSION
 
+/* MPICH machines file */
+#undef _PATH_MACHINES
+
 /* Path to nodeattr */
 #undef _PATH_NODEATTR
 
