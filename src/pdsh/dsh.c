@@ -918,6 +918,7 @@ int dsh(opt_t * opt)
         t[i].pcp_popt = opt->preserve;
         t[i].pcp_ropt = opt->recursive;
         t[i].pcp_progname = opt->progname;
+        t[i].kill_on_fail = opt->kill_on_fail;
 #if	!HAVE_MTSAFE_GETHOSTBYNAME
         /* if MT-safe, do it in parallel in rsh/rcp threads */
         /* gethostbyname_r is not very portable so skip it */
@@ -957,8 +958,11 @@ int dsh(opt_t * opt)
         rv = pthread_create(&t[i].thread, &t[i].attr,
                             pdsh_personality() == DSH
                             ? _rsh_thread : _rcp_thread, (void *) &t[i]);
-        if (rv != 0)
+        if (rv != 0) {
+            if (opt->kill_on_fail)
+                _fwd_signal(SIGTERM);
             errx("%p: pthread_create %S: %S\n", t[i].host, strerror(rv));
+        }
         threadcount++;
 
         pthread_mutex_unlock(&threadcount_mutex);

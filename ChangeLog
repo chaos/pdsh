@@ -1,3 +1,13 @@
+2003-09-17  Albert Chu <chu11@llnl.gov>
+
+	* src/pdsh/dsh.c (dsh): 
+	Propogated value of kill_on_fail value to _rsh_thread.  Allows
+	_rsh_thread to terminate properly during batch jobs.
+
+	* src/pdsh/dsh.c (dsh): 
+	Before exitting on a pthread_create failure, added code to kill
+	all remote jobs if kill_on_fail is true.
+	
 2003-09-16  Albert Chu <chu11@llnl.gov>
 	
 	* src/modules/mcmd.c (mcmd): Fixed an additional error message
