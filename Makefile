@@ -4,7 +4,7 @@
 PROJECT=	pdsh
 VERSION=	1.5
 
-PDSH_OBJS=	list.o xmalloc.o xstring.o err.o \
+PDSH_OBJS=	list.o xmalloc.o xstring.o err.o xpopen.o \
 		dsh.o main.o opt.o wcoll.o xrcmd.o sshcmd.o \
 		$(ELAN_OBJS) $(KRB_OBJS)
 
