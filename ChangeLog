@@ -1,6 +1,6 @@
-2003-07-XX achu
+2003-07-21 achu
 	* Fixed typos in manpages.
-	* Enabled PAM in qshell & mqshell daemons
+	* Enabled PAM support in qshell & mqshell daemons
 	* Updated configuration to output warning/notice
 	  messages if particular modules cannot be built.
 	
