@@ -12,3 +12,4 @@
   o consider static linkage statically to avoid runtime elan dependencies?
   o dlopen trick?
 - Addy requests more prun-like options
+- Use Mark's hostlist package "natively", i.e. don't convert with wrapper.

@@ -77,5 +77,6 @@ range_split(char *list_sep, char *range_sep, char *str)
 		errx("%p: hostlist_create failed\n");
 	l = _copy_hostlist_to_list(hl);
 	hostlist_destroy(hl);
+
 	return l;
 }
