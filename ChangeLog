@@ -4,6 +4,9 @@
 	Replaced @PROJECT@ with @PACKAPGE@, so that manpages will be
 	output properly by configure.
 
+	* src/qsnet/mqshd.c (check_interfaces): 
+	Fixed a memory leak. 
+
 2003-09-17  Albert Chu <chu11@llnl.gov>
 
 	* src/pdsh/dsh.c (dsh): 

@@ -256,6 +256,7 @@ static int check_interfaces(void *munge_addr, int h_length) {
         }
     }
 
+    free(buf);
     return found;
 
 bad:
