@@ -20,9 +20,9 @@ endif
 libqsw_la_LDFLAGS =        $(ELAN_LIBS)
 EXTRA_libqsw_la_SOURCES =  qswutil.c qswutil.h
 
-pdsh_SOURCES =             $(COMMON_SOURCES) $(LTDL_SOURCES)
+pdsh_SOURCES =             $(COMMON_FILES) $(LTDL_FILES)
 nodist_pdsh_SOURCES =      testconfig.c
-pdsh_inst_SOURCES =        $(COMMON_SOURCES) $(LTDL_SOURCES)
+pdsh_inst_SOURCES =        $(COMMON_FILES) $(LTDL_FILES)
 nodist_pdsh_inst_SOURCES = config.c
 
 if WITH_STATIC_MODULES
@@ -31,13 +31,13 @@ pdsh_LDFLAGS = 	           modules/libmods.la libqsw.la
 else
 pdsh_LDADD =               $(LIBADD_DL) $(READLINE_LIBS) 
 pdsh_LDFLAGS =             -export-dynamic  
-LTDL_SOURCES =             ltdl.h ltdl.c
+LTDL_FILES =               ltdl.h ltdl.c
 endif
 
 pdsh_inst_LDADD =          $(pdsh_LDADD)
 pdsh_inst_LDFLAGS =        $(pdsh_LDFLAGS)
 
-COMMON_SOURCES = \
+COMMON_FILES = \
 	main.c \
 	opt.c opt.h \
 	xmalloc.c xmalloc.h \
