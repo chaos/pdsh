@@ -30,6 +30,7 @@ executables.
 %setup -n %{name}-%{version}-%{release}
 
 %build
+./autogen.sh
 %if %chaos
 ./configure --prefix=/usr --with-elan
 %else
