@@ -121,6 +121,7 @@ Free(void **item)
 
 	if (*item != NULL) {
 		assert(p[0] == XMALLOC_MAGIC);	/* magic cookie still there? */
+		p[0] = 0;
 		MALLOC_LOCK();
 		free(p);
 		MALLOC_UNLOCK();

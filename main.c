@@ -144,16 +144,14 @@ shell(uid_t uid, char *cmd)
 static char *
 getcmd(char *prompt)
 {
-	char *cmd = NULL, *buf_cln;
+	char *cmd = NULL;
 	char buf[LINEBUFSIZE];
 
 	out("%s> ", prompt);
 	if (fgets(buf, LINEBUFSIZE, stdin) != NULL) {
 		buf[LINEBUFSIZE - 1] = '\0';
-		buf_cln = buf;
-		xstrcln(&buf_cln, NULL);
-
-		cmd = Strdup(buf_cln);
+		xstrcln(buf, NULL);
+		cmd = Strdup(buf);
 	}
 	return cmd;
 }

@@ -79,10 +79,9 @@ read_wcoll(char *file, FILE *f)
 			word = list_nth(words, 0);
 			if ((p = strchr(word, '#')) != NULL)
 				*p = '\0';
-			p = word;
-			xstrcln(&p, NULL);
-			if (strlen(p) > 0)
-				list_push(new, p);
+			xstrcln(word, NULL);
+			if (strlen(word) > 0)
+				list_push(new, word);
 		}
 		list_free(&words);
 	}
@@ -100,7 +99,6 @@ read_genders(char *attr, int iopt)
 	list_t new = list_new();
 	char cmd[LINEBUFSIZE];
 	char buf[LINEBUFSIZE];
-	char *p;
 
 #if	HAVE_SDR
 	/* On SP's at LLNL, the genders names are the alternates */ 
@@ -112,9 +110,8 @@ read_genders(char *attr, int iopt)
 	if (f == NULL)
 		errx("%p: error running %s\n", _PATH_NODEATTR);
 	while (fgets(buf, LINEBUFSIZE, f) != NULL) {
-		p = buf;
-		xstrcln(&p, NULL);
-		list_push(new, p);
+		xstrcln(buf, NULL);
+		list_push(new, buf);
 	}
 	if (xpclose(f) != 0) 
 		errx("%p: error running %s\n", _PATH_NODEATTR);

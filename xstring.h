@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 
-void xstrcln(char **, char *);
+void xstrcln(char *, char *);
 int xfgets(char **, FILE *);
 
 char *xstrduplicate(char *str);

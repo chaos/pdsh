@@ -32,28 +32,34 @@ char *strerror_r(int, char *, int);
 
 /*
  * Zap leading and trailing occurrences of characters in 'verboten'.
- * (Note: don't pass in your base pointer or you won't be able to free!)
- *   str (IN/OUT)	pointer to string
+ *   str (IN/OUT)	string
  *   verboten (IN)	list of characters to be zapped (if NULL, zap spaces)
  */
 void 
-xstrcln(char **str, char *verboten)
+xstrcln(char *str, char *verboten)
 {
 	char *p;
+	char *base = str;
 
 	if (verboten == NULL)
 		verboten = SPACES;
 
 	/* move pointer past initial 'verboten' characters */
-	while (*str != NULL && **str != '\0' && strchr(verboten, **str) != NULL)
-		(*str)++;
+	while (str != NULL && *str != '\0' && strchr(verboten, *str) != NULL)
+		str++;
 	
 	/* overwrite trailing 'verboten' characters with nulls */
-	if (*str != NULL && strlen(*str) > 0) {
-		p = *str + strlen(*str) - 1;
-		while (p > *str && *p != '\0' && strchr(verboten, *p) != NULL)
+	if (str != NULL && strlen(str) > 0) {
+		p = str + strlen(str) - 1;
+		while (p > str && *p != '\0' && strchr(verboten, *p) != NULL)
 			*p-- = '\0';
 	}
+
+	/* move string */
+	assert(str >= base);
+	memmove(base, str, strlen(str));
+	while (str-- > base)
+		base[strlen(base) - 1] = '\0';
 }
 
 /*
