@@ -39,7 +39,7 @@
 #include <string.h>
 
 #if STATIC_MODULES
-#include "src/modules/static_modules.h"
+#include "static_modules.h"
 #else
 #include "ltdl.h"
 #endif 
@@ -74,6 +74,8 @@ struct module_components {
     lt_dlhandle handle;
     char *filename;
 #endif
+
+    int priority;
  
     struct pdsh_module *pmod;
 };
@@ -225,6 +227,7 @@ mod_create(void)
     mod->handle = NULL;
     mod->filename = NULL;
 #endif
+    mod->priority = 100;
     assert(mod->magic = MOD_MAGIC);
     
     return mod;
@@ -269,15 +272,25 @@ _mod_opts_ok(mod_t mod)
     return true;
 }
 
+static int
+_cmp_f (mod_t x, mod_t y)
+{
+    return (y->priority - x->priority);
+}
 
 int 
 mod_load_modules(const char *dir)
 {
+    int rc = 0;
 #if STATIC_MODULES
-    return _mod_load_static_modules();
+    rc = _mod_load_static_modules();
 #else
-    return _mod_load_dynamic_modules(dir);
+    rc = _mod_load_dynamic_modules(dir);
 #endif
+
+    list_sort(module_list, (ListCmpF) _cmp_f);
+
+    return(rc);
 }
 
 
@@ -563,6 +576,7 @@ _mod_load_static(int idx)
     mod_t mod = mod_create();
 
     mod->pmod = static_mods[idx];
+    mod->priority = *priority[idx];
 
     if (_mod_install(mod, static_mod_names[idx]) < 0) {
         _mod_destroy(mod);
@@ -599,6 +613,7 @@ _mod_load_dynamic(const char *fq_path)
 {
     mod_t mod = NULL;
     const lt_dlinfo *info;
+    int *priority;
     assert(fq_path != NULL);
 
     mod = mod_create();
@@ -625,6 +640,9 @@ _mod_load_dynamic(const char *fq_path)
         goto fail;
     }
 
+    if ((priority = lt_dlsym(mod->handle, "pdsh_module_priority"))) 
+        mod->priority = *priority;
+        
     if (_mod_install(mod, mod->filename) < 0)
         goto fail;
 
@@ -696,7 +714,6 @@ _mod_load_dynamic_modules(const char *dir)
         errx("%p: no modules found\n"); 
 
     return 0;
-
 }
 
 

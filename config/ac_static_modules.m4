@@ -17,7 +17,7 @@
 # This must be called before checks before any specific modules are done
 AC_DEFUN([AC_STATIC_MODULES_INIT],
 [
-  rm -f src/modules/static_modules.h
+  rm -f static_modules.h
 ])
 
 AC_DEFUN([AC_ADD_STATIC_MODULE],
@@ -65,7 +65,8 @@ AC_DEFUN([AC_STATIC_MODULES_EXIT],
   AC_SUBST(LIBMODS_OBJS)
 
   # Output the static_modules.h file
-  output_file="src/modules/static_modules.h"
+  # must be in current directory, other paths may not exist yet.
+  output_file="static_modules.h"
 
 ##-----------------------------------------------------------------
   cat >$output_file <<_MEOF
@@ -92,6 +93,7 @@ _MEOF
   for i in $MODULES
   do
      echo "extern struct pdsh_module ${i}_module_info;" >> $output_file
+     echo "extern int ${i}_module_priority;"            >> $output_file  
   done
 
 ##-----------------------------------------------------------------
@@ -129,10 +131,29 @@ _MEOF
   done
   
 ##-----------------------------------------------------------------
+
   cat >>$output_file <<_MEOF
     NULL                            
 };                                   
-                                      
+
+/*
+ * Module priorities
+ */
+int *priority[[]] = {
+_MEOF
+##-----------------------------------------------------------------
+
+  for i in $MODULES
+  do
+     echo "    &${i}_module_priority," >> $output_file
+  done
+
+##-----------------------------------------------------------------
+
+  cat >>$output_file <<_MEOF
+    NULL                            
+};                                   
+
 #endif /* STATIC_MODULES */            
 #endif /* _STATIC_MODULES_H */          
 _MEOF

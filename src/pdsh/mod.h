@@ -32,6 +32,8 @@
 
 #include "src/pdsh/opt.h"
 
+#define DEFAULT_MODULE_PRIORITY 100
+
 typedef struct module_components * mod_t;
 
 /*
@@ -93,6 +95,9 @@ int mod_read_wcoll(opt_t *pdsh_opts);
 
 /*
  *  Traverse list of loaded modules and call any exported "postop" routines.
+ *   "Postop" routines in modules are typically used to filter the
+ *   working collective, as in the -v option with nodeupdown, or -i
+ *   with genders.
  *
  *  Returns the total number of errors.
  *
