@@ -30,4 +30,5 @@ EXTRA_DIST = \
     ac_ssh.m4 \
     ac_static_modules.m4 \
     acx_pthread.m4 \
+    ac_elan.m4 \
     libtool.m4
