@@ -104,9 +104,9 @@ void opt_default(opt_t *opt)
 #if HAVE_KRB4
 	/* for Kerberos IV (probably SP), assume root can K4, users cannot */
 	if (opt->luid == 0)
-		opt->rcmd_type = RCMD_K4
+		opt->rcmd_type = RCMD_K4;
 	else
-		opt->rcmd_type = RCMD_BSD
+		opt->rcmd_type = RCMD_BSD;
 #else
 	opt->rcmd_type = RCMD_BSD;
 #endif
