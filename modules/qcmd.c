@@ -385,9 +385,9 @@ qcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
         s = rresvport(&lport);
         if (s < 0) {
             if (errno == EAGAIN)
-                err("%p: %S: rcmd: socket: all ports in use\n", ahost);
+                err("%p: %S: qcmd: socket: all ports in use\n", ahost);
             else
-                err("%p: %S: rcmd: socket: %m\n", ahost);
+                err("%p: %S: qcmd: socket: %m\n", ahost);
             pthread_sigmask(SIG_SETMASK, &oldset, NULL);
             return (-1);
         }
@@ -429,7 +429,7 @@ qcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
         listen(s2, 1);
         (void) snprintf(num, sizeof(num), "%d", lport);
         if (write(s, num, strlen(num) + 1) != strlen(num) + 1) {
-            err("%p: %S: rcmd: write (setting up stderr): %m\n", ahost);
+            err("%p: %S: qcmd: write (setting up stderr): %m\n", ahost);
             (void) close(s2);
             goto bad;
         }
@@ -441,10 +441,10 @@ qcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
         if (select(maxfd + 1, &reads, 0, 0, 0) < 1
             || !FD_ISSET(s2, &reads)) {
             if (errno != 0)
-                err("%p: %S: rcmd: select (setting up stderr): %m\n",
+                err("%p: %S: qcmd: select (setting up stderr): %m\n",
                     ahost);
             else
-                err("%p: %S: select: protocol failure in circuit setup\n",
+                err("%p: %S: qcmd: select: protocol failure in circuit setup\n",
                     ahost);
             (void) close(s2);
             goto bad;
@@ -452,7 +452,7 @@ qcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
         s3 = accept(s2, (struct sockaddr *) &from, &len);
         (void) close(s2);
         if (s3 < 0) {
-            err("%p: %S: rcmd: accept: %m\n", ahost);
+            err("%p: %S: qcmd: accept: %m\n", ahost);
             lport = 0;
             goto bad;
         }
