@@ -78,6 +78,10 @@ To configure in additional feature modules:
 --with-readline
 	Use the GNU readline library to parse input in interactive mode.
 
+--without-pam
+        Disable PAM from the qshell and mqshell daemons.  By default, they
+        are enabled.
+
 Note that a number of the above configurations options may "conflict"
 with each other because they perform identical operations.  For
 example, genders and nodeattr both support the -g option.  If several
@@ -91,6 +95,10 @@ directory for details on which modules conflict.
 +------------+
 make
 make install
+
+If you compile the qshell and/or mqshell with PAM support, remember to
+update your PAM configuration files to support the "qshell" and/or
+"mqshell" service names.
 
 +---------+
 | GOTCHAS |
