@@ -434,8 +434,13 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 	/* child continues here */
 
 	/* obtain an Elan context to use in call to elan3_create */
+#if OLD_ELAN_DRIVER
 	if ((ctx = _elan3_init(0)) == NULL)
 		errx("%p: _elan3_init failed: %m\n");
+#else
+	if ((ctx = elan3_control_open(0)) == NULL)
+		errx("%p: _elan3_control_open failed: %m\n");
+#endif
 
 	/* associate this process and its children with prgnum */
 	if (rms_prgcreate(qi->prgnum, uid, 1) < 0)	/* 1 cpu (bogus!) */
