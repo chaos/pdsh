@@ -43,7 +43,7 @@
 static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #endif /* LIBC_SCCS and not lint */
 
-#include <conf.h>
+#include "conf.h"
 
 #include <sys/param.h>
 #include <sys/types.h>
@@ -71,9 +71,8 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #include <ctype.h>
 #include <string.h>
 
-#include <dsh.h>
-#include <err.h>
-
+#include "dsh.h"
+#include "err.h"
 #include "list.h"
 
 #define RSH_PORT 514

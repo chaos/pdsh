@@ -36,7 +36,7 @@ ELAN_INC=
 LIBS = $(KRB_LIB)  -lpthread $(ELAN_LIB)
 
 CC=		gcc
-CFLAGS=		-Wall -I. -g $(KRB_INC) $(ELAN_INC)
+CFLAGS=		-Wall -g $(KRB_INC) $(ELAN_INC)
 LDFLAGS=
 
 all: pdsh $(ELAN_TARGS)

@@ -8,7 +8,7 @@
 #ifndef _OPT_INCLUDED
 #define _OPT_INCLUDED
 
-#include <conf.h>
+#include "conf.h"
 
 #include <sys/types.h>	/* for uid_t */
 

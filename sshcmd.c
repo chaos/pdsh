@@ -11,6 +11,8 @@
  * - unset DISPLAY and call setsid() so ssh won't hang prompting for passphrase
  */
 
+#include "conf.h"
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
@@ -20,14 +22,13 @@
 #include <sys/types.h>
 #include <stdlib.h>	/* putenv */
 #include <unistd.h>	
-#include <string.h>	/* bzero */
 #include <pthread.h>
+#include <string.h>	/* memset */
 
-#include <conf.h>
-#include <xstring.h>
-#include <err.h>
-#include <dsh.h>
-#include <list.h>
+#include "xstring.h"
+#include "err.h"
+#include "dsh.h"
+#include "list.h"
 
 #define HBUF_LEN	1024
 

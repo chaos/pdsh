@@ -9,7 +9,8 @@
  * Heap-oriented string functions.
  */
 
-#include <conf.h>
+#include "conf.h"
+
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>

@@ -6,12 +6,14 @@
  */
 
 
-#include <conf.h>
+#include "conf.h"
 
 #include <signal.h>
 #include <errno.h>
 #include <sys/types.h>
+#if	HAVE_UNISTD_H
 #include <sys/unistd.h>	/* seteuid */
+#endif
 #include <sys/wait.h>	/* wait */
 #include <string.h>	/* strcmp */
 #include <stdlib.h>	/* exit */

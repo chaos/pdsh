@@ -5,7 +5,7 @@
  * See ./DISCLAIMER
  */
 
-#include <conf.h>
+#include "conf.h"
 
 #include <string.h>	/* strcpy */
 #include <stdlib.h>	/* getenv */

@@ -37,7 +37,7 @@
  * thread is passed the element corresponding to one connection.
  */
 
-#include <conf.h>
+#include "conf.h"
 
 #include <pthread.h>
 #include <sys/types.h>
@@ -54,6 +54,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if	HAVE_STRINGS_H
+#include <strings.h>	/* FD_SET calls bzero on aix */
+#endif
 #include <errno.h>
 #include <assert.h>
 

@@ -28,7 +28,7 @@
  * MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE. 
  */
 
-#include <conf.h>
+#include "conf.h"
 
 #include <pthread.h>
 

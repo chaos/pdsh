@@ -5,7 +5,7 @@
  * See ./DISCLAIMER
  */
 
-#include <conf.h>
+#include "conf.h"
 
 #include <stdlib.h>
 #include <errno.h>
