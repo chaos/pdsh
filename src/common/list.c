@@ -218,6 +218,10 @@ list_t list_split_range(char *sep, char *r_op, char *str)
 
 	list_t new = list_new();
 
+	/* return an empty list if an empty string was passed in */
+	if (str == NULL || strlen(str) == 0)
+		return new;
+
 	/* remove characters to support Quadrics hostname ranges */
 	for (cur = str; *cur != '\0'; cur++) {
 		if (strchr("[]\n\t", *cur) == '\0')
