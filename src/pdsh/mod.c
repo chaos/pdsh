@@ -26,6 +26,9 @@
 #if HAVE_CONFIG_H
 #  include <config.h>
 #endif
+#if HAVE_FEATURES_H
+#  include <features.h>
+#endif
 
 #include <sys/param.h>
 #include <sys/types.h>
@@ -47,6 +50,16 @@
 #include "src/common/hostlist.h"
 #include "src/common/list.h"
 #include "mod.h"
+
+/*
+ * pdsh/322: Workaround apparent bug in glibc 2.2.4 which 
+ * occaisionally causes LinuxThreads manager thread to
+ * segfault at exit. (Disable dlclose() and lt_dlexit()
+ * in these versions of glibc)
+ */
+#if (__GLIBC__ == 2) && (__GLIBC_MINOR__ < 3)
+#  define PREVENT_DLCLOSE_BUG  1
+#endif
 
 /*
  *  Components of a module.
@@ -125,10 +138,10 @@ mod_exit(void)
     list_iterator_destroy(module_itr);
     list_destroy(module_list);
     
-#if STATIC_MODULES
+#if STATIC_MODULES || PREVENT_DLCLOSE_BUG
     return 0;
 #else
-    return lt_dlexit(); 
+    return lt_dlexit();
 #endif
 }
 
@@ -235,8 +248,10 @@ _mod_destroy(mod_t mod)
     if (mod->filename)
         Free((void **) &mod->filename);
 
+#  if !PREVENT_DLCLOSE_BUG
     if (mod->handle)
         lt_dlclose(mod->handle);
+#  endif
 #endif
 
     assert(mod->magic = ~MOD_MAGIC);
@@ -531,7 +546,7 @@ _mod_install(mod_t mod, const char *name)
         return -1;
     }
 
-    list_append(module_list, mod);
+    list_prepend(module_list, mod);
 
     return 0;
 }
