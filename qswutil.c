@@ -36,18 +36,18 @@
 #include "qswutil.h"
 #include "err.h"
 
-#define NEW_ELAN_DRIVER 1
-
 /* we will allocate program descriptions in this range */
 /* XXX note: do not start at zero as libelan shifts to get unique shm id */
 #define QSW_PRG_START  1
 #define QSW_PRG_END    INT_MAX
 
+static int debug_syslog = 1; /* syslog program setup at LOG_DEBUG level */
+
 /* 
  * Convert hostname to elan node number.  This version just returns
  * the numerical part of the hostname, true on our current systems.
  * Other methods such as a config file or genders attribute might be 
- * appropriate for wider uses.
+ * more appropriate for wider use.
  * 	host (IN)		hostname
  *	nodenum (RETURN)	elanid (-1 on failure)
  */
@@ -173,7 +173,7 @@ qsw_encode_cap(char *s, int len, ELAN_CAPABILITY *cap)
 				cap->UserKey.Values[2],
 				cap->UserKey.Values[3],
 				cap->Type,	/* short */
-				cap->Generation,/* short */
+				0,		/* short */
 				cap->LowContext,
 				cap->HighContext,
 				cap->MyContext,
@@ -208,6 +208,8 @@ qsw_encode_cap(char *s, int len, ELAN_CAPABILITY *cap)
 int
 qsw_decode_cap(char *s, ELAN_CAPABILITY *cap)
 {
+	short dummy;
+
 	/* initialize capability - not sure if this is necessary */
 	elan3_nullcap(cap);
 
@@ -218,7 +220,7 @@ qsw_decode_cap(char *s, ELAN_CAPABILITY *cap)
 				&cap->UserKey.Values[2],
 				&cap->UserKey.Values[3],
 				&cap->Type,	/* short */
-				&cap->Generation,/* short */
+				&dummy,		/* short */
 				&cap->LowContext,
 				&cap->HighContext,
 				&cap->MyContext,
@@ -314,7 +316,7 @@ qsw_init_capability(ELAN_CAPABILITY *cap, int nprocs, list_t nodelist,
 	srand48(getpid());
 
 	/*
-	 * Initialize for single rail and either block or cyclic allocation.  
+	 * Initialize for multi rail and either block or cyclic allocation.  
 	 * Set ELAN_CAP_TYPE_BROADCASTABLE later if appropriate.
 	 */
 	elan3_nullcap(cap);
@@ -363,21 +365,13 @@ qsw_init_capability(ELAN_CAPABILITY *cap, int nprocs, list_t nodelist,
 				ELAN_MAX_VPS);
 		return -1;
 	}
-#if	NEW_ELAN_DRIVER
-	/*
- 	 * XXX: this bit seems to be manditory with the new drivers.  If not
-	 * set, mping doesn't work on noncontiguous nodes:
- 	 *   ELAN_EXCEPTION @ 0: 14 (Invalid argument)
- 	 *   elan_baseInit(): Broadcast is not allowed by capability (rev A 
-	 *     hardware?)
- 	 * while setting it seems to work.  Maybe I misunderstood the 
-	 * semantic meaning of this bit all along?
- 	 */
+
+	/* 
+	 * As we now support segmented broadcast, always flag the capability
+	 * as broadcastable. 
+	 */
+	/*if (abs(cap->HighNode - cap->LowNode) == num_nodes - 1)*/
 	cap->Type |= ELAN_CAP_TYPE_BROADCASTABLE;
-#else
-	if (abs(cap->HighNode - cap->LowNode) == num_nodes - 1)
-		cap->Type |= ELAN_CAP_TYPE_BROADCASTABLE;
-#endif
 
 	return 0;
 }
@@ -422,39 +416,11 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 {
 	int pid; 
 	int cpid[ELAN_MAX_VPS];
-	ELAN3_CTX *ctx;
-	char tmpstr[1024];
 	int procs_per_node; 
 	int proc_index;
 
 	if (qi->nprocs > ELAN_MAX_VPS) /* should catch this in client */
 		errx("%p: too many processes requested\n");
-
-#if 	NEW_ELAN_DRIVER
-	/* 
-	 * 'uid' needs to be able to read/write /dev/elan3/sdram0,user0
-	 * Catch this before libelan does and issues this message:
-	 *    ELAN_EXCEPTION @ --: 6 (Initialisation error)
-	 *     elan_init(0): Failed elan3_init(0 a4100000 c800000 a0100000 
-	 *     4000000 d) 1108507576: ~KM‡~IAt«Ax
-	 * XXX ug+rw for this uid and its groups not sufficient (should it be?)
-	 */
-	{
-#define ELAN_PATH_SDRAM		"/dev/elan3/sdram0"
-#define ELAN_PATH_USER		"/dev/elan3/user0"
-#define S_IRWOTH		(S_IROTH | S_IWOTH)
-		struct stat sb;
-
-		if (stat(ELAN_PATH_SDRAM, &sb) < 0)
-			errx("%p: can't stat %s\n", ELAN_PATH_SDRAM);
-		if ((sb.st_mode & S_IRWOTH) != S_IRWOTH)
-			errx("%p: need o+rw on %s\n", ELAN_PATH_SDRAM);
-		if (stat(ELAN_PATH_USER, &sb) < 0)
-			errx("%p: can't stat %s\n", ELAN_PATH_USER);
-		if ((sb.st_mode & S_IRWOTH) != S_IRWOTH)
-			errx("%p: need o+rw on %s\n", ELAN_PATH_USER);
-	}
-#endif /* NEW_ELAN_DRIVER */
 
 	/* 
 	 * First fork.  Parent waits for child to terminate, then cleans up.
@@ -477,30 +443,47 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 	}
 	/* child continues here */
 
-	/* obtain an Elan context to use in call to elan3_create */
-#if 	NEW_ELAN_DRIVER
-	if ((ctx = elan3_control_open(0)) == NULL)
-		errx("%p: elan3_control_open failed: %m\n");
-	/* XXX work around libelan3/control.c bug 2002-6-2 */
-	if (ctx == (void *)-1) 
-		errx("%p: elan3_control_open failed: %m\n");
-#else
-	if ((ctx = _elan3_init(0)) == NULL)
-		errx("%p: _elan3_init failed: %m\n");
-#endif
+	/* 
+	 * Set up capability 
+	 */
+	{
+		int i, nrails;
+
+		/* MULTI-RAIL: Extract rail info from capability */
+		nrails = elan3_nrails(cap);
+
+		/* MULTI-RAIL: Create the capability in all rails */
+		for (i = 0; i < nrails; i++) {
+			ELAN3_CTX *ctx;
+
+			/* 
+			 * Open up the control device so we can create a new 
+			 * capability.  This will fail if we don't have rw 
+			 * access to /dev/elan3/control[i]
+			 */ 
+			if ((ctx = elan3_control_open (i)) == NULL)
+				errx("%p: elan3_control_open(%d): %m\n", i);
+
+			/* Push capability into device driver */
+			if (elan3_create(ctx, cap) < 0)
+				errx("%p: elan3_create failed: %m\n");                      
+		}
+	}                                            
 
 	/* associate this process and its children with prgnum */
 	if (rms_prgcreate(qi->prgnum, uid, 1) < 0)	/* 1 cpu (bogus!) */
 		errx("%p: rms_prgcreate %d failed: %m\n", qi->prgnum);
 
 	/* make cap known via rms_getcap/rms_ncaps to members of this prgnum */
-	if (elan3_create(ctx, cap) < 0)
-		errx("%p: elan3_create failed: %m\n");
 	if (rms_prgaddcap(qi->prgnum, 0, cap) < 0)
 		errx("%p: rms_prgaddcap failed: %m\n");
 
-	syslog(LOG_DEBUG, "prg %d cap %s bitmap 0x%.8x", qi->prgnum,
+	if (debug_syslog) {
+		char tmpstr[1024];
+
+		syslog(LOG_DEBUG, "prg %d cap %s bitmap 0x%.8x", qi->prgnum,
 			elan3_capability_string(cap, tmpstr), cap->Bitmap[0]);
+	}
 
 	/* 
 	 * Second fork - once for each process.

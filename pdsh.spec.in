@@ -80,5 +80,5 @@ rm -f /var/cache/man/cat1/pdcp.1.*
 if ! grep "^qshell" /etc/services >/dev/null; then
         echo "qshell   523/tcp  # pdsh/elan3" >>/etc/services
 fi
-/etc/rc.d/init.d/xinetd restart
+/etc/rc.d/init.d/xinetd reload
 %endif

@@ -172,6 +172,21 @@
 	* Support HAVE_WORKING_STRERROR_R || STRERROR_R_CHAR_P
 	  mail.gnu.org/pipermail/autoconf-patches/2001-October/007964.html
 
+2002-08-10 addy@quadrics.com (via garlick)
+	* Removed garlick's conditional support for new driver
+	  (addy's changes below are more complete)
+	* ELAN_CAPABILITY has had the Generation element name changed. 
+	  This change should be backwards compatible to older headers.
+	* libelan now requires ELAN_CAP_TYPE_BROADCASTABLE to be always set 
+	  as it supports segmented broadcast.
+	* The elan3_create() code needed work to sync up with the new ioctl 
+	  based device interface.
+	* The xinet.d/qshell script was trying to use a service call 'xshell'.
+	  Changed to qshell to match the /etc/service entry.
+	* Doing a 'service xinetd restart' seems to cause the daemon to die
+	  shortly after starting when done with pdsh or prun. I changed it to
+	  'reload' inside the specfile which seems safer.
+
 TODO for version 1.7
 	- improve deja-gnu support
 	- make rms queries to db using direct msql as in pam_rms module

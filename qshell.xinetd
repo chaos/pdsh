@@ -1,7 +1,7 @@
 # default: on
 # description: The qshd server is an rsh-like service for running \
 #	quadrics elan3 jobs.
-service xshell
+service qshell
 {
 	disable	= no
 	socket_type		= stream
