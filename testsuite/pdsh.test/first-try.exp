@@ -1,1 +1,15 @@
 send_user "Testing: one, two...\n"
+
+set test "version"
+spawn $srcdir/pdsh -V
+expect {
+	-re "pdsh-1.5.*"		{ pass "$test" }
+}
+
+set test "strerror_r"
+spawn $srcdir/pdsh -T 1
+expect  {
+	-re "Test 1: No such process"	{ pass "$test" }
+}
+
+send_user "Blurp"

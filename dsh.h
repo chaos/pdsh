@@ -84,6 +84,7 @@ typedef struct thd {
 
 int dsh(opt_t *);
 void set_rcmd_timeout(int);
+void testcase(int);
 
 int xrcmd(char *, char *, char *, char *, char *, int, int *);
 void xrcmd_signal(int, int);

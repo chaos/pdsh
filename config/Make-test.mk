@@ -1,8 +1,8 @@
-DEJATOOL = $(PROJECT)
+DEJATOOL = `pwd`/$(PROJECT)
 RUNTESTFLAGS =
-RUNTESTDEFAULTFLAGS = --tool $(PROJECT) --srcdir $$srcdir/testsuite
-EXPECT = expect
-RUNTEST = runtest
+RUNTESTDEFAULTFLAGS = --tool $(PROJECT) --srcdir $$srcdir/testsuite 
+EXPECT = /usr/bin/expect
+RUNTEST = /usr/bin/runtest
 srcdir = $(top_srcdir)
 
 check: site.exp

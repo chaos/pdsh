@@ -58,6 +58,7 @@ Usage: pdcp [-options] src [src2...] dest\n\
 -u seconds        set command timeout (no default)\n\
 -f n              use fanout of n nodes\n\
 -w host,host,...  set target node list on command line\n"
+/* undocumented "-T testcase" option */
 
 #define OPT_USAGE_SDR "\
 -G                for -a, include all partitions of SP System\n\
@@ -75,7 +76,7 @@ Usage: pdcp [-options] src [src2...] dest\n\
 
 #define DSH_ARGS	"csS"
 #define PCP_ARGS	"pr"
-#define GEN_ARGS	"at:csqf:w:l:u:bI:ideV"
+#define GEN_ARGS	"at:csqf:w:l:u:bI:ideVT:"
 #define SDR_ARGS	"Gv"
 #define GEND_ARGS	"g:"
 #define ELAN_ARGS	"En:m:P:N:"
@@ -315,6 +316,9 @@ opt_args(opt_t *opt, int argc, char *argv[])
 				break;
 			case 'V':	/* show version */
 				show_version();
+				break;
+			case 'T':	/* execute testcase */
+				testcase(atoi(optarg));
 				break;
 			case 'h':	/* display usage message */
 			default:
