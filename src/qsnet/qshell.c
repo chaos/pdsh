@@ -759,23 +759,23 @@ static void _qshell_execute(struct qshell_args *args)
 
 #if BSD > 43
     if (setlogin(args->pwd->pw_name) < 0)
-        errlog("setlogin() failed: %s", strerror(errno));
+        errlog("setlogin() failed: %s\n", strerror(errno));
 #endif
 
 #ifndef USE_PAM
     /* if PAM, already done */
     if (setgid(args->pwd->pw_gid)) {
-        errlog("setgid: %s", strerror(errno));
+        errlog("setgid: %s\n", strerror(errno));
         exit(1);
     }
     if (initgroups(args->pwd->pw_name, args->pwd->pw_gid)) {
-        errlog("initgroups: %s", strerror(errno));
+        errlog("initgroups: %s\n", strerror(errno));
         exit(1);
     }
 #endif
 
     if (setuid(args->pwd->pw_uid)) {
-        errlog("setuid: %s", strerror(errno));
+        errlog("setuid: %s\n", strerror(errno));
         exit(1);
     }
 
@@ -812,7 +812,7 @@ static void _qshell_execute(struct qshell_args *args)
 
     /* change to client working dir */
     if (chdir(cwd) < 0) {
-        errlog("chdir to client working directory: %s", strerror(errno));
+        errlog("chdir to client working directory: %s\n", strerror(errno));
         exit(1);
     }
 
@@ -825,7 +825,7 @@ static void _qshell_execute(struct qshell_args *args)
         close(ifd);
 
     execl(theshell, shellname, "-c", args->cmdbuf, 0);
-    errlog("failed to exec shell: %s", strerror(errno));
+    errlog("failed to exec shell: %s\n", strerror(errno));
     exit(1);
 }
 
