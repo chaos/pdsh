@@ -13,6 +13,7 @@
 #if	HAVE_UNISTD_H
 #include <unistd.h>	/* for R_OK, access() */
 #endif
+#include <stdlib.h>	/* atoi */
  
 #include "dsh.h"
 #include "err.h"
