@@ -48,7 +48,8 @@ typedef enum { false, true } bool;
 
 #define RC_FAILED	254     /* -S exit value if any hosts fail to connect */
 
-typedef enum { DSH, PCP } pers_t;
+/* set to 0x1 and 0x2 to allow bit masking */
+typedef enum { DSH = 0x1, PCP = 0x2} pers_t;
 
 typedef struct {
 
@@ -71,7 +72,7 @@ typedef struct {
     int command_timeout;
     int nprocs;                 /* -n nprocs */
 
-	char *rcmd_name;            /* -R name   */
+    char *rcmd_name;            /* -R name   */
     bool resolve_hosts;         /* Set optionally by rcmd modules */
 
     bool kill_on_fail;          
@@ -91,7 +92,6 @@ typedef struct {
     char *outfile_name;         /* pcp dest spec */
 
 } opt_t;
-
 
 void opt_default(opt_t *);
 void opt_env(opt_t *);
@@ -118,8 +118,8 @@ typedef int (*optFunc)(opt_t *opt, int optopt, char *optarg);
 
 struct pdsh_module_option {
 	char    opt;        /* option character                          */
-	char   *arginfo;    /* one word descr of arg if option takes one 
-                           If NULL, option takes no arg              */
+        char   *arginfo;    /* one word descr of arg if option takes one 
+                               If NULL, option takes no arg              */
 	char   *descr;      /* short description of option               */
 	optFunc f;          /* callback function for option processing   */
 };

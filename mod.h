@@ -66,7 +66,7 @@ int mod_load_modules(const char *dir);
 /*
  *  List information about all loaded modules to stdout.
  */
-void mod_list_module_info(void);
+void mod_list_module_info(opt_t *pdsh_opts);
 
 /*
  *  Traverse through loaded modules and attempt to process 
@@ -75,7 +75,7 @@ void mod_list_module_info(void);
  *  Note: Only one module exporting a given option can be loaded
  *    at a time. This is enforced on a first-come-first-served basis.
  */
-int mod_process_opt(opt_t *pdsh_opt, int opt, char *arg);
+int mod_process_opt(opt_t *pdsh_opts, int opt, char *arg);
 
 /*
  *  Traverses list of loaded modules, calling any exported "read_wcoll" 
@@ -101,23 +101,23 @@ int mod_postop(opt_t *pdsh_opts);
  *  Search list of loaded modules for a module with given type and name.
  *    Returns the module if found, NULL if no match.
  */
-mod_t mod_get_module(const char *type, const char *name);
+mod_t mod_get_module(opt_t *pdsh_opts, const char *type, const char *name);
 
 /*
  *  Build list of module names of type "type"
  */
-List mod_get_module_names(char *type);
+List mod_get_module_names(opt_t *pdsh_opts, char *type);
 
 /*
  * Print all options provided by modules
  *   Justify option description starting on given column.
  */
-void mod_print_all_options(int column);
+void mod_print_all_options(opt_t *pdsh_opts, int column);
 
 /* 
  *  Print options for module "mod"
  */
-void mod_print_options(mod_t mod, int descr_column);
+void mod_print_options(opt_t *pdsh_opts, mod_t mod, int descr_column);
 
 /*
  *  Module accessor functions. Return module name, type, and
@@ -179,11 +179,12 @@ struct pdsh_rcmd_operations {
  * Stores all information about a module 
  */
 struct pdsh_module {
-    char *type;
-    char *name;
-    char *author;
-    char *descr;
-  
+    char *type;        /* module type, i.e. Jedi */
+    char *name;        /* module name, i.e. Yoda */ 
+    char *author;      /* module author, i.e. George Lucas */
+    char *descr;       /* module description, i.e. "Run pdsh with the force */
+    int personality;   /* DSH or PCP, must be int b/c we may or values */
+
     struct pdsh_module_operations *mod_ops;
     struct pdsh_rcmd_operations   *rcmd_ops;
     struct pdsh_module_option     *opt_table;

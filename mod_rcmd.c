@@ -73,14 +73,14 @@ mod_rcmd_load(opt_t * opt)
     rmod = Malloc(sizeof(*rmod));
 
     if (!opt->rcmd_name) {
-        opt->rcmd_name = Strdup(mod_rcmd_get_default_module());
+        opt->rcmd_name = Strdup(mod_rcmd_get_default_module(opt));
         if (!opt->rcmd_name) {
             err("%p: Unable to find a default rcmd module.\n");
             goto fail;
         }
     }
 
-    if (!(mod = mod_get_module("rcmd", opt->rcmd_name))) {
+    if (!(mod = mod_get_module(opt, "rcmd", opt->rcmd_name))) {
         err("%p: Unable to find rcmd module \"%s\"\n", opt->rcmd_name);
         goto fail;
     }
@@ -115,14 +115,15 @@ mod_rcmd_load(opt_t * opt)
  * Walk through list of default candidate modules, starting at head,
  *   and return the first module that is loaded.
  */
-char * mod_rcmd_get_default_module(void)
+char * mod_rcmd_get_default_module(opt_t *opt)
 {
     mod_t mod = NULL;
     int i = 0;
     const char *name = NULL;
     
-    while ((name = rcmd_rank[i++]) && !mod) 
-        mod = mod_get_module("rcmd", name);
+    while ((name = rcmd_rank[i++]) && !mod) {
+      mod = mod_get_module(opt, "rcmd", name);
+    }
 
     return mod ? mod_get_name(mod) : NULL;
 }

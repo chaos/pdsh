@@ -267,7 +267,7 @@ void opt_args(opt_t * opt, int argc, char *argv[])
     while ((c = getopt(argc, argv, pdsh_options)) != EOF) {
         switch (c) {
         case 'L':
-            mod_list_module_info();
+            mod_list_module_info(opt);
             exit(0);
             break;
         case 'R': 
@@ -569,13 +569,13 @@ static void _usage(opt_t * opt)
     char *def   = NULL;
 
     /* first, make sure atleast some rcmd modules are loaded */
-    l = mod_get_module_names("rcmd");
+    l = mod_get_module_names(opt, "rcmd");
     if (list_count(l) == 0)
       errx("%p: no rcmd modules are loaded\n");
     names = _list_join(",", l);
     list_destroy(l);
 
-    if (!(def = mod_rcmd_get_default_module()))
+    if (!(def = mod_rcmd_get_default_module(opt)))
         def = "(none)";
 
     if (opt->personality == DSH) {
@@ -588,7 +588,7 @@ static void _usage(opt_t * opt)
 
     err(OPT_USAGE_COMMON);
 
-    mod_print_all_options(18);
+    mod_print_all_options(opt, 18);
 
     err("available rcmd modules: %s (default: %s)\n", names, def);
     Free((void **) &names);
