@@ -1,3 +1,8 @@
+2003-04-22 achu
+	* updated for genders API changes in genders-1-1-9
+	* updated for whatsup API changes in whatsup-1-0-5
+	* tagged pdsh-1-8-4chaos
+	
 2003-03-12 achu
 	* tagged pdsh-1-8-3chaos
 	* updated for changes in whatsup-1-0-3 libnodeupdown API
