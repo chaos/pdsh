@@ -879,6 +879,76 @@ qsw_init_capability(ELAN_CAPABILITY * cap, int nprocs, hostlist_t nodelist,
     return 0;
 }
 
+static int 
+_qsw_elan_nrails(ELAN_CAPABILITY * cap)
+{
+#if HAVE_LIBELANCTRL
+    return elan_nrails (cap);
+#elif HAVE_LIBELAN3
+    return elan3_nrails (cap);
+#endif
+}
+
+
+static int 
+_qsw_cap_create(ELAN_CAPABILITY * cap, int nrails)
+{
+#if HAVE_LIBELANCTRL
+    ELANCTRL_HANDLE handle;
+
+    /* 
+     * Open up the Elan control device so we can create 
+     * a new capability.  
+     */
+    if (elanctrl_open(&handle) != 0)
+        errx("%p: elanctrl_open(): %m\n");
+
+    /* Push capability into device driver */
+    if (elanctrl_create_cap(handle, cap) < 0)
+        errx("%p: elancrtl_create_cap failed: %m\n");
+
+    /* 
+     * Do not close elanctrl handle here, this can cause
+     *  MPI initialization to fail somehow.
+     *
+     * elanctrl_close(handle); 
+     */
+
+#elif HAVE_LIBELAN3
+    int n = 0;
+
+    /* MULTI-RAIL: Create the capability in all rails */
+    for (i = 0; i < ELAN_MAX_RAILS, n < nrails; i++) {
+        void *handle;
+
+        if (!(cap->RailMask & (1 << i)))
+            continue;
+
+        /* 
+         * Open up the control device so we can create a new 
+         * capability.  This will fail if we don't have rw 
+         * access to /dev/elan3/control[i]
+         */
+        if ((handle = elan3_control_open(i)) == NULL) 
+            errx("%p: elan3_control_open(%d): %m\n", i);
+
+        /* Push capability into device driver */
+        if (elan3_create(handle, cap) < 0)
+            errx("%p: elan3_create failed: %m\n");
+
+        /* 
+         * Do not close handle, for some reason this causes
+         *  elan3_attach to return EINVAL...
+         *  
+         * elan3_control_close(handle);
+         */
+
+    }
+
+#endif /* HAVE_LIBELANCTRL */
+    return (0);
+}
+
 /*
  * Take necessary steps to set up to run an Elan MPI "program" 
  * (set of processes) on a node.  
@@ -914,6 +984,8 @@ qsw_init_capability(ELAN_CAPABILITY * cap, int nprocs, hostlist_t nodelist,
 void qsw_setup_program(ELAN_CAPABILITY * cap, qsw_info_t * qi, uid_t uid)
 {
     int pid;
+    int i;
+    int nrails;
     int cpid[ELAN_MAX_VPS];
     int procs_per_node;
     int proc_index;
@@ -942,70 +1014,26 @@ void qsw_setup_program(ELAN_CAPABILITY * cap, qsw_info_t * qi, uid_t uid)
     }
     /* child continues here */
 
-    /* 
-     * Set up capability 
-     */
-#if HAVE_LIBELANCTRL
-
-    /* MULTI-RAIL: Create the capability in all rails */
-    {
-        ELANCTRL_HANDLE handle;
-
-        /* 
-         * Open up the Elan control device so we can create 
-         * a new capability.  
-         */
-        if (elanctrl_open(&handle) != 0)
-            errx("%p: elanctrl_open(): %m\n");
-
-        /* Push capability into device driver */
-        if (elanctrl_create_cap(handle, cap) < 0)
-            errx("%p: elancrtl_create_cap failed: %m\n");
-        
-        elanctrl_close(handle);
-    }
-
-#elif HAVE_LIBELAN3
-    {
-        int i = 0, n = 0, nrails;
-
-        /* MULTI-RAIL: Extract rail info from capability */
-        nrails = elan3_nrails(cap);
-
-        /* MULTI-RAIL: Create the capability in all rails */
-        for (i = 0; i < ELAN_MAX_RAILS, n < nrails; i++) {
-            ELAN3_CTX *ctx;
-
-            if (!(cap->RailMask & (1 << i)))
-                continue;
-            n++;
-
-            /* 
-             * Open up the control device so we can create a new 
-             * capability.  This will fail if we don't have rw 
-             * access to /dev/elan3/control[i]
-             */
-            if ((ctx = elan3_control_open(i)) == NULL) 
-                errx("%p: elan3_control_open(%d): %m\n", i);
-
-            /* Push capability into device driver */
-            if (elan3_create(ctx, cap) < 0)
-                errx("%p: elan3_create failed: %m\n");
-
-            elan3_control_close(ctx);
-        }
-    }
-#else
-#  error
-#endif
+    nrails = _qsw_elan_nrails(cap);
 
     /* associate this process and its children with prgnum */
     if (rms_prgcreate(qi->prgnum, uid, 1) < 0)  /* 1 cpu (bogus!) */
         errx("%p: rms_prgcreate %d failed: %m\n", qi->prgnum);
 
-    /* make cap known via rms_getcap/rms_ncaps to members of this prgnum */
-    if (rms_prgaddcap(qi->prgnum, 0, cap) < 0)
-        errx("%p: rms_prgaddcap failed: %m\n");
+    /* 
+     * Set up capability 
+     */
+    if (_qsw_cap_create(cap, nrails) < 0)
+        errx("%p: unable to set up Elan capability\n");
+
+    /* 
+     * Make cap known via rms_getcap/rms_ncaps 
+     *  to members of this prgnum 
+     */
+    for (i = 0; i < nrails; i++) {
+        if (rms_prgaddcap(qi->prgnum, i, cap) < 0)
+            errx("%p: rms_prgaddcap failed: %m\n");
+    }
 
     if (debug_syslog) {
         char tmpstr[1024];
@@ -1059,8 +1087,10 @@ void qsw_setup_program(ELAN_CAPABILITY * cap, qsw_info_t * qi, uid_t uid)
      * - arg2 indexes the hw ctxt range in the capability
      *   [cap->LowContext, cap->HighContext]
      */
-    if (rms_setcap(0, proc_index) < 0)
-        errx("%p: rms_setcap (%d): %m\n", proc_index);
+    for (i = 0; i < nrails; i++) {
+        if (rms_setcap(i, proc_index) < 0)
+            errx("%p: rms_setcap (%d): %m\n", proc_index);
+    }
 
     /* set RMS_ environment vars */
     switch (cap->Type & ELAN_CAP_TYPE_MASK) {
