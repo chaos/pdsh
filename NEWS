@@ -1,8 +1,8 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
-* Changes in pdsh 2.0  
-======================
+* Changes in pdsh-2.0  (2004-05-26)
+===================================
  -- Reorganized pdsh source tree.
  -- Modularized pdsh functionality into dynamic runtime "modules."
    - Moved remote command api (e.g. rsh, ssh, etc.) into "rcmd" modules.

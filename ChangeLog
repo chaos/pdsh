@@ -6,6 +6,8 @@
 	* config/ac_elan.m4 : Fix typos. Abort configure if libelanhosts 
 	not found.  
 
+	* : Tagged pdsh-2-0-1
+
 2004-05-12  Mark Grondona <mgrondona@llnl.gov>
 	
 	* src/pdsh/dsh.c (_rcp_thread) : Generate error message and copy
