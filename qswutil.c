@@ -280,7 +280,6 @@ qsw_encode_cap_bitmap(char *s, int len, ELAN_CAPABILITY *cap, int i)
 		err("%p: qsw_encode_cap_bitmap: string overflow\n");
 		return -1;
 	}
-	printf("%d: %s\n", i, s); /* XXX */
 	return 0;
 }
 
