@@ -67,7 +67,14 @@ char copyright[] =
 char rcsid[] = "$Id$";
 /* #include "../version.h" */
 
+#if HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include <sys/param.h>     /* roundup() */
+#if HAVE_SYS_SYSMACROS_H
+# include <sys/sysmacros.h>
+#endif
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/ioctl.h>
@@ -75,7 +82,6 @@ char rcsid[] = "$Id$";
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
-#include <netinet/ip.h>
 #include <dirent.h>
 #include <fcntl.h>
 #include <signal.h>
