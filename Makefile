@@ -19,6 +19,15 @@ MAN1DEST=/usr/local/man/man1
 DEST=	/usr/local/bin
 OTHER=	dshbak
 
+mkinstalldirs=  $(SHELL) $(top_srcdir)/auxdir/mkinstalldirs
+top_srcdir=     .
+prefix=         /usr
+exec_prefix=    ${prefix}
+bindir=         ${exec_prefix}/bin
+sbindir=        ${exec_prefix}/sbin
+libdir=         ${exec_prefix}/lib
+
+
 #
 # if you wish to build with kerberos IV, uncomment these
 # and set KRB4 to 1 in conf.h
