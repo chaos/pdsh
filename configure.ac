@@ -277,4 +277,4 @@ AH_BOTTOM(
 )
 
 AC_OUTPUT_COMMANDS(echo "creating dependencies"; make depend >/dev/null)
-AC_OUTPUT([Makefile pdsh.spec pdsh.1])
+AC_OUTPUT([Makefile pdsh.spec])
