@@ -71,6 +71,8 @@ Combine remote command stderr with stdout.  Combining these saves one socket
 per connection, but breaks remote cleanup when 
 .B pdsh 
 is interrupted with a ctrl-C.
+NOTE: this option has the reverse meaning on AIX where remote cleanup
+works without the extra socket.
 .LP
 .I "-l user"
 This option may be used to run remote comands as another user, subject to
