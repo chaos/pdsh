@@ -64,10 +64,7 @@ FILE *xpopen(char *cmd, char *mode)
 	pid_t pid;
 	char *av[ARG_MAX+1];
 	int maxfd = sysconf(_SC_OPEN_MAX);
-        /* list_t args = list_split("\n\t ", cmd); */
         list_t args = parse_command_with_quotes(cmd);
-
-	list_dump(args);
 
 	if ((*mode != 'r' && *mode != 'w') || mode[1] != '\0') {
 		errno = EINVAL;
