@@ -1,0 +1,180 @@
+/* conf.h.in.  Generated automatically from configure.ac by autoheader.  */
+
+/* Define if you have the <dirent.h> header file, and it defines `DIR'. */
+#undef HAVE_DIRENT_H
+
+/* Define if building with Elan support. */
+#undef HAVE_ELAN3
+
+/* Define if you have the <fcntl.h> header file. */
+#undef HAVE_FCNTL_H
+
+/* Define if building with Genders support. */
+#undef HAVE_GENDERS
+
+/* Define if you have the `gethostbyname_r' function. */
+#undef HAVE_GETHOSTBYNAME_R
+
+/* Define if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define if you have the <kparse.h> header file. */
+#undef HAVE_KPARSE_H
+
+/* Define if you have the <krb.h> header file. */
+#undef HAVE_KRB_H
+
+/* Define if you have the `elan3' library (-lelan3). */
+#undef HAVE_LIBELAN3
+
+/* Define if you have the `nsl' library (-lnsl). */
+#undef HAVE_LIBNSL
+
+/* Define if you have the `pthread' library (-lpthread). */
+#undef HAVE_LIBPTHREAD
+
+/* Define if you have the `rms' library (-lrms). */
+#undef HAVE_LIBRMS
+
+/* Define if you have the `rmsapi' library (-lrmsapi). */
+#undef HAVE_LIBRMSAPI
+
+/* Define if you have the `rmscall' library (-lrmscall). */
+#undef HAVE_LIBRMSCALL
+
+/* Define if you have the `socket' library (-lsocket). */
+#undef HAVE_LIBSOCKET
+
+/* Define if building with MPICH machines support. */
+#undef HAVE_MACHINES
+
+/* Define if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define if you have the <ndir.h> header file, and it defines `DIR'. */
+#undef HAVE_NDIR_H
+
+/* Define if you have the `pthread_sigmask' function. */
+#undef HAVE_PTHREAD_SIGMASK
+
+/* Define if building with RMS support. */
+#undef HAVE_RMS_PMANAGER
+
+/* Define if the system has the type `socklen_t'. */
+#undef HAVE_SOCKLEN_T
+
+/* Define if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define if you have the `strerror' function. */
+#undef HAVE_STRERROR
+
+/* Define if you have the `strerror_r' function. */
+#undef HAVE_STRERROR_R
+
+/* Define if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define if you have the `strstr' function. */
+#undef HAVE_STRSTR
+
+/* Define if you have the <sys/dir.h> header file, and it defines `DIR'. */
+#undef HAVE_SYS_DIR_H
+
+/* Define if you have the <sys/file.h> header file. */
+#undef HAVE_SYS_FILE_H
+
+/* Define if you have the <sys/ndir.h> header file, and it defines `DIR'. */
+#undef HAVE_SYS_NDIR_H
+
+/* Define if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define if you have the <sys/time.h> header file. */
+#undef HAVE_SYS_TIME_H
+
+/* Define if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define if you have <sys/wait.h> that is POSIX.1 compatible. */
+#undef HAVE_SYS_WAIT_H
+
+/* Define if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define the canonical host CPU type. */
+#undef HOST_CPU
+
+/* Define the canonical host OS type. */
+#undef HOST_OS
+
+/* Define the canonical host vendor type. */
+#undef HOST_VENDOR
+
+/* Define if building with Kerberos IV support. */
+#undef KRB4
+
+/* Define if you are building a production release. */
+#undef NDEBUG
+
+/* Define the project's name. */
+#undef PROJECT
+
+/* Define the range separator string. */
+#undef RANGE_OP
+
+/* Define if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Define the project's version. */
+#undef VERSION
+
+/* Define if your processor stores words with the most significant byte first
+   (like Motorola and SPARC, unlike Intel and VAX). */
+#undef WORDS_BIGENDIAN
+
+/* Define if on AIX 3.
+   System headers sometimes define this.
+   We just want to avoid a redefinition error message.  */
+#ifndef _ALL_SOURCE
+# undef _ALL_SOURCE
+#endif
+
+/* Define the path to the MPICH machines machines. */
+#undef _PATH_MACHINES
+
+/* Define the path to the nodeattr program. */
+#undef _PATH_NODEATTR
+
+/* Define the path to the rcp program. */
+#undef _PATH_RCP
+
+/* Define the path to the rmsquery program. */
+#undef _PATH_RMSQUERY
+
+/* Define the path to the SDRGetObjects program. */
+#undef _PATH_SDRGETOBJECTS
+
+/* Define the path to the ssh program. */
+#undef _PATH_SSH
+
+/* Define to empty if `const' does not conform to ANSI C. */
+#undef const
+
+/* Define to `int' if <sys/types.h> doesn't define. */
+#undef gid_t
+
+/* Define to `int' if <sys/types.h> does not define. */
+#undef pid_t
+
+/* Define to `unsigned' if <sys/types.h> does not define. */
+#undef size_t
+
+/* Define to `int' if <sys/types.h> doesn't define. */
+#undef uid_t
