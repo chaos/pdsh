@@ -121,6 +121,7 @@ AC_MSG_RESULT(${withssh=no})
 if test "$withssh" = yes; then
     AC_DEFINE(HAVE_SSH, 1, [Define to use SSH as primary remote shell])
     HAVE_SSH=1
+    # Note: if ssh is execute-only this may fail (See gnats: pdsh/81)
     if test -n "$SSH"; then
         AC_CHECK_FILE($SSH, [], AC_MSG_ERROR([--with-ssh argument not found]))
     fi
