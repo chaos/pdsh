@@ -48,7 +48,7 @@ hostlist_t sdr_wcoll(bool, bool, bool);
 #if 	HAVE_GENDERS
 hostlist_t read_genders(char *attr, int ropt);
 #endif
-#if 	HAVE_RMS
+#if 	HAVE_RMSQUERY
 hostlist_t rms_wcoll(void);
 #endif
 

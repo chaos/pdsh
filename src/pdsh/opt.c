@@ -375,12 +375,12 @@ opt_args(opt_t *opt, int argc, char *argv[])
 		opt->wcoll = read_genders(opt->gend_attr, opt->altnames);
 	}
 #endif
-#if 	HAVE_RMS
+#if 	HAVE_RMSQUERY
 	/* check RMS for pre-allocated nodes (RMS_RESOURCEID env var) */
 	if (!opt->wcoll) {
 		opt->wcoll = rms_wcoll(); /* null if no allocation */
 	}
-#endif /* HAVE_RMS */
+#endif /* HAVE_RMSQUERY */
 #if 	HAVE_ELAN
 	if (opt->rcmd_type == RCMD_QSHELL) {
 		if (opt->fanout == DFLT_FANOUT && opt->wcoll != NULL)
@@ -617,8 +617,8 @@ static void show_version(void)
 #if	HAVE_ELAN
 	printf("+elan");
 #endif
-#if	HAVE_RMS
-	printf("+rms");
+#if	HAVE_RMSQUERY
+	printf("+rmsquery");
 #endif
 #if	HAVE_SSH
 	printf("+ssh");

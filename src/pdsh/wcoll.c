@@ -316,6 +316,7 @@ sdr_wcoll(bool Gopt, bool iopt, bool vopt)
 }
 #endif /* HAVE_SDR */
 
+#if HAVE_RMSQUERY
 /* 
  * Helper for rms_wcoll() - RMS provides no API to get the list of nodes 
  * once allocated, so we query the msql database with 'rmsquery'.
@@ -378,3 +379,4 @@ rms_wcoll(void)
 
 	return result;
 }
+#endif /* HAVE_RMSQUERY */

@@ -59,7 +59,7 @@ Target nodes that have the specified genders attribute.
 In conjunction with -a or -g, request canonical hostnames.
 The default is to use reliable hostnames.
 .LP
-.if @HAVE_RMS@ \{
+.if @HAVE_RMSQUERY@ \{
 If the RMS_RESOURCEID environment variable is set to an allocated RMS
 resource, RMS will be queried for the list of target nodes.
 \}
@@ -144,7 +144,7 @@ Output from multiple processes per node may be interspersed when using Qshell.
 .SH "FILES"
 .if @HAVE_SSH@ @SSH@
 .br
-.if @HAVE_RMS@ @RMSQUERY@
+.if @HAVE_RMSQUERY@ @RMSQUERY@
 .br
 .if @HAVE_GENDERS@ @NODEATTR@
 .br

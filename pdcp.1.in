@@ -41,13 +41,6 @@ In combination with -a, include all partitions.
 .I "-g attribute"
 Target nodes that have the specified genders attribute.	
 \}
-.if @HAVE_RMS@ \{
-.I "-N nodecount"
-Request that nodes be allocated from RMS.
-.LP
-.I "-P partition"
-Select non-default RMS partition.
-\}
 .LP
 .I "-i"
 In conjunction with -a or -g, request canonical hostnames.
