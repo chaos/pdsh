@@ -1,5 +1,6 @@
 2002-09-27 garlick
 	* Added support for readline in interactive mode if found.
+	* Taggged pdsh-1-7-4chaos
 
 2002-09-27 grondo
 	* Make-rpm.mk: Updated rpm target for compatibility with automake
