@@ -176,7 +176,7 @@ static int check_interfaces(void *munge_addr, int h_length) {
 
   if ((s = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
     syslog(LOG_ERR, "socket call failed: %m");
-    errmsg = "internal system error";
+    errmsg = "Internal System Error";
     goto bad;
   }
 
@@ -184,7 +184,7 @@ static int check_interfaces(void *munge_addr, int h_length) {
   while(1) {
     if ((buf = (char *)malloc(len)) == NULL) {
       syslog(LOG_ERR, "malloc failed: %m");
-      errmsg = "out of memory";
+      errmsg = "Out of Memory";
       goto bad;
     }
     
@@ -193,7 +193,7 @@ static int check_interfaces(void *munge_addr, int h_length) {
     
     if (ioctl(s, SIOCGIFCONF, &ifc) < 0) {
       syslog(LOG_ERR, "ioctl SIOCGIFCONF failed: %m");
-      errmsg = "internal system error";
+      errmsg = "Internal System Error";
       goto bad;
     }
     else {
@@ -227,8 +227,8 @@ static int check_interfaces(void *munge_addr, int h_length) {
     strcpy(ifaddr.ifr_name, ifr->ifr_name);
     ifaddr.ifr_addr.sa_family = AF_INET;
     if (ioctl(s, SIOCGIFADDR, &ifaddr) < 0) {
-      syslog(LOG_ERR, "ioctl SIOCGIFCONF failed: %m");
-      errmsg = "internal system error";
+      syslog(LOG_ERR, "ioctl SIOCGIFADDR failed: %m");
+      errmsg = "Internal System Error";
       goto bad;
     }
 
@@ -297,13 +297,16 @@ static void doit(struct sockaddr_in *fromp) {
     goto error_out;
   }
 
+  if (buf_length == 0) {
+    syslog(LOG_ERR, "mqshd: null munge credential.");
+    errmsg = "Protocol Error";
+    return -1;
+  }
+
   /*
-   * We call munge_decode which will take what we read in and return a
-   * pointer to an unmunged buffer and fill in our credential
-   * structure so we can verify the caller with what he supplied.
-   * 
-   * The format of this buffer is as follows (each a string terminated 
+   * The format of our munge buffer is as follows (each a string terminated
    * with a '\0' (null):
+   *
    *                                              SIZE            EXAMPLE
    *                                              ==========      =============
    * remote_user_name                             variable        "mhaskell"
@@ -312,7 +315,7 @@ static void doit(struct sockaddr_in *fromp) {
    * '\0'
    * stderr_port_number                           4-8 bytes       "50111"
    * '\0'
-   * lrand48()_client_produced_number             1-8 bytes       "1f79ca0e"
+   * random number                                1-8 bytes       "1f79ca0e"
    * '\0'
    * users_command                                variable        "ls -al"
    * '\0' '\0'
@@ -321,12 +324,15 @@ static void doit(struct sockaddr_in *fromp) {
   mptr = &mbuf[0];
   if ((m_rv = munge_decode(mbuf,0,(void **)&mptr,&buf_length,
                            &cred.pw_uid,&cred.pw_gid)) != EMUNGE_SUCCESS) {
-    errmsg = munge_strerror(m_rv);
+
+    syslog(LOG_ERR, "%s: %s", "munge_decode error", munge_strerror(rv));
+    errmsg = "Internal Failure";
     goto error_out;
   }
 
   if ((mptr == NULL) || (buf_length <= 0)) {
-    errmsg = "bad payload data";
+    syslog(LOG_ERR, "Null munge buffer");
+    errmsg = "Protocol Error";
     goto error_out;
   }
 
@@ -336,24 +342,25 @@ static void doit(struct sockaddr_in *fromp) {
 
   if ((pwd = getpwnam_common(m_head)) == NULL) {
     syslog(LOG_ERR, "bad getpwnam(): %m");
-    errmsg = "permission denied";
+    errmsg = "Internal System Error";
     goto error_out;
   }
 
   if ((pwd->pw_uid != cred.pw_uid) && cred.pw_uid != 0) {
-    syslog(LOG_ERR, "Permission denied.");
-    errmsg = "failed credential check";
+    syslog(LOG_ERR, "failed credential check: %m");
+    errmsg = "Permission Denied";
     goto error_out;
   }
 
   if ((rhostname = findhostname(fromp)) == NULL) {
-    errmsg = "host address mismatch";
+    errmsg = "Host Address Mismatch";
     goto error_out;
   }
 
 #ifdef USE_PAM
   if (pamauth(pwd, "mqshell", pwd->pw_name, rhostname, pwd->pw_name) < 0) {
-    errmsg = "failed authentication";
+    syslog(LOG_ERR, "PAM failed authentication");
+    errmsg = "Permission Denied";
     goto error_out;
   }
 #endif
@@ -367,7 +374,7 @@ static void doit(struct sockaddr_in *fromp) {
 
   if (gethostname(&hostname[0], MAXHOSTNAMELEN) < 0) {
     syslog(LOG_ERR, "failed gethostname: %m");
-    errmsg = "internal system error";
+    errmsg = "Internal System Error";
     goto error_out;
   }
 
@@ -377,13 +384,13 @@ static void doit(struct sockaddr_in *fromp) {
 
   if ((hptr = gethostbyname(&hostname[0])) == NULL) {
     syslog(LOG_ERR, "failed gethostbyname: %m");
-    errmsg = "internal system error";
+    errmsg = "Internal System Error";
     goto error_out;
   }
 
   if ((m_rv = inet_pton(AF_INET, &dec_addr[0], &sin.sin_addr.s_addr)) <= 0) {
     syslog(LOG_ERR, "failed inet_pton: %m");
-    errmsg = "internal system error";
+    errmsg = "Internal System Error";
     goto error_out;
   }
 
@@ -401,8 +408,8 @@ static void doit(struct sockaddr_in *fromp) {
 
     /* Address does not match an interface on this machine */
     if (found == 0) {
-      syslog(LOG_ERR, "%s","addresses don't match");
-      errmsg = "Host address mismatch";
+      syslog(LOG_ERR, "%s: %m","Munge IP address doesn't match");
+      errmsg = "Permission Denied";
       goto error_out; 
     }
   }
@@ -415,12 +422,13 @@ static void doit(struct sockaddr_in *fromp) {
   port = strtol(m_head, (char **)NULL, 10);
   if (port == 0 && errno != 0) {
     syslog(LOG_ERR, "%s: %m", "mqshd: Bad port number from client.");
-    errmsg = "internal system error";
+    errmsg = "internal Error";
     goto error_out;
   }
 
   if (port != cport) {
-    errmsg = "port number mismatch";
+    syslog(LOG_ERR, "%s: %m", "Port mismatch");
+    errmsg = "Protocol Error";
     goto error_out;
   }
 
@@ -438,10 +446,25 @@ static void doit(struct sockaddr_in *fromp) {
 
   /* Double check to make sure protocol is ok */
   if (cport == 0 && randnum != 0) {
-    syslog(LOG_ERR,"protocol error");
-    errmsg = "port number mismatch";
+    syslog(LOG_ERR,"protocol error, rand should be 0");
+    errmsg = "Protocol Error";
     goto error_out;
   }
+
+  /* parse command */
+  if ((m_head = munge_parse(m_head, m_end)) == NULL)
+    goto error_out;
+
+  if (strlen(m_head) <= (ARG_MAX+1)) {
+    strncpy(&cmdbuf[0], m_head, sizeof(cmdbuf));
+    cmdbuf[sizeof(cmdbuf) - 1] = '\0';
+  } else {
+    errmsg = "Command too long";
+    goto error_out;
+  }
+
+  free(mptr);
+  mptr = NULL;
 
  error_out:
 
@@ -485,21 +508,6 @@ static void doit(struct sockaddr_in *fromp) {
       error("mqshd: internal system error.");
       goto bad;
     }
-  }
-
-  /* parse command */
-  if ((m_head = munge_parse(m_head, m_end)) == NULL) {
-    error("mqshd: internal error.");
-    goto bad;
-  }
-
-  if (strlen(m_head) <= (ARG_MAX+1)) {
-    strncpy(&cmdbuf[0], m_head, sizeof(cmdbuf));
-    cmdbuf[sizeof(cmdbuf) - 1] = '\0';
-    free(mptr);
-  } else {
-    error("%s: command too long\n", &hostname[0]);
-    goto bad;
   }
 
   doit_end(sock, port, pwd, NULL, rhostname, NULL, cmdbuf);
