@@ -39,7 +39,16 @@ remote shell services, including standard "rsh", Kerberos IV, and ssh.
 %{?_with_elan:BuildRequires: qsnetlibs}
 %{?_with_readline:BuildRequires: readline-devel}
 
-%define _module_dir %{_builddir}/%{buildsubdir}/modules
+
+#
+# Other pdsh modules to build
+#
+%{!?_with_ssh: %{!?_without_ssh: %define _with_ssh 1}}
+%{!?_with_bsd: %{!?_without_bsd: %define _with_bsd 1}}
+%{!?_with_genders: %{!?_without_genders: %define _with_genders 1}}
+%{!?_without_nodeattr: %{!?_with_nodeattr: %define _without_nodeattr 1}}
+%{!?_with_nodeupdown: %{!?_without_nodeupdown: %define _with_nodeupdown 1}}
+
 
 ##############################################################################
 
@@ -143,49 +152,49 @@ rm -rf "$RPM_BUILD_ROOT"
 %{_mandir}/man1/*
 ##############################################################################
 
-%if %(test -f %{_module_dir}/xrcmd.la && echo 1 || echo 0)
+%if %{?_with_bsd:1}%{!?_with_bsd:0}
 %files rcmd-bsd
 %defattr(-,root,root)
 %{_libdir}/pdsh/xrcmd.*
 %endif
 ##############################################################################
 
-%if %(test -f %{_module_dir}/sshcmd.la && echo 1 || echo 0)
+%if %{?_with_ssh:1}%{!?_with_ssh:0}
 %files rcmd-ssh
 %defattr(-,root,root)
 %{_libdir}/pdsh/sshcmd.*
 %endif
 ##############################################################################
 
-%if %(test -f %{_module_dir}/qcmd.la && echo 1 || echo 0)
+%if %{?_with_elan:1}%{!?_with_elan:0}
 %files rcmd-qshell
 %defattr(-,root,root)
 %{_libdir}/pdsh/qcmd.*
 %endif
 ##############################################################################
 
-%if %(test -f %{_module_dir}/genders.la && echo 1 || echo 0)
+%if %{?_with_genders:1}%{!?_with_genders:0}
 %files mod-genders
 %defattr(-,root,root)
 %{_libdir}/pdsh/genders.*
 %endif
 ##############################################################################
 
-%if %(test -f %{_module_dir}/nodeattr.la && echo 1 || echo 0)
+%if %{?_with_nodeattr:1}%{!?_with_nodeattr:0}
 %files mod-nodeattr
 %defattr(-,root,root)
 %{_libdir}/pdsh/nodeattr.*
 %endif
 ##############################################################################
 
-%if %(test -f %{_module_dir}/nodeupdown.la && echo 1 || echo 0)
+%if %{?_with_nodeupdown:1}%{!?_with_nodeupdown:0}
 %files mod-nodeupdown
 %defattr(-,root,root)
 %{_libdir}/pdsh/nodeupdown.*
 %endif
 ##############################################################################
 
-%if %(test -f %{_builddir}/%{buildsubdir}/in.qshd && echo 1 || echo 0)
+%if %{?_with_elan:1}{!?_with_elan:0}
 %files qshd
 %defattr(-,root,root)
 %{_sbindir}/in.qshd
