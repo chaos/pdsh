@@ -915,7 +915,7 @@ _qsw_cap_create(ELAN_CAPABILITY * cap, int nrails)
      */
 
 #elif HAVE_LIBELAN3
-    int n = 0;
+    int i, n = 0;
 
     /* MULTI-RAIL: Create the capability in all rails */
     for (i = 0; i < ELAN_MAX_RAILS, n < nrails; i++) {
