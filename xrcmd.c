@@ -174,7 +174,7 @@ xrcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd, int rank
 	} else {
 		char num[8];
 		int s2 = rresvport(&lport), s3;
-		int len = sizeof(from); /* arg to accept */
+		socklen_t len = sizeof(from); /* arg to accept */
 
 		if (s2 < 0)
 			goto bad;

@@ -171,7 +171,7 @@ k4cmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
 	} else {
 		char            num[8];
 		int             s2, s3;
-		unsigned long 	len = sizeof(from);
+		socklen_t	len = sizeof(from);
 
 		s2 = rresvport(&lport);
 		if (s2 < 0) {
