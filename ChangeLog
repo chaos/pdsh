@@ -1,3 +1,10 @@
+2003-09-26  Albert Chu <chu11@llnl.gov>
+
+	* src/modules/mcmd.c (mcmd): Changed size_t to socklen_t for 'len'
+	variable to avoid compiler warnings.
+
+	* src/modules/mcmd.c: Upped protocol version number to 2.0.
+
 2003-09-19  Albert Chu <chu11@llnl.gov>
 
 	* pdsh.spec.in: Removed dependency of mrshd package from

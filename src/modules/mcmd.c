@@ -121,7 +121,7 @@ static char sccsid[] = "@(#)mcmd.c      Based from: 8.3 (Berkeley) 3/26/94";
 #include "src/common/xpoll.h"
 #include "src/pdsh/mod.h"
 
-#define MRSH_PROTOCOL_VERSION    "1.5"
+#define MRSH_PROTOCOL_VERSION    "2.0"
 
 #define MRSH_PORT                21212
 
@@ -284,7 +284,7 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     char *tmbuf;
     char haddrdot[16] = {0};
     char *m;
-    size_t len;
+    socklen_t len;
     ssize_t m_rv;
     sigset_t blockme;
     sigset_t oldset;
