@@ -19,8 +19,9 @@
 	* src/modules/mqcmd.c (mqcmd): Added munge ctx for better error
 	message.
 
-	* src/modules/mcmd.c: Re-worked code to have similar style to mcmd
-	module from mrsh project, easing potential bug fixes later on.
+	* src/modules/mcmd.c, src/modules/mqcmd.c: Re-worked code to have
+	similar style to mcmd module from mrsh project, easing potential
+	bug fixes later on.
 	
 2003-12-10  Mark Grondona <mgrondona@llnl.gov>
 	

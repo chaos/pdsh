@@ -356,7 +356,7 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
         sin2.sin_addr.s_addr = htonl(INADDR_ANY);
         sin2.sin_port = 0;
         if (bind(s2,(struct sockaddr *)&sin2, sizeof(sin2)) < 0) {
-            err("%p: %S: bind failed: %m\n", ahost);
+            err("%p: %S: mcmd: bind failed: %m\n", ahost);
             close(s2);
             goto bad;
         }
@@ -370,7 +370,7 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
 
         /* getsockname is thread safe */
         if (getsockname(s2,&m_socket,&len) < 0) {
-            err("%p: %S: getsockname failed: %m\n", ahost);
+            err("%p: %S: mcmd: getsockname failed: %m\n", ahost);
             close(s2);
             goto bad;
         }
