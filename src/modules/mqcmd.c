@@ -154,8 +154,8 @@ MODULE_DESCRIPTION(   "Run MPI jobs over QsNet with mrsh authentication"     );
 MODULE_AUTHOR(        "Mike Haskell and Jim Garlick"                         );
 
 static int mqcmd_postop(opt_t *opt);
-int opt_M(opt_t *, int, char *);
-int opt_N(opt_t *, int, char *);
+int opt_m(opt_t *, int, char *);
+int opt_n(opt_t *, int, char *);
 int mqcmd_init(opt_t *);
 int mqcmd_signal(int, int);
 int mqcmd(char *, char *, char *, char *, int, int *);
@@ -169,15 +169,15 @@ struct pdsh_module_operations pdsh_module_ops = {
 
 
 struct pdsh_module_option pdsh_module_options[] =
-  { { 'M', "block|cyclic", "(mqsh) control assignment of procs to nodes",
-      (optFunc) opt_M },
-    { 'N', "n",            "(mqsh) set number of tasks per node",
-      (optFunc) opt_N },
+  { { 'm', "block|cyclic", "(mqshell) control assignment of procs to nodes",
+      (optFunc) opt_m },
+    { 'n', "n",            "(mqshell) set number of tasks per node",
+      (optFunc) opt_n },
     PDSH_OPT_TABLE_END
   };
 
 int
-opt_M(opt_t *pdsh_opts, int opt, char *arg)
+opt_m(opt_t *pdsh_opts, int opt, char *arg)
 {
     if (strcmp(arg, "block") == 0)
         cyclic = false;
@@ -192,7 +192,7 @@ opt_M(opt_t *pdsh_opts, int opt, char *arg)
 }
 
 int
-opt_N(opt_t *pdsh_opts, int opt, char *arg)
+opt_n(opt_t *pdsh_opts, int opt, char *arg)
 {
     nprocs = atoi(arg);
     return 0;
@@ -210,17 +210,17 @@ static int mqcmd_postop(opt_t *opt)
       }
     }
     if (nprocs <= 0) {
-      err("%p: -N should be > 0\n");
+      err("%p: -n should be > 0\n");
       errors++;
     }
   } else {
     if (nprocs != 1) {
-      err("%p: mqcmd: -N can only be specified with -R mqsh\n");
+      err("%p: mqcmd: -n can only be specified with -R mqsh\n");
       errors++;
     }
 
     if (dist_set) {
-      err("%p: mqcmd: -M may only be specified with -R mqsh\n");
+      err("%p: mqcmd: -m may only be specified with -R mqsh\n");
       errors++;
     }
   }
