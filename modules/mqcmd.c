@@ -163,8 +163,8 @@ static int mqcmd_signal(int, int);
 static int mqcmd(char *, char *, char *, char *, char *, int, int *); 
 
 /* random num for all jobs in this group */
-unsigned int randy = -1;
-char num_seq[12] = {0};
+static unsigned int randy = -1;
+static char num_seq[12] = {0};
 
 /* 
  * Export pdsh module operations structure
