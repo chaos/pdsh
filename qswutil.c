@@ -301,10 +301,11 @@ qsw_get_prgnum(void)
  * Function returns a 0 on success, -1 = fail.
  */
 int
-qsw_init_capability(ELAN_CAPABILITY *cap, int procs_per_node, list_t nodelist,
+qsw_init_capability(ELAN_CAPABILITY *cap, int nprocs, list_t nodelist,
 		int cyclic_alloc)
 {
 	int i;
+	int procs_per_node = nprocs / list_length(nodelist);
 
 	srand48(getpid());
 
@@ -351,7 +352,7 @@ qsw_init_capability(ELAN_CAPABILITY *cap, int procs_per_node, list_t nodelist,
 	 * Set cap->Entries and add broadcast bit to cap->type based on 
 	 * cap->HighNode and cap->LowNode values set above.
 	 */
-	cap->Entries = list_length(nodelist) * procs_per_node;
+	cap->Entries = nprocs;
 	if (cap->Entries > ELAN_MAX_VPS) {
 		err("%p: program would have too many processes (max %d)\n", 
 				ELAN_MAX_VPS);

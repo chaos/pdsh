@@ -725,7 +725,7 @@ static void *rsh(void *args)
 	xfree((void **)&buf);
 
 	/* if a single qshell thread fails, terminate whole job */
-	if (a->rcmd_type == RCMD_QSHELL) {
+	if (a->rcmd_type == RCMD_QSHELL && a->state == DSH_FAILED) {
 		fwd_signal(SIGTERM);
 		errx("%p: terminating Elan program\n");
 	}

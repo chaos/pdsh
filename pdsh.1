@@ -106,7 +106,8 @@ Elan capabilities are propagated and the following environment variables
 are set: RMS_RANK, RMS_NODEID, RMS_PROCID, RMS_NNODES, and RMS_NPROCS.
 .LP
 .I "-n number"
-(Elan3 ONLY) Set the number of processes per node for qshell.
+(Elan3 ONLY) Set the number of processes.  This should be set to a multiple
+of the size of the target node list.
 .LP
 .I "-m block | cyclic"
 (Elan3 ONLY) Set block versus cyclic allocation of processes to nodes.

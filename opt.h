@@ -59,7 +59,7 @@ typedef struct {
 	char *cmd;
 	char *dshpath;		/* optional PATH command prepended to cmd */
 	char *getstat;		/* optional echo $? appended to cmd */
-	int procs_per_node;	/* -n */
+	int nprocs;		/* -n (Elan only) */
 	alloc_t allocation;	/* -m block */
 
 	/* PCP-specific options */

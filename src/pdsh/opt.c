@@ -131,7 +131,7 @@ void opt_default(opt_t *opt)
 	opt->delete_nextpass = true;
 	opt->separate_stderr = DFLT_SEPARATE_STDERR; 
 	*(opt->gend_attr) = '\0';
-	opt->procs_per_node = 1;
+	opt->nprocs = -1;
 	opt->allocation = ALLOC_UNSPEC;
 
 	/* PCP specific */
@@ -259,8 +259,8 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 			case 'E':	/* use qshell */
 				opt->rcmd_type = RCMD_QSHELL;
 				break;
-			case 'n':	/* set number of procs per node */
-				opt->procs_per_node = atoi(optarg);
+			case 'n':	/* set number of procs */
+				opt->nprocs = atoi(optarg);
 				break;
 			case 'm':	/* set block or cyclic allocation */
 				if (strcmp(optarg, "block") == 0)
@@ -351,6 +351,8 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 			opt->fanout = list_length(opt->wcoll);
 		if (opt->allocation == ALLOC_UNSPEC)
 			opt->allocation = ALLOC_BLOCK;
+		if (opt->nprocs == -1 && opt->wcoll != NULL)
+			opt->nprocs = list_length(opt->wcoll);
 	}
 #endif
 }
@@ -428,16 +430,20 @@ bool opt_verify(opt_t *opt)
 	if (opt->rcmd_type == RCMD_QSHELL) {
 		if (opt->wcoll != NULL) {
 			if (opt->fanout != list_length(opt->wcoll)) {
-				err("%p: fanout must = wcoll length with -E\n");
+				err("%p: fanout must = target node list length with -E\n");
+				verified = false;
+			}
+			if (opt->nprocs % list_length(opt->wcoll) != 0) {
+				err("%p: -n argument must be multiple of target node list length\n");
 				verified = false;
 			}
 		}
-		if (opt->procs_per_node <= 0) {
+		if (opt->nprocs <= 0) {
 			err("%p: -n option should be >= 1\n");
 			verified = false;
 		}
 	} else {
-		if (opt->procs_per_node != 1) {
+		if (opt->nprocs != -1) {
 			err("%p: -n can only be specified with -E\n");
 			verified = false;
 		}
