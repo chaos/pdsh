@@ -958,7 +958,7 @@ int dsh(opt_t * opt)
                             pdsh_personality() == DSH
                             ? _rsh_thread : _rcp_thread, (void *) &t[i]);
         if (rv != 0)
-            errx("%p: pthread_create %S: %m\n", t[i].host);
+            errx("%p: pthread_create %S: %S\n", t[i].host, strerror(rv));
         threadcount++;
 
         pthread_mutex_unlock(&threadcount_mutex);

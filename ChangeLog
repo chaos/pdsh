@@ -1,3 +1,9 @@
+2003-09-12  Albert Chu <chu11@llnl.gov>
+
+	* src/pdsh/dsh.c (dsh): Error message from pthread_create()
+	fixed to output error message based on return value from 
+	pthread_create(), not errno.
+
 2003-08-29  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/common/xpoll.c (_poll) : Removed variable length array
