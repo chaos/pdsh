@@ -1,4 +1,4 @@
-set dshbak "$objdir/scripts/dshbak"
+set dshbak "$srcdir/scripts/dshbak"
 
 expect_after {
 	timeout				{ unresolved "$test" }
