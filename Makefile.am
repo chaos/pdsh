@@ -34,7 +34,6 @@ COMMON_SOURCES = \
     opt.c opt.h \
     xmalloc.c xmalloc.h \
     xstring.c xstring.h \
-    fd.c fd.h \	
     list.c list.h \
     wcoll.c wcoll.h \
     dsh.c dsh.h \
@@ -44,7 +43,8 @@ COMMON_SOURCES = \
     testcase.c \
     mod_rcmd.c mod_rcmd.h \
     ltdl.h ltdl.c \
-    mod.c mod.h 
+    mod.c mod.h \
+	fd.c fd.h	
 
 in_qshd_SOURCES = \
     qshd.c \
