@@ -13,7 +13,7 @@ INCLUDES =         -I$(top_srcdir)
 if WITH_STATIC_MODULES
 MODULE_FLAGS = 
 else
-MODULE_FLAGS =     -module -avoid-version --version-script=version.map
+MODULE_FLAGS =     -module -avoid-version -Wl,--version-script=version.map
 endif
 
 nodist_libmods_la_SOURCES = $(top_builddir)/static_modules.h
@@ -100,8 +100,6 @@ if WITH_STATIC_MODULES
 libmods_la_LIBADD = $(LIBMODS_OBJS)
 libmods_la_DEPENDENCIES = $(LIBMODS_OBJS) 
 else
-VERSION_MAP = \
-	version.map
 pkglib_LTLIBRARIES = \
 	$(RSH_MODULE) \
 	$(SSH_MODULE) \
@@ -116,9 +114,12 @@ pkglib_LTLIBRARIES = \
 	$(SDR_MODULE) \
 	$(KRB4_MODULE) \
 	$(SLURM_MODULE)
+
+BUILT_SOURCES = \
+	version.map
+
 endif
 
-BUILT_SOURCES =           $(VERSION_MAP)
 
 xrcmd_la_SOURCES =        xrcmd.c 
 xrcmd_la_LDFLAGS =        $(MODULE_FLAGS)
@@ -150,11 +151,7 @@ sdr_la_SOURCES =          sdr.c
 sdr_la_LDFLAGS =          $(MODULE_FLAGS)
 sdr_la_LIBADD =           $(top_builddir)/src/common/libcommon.la
 slurm_la_SOURCES =        slurm.c 
-if WITH_STATIC_MODULES
-slurm_la_LDFLAGS =        $(SLURM_LIBS)
-else
-slurm_la_LDFLAGS =        $(MODULE_FLAGS)
-endif
+slurm_la_LDFLAGS =        $(MODULE_FLAGS) $(SLURM_LIBS)
 
 version.map : 
 	(echo  "{ global:";                \
