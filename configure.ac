@@ -71,18 +71,24 @@ LIBS="$PTHREAD_LIBS $LIBS"
 AC_CHECK_HEADERS([fcntl.h strings.h sys/file.h unistd.h pthread.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_CHECK_TYPES([socklen_t])
+TYPE_SOCKLEN_T
 
 # Checks for library functions.
 dnl AC_FUNC_MALLOC
 AC_FUNC_STRERROR_R
-AC_CHECK_FUNCS([strerror pthread_sigmask sigthreadmask])
+AC_CHECK_FUNCS([strerror pthread_sigmask sigthreadmask rresvport atoi])
 
 #
 # Test for default pdsh fanout and connect timeout
 #
 AC_FANOUT
 AC_CONNECT_TIMEOUT
+
+#
+# Check for sdr
+#
+AC_SDR
+AM_CONDITIONAL(WITH_SDR, [test -n "$SDRGETOBJECTS"])
 
 #
 # Test for ssh
@@ -164,12 +170,6 @@ dnl check for inclusion of Dmalloc.
 dnl Note: this macro defines WITH_DMALLOC for us.
 dnl 
 AC_DMALLOC
-
-#
-# Check for sdr
-#
-AC_SDR
-AM_CONDITIONAL(WITH_SDR, [test -n "$SDRGETOBJECTS"])
 
 #
 # Find path to rcp for pdcp.
