@@ -1,5 +1,5 @@
-Name: 
-Version: 
+Name: @PROJECT@
+Version: @VERSION@
 Release: 1
 Summary: Parallel remote shell program.
 Copyright: none
