@@ -13,33 +13,37 @@ See the man page in this directory for usage information.
 +---------------+
 | Configuration |
 +---------------+
-Makefile:   Set DEST and MANDEST to your destionation directories
-            (default: /usr/local/bin and /usr/local/man/man1).
+As of version 1.6, pdsh has been "autoconfiscated".  To configure, run:
 
-	    Set MODE and OWN as appropriate for your environment.  Pdsh needs 
-	    root to use privileged sockets;  however if only root will run 
-	    pdsh, the setuid bit can be cleared (default: 4555 root:root).
+./configure
 
-            Set KRB_INC and KRB_LIB if you are building with Kerberos IV
-	    support.  See README.KRB4 for instructions for building k4 libs
-	    on AIX (default: no kerberos).
+The following features are not enabled by default:
 
-conf.h:     Set KRB4 to 1 if using kerberos (default: no kerberos).
+--with-krb4[=/path/to/krb4/root]
+	Enable Kerberos IV support.  This is not recommended unless you are
+	running on an SP and cannot use enable root equivalence between nodes.
 
-            Set HAVE_GENDERS to 1 if you have nodeattr/genders, LLNL's cluster
-	    database.  On non-SP's, pdsh -a will use genders if available, 
-	    else the MPICH machines file: /usr/local/etc/machines.  
-	    
-	    If you have a different cluster database, you can supply a 
-	    nodeattr-like front end which takes the following arguments
-	    and supplies a list of nodes on stdout, one per line:
-	        nodeattr -[r]n all
-	        nodeattr -[r]n attr
+--with-elan
+	Enable support for running parallel jobs on the Quadrics Elan 
+	interconnect.  This has only been tested on Linux.
 
-            -r means use alternate hostnames (pdsh -i).  "all" means list all 
-	    nodes in the cluster (pdsh -a).  "attr" is an attribute like 
-	    "login" or "raidserver" (pdsh -g).
+--with-rms
+	Enable support for getting a list of nodes from the RMS pmanager
+	(Quadrics resource management system).
 
+--enable-debug
+	Turns on assertion checking and compiles with -Wall.
+
+A word about generating target node lists:
+
+On an SP, configure will find SDRGetObjects and use that to generate the
+list of "all" nodes for -a, transform to alternate hostnames with -i, 
+etc..
+
+On Linux and other platforms, -a, -i, etc.. are handled differently.
+If the LLNL Genders system is available, the "nodeattr" command will
+be used.  If that is not found, an MPICH machines file can be used
+(it is currently hard coded to /usr/local/etc/machines).
 
 +------------+
 | INSTALLING |

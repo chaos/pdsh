@@ -1,5 +1,7 @@
 NOTE: this has not been tested in a long while.  We have stopped using KRB4
-for pdsh on our SP's because we would occasionally overwhelm our KDC --jg.
+for pdsh on our SP's because we would occasionally overwhelm our KDC.
+Also there is a bug which causes pdsh to run very slowly when pdsh has to
+refresh the tgt for a node. --jg
 ---
 To build the *API only* on an SP with AIX 4.2.1 / PSSP 2.4 and install in 
 /usr/local/krb4, use the following manual procedure or run the attached script
