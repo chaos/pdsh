@@ -12,7 +12,8 @@ documents thos changes that are of interest to users and admins.
  -- Package core pdsh functionality and pdsh modules separately in order to
     make pdsh installation much more flexible.
  -- Removed pdsh dependency on rcp. Rcp server code used by pdsh is now
-    coded directly into pdcp.
+    coded directly into pdcp. (Note: This means pdcp *must* be installed
+    on all target nodes)
  -- Added mrsh and mqshell client modules, as well as mqshd server for Munge
     authenticated rcmd() support.
  -- Added SLURM module to build list of targets from SLURM allocations.
