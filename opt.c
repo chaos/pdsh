@@ -57,9 +57,7 @@ Usage: pdcp [-options] src [src2...] dest\n\
 -t seconds        set connect timeout (default is 5 sec)\n\
 -u seconds        set command timeout (no default)\n\
 -f n              use fanout of n nodes\n\
--w host,host,...  set target node list on command line\n\
--x                do not expand hostname ranges from -w\n\
--X c              set hostname range expansion operator (default '-')\n"
+-w host,host,...  set target node list on command line\n\"
 
 #define OPT_USAGE_SDR "\
 -G                for -a, include all partitions of SP System\n\
@@ -77,7 +75,7 @@ Usage: pdcp [-options] src [src2...] dest\n\
 
 #define DSH_ARGS	"csS"
 #define PCP_ARGS	"pr"
-#define GEN_ARGS	"at:csqf:w:xX:l:u:bI:ideV"
+#define GEN_ARGS	"at:csqf:w:l:u:bI:ideV"
 #define SDR_ARGS	"Gv"
 #define GEND_ARGS	"g:"
 #define ELAN_ARGS	"En:m:P:N:"
@@ -249,15 +247,6 @@ opt_args(opt_t *opt, int argc, char *argv[])
 					opt->wcoll = read_wcoll(NULL, stdin);
 				else 
 				        wcoll_buf = Strdup(optarg);
-				break;
-			case 'x':       /* no ranges */
-				opt->range_op = NULL;
-				break;
-			case 'X':
-				if (strlen(optarg) == 1)
-					opt->range_op = Strdup(optarg);
-				else
-					usage(opt);
 				break;
 			case 'g':	/* genders attribute */
 				strncpy(opt->gend_attr, optarg, MAX_GENDATTR);

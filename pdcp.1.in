@@ -22,19 +22,10 @@ A second SIGINT within one second terminates the program.
 .I "-w host,host,..."
 Target the specified hosts.  No spaces are allowed in the comma-separated
 list.  A list consisting of a single "-" character causes the target 
-hosts to be read from stdin, one per line.  The host list may contain 
-comma-separated hostname ranges of the form ``host1@RANGE_OP@5'' or 
-``host[1@RANGE_OP@5]''.
-.LP
-.I "-x"
-In combiation with -w, do not attempt to expand hostname ranges.  Setting the 
-PDSH_RANGE_OPERATOR environment variable to the empty string has the 
-same effect.
-.LP 
-.I "-X c"
-In combination with -w, use character 'c' as a range operator when expanding 
-hostname ranges.  Alternatively, the PDSH_RANGE_OPERATOR enviornment variable 
-can be used to set this value.
+hosts to be read from stdin, one per line.  
+The PDSH_RANGE_OPERATOR environment variable will override the default
+range operator character of '@RANGE_OP@', or disable hostname range 
+expansion if set to the empty string.
 .LP
 .I "-a"
 Target "all" nodes in the cluster.

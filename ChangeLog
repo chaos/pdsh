@@ -189,4 +189,5 @@ Release 1.6+
 	have corrupted the copied file, though this has never been reported.
 
 	Additional configure options: --with-fanout=N, --with-timeout=N, 
-	--with-rangeop=c.
+	--with-rangeop=c.  Removed -x and -X options since this is now
+	configurable at compile time.

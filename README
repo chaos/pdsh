@@ -54,8 +54,8 @@ As of version 1.6, pdsh uses GNU autoconf for configuration.  To configure:
 --with-connect-timeout=N
 	Set default connect timeout (default is 10 seconds)
 
---with-rangeop=c
-	Set range operator character (default is "-")
+--without-rangeop
+	Disable hostname range expansion.
 
 
 A word about -a (target "all" nodes) and -i (use alternate hostnames) option:
