@@ -29,4 +29,5 @@ AC_DEFUN([AC_FANOUT],
   )
   AC_MSG_RESULT([${FANOUT=32}])
   AC_DEFINE_UNQUOTED(DFLT_FANOUT, $FANOUT, [Define to default pdsh fanout.])
+  AC_SUBST(FANOUT)
 ])
