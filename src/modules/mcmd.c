@@ -242,10 +242,12 @@ mcmd(char *ahost, char *addr, char *remuser, char *cmd, int *fd2p)
         if (m_rv < 0) {
                 close(rand_fd);
                 err("%p: %S: mcmd: Read of /dev/urandom failed: %m\n", ahost);
+                EXIT_PTHREAD();
         }
         if (m_rv < (int) (sizeof(uint32_t))) {
                 close(rand_fd);
                 err("%p: %S: mcmd: Read of /dev/urandom returned too few bytes\n", ahost);
+                EXIT_PTHREAD();
         }
 
         close(rand_fd);
