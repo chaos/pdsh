@@ -30,7 +30,7 @@
 
 #include <string.h>
 #include <assert.h>
-#if	HAVE_UNISTD_H
+#if     HAVE_UNISTD_H
 #include <unistd.h>             /* for R_OK, access() */
 #endif
 #include <stdlib.h>             /* atoi */
@@ -44,7 +44,7 @@
 #include "wcoll.h"
 #include "hostlist.h"
 
-#if	HAVE_RMS
+#if     HAVE_RMS
 #include <qsw/types.h>
 #include <rms/rmsapi.h>
 #endif
@@ -52,9 +52,9 @@
 /* 
  * Read wcoll from specified file or from the specified FILE pointer.
  * (one of the arguments must be NULL).  
- *	file (IN)	name of wcoll file (or NULL)
- *	f (IN)		FILE pointer to wcoll file (or NULL)	
- *	RETURN		new list containing hostnames
+ *      file (IN)       name of wcoll file (or NULL)
+ *      f (IN)          FILE pointer to wcoll file (or NULL)    
+ *      RETURN          new list containing hostnames
  */
 hostlist_t read_wcoll(char *file, FILE * f)
 {
@@ -108,28 +108,28 @@ hostlist_t read_genders(char *attr, int iopt)
   /* assumes genders file in default location */
   if (genders_load_data(handle, NULL) == -1) {
     errx("%p: error opening genders file, %s\n", 
-	 genders_strerror(genders_errnum(handle)));
+         genders_strerror(genders_errnum(handle)));
   }
 
   if ((nodelist_len = genders_nodelist_create(handle, &nodelist)) == -1) {
     errx("%p: error creating genders nodelist, %s\n",
-	 genders_strerror(genders_errnum(handle)));
+         genders_strerror(genders_errnum(handle)));
   }
   
   if ((num_nodes_found = genders_getnodes(handle, 
-					  nodelist, 
-					  nodelist_len, 
-					  attr,
-					  NULL)) == -1) {
+                                          nodelist, 
+                                          nodelist_len, 
+                                          attr,
+                                          NULL)) == -1) {
     errx("%p: error getting genders nodes, %s\n",
-	 genders_strerror(genders_errnum(handle)));
+         genders_strerror(genders_errnum(handle)));
   }
   
   /* does user want alternate names? */
   if (!iopt) {
     if ((maxvallen = genders_getmaxvallen(handle)) == -1) {
       errx("%p: error getting max value length, %s\n",
-	 genders_strerror(genders_errnum(handle)));
+         genders_strerror(genders_errnum(handle)));
     }
     if ((altname = (char *)malloc(maxvallen + 1)) == NULL) {
       errx("%p: Out of memory\n");
@@ -139,23 +139,23 @@ hostlist_t read_genders(char *attr, int iopt)
     for (i = 0; i < num_nodes_found; i++) {
       memset(altname, '\0', maxvallen + 1);
       ret = genders_testattr(handle, 
-			     nodelist[i], 
-			     GENDERS_ALTNAME_ATTRIBUTE, 
-			     altname,
-			     maxvallen + 1);
+                             nodelist[i], 
+                             GENDERS_ALTNAME_ATTRIBUTE, 
+                             altname,
+                             maxvallen + 1);
       if (ret == 1) {
-	if (hostlist_push_host(new, altname) == 0) {
-	  err("%p: warning: target '%s' not parsed\n", altname);
-	}
+        if (hostlist_push_host(new, altname) == 0) {
+          err("%p: warning: target '%s' not parsed\n", altname);
+        }
       }
       else if (ret == 0) {
-	if (hostlist_push_host(new, nodelist[i]) == 0) {
-	  err("%p: warning: target '%s' not parsed\n", nodelist[i]);
-	}
+        if (hostlist_push_host(new, nodelist[i]) == 0) {
+          err("%p: warning: target '%s' not parsed\n", nodelist[i]);
+        }
       }
       else {
-	errx("%p: error testing genders attribute, %s\n",
-	     genders_strerror(genders_errnum(handle)));
+        errx("%p: error testing genders attribute, %s\n",
+             genders_strerror(genders_errnum(handle)));
       }
     }
 
@@ -164,19 +164,19 @@ hostlist_t read_genders(char *attr, int iopt)
   else {
     for (i = 0; i < num_nodes_found; i++) {
       if (hostlist_push_host(new, nodelist[i]) == 0) {
-	err("%p: warning: target '%s' not parsed\n", nodelist[i]);
+        err("%p: warning: target '%s' not parsed\n", nodelist[i]);
       }
     }
   }
-	   
+           
   if (genders_nodelist_destroy(handle, nodelist) == -1) {
     errx("%p: error destroying genders nodelist, %s\n",
-	 genders_strerror(genders_errnum(handle)));
+         genders_strerror(genders_errnum(handle)));
   }
   
   if (genders_handle_destroy(handle) == -1) {
     errx("%p: error destroying genders handle, %s\n",
-	 genders_strerror(genders_errnum(handle)));
+         genders_strerror(genders_errnum(handle)));
   }
 
   return new;
@@ -205,7 +205,7 @@ hostlist_t read_genders(char *attr, int iopt)
 }
 #endif /* HAVE_GENDERS */
 
-#if	HAVE_SDR
+#if     HAVE_SDR
 static int _sdr_numswitchplanes(void)
 {
     FILE *f;
@@ -258,9 +258,9 @@ static void _sdr_getswitchname(char *switchName, int len)
 /*
  * Query the SDR for switch_responds or host_responds for all nodes and return
  * the results in an array indexed by node number.
- *	Gopt (IN)	pass -G to SDRGetObjects
- *	nameType (IN)	either "switch_responds" or "host_responds"
- *	resp (OUT)	array of boolean, indexed by node number
+ *      Gopt (IN)       pass -G to SDRGetObjects
+ *      nameType (IN)   either "switch_responds" or "host_responds"
+ *      resp (OUT)      array of boolean, indexed by node number
  */
 static void _sdr_getresp(bool Gopt, char *nameType, bool resp[])
 {
@@ -309,9 +309,9 @@ static void _sdr_getresp(bool Gopt, char *nameType, bool resp[])
 /*
  * Query the SDR for hostnames of all nodes and return the results in an 
  * array indexed by node number.
- *	Gopt (IN)	pass -G to SDRGetObjects
- *	nameType (IN)	either "initial_hostname" or "reliable_hostname"
- *	resp (OUT)	array of hostnames indexed by node number (heap cpy)
+ *      Gopt (IN)       pass -G to SDRGetObjects
+ *      nameType (IN)   either "initial_hostname" or "reliable_hostname"
+ *      resp (OUT)      array of hostnames indexed by node number (heap cpy)
  */
 static void _sdr_getnames(bool Gopt, char *nameType, char *nodes[])
 {
@@ -340,10 +340,10 @@ static void _sdr_getnames(bool Gopt, char *nameType, char *nodes[])
 
 /*
  * Get the wcoll from the SDR.  
- *	Gopt (IN)	pass -G to SDRGetObjects
- *	altnames (IN)	ask for initial_hostname instead of reliable_hostname
- *	vopt (IN)	verify switch_responds/host_responds
- *	RETURN		new list containing hostnames
+ *      Gopt (IN)       pass -G to SDRGetObjects
+ *      altnames (IN)   ask for initial_hostname instead of reliable_hostname
+ *      vopt (IN)       verify switch_responds/host_responds
+ *      RETURN          new list containing hostnames
  */
 hostlist_t sdr_wcoll(bool Gopt, bool iopt, bool vopt)
 {
@@ -409,9 +409,9 @@ hostlist_t sdr_wcoll(bool Gopt, bool iopt, bool vopt)
 /* 
  * Helper for rms_wcoll() - RMS provides no API to get the list of nodes 
  * once allocated, so we query the msql database with 'rmsquery'.
- * part (IN)		partition name
- * rid (IN)		resource id
- * result (RETURN)	NULL or a list of hostnames
+ * part (IN)            partition name
+ * rid (IN)             resource id
+ * result (RETURN)      NULL or a list of hostnames
  */
 static hostlist_t _rms_rid_to_nodes(char *part, int rid)
 {
@@ -436,7 +436,7 @@ static hostlist_t _rms_rid_to_nodes(char *part, int rid)
 
 /*
  * If RMS_RESOURCE is set, return wcoll corresponding to RMS res allocation.
- * result (RETURN)	NULL or a list of hostnames
+ * result (RETURN)      NULL or a list of hostnames
  */
 hostlist_t rms_wcoll(void)
 {
@@ -481,7 +481,7 @@ hostlist_t get_verified_nodes(int iopt) {
 
   if ((handle = nodeupdown_handle_create()) == NULL) {
     errx("%p: error creating nodeupdown handle, %s\n", 
-	 nodeupdown_strerror(nodeupdown_errnum(handle)));
+         nodeupdown_strerror(nodeupdown_errnum(handle)));
   }
 
   if (nodeupdown_load_data(handle, NULL, NULL, NULL, 0, 0) == -1) {
@@ -490,7 +490,7 @@ hostlist_t get_verified_nodes(int iopt) {
     }
     else {
       errx("%p: error loading nodeupdown data, %s\n", 
-	   nodeupdown_strerror(nodeupdown_errnum(handle)));
+           nodeupdown_strerror(nodeupdown_errnum(handle)));
     }
   }
 
@@ -524,7 +524,7 @@ hostlist_t get_verified_nodes(int iopt) {
 
     if ((maxvallen = genders_getmaxvallen(genders_handle)) == -1) {
       errx("%p: error getting max value length, %s\n",
-	 genders_strerror(genders_errnum(genders_handle)));
+         genders_strerror(genders_errnum(genders_handle)));
     }
     if ((altname = (char *)malloc(maxvallen + 1)) == NULL) {
       errx("%p: Out of memory\n");
@@ -534,23 +534,23 @@ hostlist_t get_verified_nodes(int iopt) {
     for (i = 0; i < num_nodes_up; i++) {
       memset(altname, '\0', maxvallen + 1);
       ret = genders_testattr(genders_handle, 
-			     nodelist[i], 
-			     GENDERS_ALTNAME_ATTRIBUTE, 
-			     altname,
-			     maxvallen + 1);
+                             nodelist[i], 
+                             GENDERS_ALTNAME_ATTRIBUTE, 
+                             altname,
+                             maxvallen + 1);
       if (ret == 1) {
-	if (hostlist_push_host(new, altname) == 0) {
-	  err("%p: warning: target '%s' not parsed\n", altname);
-	}
+        if (hostlist_push_host(new, altname) == 0) {
+          err("%p: warning: target '%s' not parsed\n", altname);
+        }
       }
       else if (ret == 0) {
-	if (hostlist_push_host(new, nodelist[i]) == 0) {
-	  err("%p: warning: target '%s' not parsed\n", nodelist[i]);
-	}
+        if (hostlist_push_host(new, nodelist[i]) == 0) {
+          err("%p: warning: target '%s' not parsed\n", nodelist[i]);
+        }
       }
       else {
-	errx("%p: error testing genders attribute, %s\n",
-	     genders_strerror(genders_errnum(genders_handle)));
+        errx("%p: error testing genders attribute, %s\n",
+             genders_strerror(genders_errnum(genders_handle)));
       }
     }
 
@@ -565,19 +565,19 @@ hostlist_t get_verified_nodes(int iopt) {
   else {
     for (i = 0; i < num_nodes_up; i++) {
       if (hostlist_push_host(new, nodelist[i]) == 0) {
-	err("%p: warning: target '%s' not parsed\n", nodelist[i]);
+        err("%p: warning: target '%s' not parsed\n", nodelist[i]);
       }
     }
   }
 
   if (nodeupdown_nodelist_destroy(handle, nodelist) == -1) {
     errx("%p: error destroying nodelist, %s\n", 
-	 nodeupdown_strerror(nodeupdown_errnum(handle)));
+         nodeupdown_strerror(nodeupdown_errnum(handle)));
   }
 
   if (nodeupdown_handle_destroy(handle) == -1) {
     errx("%p: error destroying nodeupdown handle, %s\n", 
-	 nodeupdown_strerror(nodeupdown_errnum(handle)));
+         nodeupdown_strerror(nodeupdown_errnum(handle)));
   }
 
   return new;
