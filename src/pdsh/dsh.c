@@ -271,8 +271,10 @@ static void _int_handler_justdie(int signum)
 static void *_wdog(void *args)
 {
     int i;
-
+    
     _int_block();               /* block SIGINT */
+
+    sleep (connect_timeout);
 
     for (;;) {
 
@@ -282,15 +284,16 @@ static void *_wdog(void *args)
         for (i = 0; t[i].host != NULL; i++) {
             switch (t[i].state) {
             case DSH_RCMD:
-                if (connect_timeout > 0) {
+                if ((connect_timeout > 0) && (t[i].start != ((time_t) -1))) {
                     if (t[i].start + connect_timeout < time(NULL))
                         pthread_kill(t[i].thread, SIGALRM);
                 }
                 break;
             case DSH_READING:
-                if (command_timeout > 0
-                    && t[i].connect + command_timeout < time(NULL))
-                    pthread_kill(t[i].thread, SIGALRM);
+                if ((command_timeout > 0) && (t[i].connect != ((time_t) -1))) {
+                    if (t[i].connect + command_timeout < time(NULL))
+                        pthread_kill(t[i].thread, SIGALRM);
+                }
                 break;
             case DSH_NEW:
             case DSH_DONE:
@@ -298,7 +301,7 @@ static void *_wdog(void *args)
                 break;
             }
         }
-        sleep(i == 0 ? connect_timeout : WDOG_POLL);
+        sleep (WDOG_POLL);
     }
     return NULL;
 }
@@ -595,8 +598,8 @@ static void *_rcp_thread(void *args)
     if (a->fd == -1)
         result = DSH_FAILED;
     else {
-        a->state = DSH_READING;
         a->connect = time(NULL);
+        a->state = DSH_READING;
 
         /* 0: RECV response code */
         if (_rcp_response(a->fd, a->host) >= 0) {
@@ -692,8 +695,8 @@ static void *_rsh_thread(void *args)
         result = DSH_FAILED;    /* connect failed */
     } else {
         /* connected: update status for watchdog thread */
-        a->state = DSH_READING;
         a->connect = time(NULL);
+        a->state = DSH_READING;
 
         /* use stdio package for buffered I/O */
         fp = fdopen(a->fd, "r+");

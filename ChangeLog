@@ -1,3 +1,12 @@
+2004-03-23  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/dsh.c (_wdog) : Fix bug in watchdog sleep (found
+	by Al Chu <chu11@llnl.gov>).
+
+	* src/pdsh/dsh.c (_rcp_thread, _rsh_thread): Set thread connect
+	time before updating thread state to DSH_READING to avoid potential
+	race in watchdog (found by Al Chu <chu11@llnl.gov>).
+
 2004-03-15  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/mod.c, src/pdsh/mod.h, src/pdsh/opt.c : Misc. doc and 
