@@ -409,6 +409,8 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
    *                                              ==========      =============
    * remote_user_name                             variable        "mhaskell"
    * '\0'
+   * protocol version                             < 12 bytes      "1.2"
+   * '\0'
    * dotted_decimal_address_of_this_server        7-15 bytes      "134.9.11.155"
    * '\0'
    * stderr_port_number                           4-8 bytes       "50111"
