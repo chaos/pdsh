@@ -70,6 +70,9 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #include <errno.h>
 #include <ctype.h>
 #include <string.h>
+#if HAVE_STRINGS_H
+#include <strings.h>	/* AIX FD_SET calls bzero */
+#endif
 
 #include "dsh.h"
 #include "err.h"

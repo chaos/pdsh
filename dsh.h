@@ -18,7 +18,7 @@
 #include "opt.h"
 
 #define DFLT_FANOUT 		64
-#define DFLT_SEPARATE_STDERR	true	/* cleanup depends on this */
+#define DFLT_SEPARATE_STDERR	true
 
 #define LINEBUFSIZE     	2048
 

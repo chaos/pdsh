@@ -18,6 +18,7 @@
 #include "dsh.h"
 #include "err.h"
 #include "list.h"
+#include "xmalloc.h"	/* xfree */
 #include "xstring.h"	/* for xstrdup() */
 #include "wcoll.h"
 
@@ -217,16 +218,10 @@ static void sdr_getnames(bool Gopt, char *nameType, char *nodes[])
  */
 list_t sdr_wcoll(bool Gopt, bool iopt, bool vopt)
 {
-	FILE *f;
-	list_t words;
 	list_t new;
-	char cmd[LINEBUFSIZE];
-	char buf[LINEBUFSIZE];
 	char *inodes[MAX_SP_NODE_NUMBER + 1], *rnodes[MAX_SP_NODE_NUMBER + 1];
 	bool sresp[MAX_SP_NODE_NUMBER + 1], hresp[MAX_SP_NODE_NUMBER + 1];
-	char *p;
 	int nn;
-	char *sresp_attr;
 
 
 	/*
@@ -271,9 +266,9 @@ list_t sdr_wcoll(bool Gopt, bool iopt, bool vopt)
 					list_push(new, rnodes[nn]);
 			}
 			if (inodes[nn] != NULL)		    /* free heap cpys */
-				xfree(&inodes[nn]);
+				xfree((void **)&inodes[nn]);
 			if (rnodes[nn] != NULL)
-				xfree(&rnodes[nn]);
+				xfree((void **)&rnodes[nn]);
 		}
 	}
 
