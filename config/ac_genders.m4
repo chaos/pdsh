@@ -78,7 +78,7 @@ AC_DEFUN([AC_GENDERS],
   # Check for whether to include libnodeupdown module
   #
   AC_MSG_CHECKING([for whether to build nodeupdown module])
-  AC_ARG_WITH([genders],
+  AC_ARG_WITH([nodeupdown],
     AC_HELP_STRING([--with-nodeupdown], [Build nodeupdown module]),
     [ case "$withval" in
         no)  ac_with_libnodeupdown=no ;;
