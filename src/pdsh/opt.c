@@ -372,9 +372,9 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 #ifdef _PATH_SDRGETOBJECTS
 		opt->wcoll = sdr_wcoll(opt->sdr_global, 
 		    opt->altnames, opt->sdr_verify);
-#elif defined(_PATH_NONDEATTR)
+#elif defined(_PATH_NODEATTR)
 		opt->wcoll = read_genders("all", opt->altnames);
-#elif HAVE_MACHINES
+#elif defined(_PATH_MACHINES)
 		opt->wcoll = read_wcoll(_PATH_MACHINES, NULL);
 #endif
 	} 
