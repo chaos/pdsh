@@ -217,11 +217,11 @@ _sink(opt_t *opt, char *targ) {
     struct timeval tv[2];
     enum { YES, NO, DISPLAYED } wrerr;
     BUF *bp;
-    off_t i, j;
+    off_t i, j, size;
     char ch;
     const char *why;
     int amt, count, exists, first, mask, mode;
-    int ofd, setimes, size, targisdir, cursize = 0;
+    int ofd, setimes, targisdir, cursize = 0;
     char *np, buf[BUFSIZ], *namebuf = NULL;
 
 #define	atime	tv[0]

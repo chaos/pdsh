@@ -1,3 +1,12 @@
+2004-09-21  Albert Chu <chu11@llnl.gov>
+
+	Added large file support to pdcp (gnat pdsh/497).
+
+	* src/pdsh/pcp_server.c (_sink): Redeclare 'size' as off_t type
+	instead of integer.
+
+	* src/pdsh/dsh.c (_rcp_sendfile): Fix typo in comments.
+	
 2004-09-21  Mark Grondona <mgrondona@llnl.gov>
 
 	* configure.ac : Add AC_SYS_LARGEFILE (fix for gnat pdsh/497).

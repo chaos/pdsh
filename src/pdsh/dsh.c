@@ -532,7 +532,7 @@ static int _rcp_sendfile(int fd, char *file, char *host, bool popt)
             goto fail;
     } else {
         /* 
-         * 3b: SEND file mode: "C%04o %qd %s\n" or "C%04o %ld %s\n"
+         * 3b: SEND file mode: "C%04o %lld %s\n" or "C%04o %ld %s\n"
          *    (st_mode & MODE_MASK, st_size, basename(filename))
          *    Use second template if sizeof(st_size) > sizeof(long).
          */
