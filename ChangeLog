@@ -6,7 +6,7 @@
 	_rsh_thread.
 
 	* src/pdsh/dsh.c (dsh): 
-	Before exitting on a pthread_create failure, added code to kill
+	Before exiting on a pthread_create failure, added code to kill
 	all remote jobs if kill_on_fail is true.
 
 	* src/qsnet/qshell.c (stderr_parent):
