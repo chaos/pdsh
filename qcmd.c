@@ -1,4 +1,7 @@
 /*
+ * $Id$
+ * $Source$
+ * 
  * Started with BSD rcmd.c which is:
  * 
  * Copyright (c) 1983, 1993, 1994

@@ -9,7 +9,7 @@
  *  UCRL-CODE-980038
  *  
  *  This file is part of PDSH, a parallel remote shell program.
- *  For details, see <http://www.llnl.gov/linux/powerman/>.
+ *  For details, see <http://www.llnl.gov/linux/pdsh/>.
  *  
  *  PDSH is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
