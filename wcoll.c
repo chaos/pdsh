@@ -170,23 +170,44 @@ hostlist_t read_genders(char *attr, int iopt)
   return new;
 
 #else
-    FILE *f;
+    FILE *f, *altf;
     hostlist_t new = hostlist_create("");
+    char *nodebuf;
     char cmd[LINEBUFSIZE];
     char buf[LINEBUFSIZE];
+    char altbuf[LINEBUFSIZE];
 
-    snprintf(cmd, sizeof(cmd), "%s -%sn %s", _PATH_NODEATTR,
-             iopt ? "" : "r", attr);
+    snprintf(cmd, sizeof(cmd), "%s -n %s", _PATH_NODEATTR, attr);
     f = xpopen(cmd, "r");
     if (f == NULL)
         errx("%p: error running %s\n", _PATH_NODEATTR);
+
     while (fgets(buf, LINEBUFSIZE, f) != NULL) {
         xstrcln(buf, NULL);
-        if (hostlist_push_host(new, buf) == 0)
+        
+        /* get alternate name */
+        if (!iopt) {
+          snprintf(cmd, sizeof(cmd), "%s -v %s altname", _PATH_NODEATTR, buf);
+          if ((altf = xpopen(cmd, "r")) == NULL)
+            errx("%p: error running %s\n", _PATH_NODEATTR);
+          
+          if (fgets(altbuf, LINEBUFSIZE, altf) != NULL) {
+            xstrcln(altbuf, NULL);
+            nodebuf = altbuf;
+          }
+          else
+            nodebuf = buf;   /* preserve original nodename */
+
+          xpclose(altf);
+        }
+        else 
+          nodebuf = buf;
+
+        if (hostlist_push_host(new, nodebuf) == 0)
             err("%p: warning: target '%s' not parsed\n", buf);
     }
     if (xpclose(f) != 0)
-        errx("%p: error running %s\n", _PATH_NODEATTR);
+        errx("%p: error closing %s\n", _PATH_NODEATTR);
 
     return new;
 #endif /* HAVE_LIBGENDERS */
