@@ -183,7 +183,7 @@ struct pdsh_module {
     char *name;        /* module name, i.e. Yoda */ 
     char *author;      /* module author, i.e. George Lucas */
     char *descr;       /* module description, i.e. "Run pdsh with the force */
-    int personality;   /* DSH or PCP, must be int b/c we may or values */
+    int personality;   /* DSH and/or PCP, must be int b/c we may or values */
 
     struct pdsh_module_operations *mod_ops;
     struct pdsh_rcmd_operations   *rcmd_ops;
