@@ -217,7 +217,7 @@ opt_args(opt_t *opt, int argc, char *argv[])
 	/* construct valid arg list */
 	if (opt->personality == DSH) {
 		strcpy(validargs, DSH_ARGS);
-#if 	HAVE_ELAN3
+#if 	HAVE_ELAN
 		strcat(validargs, ELAN_ARGS);
 #endif
 	} else
@@ -370,13 +370,13 @@ opt_args(opt_t *opt, int argc, char *argv[])
 #error bogus configuration
 #endif
 	} 
-#ifdef	HAVE_GENDERS
+#if	HAVE_GENDERS
 	/* get wcoll from genders - all nodes with a particular attribute */
 	if (*(opt->gend_attr)) {
 		opt->wcoll = read_genders(opt->gend_attr, opt->altnames);
 	}
 #endif
-#if 	HAVE_RMS_PMANAGER
+#if 	HAVE_RMS
 	/* get wcoll from RMS partition manager */
 	if (opt->rms_partition || opt->wcoll == NULL) { 
 		/* catch couple of errors early */
@@ -395,8 +395,8 @@ opt_args(opt_t *opt, int argc, char *argv[])
 		opt->wcoll = rms_wcoll(opt->rms_partition, opt->rms_nnodes, 
 					opt->q_nprocs);
 	}
-#endif /* HAVE_RMS_PMANAGER */
-#if 	HAVE_ELAN3
+#endif /* HAVE_RMS */
+#if 	HAVE_ELAN
 	if (opt->rcmd_type == RCMD_QSHELL) {
 		if (opt->fanout == DFLT_FANOUT && opt->wcoll != NULL)
 			opt->fanout = list_length(opt->wcoll);
@@ -406,7 +406,7 @@ opt_args(opt_t *opt, int argc, char *argv[])
 		if (opt->dshpath != NULL)
 			Free((void **)&opt->dshpath);
 	}
-#endif /* HAVE_ELAN3 */
+#endif /* HAVE_ELAN */
 	if (opt->q_nprocs == -1 && opt->wcoll != NULL)
 		opt->q_nprocs = list_length(opt->wcoll);
 }
@@ -602,7 +602,7 @@ usage(opt_t *opt)
 	if (opt->personality == DSH) {
 		err(OPT_USAGE_DSH);
 		err(OPT_USAGE_STDERR);
-#if 	HAVE_ELAN3
+#if 	HAVE_ELAN
 		err(OPT_USAGE_ELAN);
 #endif
 	} else /* PCP */
@@ -623,19 +623,19 @@ usage(opt_t *opt)
 static void show_version(void)
 {
 	printf("%s-%s (", PROJECT, VERSION);
-#ifdef	HAVE_SDR
+#if	HAVE_SDR
 	printf("+sdr");
 #endif
-#ifdef	HAVE_GENDERS
+#if	HAVE_GENDERS
 	printf("+genders");
 #endif
-#ifdef 	HAVE_MACHINES
+#if	HAVE_MACHINES
 	printf("+machines");
 #endif
-#if	HAVE_ELAN3
+#if	HAVE_ELAN
 	printf("+elan");
 #endif
-#if	HAVE_RMS_PMANAGER
+#if	HAVE_RMS
 	printf("+rms");
 #endif
 #if	HAVE_SSH

@@ -48,7 +48,7 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #include "config.h"
 #endif
 
-#if	HAVE_ELAN3
+#if	HAVE_ELAN
 
 #include <sys/param.h>
 #include <sys/types.h>
@@ -325,4 +325,4 @@ bad:
 	pthread_sigmask(SIG_SETMASK, &oldset, NULL);
 	return (-1);
 }
-#endif /* HAVE_ELAN3 */
+#endif /* HAVE_ELAN */

@@ -11,9 +11,6 @@ pdsh \- issue commands to groups of hosts in parallel
 
 .SH DESCRIPTION
 
-.if 1 Snurf blah foo foo bah!
-.if 0 sNURF BLAH FOO FOO BAH!
-
 .B pdsh
 is a variant of the rsh(1) command.  Unlike rsh(1) which runs commands on
 a single remote host, pdsh(1) can run multiple remote commands in parallel.
@@ -33,55 +30,54 @@ and commands prefaced with an exclamation point will be executed on the local
 system.
 
 .SH TARGET NODE LIST OPTIONS
+
 .I "-w host,host,..."
-Target the specified nodes.  No spaces are allowed in the comma-separated
-list.  Substituting the "-" character for the list causes the target nodes
-to be read from stdin, one per line. 
-.LP
-The node list may also contain hostname
-ranges of the form "host1-5" in place of single hostnames. By default, 
-.B pdsh
-will attempt to expand these ranges based upon a range operator of '-'. The
-environment var PDSH_RANGE_OPERATOR may be set to an arbitrary character 
-which will be used in place of '-'. (Setting this variable to "" will
-effectively disable range expansion) Also see the -x and -X options 
-for similar functionality on the command line.
+Target the specified hosts.  No spaces are allowed in the comma-separated
+list.  A list consisting of a single "-" character causes the target hosts
+to be read from stdin, one per line.  The host list may contain comma-separated
+hostname ranges of the form ``host1-5'' or ``host[1-5]''.
 .LP
 .I "-x"
-Do not attempt to expand hostname ranges passed via -w. 
+In combiation with -w, do not attempt to expand hostname ranges.  Setting the 
+PDSH_RANGE_OPERATOR environment variable to the empty string has the 
+same effect.
 .LP 
 .I "-X c"
-Use character 'c' as a range operator when expanding hostname ranges. 
-Additionally, the evironment variable PDSH_RANGE_OPERATOR can be set
-to the desired character. 
+In combination with -w, use character 'c' as a range operator when expanding 
+hostname ranges.  Alternatively, the PDSH_RANGE_OPERATOR enviornment variable 
+can be used to set this value.
 .LP
 .I "-a"
-Target "all" nodes in the cluster.  If running on an SP, this means all
-nodes in your partition.  On a non-SP with genders support, this is all nodes
-listed in your genders file.  Otherwise, it is a configured flat file
-containing a list of nodes.
-.LP
+Target "all" nodes in the cluster.
+.if @HAVE_MACHINES@ The list of hostnames is taken from the MPICH machines file.
+.el \{
+.if @HAVE_SDR@ \{
 .I "-v"
-(SP ONLY) In combination with -a, eliminate nodes that the SDR thinks are down.
-.LP
-.I "-i"
-(SP or genders ONLY) In combination with -a or -g, use alternate node names.
-On the SP, this means use SDR initial_hostname instead of the default 
-reliable_hostname.  On non-SP's with genders, you must have 
-.I "altname" 
-attributes defined for each node.
+In combination with -a, eliminate nodes that the SDR thinks are down.
 .LP
 .I "-G"
-(SP ONLY) In combination with -a, include all partitions.
+In combination with -a, include all partitions. 
 .LP
+.I "-i"
+In combination with -a, use SDR initial_hostname instead of reliable_hostname.
+\}
+\}
+.if @HAVE_GENDERS@ \{
 .I "-g attribute"
-(Genders ONLY) Target nodes that have the specified attribute.
+Target nodes that have the specified genders attribute.
+.if !@HAVE_SDR@ \{
+.I "-i"
+In combination with -a or -g, use a hostname specified as the value of the
+``altname'' genders attribute instead of the normal one.
+\}
+\}
+.if @HAVE_RMS@ \{
+.I "-N number"
+Allocate the specified number of nodes from RMS.
 .LP
 .I "-P partition"
-(RMS ONLY) Allocate nodes from specified RMS partition.
-.LP
-.I "-N number"
-(RMS ONLY) Set the number of nodes to request from the RMS partition.
+In combination with -N, select a non-default RMS partition.
+.\}
 .LP
 If none of the above options are specified, the WCOLL environment variable
 must point to a file that contains a list of nodes, one per line.  
@@ -109,7 +105,7 @@ be listed in the user\'s .rhosts file (even for root).
 .LP
 .I "-t seconds"
 Set the connect timeout.  Default is @CONNECT_TIMEOUT@ seconds.  
-(This is concurrent with the socket-level timeout).
+(This is concurrent with the normal socket-level timeout).
 .LP
 .I "-u seconds"
 Put a limit on the amount of time a remote command is allowed to execute.
@@ -117,10 +113,9 @@ Default is no limit.
 .LP
 .I "-c"
 In interactive mode, do not remove failed hosts from the target node list.
-.LP
+.if @HAVE_ELAN@ \{
 .I "-E"
-(Elan3 ONLY) Run command using qshell.
-Qshell propagates the
+Run command using qshell.  Qshell propagates the
 .B pdsh 
 environment and current working directory to remote processes.
 To enable running of MPI jobs on the Quadrics Elan3 interconnect,
@@ -128,12 +123,13 @@ Elan capabilities are propagated and the following environment variables
 are set: RMS_RANK, RMS_NODEID, RMS_PROCID, RMS_NNODES, and RMS_NPROCS.
 .LP
 .I "-n number"
-(Elan3 ONLY) Set the number of processes.  This should be set to a multiple
-of the size of the target node list.
+In combination with -E, set the number of processes.  This should be set 
+to a multiple of the number of hosts in the target host list.
 .LP
 .I "-m block | cyclic"
-(Elan3 ONLY) Set block versus cyclic allocation of processes to nodes.
-Default is block.
+In combination wiht -E, set block versus cyclic allocation of processes 
+to nodes.  Default is block.
+\}
 .LP
 .I "-d"
 Include more complete thread status when SIGINT is received, and display
@@ -148,17 +144,32 @@ on LLNL's ASCI Blue-Pacific IBM SP system.
 It is now also used on Linux clusters at LLNL.
 
 .SH "LIMITATIONS"
-When 
+.LP
+.if @HAVE_SSH@ \{
+This copy of pdsh has been configured to use
 .B ssh
-is used, the stderr of ssh is folded in with that of the remote command 
-When invoked by pdsh, it is not possible for ssh to prompt for confirmation 
-if a host key changes, prompt for passwords if RSA keys are not configured 
-properly, etc..
-.LP
-The connect timeout is not adjustable when ssh is used.
-.LP
-Output from multiple processes per node (Elan3 only) may be interspersed.
-.LP
+which causes the stderr of ssh to be folded in with that of the remote 
+command.  When invoked by pdsh, it is not possible for ssh to prompt for 
+confirmation if a host key changes, prompt for passwords if RSA keys are not 
+configured properly, etc..  Finally, the connect timeout is not adjustable 
+when ssh is used.
+\}
+.if @HAVE_ELAN@ \{
 Qshell assumes Elan3 single rail.
+.LP
+Output from multiple processes per node may be interspersed when using Qshell.
+\}/
+
+.SH "FILES"
+.if @HAVE_SSH@ @SSH@
+.br
+.if @HAVE_RMS@ @RMSQUERY@
+.br
+.if @HAVE_GENDERS@ @NODEATTR@
+.br
+.if @HAVE_SDR@ @SDRGETOBJECTS@
+.br
+.if @HAVE_MACHINES@ @MACHINES@
+
 .SH "SEE ALSO"
 rsh(1), ssh(1), dshbak(1), pdcp(1)

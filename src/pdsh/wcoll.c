@@ -24,7 +24,7 @@
 #include "xpopen.h"	/* for xpopen/close */
 #include "wcoll.h"
 
-#if	HAVE_RMS_PMANAGER
+#if	HAVE_RMS
 #include <rms/rmsapi.h>
 #endif
 
@@ -326,7 +326,7 @@ sdr_wcoll(bool Gopt, bool iopt, bool vopt)
 }
 #endif /* HAVE_SDR */
 
-#if HAVE_RMS_PMANAGER
+#if HAVE_RMS
 /* 
  * Helper for rms_wcoll() - RMS provides no API to get the list of nodes 
  * once allocated, so we query the msql database with 'rmsquery'.
@@ -394,4 +394,4 @@ rms_wcoll(char *part, int nnodes, int nprocs)
 	return rms_rid_to_nodes(part, rid);
 	/* nodes get freed when we exit so no rms_deallocateResource() req'd */
 }
-#endif /* HAVE_RMS_PMANAGER */
+#endif /* HAVE_RMS */

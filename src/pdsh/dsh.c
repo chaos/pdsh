@@ -209,7 +209,7 @@ fwd_signal(int signum)
 					k4cmd_signal(t[i].efd, signum);
 					break;
 #endif
-#if	HAVE_ELAN3
+#if	HAVE_ELAN
 				case RCMD_QSHELL:
 					qcmd_signal(t[i].efd, signum);
 					break;
@@ -612,7 +612,7 @@ rcp(void *args)
 			a->fd = xrcmd(a->host, a->addr, a->luser, a->ruser, 
 					cmd, a->nodeid, efdp);
 			break;
-#if 	HAVE_ELAN3
+#if 	HAVE_ELAN
 		case RCMD_QSHELL:
 			a->fd = qcmd(a->host, a->addr, a->luser, a->ruser, 
 					cmd, a->nodeid, efdp);
@@ -715,7 +715,7 @@ rsh(void *args)
 			a->fd = xrcmd(a->host, a->addr, a->luser, a->ruser, 
 					a->dsh_cmd, a->nodeid, efdp);
 			break;
-#if 	HAVE_ELAN3
+#if 	HAVE_ELAN
 		case RCMD_QSHELL:
 			a->fd = qcmd(a->host, a->addr, a->luser, a->ruser, 
 					a->dsh_cmd, a->nodeid, efdp);
@@ -901,7 +901,7 @@ dsh(opt_t *opt)
 	list_t pcp_infiles = NULL;
 
 	switch (opt->rcmd_type) {
-#if HAVE_ELAN3
+#if HAVE_ELAN
 		case RCMD_QSHELL:
 			qcmd_init(opt);
 			break;

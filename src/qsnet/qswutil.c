@@ -9,7 +9,7 @@
 #include "config.h"
 #endif
 
-#if	HAVE_ELAN3
+#if	HAVE_ELAN
 
 #include <sys/param.h>
 #include <sys/types.h>
@@ -660,4 +660,4 @@ main(int argc, char *argv[])
 	exit(0);
 }
 #endif /* TEST_MAIN */
-#endif /* HAVE_ELAN3 */
+#endif /* HAVE_ELAN */

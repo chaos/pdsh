@@ -36,8 +36,9 @@ can be used to set this value.
 .LP
 .I "-a"
 Target "all" nodes in the cluster.
-.if @SDR@ \{
-.\" .LP
+.if @HAVE_MACHINES@ The list of hostnames is taken from the MPICH machines file.
+.el \{
+.if @HAVE_SDR@ \{
 .I "-v"
 In combination with -a, eliminate nodes that the SDR thinks are down.
 .LP
@@ -47,12 +48,11 @@ In combination with -a, include all partitions.
 .I "-i"
 In combination with -a, use SDR initial_hostname instead of reliable_hostname.
 \}
-.if @GENDERS@ \{
-.\" .LP
+\}
+.if @HAVE_GENDERS@ \{
 .I "-g attribute"
 Target nodes that have the specified genders attribute.	
-.if !@SDR@ \{
-.\" .LP
+.if !@HAVE_SDR@ \{
 .I "-i"
 In combination with -a or -g, use a hostname specified as the value of the
 ``altname'' genders attribute instead of the normal one.
@@ -87,6 +87,28 @@ Set the connect timeout.  Default is @CONNECT_TIMEOUT@ seconds.
 .I "-d"
 Include more complete thread status when SIGINT is received, and display
 connect and command time statistics on stderr when done.
+.SH "LIMITATIONS"
+.if @HAVE_SSH@ \{
+This copy of pdsh has been configured to use
+.B ssh
+which causes the stderr of ssh to be folded in with that of the remote 
+command.  When invoked by pdsh, it is not possible for ssh to prompt for 
+confirmation if a host key changes, prompt for passwords if RSA keys are not 
+configured properly, etc..  Finally, the connect timeout is not adjustable 
+when ssh is used.
+\}
+
+.SH "FILES"
+.if @HAVE_SSH@ @SSH@
+.br
+.if @HAVE_GENDERS@ @NODEATTR@
+.br
+.if @HAVE_SDR@ @SDRGETOBJECTS@
+.br
+.if @HAVE_MACHINES@ @MACHINES@
+.br
+@RCP@
+.br
 
 .SH "ORIGIN"
 Pdsh/pdcp was originally a rewrite of IBM dsh(1) by Jim Garlick

@@ -1,6 +1,6 @@
 /* config.h.in.  Generated automatically from configure.ac by autoheader.  */
 
-/* Default connect timeout (secs) */
+/* Default connect timeout */
 #undef CONNECT_TIMEOUT
 
 /* Default fanout */
@@ -10,8 +10,8 @@
    don't. */
 #undef HAVE_DECL_STRERROR_R
 
-/* define if building with Elan3 support */
-#undef HAVE_ELAN3
+/* define for Elan support */
+#undef HAVE_ELAN
 
 /* Define if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
@@ -34,7 +34,7 @@
 /* Define if you have the `rmscall' library (-lrmscall). */
 #undef HAVE_LIBRMSCALL
 
-/* Define to use a flat list of all nodes for -a processing */
+/* Using machines file */
 #undef HAVE_MACHINES
 
 /* Define if your system has a working `malloc' function. */
@@ -50,7 +50,7 @@
 #undef HAVE_PTHREAD_SIGMASK
 
 /* define for RMS support */
-#undef HAVE_RMS_PMANAGER
+#undef HAVE_RMS
 
 /* Define if SDR is available */
 #undef HAVE_SDR
@@ -93,15 +93,6 @@
 
 /* Define to 1 if `strerror_r' returns a string. */
 #undef HAVE_WORKING_STRERROR_R
-
-/* Define the host CPU type. */
-#undef HOST_CPU
-
-/* Define the host OS type. */
-#undef HOST_OS
-
-/* Define the host vendor type. */
-#undef HOST_VENDOR
 
 /* Define if you are building a production release. */
 #undef NDEBUG
