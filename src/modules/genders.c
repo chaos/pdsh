@@ -68,8 +68,8 @@ static bool opt_i      = false;
 #endif /* !GENDERS_G_ONLY */
 
 static genders_t gh    = NULL;
-static char *gend_attr = NULL;
-static char *excl_attr = NULL;
+static List attrlist   = NULL;
+static List excllist   = NULL;
 
 /* 
  * Export pdsh module operations structure
@@ -95,10 +95,10 @@ struct pdsh_rcmd_operations genders_rcmd_ops = {
  */
 struct pdsh_module_option genders_module_options[] = 
  { 
-   { 'g', "attribute", "target nodes with specified genders attribute",
+   { 'g', "attribute,...", "target nodes with specified genders attributes",
      DSH | PCP, (optFunc) genders_process_opt 
    },
-   { 'X', "attribute", "exclude nodes with specified genders attribute",
+   { 'X', "attribute,...", "exclude nodes with specified genders attributes",
      DSH | PCP, (optFunc) genders_process_opt
    },
 #if !GENDERS_G_ONLY
@@ -136,9 +136,11 @@ struct pdsh_module pdsh_module_info = {
  */
 static genders_t  _handle_create();
 static hostlist_t _genders_to_altnames(genders_t g, hostlist_t hl);
-static hostlist_t _read_genders(char *attr);
+static hostlist_t _read_genders(List l);
 static void       _genders_opt_verify(opt_t *opt);
 static int        _delete_all (hostlist_t hl, hostlist_t dl);
+static void       _free_attr (void *);
+static List       _attrlist_append (List l, char *str);
 
 
 /*
@@ -157,10 +159,10 @@ genders_process_opt(opt_t *pdsh_opts, int opt, char *arg)
         break;
 #endif /* !GENDERS_G_ONLY */
     case 'g':
-        gend_attr = Strdup(arg);
+        attrlist = _attrlist_append (attrlist, arg);
         break;
     case 'X':
-        excl_attr = Strdup(arg);
+        excllist = _attrlist_append (excllist, arg);
         break;
     default:
         err("%p: genders_process_opt: invalid option `%c'\n", opt);
@@ -173,11 +175,11 @@ genders_process_opt(opt_t *pdsh_opts, int opt, char *arg)
 static void
 genders_fini(void)
 {
-    if (gend_attr)
-        Free((void **)&gend_attr);
+    if (attrlist)
+        list_destroy (attrlist);
 
-    if (excl_attr)
-        Free((void **)&excl_attr);
+    if (excllist)
+        list_destroy (excllist);
 
     if ((gh != NULL) && (genders_handle_destroy(gh) < 0))
         errx("%p: Error destroying genders handle: %s\n", genders_errormsg(gh));
@@ -191,35 +193,42 @@ genders_wcoll(opt_t *opt)
     _genders_opt_verify(opt);
 
 #if GENDERS_G_ONLY
-    if (!gend_attr)
+    if (!attrlist)
         return NULL;
 #else
-    if (!allnodes && !gend_attr)
+    if (!allnodes && !attrlist)
         return NULL;
-
-    if (allnodes)  
-        gend_attr = ALL_NODES;
-
 #endif /* !GENDERS_G_ONLY */
 
     if (gh == NULL)
         gh = _handle_create();
 
-    return _read_genders(gend_attr);
+    return _read_genders(attrlist);
 }
 
 static int
 genders_postop(opt_t *opt)
 {
     hostlist_t hl = NULL;
+    bool altnames = false;
 
     if (!opt->wcoll)
+        return (0);
+
+    /*
+     *  Grab altnames if gend_attr or allnodes given and !opt_i,
+     *   or if opt_i and neither gend_attr or allnodes given.
+     */
+    altnames = (opt_i && !(attrlist || allnodes)) 
+            || (!opt_i && (attrlist || allnodes));
+
+    if (!excllist && !altnames)
         return (0);
 
     if (gh == NULL)
         gh = _handle_create();
 
-    if (excl_attr && (hl = _read_genders (excl_attr))) {
+    if (excllist && (hl = _read_genders (excllist))) {
         hostlist_t altlist = _genders_to_altnames (gh, hl);
         _delete_all (opt->wcoll, hl);
         _delete_all (opt->wcoll, altlist);
@@ -229,12 +238,7 @@ genders_postop(opt_t *opt)
     }
 
 #if !GENDERS_G_ONLY
-    /*
-     *  Grab altnames if gend_attr or allnodes given and !opt_i,
-     *   or if opt_i and neither gend_attr or allnodes given.
-     */
-    if (  ( opt_i && !(gend_attr || allnodes))
-       || (!opt_i &&  (gend_attr || allnodes)) ) {
+    if (altnames) {
         hostlist_t hl = opt->wcoll;
         opt->wcoll = _genders_to_altnames(gh, hl);
         hostlist_destroy(hl);
@@ -256,7 +260,7 @@ _genders_opt_verify(opt_t *opt)
  *       altnames = false;
  *   }
  */
-    if (allnodes && (gend_attr != NULL))
+    if (allnodes && (attrlist != NULL))
         errx("%p: Do not specify -a with -g\n");
 #endif /* !GENDERS_G_ONLY */
 
@@ -265,7 +269,7 @@ _genders_opt_verify(opt_t *opt)
         if (allnodes)
             errx("%p: Do not specify -a with other node selection options\n");
 #endif /* !GENDERS_G_ONLY */
-        if (gend_attr)
+        if (attrlist)
             errx("%p: Do not specify -g with other node selection options\n");
     }
 
@@ -386,7 +390,7 @@ _get_val(char *attr)
 
 
 static hostlist_t 
-_read_genders(char *attr)
+_read_genders_attr(char *attr)
 {
     hostlist_t hl = NULL;
     char *val;
@@ -414,6 +418,40 @@ _read_genders(char *attr)
     return hl;
 }
 
+static hostlist_t 
+_read_genders (List attrs)
+{
+    ListIterator i  = NULL;
+    hostlist_t   hl = NULL;
+    char *     attr = NULL;
+
+    if ((attrs == NULL) && (allnodes)) /* Special "all nodes" case */
+        return _read_genders_attr (ALL_NODES);
+
+    if ((attrs == NULL) || (list_count (attrs) == 0))
+        return NULL;
+
+   if ((i = list_iterator_create (attrs)) == NULL)
+        errx ("genders: unable to create list iterator: %m\n");
+
+    while ((attr = list_next (i))) {
+        hostlist_t l = _read_genders_attr (attr);
+
+        if (hl == NULL) {
+            hl = l;
+		} else {
+            hostlist_push_list (hl, l);
+            hostlist_destroy (l);
+        }
+    }
+
+    list_iterator_destroy (i);
+
+    hostlist_uniq (hl);
+
+    return (hl);
+}
+
 static int 
 _delete_all (hostlist_t hl, hostlist_t dl)
 {
@@ -428,6 +466,88 @@ _delete_all (hostlist_t hl, hostlist_t dl)
     hostlist_iterator_destroy (i);
     return (rc);
 }
+
+static void
+_free_attr (void *attr)
+{
+    Free (&attr);
+}
+
+/* 
+ * Helper function for list_split(). Extract tokens from str.  
+ * Return a pointer to the next token; at the same time, advance 
+ * *str to point to the next separator.  
+ *   sep (IN)   string containing list of separator characters
+ *   str (IN)   double-pointer to string containing tokens and separators
+ *   RETURN next token
+ */
+static char *_next_tok(char *sep, char **str)
+{
+    char *tok;
+
+    /* push str past any leading separators */
+    while (**str != '\0' && strchr(sep, **str) != '\0')
+        (*str)++;
+
+    if (**str == '\0')
+        return NULL;
+
+    /* assign token pointer */
+    tok = *str;
+
+    /* push str past token and leave pointing to first separator */
+    while (**str != '\0' && strchr(sep, **str) == '\0')
+        (*str)++;
+
+    /* nullify consecutive separators and push str beyond them */
+    while (**str != '\0' && strchr(sep, **str) != '\0')
+        *(*str)++ = '\0';
+
+    return tok;
+}
+
+/*
+ * Given a list of separators and a string, generate a list
+ *   sep (IN)   string containing separater characters
+ *   str (IN)   string containing tokens and separators
+ *   RETURN     new list containing all tokens
+ */
+static List _list_split(char *sep, char *str)
+{
+    List new = list_create((ListDelF) _free_attr);
+    char *tok;
+
+    if (sep == NULL)
+        sep = " \t";
+
+    while ((tok = _next_tok(sep, &str)) != NULL) {
+        if (strlen(tok) > 0)
+            list_append(new, Strdup(tok));
+    }
+
+    return new;
+}
+
+/*
+ *  Split comma-separated "attrs" from str and append to list `lp'
+ */
+static List _attrlist_append (List l, char *str)
+{
+    List tmp = _list_split (",", str);
+    ListIterator i = NULL;
+    char *attr = NULL;
+
+    if (l == NULL) 
+        return ((l = tmp));
+
+    i = list_iterator_create (tmp);
+    while ((attr = list_next (i))) 
+        list_append (l, Strdup(attr));
+    list_destroy (tmp);
+
+    return (l);
+}
+
 
 /*
  * vi: tabstop=4 shiftwidth=4 expandtab

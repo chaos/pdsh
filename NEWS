@@ -17,6 +17,7 @@ documents thos changes that are of interest to users and admins.
     authenticated rcmd() support.
  -- Added SLURM module to build list of targets from SLURM allocations.
  -- (genders) Added "-X" option to exclude targets based on genders attributes.
+ -- (genders) Multiple attributes may now be passed to "-g" and "-X."
  -- QsNet support now requires "/etc/elanhosts" config file (see README.QsNet).
  -- QsNet support includes support for QSW elanctrl interface. (Elan3/Elan4)
  -- Added support for running Elan network error resolver thread in qshd/mqshd.

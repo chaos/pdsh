@@ -10,6 +10,7 @@
 
 $(top_builddir)/src/common/libcommon.la \
 $(top_builddit)/src/qsnet/libqsw.la \
+$(top_builddit)/src/modules/libmods.la \
 : force-dependency-check
 	@cd `dirname $@` && make `basename $@`
 

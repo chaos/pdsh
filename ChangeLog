@@ -1,3 +1,13 @@
+2004-02-17  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/modules/genders.c : Allow multiple genders attributes to be
+	passed to -g and -X, either via comma-separated list or multiple 
+	invocations of these options.
+
+	* src/modules/nodeattr.c : Same.
+
+	* src/modules/sdr.c : Truncate domain part of hostnames. 
+
 2004-02-12  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/mod.c : Modules now optionally export pdsh_module_priority 
@@ -7,7 +17,7 @@
 	* src/modules/ : add pdsh_module_priority to existing modules.
 
 	* src/modules/genders.c : Added -X option. Changed behavior of -i 
-	such that it always translates from altnames to canonical names.
+	such that it always translates between altnames to canonical names.
 
 	* config/ac_static_modules.m4 : Place static_modules.h in top level
 	builddir -- src/modules might not exist at time configure is run.

@@ -275,6 +275,7 @@ static void _sdr_getnames(bool Gopt, char *nameType, char *nodes[])
 {
     int nn;
     FILE *f;
+    char *p;
     List words;
     char cmd[LINEBUFSIZE];
     char buf[LINEBUFSIZE];
@@ -291,6 +292,13 @@ static void _sdr_getnames(bool Gopt, char *nameType, char *nodes[])
         nn = atoi(_list_nth(words, 0));
         assert(nn >= 0 && nn <= MAX_SP_NODE_NUMBER);
         nodes[nn] =  Strdup(_list_nth(words, 1));
+
+        /*  
+         *  Truncate any domain
+         */
+        if ((p = strchr (nodes[nn], '.')))
+            *p = '\0';
+        
         list_destroy(words);
     }
     xpclose(f);
