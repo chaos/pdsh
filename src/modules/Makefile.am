@@ -75,8 +75,8 @@ mcmd_la_SOURCES =         mcmd.c
 mcmd_la_LDFLAGS =         $(MODULE_FLAGS) $(MRSH_LIBS)
 mqcmd_la_SOURCES =        mqcmd.c
 mqcmd_la_LDFLAGS =        $(MODULE_FLAGS) $(MRSH_LIBS) $(top_builddir)/libqsw.la
-krb4_la_SOURCES =         k4cmd.c
-krb4_la_LDFLAGS =         $(MODULE_FLAGS) $(KRB_LIBS)
+k4cmd_la_SOURCES =        k4cmd.c
+k4cmd_la_LDFLAGS =        $(MODULE_FLAGS) $(KRB_LIBS)
 
 machines_la_SOURCES =     machines.c
 machines_la_LDFLAGS =     $(MODULE_FLAGS)
