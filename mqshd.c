@@ -463,83 +463,6 @@ doit(struct sockaddr_in *fromp)
   /* read munge blob for authentication */
   buf_length = fd_null_read_n(0, &mbuf[0], MAX_MBUF_SIZE);
 
-  /* 
-   * Begin reading qshell arguments.
-   */ 
-
-  /* read cwd of client - will change to cwd on remote side */
-  if (getstr(cwd, sizeof(cwd)) <= 0) {
-    syslog(LOG_ERR, "mqshd: error reading cwd.");
-    errnum = _DATA;
-    goto error_out;
-  }
- 
-  /* read environment of client - will replicate on remote side */
-  if (getstr(tmpstr, sizeof(tmpstr)) <= 0) {
-    syslog(LOG_ERR, "mqshd: error reading envcount.");
-    errnum = _DATA;
-    goto error_out;
-  }
-  envcount = atoi(tmpstr);
-  while (envcount-- > 0) {
-    if (getstr(envstr, sizeof(envstr)) <= 0) {
-      syslog(LOG_ERR, "mqshd: error reading envstr.");
-      errnum = _DATA;
-      goto error_out;
-    }
-    putenv(strdup(envstr));             /* ahchoo, maybe mem-leak? */
-  } 
- 
-  /* read elan capability */
-  if (getstr(tmpstr, sizeof(tmpstr)) <= 0) {
-    syslog(LOG_ERR, "mqshd: error reading capability.");
-    errnum = _DATA;
-    goto error_out;
-  }
-  if (qsw_decode_cap(tmpstr, &cap) < 0) {
-    syslog(LOG_ERR, "mqshd: error decoding capability");
-    errnum = _QSW;
-    goto error_out;
-  } 
- 
-  for (i = 0; i < qsw_cap_bitmap_count(); i += 16) {
-    if (getstr(tmpstr, sizeof(tmpstr)) <= 0) { 
-      syslog(LOG_ERR, "mqshd: error reading capability.");
-      errnum = _DATA;
-      goto error_out;
-    }
-    if (qsw_decode_cap_bitmap(tmpstr, &cap, i) < 0) {
-      syslog(LOG_ERR, "mqshd: error reading capability bitmap(%d): %s", i, tmpstr);
-      errnum = _QSW;
-      goto error_out;
-    }
-  }
- 
-  /* read info structure */
-  if (getstr(tmpstr, sizeof(tmpstr)) <= 0) {
-    syslog(LOG_ERR, "mqshd: error reading qsw info.");
-    errnum = _DATA;
-    goto error_out;
-  }
-
-  if (qsw_decode_info(tmpstr, &qinfo) < 0) { 
-    syslog(LOG_ERR, "mqshd: error decoding qsw info.");
-    errnum = _QSW;
-    goto error_out;
-  }
-
-  /* 
-   * End qshell arguments.
-   */ 
-
-  m_rv = write(1, "", 1);
-  if (m_rv != 1) {
-    syslog (LOG_ERR, "%s: %m", "mqshd: bad write of null to stdout.");
-    errnum = _SYSTEM;
-    goto error_out;
-  }
-  sent_null = 1;
-
   /*
    * We call munge_verify which will take what we read in and return a
    * pointer to an unmunged buffer and mungeverify will also fill in our
@@ -669,7 +592,7 @@ doit(struct sockaddr_in *fromp)
     list->prev = (struct if_ipaddr_list *)(0xcafebabe);
 
     if ((skfd = sockets_open(0)) < 0) {
-      errlog("socket");
+      syslog(LOG_ERR, "sockets_open error");
       free(mptr);
       errnum = _INTERNAL;
       goto error_out;
@@ -812,16 +735,91 @@ doit(struct sockaddr_in *fromp)
   if (rv == -1) {
     syslog(LOG_ERR,"%s: %m","couldn't write to stderr port: ");
     free(mptr);
-    /* this is the only place we can't use error/errorlog or
-     * goto error_out:
-     */
     errorsock(sock, "mqshd: internal system error.");
     close(sock);
     exit(EXIT_FAILURE);
   }
 
   /*
-   * Stderr is all set up, we are ready to process the users command.
+   * Stderr is all set up, begin reading qshell arguments.
+   */ 
+
+  /* read cwd of client - will change to cwd on remote side */
+  if (getstr(cwd, sizeof(cwd)) <= 0) {
+    errlog("mqshd: error reading cwd: %m.");
+    free(mptr);
+    close(sock);
+    exit(EXIT_FAILURE);
+  }
+ 
+  /* read environment of client - will replicate on remote side */
+  if (getstr(tmpstr, sizeof(tmpstr)) <= 0) {
+    errlog("mqshd: error reading envcount: %m.");
+    free(mptr);
+    close(sock);
+    exit(EXIT_FAILURE);
+  }
+  envcount = atoi(tmpstr);
+  while (envcount-- > 0) {
+    if (getstr(envstr, sizeof(envstr)) <= 0) {
+      errlog("mqshd: error reading envstr: %m.");
+      free(mptr);
+      close(sock);
+      exit(EXIT_FAILURE);
+    }
+    putenv(strdup(envstr));             /* ahchoo, maybe mem-leak? */
+  } 
+ 
+  /* read elan capability */
+  if (getstr(tmpstr, sizeof(tmpstr)) <= 0) {
+    errlog("mqshd: error reading capability: %m.");
+    free(mptr);
+    close(sock);
+    exit(EXIT_FAILURE);
+  }
+  if (qsw_decode_cap(tmpstr, &cap) < 0) {
+    errlog("mqshd: error decoding capability");
+    free(mptr);
+    close(sock);
+    exit(EXIT_FAILURE);
+  } 
+ 
+  for (i = 0; i < qsw_cap_bitmap_count(); i += 16) {
+    if (getstr(tmpstr, sizeof(tmpstr)) <= 0) { 
+      errlog("mqshd: error reading capability: %m.");
+      free(mptr);
+      close(sock);
+      exit(EXIT_FAILURE);
+    }
+    if (qsw_decode_cap_bitmap(tmpstr, &cap, i) < 0) {
+      errlog("mqshd: error reading capability bitmap(%d): %s", i, tmpstr);
+      free(mptr);
+      close(sock);
+      exit(EXIT_FAILURE);
+    }
+  }
+ 
+  /* read info structure */
+  if (getstr(tmpstr, sizeof(tmpstr)) <= 0) {
+    errlog("mqshd: error reading qsw info: %m.");
+    free(mptr);
+    close(sock);
+    exit(EXIT_FAILURE);
+  }
+
+  if (qsw_decode_info(tmpstr, &qinfo) < 0) { 
+    errlog("mqshd: error decoding qsw info.");
+    free(mptr);
+    close(sock);
+    exit(EXIT_FAILURE);
+  }
+
+  /* 
+   * End qshell arguments.
+   */ 
+
+  /*
+   * Now we are ready to process the users command.
    */
 
   /* get command */
@@ -852,6 +850,14 @@ doit(struct sockaddr_in *fromp)
     close(sock);
     exit(1);
   }
+
+  m_rv = write(1, "", 1);
+  if (m_rv != 1) {
+    syslog (LOG_ERR, "%s: %m", "mqshd: bad write of null to stdout.");
+    errnum = _SYSTEM;
+    goto error_out;
+  }
+  sent_null = 1;
 
   if (pwd->pw_uid == 0) paranoid = 1;
 
