@@ -1,3 +1,7 @@
+2002-10-09 garlick
+	* Eliminate third fork in qswutil.c per Addy at Quadrics.
+	  (needs testing!)
+
 2002-10-02 grondo
 	* hostlist.c: properly handle deletion of unsuffixed hosts (pdsh/120)
 	* opt.c: Abort when -x option given but hostlist_delete() returns 0

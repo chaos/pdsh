@@ -649,7 +649,7 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 	qi->rank = qi->procid;
 	if (_rms_setenv(qi) < 0)
 		errx("%p: failed to set environment variables: %m\n");
-
+#if 0
 	/*
 	 * Third fork.  XXX Necessary but I don't know why.
 	 */
@@ -665,7 +665,7 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 			exit(0);
 	}
 	/* child continues here */
-
+#endif
 	/* Exec the process... */
 }
 
