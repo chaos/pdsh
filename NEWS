@@ -15,6 +15,8 @@ documents thos changes that are of interest to users and admins.
     coded directly into pdcp.
  -- Added mrsh and mqshell client modules, as well as mqshd server for Munge
     authenticated rcmd() support.
+ -- Added SLURM module to build list of targets from SLURM allocations.
+ -- (genders) Added "-X" option to exclude targets based on genders attributes.
  -- QsNet support now requires "/etc/elanhosts" config file (see README.QsNet).
  -- QsNet support includes support for QSW elanctrl interface. (Elan3/Elan4)
  -- Added support for running Elan network error resolver thread in qshd/mqshd.

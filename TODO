@@ -7,3 +7,4 @@
 - Optional pdsh.conf file for configurable system wide defaults
 - Improve xpoll() interface??
 - autoconf putenv
+- support long options

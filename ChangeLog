@@ -1,3 +1,23 @@
+2004-02-12  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/mod.c : Modules now optionally export pdsh_module_priority 
+	which affects sorting in the list of loaded modules. This can be used 
+	to ensure that some modules interfaces are called after others.
+
+	* src/modules/ : add pdsh_module_priority to existing modules.
+
+	* src/modules/genders.c : Added -X option. Changed behavior of -i 
+	such that it always translates from altnames to canonical names.
+
+	* config/ac_static_modules.m4 : Place static_modules.h in top level
+	builddir -- src/modules might not exist at time configure is run.
+
+	* src/modules/Makefile.am : Be sure to include QSW libs in libmods
+	when compiling with static modules.
+
+	* src/qsnet/elanhosts.c, src/qsnet/qswutil.c : Improve error message
+	when hostname not found in /etc/elanhosts.
+
 2004-02-11  Mark Grondona <mgrondona@llnl.gov>
 
 	* : Added "slurm" module to support running under SLURM allocations.
