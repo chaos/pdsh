@@ -59,7 +59,8 @@ Target nodes that have the specified genders attribute.
 \}
 .LP
 .I "-i"
-In conjunction with -a or -g, request alternate hostnames.
+In conjunction with -a or -g, request canonical hostnames.
+The default is to use reliable hostnames.
 .LP
 .if @HAVE_RMS@ \{
 If the RMS_RESOURCEID environment variable is set to an allocated RMS

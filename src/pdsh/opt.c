@@ -50,7 +50,7 @@ Usage: pdcp [-options] src [src2...] dest\n\
 
 #define OPT_USAGE_COMMON "\
 -a                target all nodes\n\
--i                request alternate hostnames\n\
+-i                with -a, request canonical hostnames if applicable\n\
 -q                list the option settings and quit\n\
 -b                disable ^C status feature (batch mode)\n\
 -l user           execute remote commands as user\n\

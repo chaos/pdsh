@@ -53,7 +53,8 @@ Select non-default RMS partition.
 \}
 .LP
 .I "-i"
-In conjunction with -a or -g, request alternate hostnames.
+In conjunction with -a or -g, request canonical hostnames.
+The default is to use reliable hostnames.
 .LP
 If none of the above options are specified, the WCOLL environment variable
 must point to a file that contains a list of nodes, one per line.  

@@ -207,3 +207,6 @@ Fri May 24 15:06:47 PDT 2002
 	Allow hostname ranges in WCOLL files.
 
 	Add -x option to exclude a list of hostnames from WCOLL.
+
+	Genders: -i option now selects canonical names.  The default is to
+	get what nodeattr -r gives you (alternate names, if any).

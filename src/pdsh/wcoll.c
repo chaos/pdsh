@@ -108,12 +108,7 @@ read_genders(char *attr, int iopt)
 	char cmd[LINEBUFSIZE];
 	char buf[LINEBUFSIZE];
 
-#if	HAVE_SDR
-	/* On SP's at LLNL, the genders names are the alternates */ 
-	iopt = !iopt;
-#endif
-
-	sprintf(cmd, "%s -%sn %s", _PATH_NODEATTR, iopt ? "r" : "", attr);
+	sprintf(cmd, "%s -%sn %s", _PATH_NODEATTR, iopt ? "" : "r", attr);
 	f = xpopen(cmd, "r");
 	if (f == NULL)
 		errx("%p: error running %s\n", _PATH_NODEATTR);
