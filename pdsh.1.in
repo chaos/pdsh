@@ -1,6 +1,6 @@
 \." $Id$
 .\"
-.TH PDSH 1 "Release 1.3" "LLNL" "PDSH"
+.TH "@PROJECT@" "@VERSION@" "LLNL" "@PROJECT@"
 
 .SH NAME
 pdsh \- issue commands to groups of hosts in parallel

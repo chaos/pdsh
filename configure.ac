@@ -12,9 +12,14 @@ AC_CONFIG_AUX_DIR([auxdir])
 PROJECT="`perl -ne 'print,exit if s/^\s*NAME:\s*(\S*).*/\1/i' $srcdir/META`"
 AC_DEFINE_UNQUOTED(PROJECT, "$PROJECT", [Define the project's name.])
 AC_SUBST(PROJECT)
+
 VERSION="`perl -ne 'print,exit if s/^\s*VERSION:\s*(\S*).*/\1/i' $srcdir/META`"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Define the project's version.])
 AC_SUBST(VERSION)
+
+RELEASE="`perl -ne 'print,exit if s/^\s*RELEASE:\s*(\S*).*/\1/i' $srcdir/META`"
+AC_DEFINE_UNQUOTED(RELEASE, "$RELEASE", [Define the project's release.])
+AC_SUBST(RELEASE)
 
 # Check for debug vs. production compilation.
 # This must be done before AC_PROG_CC defines its own defaults.
@@ -181,14 +186,15 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
-if test -z "$SSH"; then
-    AC_PATH_PROG(SSH, ssh, [], /admin/bin:/usr/bin:/usr/local/bin:$PATH)
-fi
-if test -n "$SSH"; then
-    AC_DEFINE_UNQUOTED(_PATH_SSH, "$SSH", [Path to ssh])
-fi
-if test "$withssh" = yes && test -z "$SSH"; then
-    AC_MSG_ERROR([--with-ssh specified but ssh program is not found])
+if test "$withssh" = yes; then
+    if test -z "$SSH"; then
+        AC_PATH_PROG(SSH, ssh, [], /admin/bin:/usr/bin:/usr/local/bin:$PATH)
+    fi
+    if test -n "$SSH"; then
+        AC_DEFINE_UNQUOTED(_PATH_SSH, "$SSH", [Path to ssh])
+    else
+        AC_MSG_ERROR([--with-ssh specified but ssh program is not found])
+    fi
 fi
 
 AC_PATH_PROG(NODEATTR, nodeattr, [], /usr/bin:/admin/scripts:$PATH)
@@ -277,4 +283,4 @@ AH_BOTTOM(
 )
 
 AC_OUTPUT_COMMANDS(echo "creating dependencies"; make depend >/dev/null)
-AC_OUTPUT([Makefile pdsh.spec])
+AC_OUTPUT([Makefile pdsh.spec pdcp.1 pdsh.1])

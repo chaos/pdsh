@@ -1,6 +1,6 @@
 \." $Id$
 .\"
-.TH PDSH 1 "Release 1.3" "LLNL" "PDSH"
+.TH "@PROJECT@" "@VERSION@" "LLNL" "@PROJECT@"
 .SH NAME
 pdcp \- copy files to groups of hosts in parallel
 .SH SYNOPSIS
@@ -37,10 +37,7 @@ Do not attempt to expand hostname ranges passed via -w.
 Use character 'c' as a range operator when expanding hostname ranges.
 .LP
 .I "-a"
-Target "all" nodes in the cluster.  If running on an SP, this means all
-nodes in your partition.  On a non-SP with genders support, this is all nodes
-listed in your genders file.  
-Otherwise, it is a configured flat file containing a list of nodes.
+Target "all" nodes in the cluster.  
 .LP
 .I "-v"
 (SP ONLY) In combination with -a, eliminate nodes that the SDR thinks are down.

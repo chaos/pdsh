@@ -19,7 +19,7 @@ mkinstalldirs=  $(SHELL) $(top_srcdir)/auxdir/mkinstalldirs
 @SET_MAKE@
 COPTS=          $(CFLAGS) $(CPPFLAGS) $(DEFS)
 
-AC_OUTPUT=	Makefile config.h pdsh.spec
+AC_OUTPUT=	Makefile config.h pdsh.spec pdsh.1 pdcp.1
 
 top_srcdir=     @top_srcdir@
 prefix=         @prefix@

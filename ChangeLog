@@ -168,4 +168,9 @@ Release 1.6
 	SDRGetObjects exists, use that; if nodeattr exists, use that.
 	None of the above is a configure error.
 
-	Released version 1.6.
+	Released version 1.6 to web site: http://www.llnl.gov/icc/lc/pdsh.html
+	Released version 1.6-chaos1 internally.
+
+Release 1.6+
+	
+	Run man pages through autoconf and put correct version in header.

@@ -91,6 +91,9 @@
 /* Range operator */
 #undef RANGE_OP
 
+/* Define the project's release. */
+#undef RELEASE
+
 /* Define if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
