@@ -115,6 +115,10 @@ not possible, you may wish to reduce pdsh's default fanout (configure
 +---------------------+
 | THEORY OF OPERATION |
 +---------------------+
+We will generalize for the common remote shell service rsh.  The
+following is similar for all other shell services (ssh, krb4, qsh,
+etc.), but other shell services may include additional security.
+
 A thread is created for each rsh connection to a node.  Each thread
 opens a connection using an MT-safe rcmd-like function, then copies
 stdin/stderr and terminates.
