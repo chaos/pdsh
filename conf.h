@@ -11,6 +11,8 @@
 #ifndef _CONF_INCLUDED
 #define _CONF_INCLUDED
 
+#define PDSH_VERSION		"1.5pre"
+
 /* These two are user-settable - see README */
 #define HAVE_KRB4		0
 #define HAVE_GENDERS		1
@@ -30,6 +32,15 @@
 #elif defined(sparc) && !defined(__linux)	/* sunos 5.7 */
 #define HAVE_GETHOSTBYNAME_R	1
 #endif
+
+/*
+ * Path definitions
+ */
+#define _PATH_SDRGETOBJECTS 	"/usr/lpp/ssp/bin/SDRGetObjects"
+#define _PATH_RCP		"/usr/bin/rcp" /* path to remote rcp command */
+#define _PATH_NODEATTR		"/usr/bin/nodeattr"
+#define _PATH_MACHINES		"/usr/local/etc/machines"
+#define _PATH_SSH		"/usr/local/bin/ssh"
 
 /*
  * Default values.

@@ -79,5 +79,30 @@ Release 1.3
 	- SunOS 5.7 sun4u sparc SUNW,Ultra-Enterprise
 	- OSF1 V4.0 alpha
 
-rel1_3
-	Now in HPCS repository
+Release 1.4
+
+	Added RPM spec file.
+
+	Fixed bug with opt_list dumping core on linux.
+	
+	Added pdsh -V to display version (PDSH_VERSION in conf.h).
+
+	Changed wcoll logic on SP so pdsh -aiv drops nodes which have
+	either switch_responds or host_responds false instead of falling
+	back to the reliable_hostname.
+
+	Added wcoll hack to deal with changed SDR attributes for Colony switch
+
+Release 1.5
+
+	Renamed spec file to pdsh.spec.  Gzip installed man pages on Linux.
+
+	Moved path definitions to conf.h.  Changed nodeattr path to /usr/bin.
+
+	Fixed handling of numerical ranges with multiple root names (dshbak)
+
+	Fix %S handling to avoid truncating dotted quads (err.c)
+
+	Rename pcp to pdcp - avoid conflict with SGI Performance Co-Pilot RPM.
+
+	Updated RPM rules for chaos release.

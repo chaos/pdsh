@@ -78,7 +78,8 @@ static void verr(FILE *stream, char *format, va_list ap)
 				xstrcat(&buf, &bufsize, va_arg(ap, char *));
 			} else if (*format == 'S') {	/* %S - string, trunc */
 				strcpy(tmpstr, va_arg(ap, char *));
-				if (q = strchr(tmpstr, '.'))
+				if (!isdigit(*tmpstr) 
+						&& (q = strchr(tmpstr, '.')))
 					*q = '\0';
 				xstrcat(&buf, &bufsize, tmpstr);
 			} else if (*format == 'z') {	/* %z - same as %.3d */

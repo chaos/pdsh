@@ -4,17 +4,18 @@
 # This makefile works for aix 4.3, linux (RedHat5.2/sparc), and 
 # Digital Unix 4.0.
 #
-OBJS= 	list.o xmalloc.o xstring.o dsh.o main.o opt.o wcoll.o \
-	rcmd.o err.o pipecmd.o $(KRB_OBJS)
-HDRS=	list.h xmalloc.h xstring.h dsh.h opt.h wcoll.h conf.h err.h
-PROG=	pdsh
-MODE=	4555
-OWN=	root:root
-LINKS=	pcp
-MAN1=	pdsh.1 dshbak.1 pcp.1
-MAN1DEST=/usr/local/man/man1
-DEST=	/usr/local/bin
-OTHER=	dshbak
+PACKAGE=	pdsh
+VERSION=	1.5
+RELEASE=	2
+
+OBJS= 		list.o xmalloc.o xstring.o dsh.o main.o opt.o wcoll.o \
+		rcmd.o err.o pipecmd.o $(KRB_OBJS)
+HDRS=		list.h xmalloc.h xstring.h dsh.h opt.h wcoll.h conf.h err.h
+
+prefix=		/usr/local
+
+top_srcdir=     .
+mkinstalldirs=  $(SHELL) $(top_srcdir)/auxdir/mkinstalldirs
 
 #
 # if you wish to build with kerberos IV, uncomment these
@@ -31,34 +32,26 @@ OTHER=	dshbak
 # Linux RH 6.2, AIX 4.3.x, OSF
 LIBS = $(KRB_LIB) -lpthread
 
-CC=	cc
-CFLAGS=	-I. -g $(KRB_INC)
+CC=		cc
+CFLAGS=		-I. -g $(KRB_INC)
 LDFLAGS=
 
-all: $(PROG) $(MAN1)
+all: pdsh
 
-$(PROG): $(OBJS) $(LIBOBJS)
+pdsh: $(OBJS) $(LIBOBJS)
 	$(CC) -o $@ $(OBJS) $(LDFLAGS) $(LIBS) $(LIBOBJS)
 
-clean:
-	rm -f $(OBJS) $(LIBOBJS) core a.out $(PROG)
+install:
+	install -m 4755 -o root -g root pdsh 	$prefix/bin/pdsh
+	install -m 4755 -o root -g root pdsh 	$prefix/bin/pdcp
+	install -m 555  -o root -g root dshbak 	$prefix/bin/dshbak
+	install -m 444  -o root -g root pdsh.1 	$prefix/man/man1/pdsh.1
+	install -m 444  -o root -g root pdcp.1 	$prefix/man/man1/pdcp.1
+	install -m 444  -o root -g root dshbak.1 $prefix/man/man1/dshbak.1
 
-install: $(PROG) $(MAN1) $(OTHER)
-	cp $(PROG) $(DEST)/$(PROG)
-	chmod $(MODE) $(DEST)/$(PROG)
-	chown $(OWN) $(DEST)/$(PROG)
-	for link in $(LINKS); do \
-		ln -fs $(PROG) $(DEST)/$$link; \
-	done
-	for man in $(MAN1); do \
-		cp $$man $(MAN1DEST)/$$man; \
-		chmod 0444 $(MAN1DEST)/$$man; \
-		chown root:root $(MAN1DEST)/$$man; \
-	done
-	for file in $(OTHER); do \
-		cp $$file $(DEST)/$$file; \
-		chmod 555 $(DEST)/$$file; \
-		chown root:root $(DEST)/$$file; \
-	done
+clean:
+	rm -f $(OBJS) $(LIBOBJS) core a.out pdsh *.rpm *.tgz
 
 $(OBJS): $(HDRS)
+
+include Make-rpm.mk

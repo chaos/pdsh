@@ -93,7 +93,7 @@ sub compress
 
         # build %nn (lists of numeric hostname suffixes by prefix)
         foreach $node (@nodes) {
-                if ($node =~ /(\D+)(\d+)/) {
+                if ($node =~ /^(\D+)(\d+)$/) {
                         push(@{$nn{$1}}, $2);
                 } else {
                         push(@out, $node);
@@ -101,6 +101,7 @@ sub compress
         }       
 
         foreach $pfx (keys %nn) {
+		@stack = ();
                 @n = sort {$a <=> $b} @{$nn{$pfx}};
                 for ($i = 0; $i <= $#n; $i++) {
                         if ($i == 0) {
