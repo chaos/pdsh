@@ -707,24 +707,39 @@ void opt_free(opt_t * opt)
 }
 
 /*
+ *  Returns a string of comma separated module names of type `type'
+ *  Returns NULL if no modules of this type are loaded.
+ */
+static char * _module_list_string(char *type)
+{
+    List l      = NULL;
+    char *names = NULL;
+
+    if (mod_count(type) == 0)
+        return NULL;
+
+    l = mod_get_module_names(type);
+    names = _list_join(",", l);
+    list_destroy(l);
+
+    return names;
+}
+
+
+/*
  * Spit out all the options and their one-line synopsis for the user, 
  * then exit.
  */
 static void _usage(opt_t * opt)
 {
-    List l      = NULL;
-    char *names = NULL;
+    char *names = _module_list_string("rcmd");
     char *def   = NULL;
 
-    /* first, make sure atleast some rcmd modules are loaded */
-    l = mod_get_module_names("rcmd");
-    if (list_count(l) == 0)
+    if (names == NULL)
       errx("%p: no rcmd modules are loaded\n");
-    names = _list_join(",", l);
-    list_destroy(l);
 
     if (!(def = mod_rcmd_get_default_module()))
-        def = "(none)";
+        def = "none";
 
     if (personality == DSH) {
         err(OPT_USAGE_DSH);
@@ -748,7 +763,22 @@ static void _usage(opt_t * opt)
 static void _show_version(void)
 {
     extern char *pdsh_version;
+    char *rcmd_list = _module_list_string("rcmd");
+    char *misc_list = _module_list_string("misc");
+    char *def       = mod_rcmd_get_default_module();
+
     printf("%s\n", pdsh_version);
+
+    printf("rcmd modules: %s", rcmd_list ? rcmd_list : "(none)");
+    if (mod_count("rcmd") > 1)
+        printf(" (default: %s)", def ? def : "none");
+    printf("\n");
+
+    printf("misc modules: %s\n", misc_list ? misc_list : "(none)");
+
+    Free((void **) &rcmd_list);
+    Free((void **) &misc_list);
+
     exit(0);
 }
 
