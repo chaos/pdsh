@@ -203,6 +203,7 @@ AC_CONFIG_FILES([
   modules/Makefile
   testsuite/pdsh.test/Makefile 
   net-toollib/Makefile
+  net-toollib/include/Makefile
   net-toollib/lib/Makefile
   pdsh.spec 
   pdcp.1 pdsh.1
