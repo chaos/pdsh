@@ -1,7 +1,7 @@
 /*****************************************************************************\
  *  $Id$
  *****************************************************************************
- *  $LSDId: hostlist.c,v 1.8 2003/06/30 23:39:01 grondo Exp $
+ *  $LSDId: hostlist.c,v 1.13 2003/10/01 16:40:44 grondo Exp $
  *****************************************************************************
  *  Copyright (C) 2002 The Regents of the University of California.
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
@@ -928,7 +928,7 @@ hostrange_to_string(hostrange_t hr, size_t n, char *buf, char *separator)
         size_t m = (n - len) <= n ? n - len : 0; /* check for < 0 */
         int ret = snprintf(buf + len, m, "%s%0*lu",
                    hr->prefix, hr->width, i);
-        if (ret < 0 || ret > m) {
+        if (ret < 0 || ret >= m) {
             len = n;
             truncated = 1;
             break;
@@ -937,10 +937,14 @@ hostrange_to_string(hostrange_t hr, size_t n, char *buf, char *separator)
         buf[len++] = sep;
     }
 
-    /* back up over final separator */
-    buf[--len] = '\0';
-
-    return truncated == 1 ? -1 : len;
+    if (truncated) {
+        buf[n-1] = '\0';
+        return -1;
+    } else {
+        /* back up over final separator */
+        buf[--len] = '\0';
+        return len;
+    }
 }
 
 /* Place the string representation of the numeric part of hostrange into buf
@@ -955,10 +959,15 @@ static size_t hostrange_numstr(hostrange_t hr, size_t n, char *buf)
     if (hr->singlehost || n == 0)
         return 0;
 
-    len += snprintf(buf, n, "%0*lu", hr->width, hr->lo);
+    len = snprintf(buf, n, "%0*lu", hr->width, hr->lo);
 
-    if (hr->lo < hr->hi)
-        len += snprintf(buf+len, n-len, "-%0*lu", hr->width, hr->hi);
+    if ((len >= 0) && (len < n) && (hr->lo < hr->hi)) {
+        int len2 = snprintf(buf+len, n-len, "-%0*lu", hr->width, hr->hi);
+        if (len2 < 0) 
+            len = -1;
+        else
+            len += len2;
+    }
 
     return len;
 }
@@ -1716,6 +1725,41 @@ int hostlist_delete_host(hostlist_t hl, const char *hostname)
 }
 
 
+static char *
+_hostrange_string(hostrange_t hr, int depth)
+{
+    char buf[MAXHOSTNAMELEN + 16];
+    int  len = snprintf(buf, MAXHOSTNAMELEN + 15, "%s", hr->prefix);
+
+    if (!hr->singlehost)
+        snprintf(buf+len, MAXHOSTNAMELEN+15 - len, "%0*lu", 
+                 hr->width, hr->lo + depth);
+    return strdup(buf);
+}
+
+char * hostlist_nth(hostlist_t hl, int n)
+{
+    char *host = NULL;
+    int   i, count;
+
+    LOCK_HOSTLIST(hl);
+    count = 0;
+    for (i = 0; i < hl->nranges; i++) {
+        int num_in_range = hostrange_count(hl->hr[i]);
+
+        if (n <= (num_in_range - 1 + count)) {
+            host = _hostrange_string(hl->hr[i], n - count);
+            break;
+        } else
+            count += num_in_range;
+    }
+
+    UNLOCK_HOSTLIST(hl);
+
+    return host;
+}
+
+
 int hostlist_delete_nth(hostlist_t hl, int n)
 {
     int i, count;
@@ -1995,6 +2039,9 @@ _get_bracketed_list(hostlist_t hl, int *start, const size_t n, char *buf)
 
     len = snprintf(buf, n, "%s", hr[i]->prefix);
 
+    if ((len < 0) || (len > n))
+        return -1;
+
     if (bracket_needed && len < n && len >= 0)
         buf[len++] = '[';
 
@@ -2015,8 +2062,11 @@ _get_bracketed_list(hostlist_t hl, int *start, const size_t n, char *buf)
         /* NUL terminate for safety, but do not add terminator to len */
         buf[len]   = '\0';
 
-    } else {
+    } else if (len >= n) {
+        if (n > 0)
+            buf[n-1] = '\0';
 
+    } else {
         /* If len is > 0, NUL terminate (but do not add to len) */
         buf[len > 0 ? len : 0] = '\0';
     }
@@ -2039,11 +2089,13 @@ size_t hostlist_ranged_string(hostlist_t hl, size_t n, char *buf)
     }
     UNLOCK_HOSTLIST(hl);
 
-    if (len >= n)
-        truncated = 1;
-
     /* NUL terminate */
-    buf[len > 0 ? len : 0] = '\0';
+    if (len >= n) {
+        truncated = 1;
+        if (n > 0)
+            buf[n-1] = '\0';
+    } else
+        buf[len > 0 ? len : 0] = '\0';
 
     return truncated ? -1 : len;
 }
