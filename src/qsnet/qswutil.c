@@ -13,6 +13,7 @@
 
 #include <sys/param.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <syslog.h>
 #include <errno.h>
@@ -34,6 +35,8 @@
 #include "list.h"
 #include "qswutil.h"
 #include "err.h"
+
+#define NEW_ELAN_DRIVER 1
 
 /* we will allocate program descriptions in this range */
 /* XXX note: do not start at zero as libelan shifts to get unique shm id */
@@ -360,10 +363,7 @@ qsw_init_capability(ELAN_CAPABILITY *cap, int nprocs, list_t nodelist,
 				ELAN_MAX_VPS);
 		return -1;
 	}
-#if OLD_ELAN_DRIVER
-	if (abs(cap->HighNode - cap->LowNode) == num_nodes - 1)
-		cap->Type |= ELAN_CAP_TYPE_BROADCASTABLE;
-#else
+#if	NEW_ELAN_DRIVER
 	/*
  	 * XXX: this bit seems to be manditory with the new drivers.  If not
 	 * set, mping doesn't work on noncontiguous nodes:
@@ -374,6 +374,9 @@ qsw_init_capability(ELAN_CAPABILITY *cap, int nprocs, list_t nodelist,
 	 * semantic meaning of this bit all along?
  	 */
 	cap->Type |= ELAN_CAP_TYPE_BROADCASTABLE;
+#else
+	if (abs(cap->HighNode - cap->LowNode) == num_nodes - 1)
+		cap->Type |= ELAN_CAP_TYPE_BROADCASTABLE;
 #endif
 
 	return 0;
@@ -427,6 +430,31 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 	if (qi->nprocs > ELAN_MAX_VPS) /* should catch this in client */
 		errx("%p: too many processes requested\n");
 
+#if NEW_ELAN_DRIVER
+	/* 
+	 * 'uid' needs to be able to read/write /dev/elan3/sdram0,user0
+	 * This avoids a rather cryptic and broken error message:
+	 *    ELAN_EXCEPTION @ --: 6 (Initialisation error)
+	 *     elan_init(0): Failed elan3_init(0 a4100000 c800000 a0100000 
+	 *     4000000 d) 1108507576: ~KM‡~IAt«Ax
+	 */
+#define ELAN_PATH_SDRAM		"/dev/elan3/sdram0"
+#define ELAN_PATH_USER		"/dev/elan3/user0"
+#define S_IRWOTH		(S_IROTH | S_IWOTH)
+	{
+		struct stat sb;
+
+		if (stat(ELAN_PATH_SDRAM, &sb) < 0)
+			errx("%p: cant stat %s\n", ELAN_PATH_SDRAM);
+		if (sb.st_mode & S_IRWOTH != S_IRWOTH)
+			errx("%p: need o+rw on %s\n", ELAN_PATH_SDRAM);
+		if (stat(ELAN_PATH_USER, &sb) < 0)
+			errx("%p: cant stat %s\n", ELAN_PATH_USER);
+		if (sb.st_mode & S_IRWOTH != S_IRWOTH)
+			errx("%p: need o+rw on %s\n", ELAN_PATH_USER);
+	}
+#endif /* NEW_ELAN_DRIVER */
+
 	/* 
 	 * First fork.  Parent waits for child to terminate, then cleans up.
 	 */
@@ -449,15 +477,15 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 	/* child continues here */
 
 	/* obtain an Elan context to use in call to elan3_create */
-#if OLD_ELAN_DRIVER
-	if ((ctx = _elan3_init(0)) == NULL)
-		errx("%p: _elan3_init failed: %m\n");
-#else
+#if 	NEW_ELAN_DRIVER
 	if ((ctx = elan3_control_open(0)) == NULL)
 		errx("%p: elan3_control_open failed: %m\n");
 	/* XXX work around libelan3/control.c bug 2002-6-2 */
 	if (ctx == (void *)-1) 
 		errx("%p: elan3_control_open failed: %m\n");
+#else
+	if ((ctx = _elan3_init(0)) == NULL)
+		errx("%p: _elan3_init failed: %m\n");
 #endif
 
 	/* associate this process and its children with prgnum */
