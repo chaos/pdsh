@@ -1,3 +1,14 @@
+2004-03-15  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/mod.c, src/pdsh/mod.h, src/pdsh/opt.c : Misc. doc and 
+	other cosmetic changes suggested by Py Watson <py@llnl.gov>.
+
+	* src/pdsh/mod_rcmd.c : Move "mrsh" module to top position in
+	rcmd_rank[], making it the default whenever installed.
+	
+	* src/pdsh/dsh.c (_wdog) : Terminate watchdog if thread info
+	has been freed.
+
 2004-03-08  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/sdr.c : Rewrite module so that -a, -i, and -v can be
