@@ -97,6 +97,7 @@ tar-internal:
 
 rpm-internal: tar-internal
 	@echo "Creating $$pkg*rpm ..."; \
+	rpm=`type -p rpmbuild || type -p rpm`; \
 	for d in BUILD RPMS SOURCES SPECS SRPMS TMP; do \
 	  if ! $$mkdir $$tmp/$$d >/dev/null; then \
 	    echo "ERROR: Cannot create \"$$tmp/$$d\" dir." 1>&2; exit 1; fi; \
@@ -114,9 +115,15 @@ rpm-internal: tar-internal
 	    <$$spec >$$tmp/SPECS/$$proj.spec; \
 	if ! test -s $$tmp/SPECS/$$proj.spec; then \
 	  echo "ERROR: Cannot create $$proj.spec." 1>&2; exit 1; fi; \
-	rpmbuild --showrc | egrep "_(gpg|pgp)_nam" >/dev/null && sign="--sign"; \
-	if ! rpmbuild -ba --define "_tmppath $$tmp/TMP" --define "_topdir $$tmp" \
-	  $$sign --quiet $$rpmargs $$tmp/SPECS/$$proj.spec \
-            >$$tmp/rpm.log 2>&1; then \
+	$$rpm --showrc | egrep "_(gpg|pgp)_nam" >/dev/null && sign="--sign"; \
+	args="-ba --define '_tmppath $$tmp/TMP' --define '_topdir $$tmp'"; \
+	for pkg in $$WITH_OPTIONS; do \
+	   args="$$args --define '_with_$$pkg --with-$$pkg'"; \
+    done; \
+	for pkg in $$WITHOUT_OPTIONS; do \
+	   args="$$args --define '_without_$$pkg --without-$$pkg'"; \
+    done; \
+	args="$$args $$sign --quiet $$tmp/SPECS/$$proj.spec"; \
+	if ! sh -c "$$rpm $$args" >$$tmp/rpm.log 2>&1; then \
 	        cat $$tmp/rpm.log; exit 1; fi; \
 	cp -p $$tmp/RPMS/*/$$proj-*.rpm $$tmp/SRPMS/$$proj-*.src.rpm . || exit 1
