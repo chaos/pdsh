@@ -114,7 +114,6 @@ nodeattr_process_opt(opt_t *pdsh_opts, int opt, char *arg)
         break;
 #endif /* !GENDERS_G_ONLY */
     case 'g':
-        err("%p: Got opt g\n");
         gend_attr = Strdup(arg);
         break;
     default:
@@ -126,37 +125,35 @@ nodeattr_process_opt(opt_t *pdsh_opts, int opt, char *arg)
 }
 
 
-#if !GENDERS_G_ONLY
 /* 
  * Verify options passed to this module
  */
 static void
 _nodeattr_opt_verify(opt_t *opt)
 {
-    if (allnodes && opt->wcoll && (hostlist_count(opt->wcoll) > 0)) {
-        err("%p: Do not specify both -a and -w\n");
-        exit(1);
-    }
-
     if (altnames && !allnodes && (gend_attr == NULL)) {
-        err("%p: Warning: Ignoring -i without -a or -g");
+        err("%p: Warning: Ignoring -i without -a\n");
         altnames = false;
     }
 
     if (allnodes && (gend_attr != NULL)) {
-        err("%s: Warning: Ignoring -a with -g");
+        errx("%p: Do not specify -a with -g\n");
         allnodes = false;
     }
 
+    if (opt->wcoll) {
+        if (allnodes || gend_attr)
+            errx( "%p: Do not specify %s with -w\n", 
+                  (allnodes && gend_attr) ? 
+                  "-a or -g" : (allnodes ? "-a" : "-g")
+                );
+    }
 }
-#endif /* !GENDERS_G_ONLY */
 
 
 hostlist_t 
 nodeattr_wcoll(opt_t *opt)
 {
-#if !GENDERS_G_ONLY
-
     _nodeattr_opt_verify(opt);
 
     if (!allnodes && !altnames && !gend_attr)
@@ -166,15 +163,6 @@ nodeattr_wcoll(opt_t *opt)
         gend_attr = ALL_NODES;
 
     return _read_genders(gend_attr, altnames);
-
-#else  /* GENDERS_G_ONLY */
-
-    if (!gend_attr)
-        return NULL;
-
-    return _read_genders(gend_attr, false);
-
-#endif /* !GENDERS_G_ONLY */
 }
 
 

@@ -1,4 +1,11 @@
 2003-05-21 grondo
+	* Changed behavior of mod_read_wcoll() to call exported read_wcoll
+ 	functions from all modules (instead of only first to return non-NULL).
+	* Added --with-* configure options for all modules mainly to support 
+	rpmbuild which doesn't support configure-time determination of 
+ 	subpackages.
+
+2003-05-21 grondo
 	* Changed pdsh list implementation to Chris Dunlap's list.[ch]
 	* Added mod.[ch] and mod_rcmd.[ch] for pdsh module loading/unloading.
 	* Added ltdl.[ch] from libtool 1.4.3 (1.922.2.111 2002/10/23 02:54:36)

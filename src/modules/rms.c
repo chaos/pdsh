@@ -49,6 +49,13 @@ MODULE_DESCRIPTION ( "Attempt to read wcoll from RMS_RESOURCEID env var" );
 /*
  *  Export generic pdsh module options
  */
+
+/*
+ *  Call this module after all option processing. The module will only
+ *    try to read the RMS_RESOURCEID if opt->wcoll is not already set.
+ *    Calling the module in postop allows us to be sure that all other
+ *    modules had a chance to update the wcoll.
+ */
 static int mod_rms_postop(opt_t *opt);
 
 struct pdsh_module_operations pdsh_module_ops = {

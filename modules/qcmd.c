@@ -162,9 +162,9 @@ int opt_m(opt_t *, int, char *);
 int opt_n(opt_t *, int, char *);
 
 struct pdsh_module_option pdsh_module_options[] =
- { { 'm', "block|cyclic", "control assignment of procs to nodes",
+ { { 'm', "block|cyclic", "(qshell) control assignment of procs to nodes",
        (optFunc) opt_m },
-   { 'n', "n",            "set number of tasks per node",
+   { 'n', "n",            "(qshell) set number of tasks per node",
        (optFunc) opt_n },
    PDSH_OPT_TABLE_END
  };
@@ -216,10 +216,10 @@ static int qcmd_postop(opt_t *opt)
 {
     int errors = 0;
 
-    if (strcmp(opt->rcmd_name, "qcmd") == 0) {
+    if (strcmp(opt->rcmd_name, "qsh") == 0) {
         if (opt->fanout != DFLT_FANOUT && opt->wcoll != NULL) {
             if  (opt->fanout != hostlist_count(opt->wcoll)) {
-                err("%p: fanout must = target node list length \"-R qcmd\"\n");
+                err("%p: fanout must = target node list length \"-R qsh\"\n");
                 errors++;
             }
         }
@@ -229,12 +229,12 @@ static int qcmd_postop(opt_t *opt)
         }
     } else {
         if (nprocs != 1) {
-            err("%p: -n can only be specified with \"-R qcmd\"\n"); 
+            err("%p: -n can only be specified with \"-R qsh\"\n"); 
             errors++;
         }
 
         if (dist_set) {
-            err("%p: -m can only be specified with \"-R qcmd\"\n");
+            err("%p: -m may only be specified with \"-R qsh\"\n");
             errors++;
         }
     }

@@ -58,12 +58,16 @@ in_qshd_LDADD = libqsw.la
 # Makefile rule for building rpm directly from CVS repository
 include $(top_srcdir)/Make-rpm.mk
 
-config.c:
-	@echo "char *pdsh_module_dir = \"$(pkglibdir)\";" > config.c
+config.c: META
+	@(echo "char *pdsh_version = \"$(PACKAGE)-$(VERSION)-$(RELEASE)\";";\
+	  echo "char *pdsh_module_dir = \"$(pkglibdir)\";"\
+         )> config.c
 
-testconfig.c:
-	@mdir=`cd $(top_srcdir)/modules && pwd`; \
-	 echo "char *pdsh_module_dir = \"$$mdir\";" > testconfig.c
+testconfig.c: META
+	@(echo "char *pdsh_version = \"$(PACKAGE)-$(VERSION)-$(RELEASE)\";";\
+          moddir=`cd $(top_srcdir)/modules && pwd`; \
+	  echo "char *pdsh_module_dir = \"$$moddir\";"\
+         )> testconfig.c
 
 install-exec-hook:
 	-mv $(DESTDIR)$(bindir)/pdsh.inst $(DESTDIR)$(bindir)/pdsh

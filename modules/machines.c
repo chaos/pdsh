@@ -61,7 +61,6 @@ struct pdsh_module_option pdsh_module_options[] =
  };
 
 
-
 static int opt_a(opt_t *pdsh_opt, int opt, char *arg)
 {
     allnodes = true;
@@ -72,6 +71,10 @@ static hostlist_t read_machines(opt_t *opt)
 {
     if (!allnodes)
         return NULL;
+
+    if (opt->wcoll)
+        errx("Do not specify both -w and -a");
+
     return read_wcoll(_PATH_MACHINES, NULL);
 }
 

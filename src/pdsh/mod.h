@@ -76,13 +76,15 @@ int mod_process_opt(opt_t *pdsh_opt, int opt, char *arg);
 
 /*
  *  Traverses list of loaded modules, calling any exported "read_wcoll" 
- *    routines. Returns the first non-NULL result.
+ *    routines. Appends any returned results onto opt->wcoll.
  *
  *  This routine should only be called from within pdsh/opt.c after
- *  option processing is complete, but before mod_postop().
+ *    option processing is complete, but before mod_postop().
+ *
+ *  Returns -1 for failure, 0 for success.
  *
  */
-hostlist_t mod_read_wcoll(opt_t *pdsh_opts);
+int mod_read_wcoll(opt_t *pdsh_opts);
 
 /*
  *  Traverse list of loaded modules and call any exported "postop" routines.

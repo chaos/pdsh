@@ -31,9 +31,9 @@ remote shell services, including standard "rsh", Kerberos IV, and ssh.
 
 #
 # Defaults are --with-elan --with-readline 
-# (Use --without [elan|totalview] to disable)
+# (Use --without [elan|readline] to disable)
 #
-%{!?_with_elan: %{!?_without_elan: %define _with_elan --with-elan}}
+%{!?_with_elan: %{!?_without_elan:     %define _with_elan --with-elan}}
 %{!?_with_readline: %{!?_without_readline: %define _with_readline --with-readline}}
 
 %{?_with_elan:BuildRequires: qsnetlibs}
@@ -42,13 +42,19 @@ remote shell services, including standard "rsh", Kerberos IV, and ssh.
 
 #
 # Other pdsh modules to build
+# Defaults:
+#  without: 
+#  with:    genders, nodeupdown, nodeattr, rmsquery 
+# 
 #
 %{!?_with_ssh: %{!?_without_ssh: %define _with_ssh 1}}
 %{!?_with_bsd: %{!?_without_bsd: %define _with_bsd 1}}
-%{!?_with_genders: %{!?_without_genders: %define _with_genders 1}}
-%{!?_without_nodeattr: %{!?_with_nodeattr: %define _without_nodeattr 1}}
-%{!?_with_nodeupdown: %{!?_without_nodeupdown: %define _with_nodeupdown 1}}
 
+%{!?_with_nodeattr: %{!?_without_nodeattr: %define _with_nodeattr --with-nodeattr}}
+%{!?_with_rmsquery: %{!?_without_rmsquery: %define _with_rmsquery --with-rmsquery}}
+%{!?_with_genders: %{!?_without_genders: %define _with_genders --with-genders}}
+%{!?_with_machines: %{!?_without_machines: %define _with_machines --with-machines}}
+%{!?_with_nodeupdown:  %{!?_without_nodeupdown: %define _with_nodeupdown --with-nodeupdown}}
 
 ##############################################################################
 
@@ -113,13 +119,20 @@ Pdsh module providing -v functionality using libnodeupdown.
 
 %build
 %configure --program-prefix=%{?_program_prefix:%{_program_prefix}} \
-    %{?_enable_debug}     \
-    %{?_with_elan}        \
-    %{?_without_elan}     \
-    %{?_with_readline}    \
-    %{?_without_readline} \
-    %{?_with_machines}    \
-    %{?_without_machines}
+    %{?_enable_debug}       \
+    %{?_with_elan}          \
+    %{?_without_elan}       \
+    %{?_with_readline}      \
+    %{?_without_readline}   \
+    %{?_with_machines}      \
+    %{?_without_machines}   \
+    %{?_with_genders}       \
+    %{?_without_genders}    \
+    %{?_with_nodeupdown}    \
+    %{?_without_nodeupdown} \
+    %{?_with_nodeattr}      \
+    %{?_without_nodeattr}  
+    
            
 if [ "$SMP" != "" ] ; then
   (make "MAKE=make -k -j $SMP"; exit 0)

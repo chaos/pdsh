@@ -65,7 +65,7 @@ struct pdsh_module_operations pdsh_module_ops = {
     (ModInitF) NULL, 
     (ModExitF) NULL, 
     (ModReadWcollF) genders_wcoll, 
-    (ModPostOpF) NULL
+    (ModPostOpF) NULL,
 };
 
 
@@ -136,21 +136,21 @@ genders_process_opt(opt_t *pdsh_opts, int opt, char *arg)
 static void
 _genders_opt_verify(opt_t *opt)
 {
-    if (allnodes && opt->wcoll && (hostlist_count(opt->wcoll) > 0)) {
-        err("%p: Do not specify both -a and -w\n");
-        exit(1);
-    }
-
     if (altnames && !allnodes && (gend_attr == NULL)) {
-        err("%p: Warning: Ignoring -i without -a");
+        err("%p: Warning: Ignoring -i without -a or -g\n");
         altnames = false;
     }
 
-    if (allnodes && (gend_attr != NULL)) {
-        err("%s: Warning: Ignoring -a with -g");
-        allnodes = false;
-    }
+    if (allnodes && (gend_attr != NULL)) 
+        errx("%p: Do not specify -a with -g\n");
 
+    if (opt->wcoll) {
+        if (allnodes || gend_attr)
+            errx( "%p: Do not specify %s with -w\n", 
+                  (allnodes && gend_attr) ? 
+                  "-a or -g" : (allnodes ? "-a" : "-g")
+                );
+    }
 }
 
 hostlist_t 

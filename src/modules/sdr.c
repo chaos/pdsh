@@ -120,6 +120,10 @@ static hostlist_t read_sdr(opt_t *opt)
 {
     if (!allnodes)
         return NULL;
+
+    if (opt->wcoll)
+        errx("%p: Do not specify -a with -w\n");
+
     return sdr_wcoll(global, altnames, verify);
 }
 

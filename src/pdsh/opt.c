@@ -237,7 +237,6 @@ void opt_args(opt_t * opt, int argc, char *argv[])
     int c;
     extern int optind;
     extern char *optarg;
-    char *wcoll_buf = NULL;
     char *exclude_buf = NULL;
     char *pname = xbasename(argv[0]);
 
@@ -284,7 +283,7 @@ void opt_args(opt_t * opt, int argc, char *argv[])
             if (strcmp(optarg, "-") == 0)
                 opt->wcoll = read_wcoll(NULL, stdin);
             else
-                wcoll_buf = Strdup(optarg);
+                opt->wcoll = hostlist_create(optarg);
             break;
         case 'x':              /* exclude node list */
             exclude_buf = Strdup(optarg);
@@ -340,12 +339,6 @@ void opt_args(opt_t * opt, int argc, char *argv[])
     if (mod_rcmd_load(opt) < 0)
         exit(1);
 
-    /* expand wcoll if needed */
-    if (wcoll_buf != NULL) {
-        opt->wcoll = hostlist_create(wcoll_buf);
-        Free((void **) &wcoll_buf);
-    }
-
     /* DSH: build command */
     if (opt->personality == DSH) {
         for (; optind < argc; optind++) {
@@ -363,10 +356,11 @@ void opt_args(opt_t * opt, int argc, char *argv[])
     }
 
     /*
-     * Get wcoll from modules
+     *  Attempt to grab wcoll from modules stack unless
+     *    wcoll was set from -w.
      */
-    if (!opt->wcoll)
-        opt->wcoll = mod_read_wcoll(opt);
+    if (mod_read_wcoll(opt) < 0)
+        exit(1);
 
     /* handle -x option */
     if (exclude_buf != NULL && opt->wcoll) {
@@ -591,12 +585,11 @@ static void _usage(opt_t * opt)
     exit(1);
 }
 
+
 static void _show_version(void)
 {
-    printf("%s-%s-%s (", PACKAGE, VERSION, RELEASE);
-#if	HAVE_SDR
-    printf("+sdr");
-#endif
+    extern char *pdsh_version;
+    printf("%s (", pdsh_version);
 #if	!NDEBUG
     printf("+debug");
 #endif

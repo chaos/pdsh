@@ -18,36 +18,74 @@
 AC_DEFUN([AC_GENDERS],
 [
   #
-  # Check for nodeattr program
+  # Check for whether to build nodeattr module
   #
-  AC_PATH_PROG([NODEATTR], [nodeattr], [], [/usr/bin:/admin/scripts:$PATH])
-  if test -n "$NODEATTR"; then
+  AC_MSG_CHECKING([for whether to build nodeattr module])
+  AC_ARG_WITH([nodeattr],
+    AC_HELP_STRING([--with-nodeattr(=PATH)], 
+      [Build nodeattr module (PATH=program location)]),
+    [ case "$withval" in
+        no)  ac_with_nodeattr=no ;;
+        yes) ac_with_nodeattr=yes ;;
+        *)   ac_with_nodeattr=yes
+             NODEATTR=$withval ;;
+      esac
+    ]
+  )
+  AC_MSG_RESULT([${ac_with_nodeattr=no}])
+
+  if test "$ac_with_nodeattr" = "yes"; then
+    # Note: AC_PATH_PROG will do nothing if NODEATTR already defined.
+    AC_PATH_PROG([NODEATTR], [nodeattr], [], [/usr/bin:/admin/scripts:$PATH])
+
+    if test -n "$NODEATTR"; then
       ac_have_nodeattr=yes
       AC_DEFINE_UNQUOTED(_PATH_NODEATTR, "$NODEATTR", [Path to nodeattr.])
-	  AC_DEFINE(HAVE_NODEATTR, 1, [Define if nodeattr program is available.])
+      AC_DEFINE(HAVE_NODEATTR, 1, [Define if nodeattr program is available.])
+    fi
   fi
-  AC_SUBST(NODEATTR)
 
   #
-  # Check for libgenders
+  # Check for whether to include libgenders module
   #
-  AC_CHECK_LIB([genders], [genders_handle_create], 
-	           [ac_have_libgenders=yes], [])
+  AC_MSG_CHECKING([for whether to build genders module])
+  AC_ARG_WITH([genders],
+    AC_HELP_STRING([--with-genders],
+      [Build genders module for libgenders support]),
+    [ ac_with_libgenders=yes ]
+  )
+  AC_MSG_RESULT([${ac_with_libgenders=no}])
+    
+  if test "$ac_with_libgenders" = "yes"; then
+    AC_CHECK_LIB([genders], [genders_handle_create], 
+                 [ac_have_libgenders=yes], [])
 
-  if test "$ac_have_libgenders" = "yes"; then
+    if test "$ac_have_libgenders" = "yes"; then
       AC_DEFINE([HAVE_LIBGENDERS], [1], [Define if you have libgenders.])
-	  GENDERS_LIBS="-lgenders"
+      GENDERS_LIBS="-lgenders"
+    fi
 
-      #
-      # Check for libnodeupdown
-      #
-	  AC_CHECK_LIB([nodeupdown], [nodeupdown_handle_create], 
-			       [ac_have_libnodeupdown=yes], [])
-	  if test "$ac_have_libnodeupdown" = "yes" ; then
-	      AC_DEFINE([HAVE_LIBNODEUPDOWN], [1], 
-				    [Define if you have libnodeupdown.])
-		  NODEUPDOWN_LIBS="-lnodeupdown"
-      fi
+  fi
+
+
+  #
+  # Check for whether to include libnodeupdown module
+  #
+  AC_MSG_CHECKING([for whether to build nodeupdown module])
+  AC_ARG_WITH([genders],
+    AC_HELP_STRING([--with-nodeupdown], [Build nodeupdown module]),
+    [ ac_with_libnodeupdown=yes ]
+  )
+  AC_MSG_RESULT([${ac_with_libnodeupdown=no}])
+   
+  if test "$ac_with_libnodeupdown" = "yes"; then
+    AC_CHECK_LIB([nodeupdown], [nodeupdown_handle_create], 
+                 [ac_have_libnodeupdown=yes], [])
+    if test "$ac_have_libnodeupdown" = "yes" ; then
+      AC_DEFINE([HAVE_LIBNODEUPDOWN], [1], 
+                [Define if you have libnodeupdown.])
+      NODEUPDOWN_LIBS="-lnodeupdown"
+    fi
   fi
 
   AC_SUBST(HAVE_LIBGENDERS)

@@ -134,21 +134,40 @@ _mod_postop(mod_t mod, opt_t *pdsh_opts)
 }
 
 
-hostlist_t
-mod_read_wcoll(opt_t *pdsh_opts)
+/*
+ *  Call any "read wcoll" functions exported by modules. The module
+ *    is responsible for deciding when to generate a new wcoll, 
+ *    append to existing wcoll, etc. (presumably based on the contents
+ *    of opt)
+ *
+ *  This function appends to wcoll any new hosts returned from the
+ *    module specific read_wcoll() functions. 
+ *
+ *  Returns -1 on error, 0 for success.
+ */  
+int
+mod_read_wcoll(opt_t *opt)
 {
     mod_t mod;
-    hostlist_t wcoll = NULL;
 
     if (!initialized)
         mod_init();
 
     list_iterator_reset(module_itr);
     while ((mod = list_next(module_itr))) {
-        if ((wcoll = _mod_read_wcoll(mod, pdsh_opts)))
-            break;
+        hostlist_t hl = NULL;
+
+        if (!(hl = _mod_read_wcoll(mod, opt)))
+            continue;
+
+        if (opt->wcoll != NULL) {
+            hostlist_push_list(opt->wcoll, hl);
+            hostlist_destroy(hl);
+        } else
+            opt->wcoll = hl;
+
     }
-    return wcoll;
+    return 0;
 }
 
 int
@@ -412,9 +431,10 @@ _mod_print_info(mod_t mod)
     return 0;
 }
 
-void _opt_print(mod_t mod, int *col)
+static int _opt_print(mod_t mod, int *col)
 {
     mod_print_options(mod, *col);
+    return 0;
 }
 
 

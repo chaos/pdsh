@@ -40,70 +40,6 @@ AC_LIBTOOL_DLOPEN
 AC_PROG_LIBTOOL
 AC_LIB_LTDL
 
-#
-# Test for support of QSW Elan. If requested and available, build
-#  qshd and qcmd connect module.
-#
-AC_ELAN
-AM_CONDITIONAL(WITH_ELAN, [test $ac_with_elan = yes])
-
-#
-# Test for whether to build "machines" module.
-#
-AC_MACHINES
-AM_CONDITIONAL(WITH_MACHINES, [test $ac_with_machines = yes])
-
-# NOTE: support for SDR is automatic if SDRGetObjects is found
-# NOTE: support for Genders is automatic if nodeattr is found
-
-#
-# Test for default pdsh fanout and connect timeout
-#
-AC_FANOUT
-AC_CONNECT_TIMEOUT
-
-#
-# Check for genders and libnodeupdown support
-#
-AC_GENDERS
-AM_CONDITIONAL(WITH_LIBGENDERS, [test "$ac_have_libgenders"    = "yes"])
-AM_CONDITIONAL(WITH_NODEUPDOWN, [test "$ac_have_libnodeupdown" = "yes"])
-AM_CONDITIONAL(WITH_NODEATTR,   [test "$ac_have_nodeattr"      = "yes"])
-
-
-dnl
-dnl check for whether to include readline support
-dnl
-AC_READLINE
-AM_CONDITIONAL([WITH_READLINE], [test "$ac_with_readline" = "yes"])
-
-#
-# Find path to rmsquery.  Support for RMS (allocate) is automatic if found.
-#
-AC_PATH_PROG(RMSQUERY, rmsquery, [], [/usr/bin:$PATH])
-if test -n "$RMSQUERY"; then
-    AC_DEFINE_UNQUOTED(_PATH_RMSQUERY, "$RMSQUERY", [Path to rmsquery])
-fi
-AM_CONDITIONAL(WITH_RMS, test -n "$HAVE_RMSQUERY")
-
-#
-# Find path to SDRGetObjects.  SDR module is automatically build if found
-#
-AC_PATH_PROG([SDRGETOBJECTS], [SDRGetObjects], [], [/usr/lpp/ssp/bin:$PATH])
-if test -n "$SDRGETOBJECTS"; then
-    AC_DEFINE_UNQUOTED(_PATH_SDRGETOBJECTS, "$SDRGETOBJECTS", 
-			          [Path to SDRGetObjects])
-fi
-AM_CONDITIONAL(WITH_SDR, [test -n "$SDRGETOBJECTS"])
-
-#
-# Find path to rcp for pdcp.
-#
-AC_PATH_PROG([RCP], [rcp], [], [/usr/bin:$PATH])
-if test -n "$RCP"; then
-    AC_DEFINE_UNQUOTED(_PATH_RCP, "$RCP", [Path to rcp])
-fi
-
 # Checks for libraries.
 AC_CHECK_LIB([socket], [socket], LIBS="-lsocket -lnsl $LIBS",, [-lsocket -lnsl])
 
@@ -129,7 +65,6 @@ AC_SUBST(KRB_LIBS)
 AM_CONDITIONAL(WITH_KRB4, test $withkrb4 = yes)
 
 
-
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h strings.h sys/file.h unistd.h pthread.h])
 
@@ -141,29 +76,91 @@ dnl AC_FUNC_MALLOC
 AC_FUNC_STRERROR_R
 AC_CHECK_FUNCS([strerror pthread_sigmask sigthreadmask])
 
-# Check for Gray Watson's Debug Malloc Library <http://dmalloc.com/>.
-AC_MSG_CHECKING(whether to use the Debug Malloc Library)
-AC_ARG_WITH(dmalloc,
-  AC_HELP_STRING([--with-dmalloc], [use Gray Watson's dmalloc library]),
-  [ case "$withval" in
-      yes) dmalloc=yes ;;
-      no)  dmalloc=no ;;
-      *)   AC_MSG_RESULT(doh!)
-           AC_MSG_ERROR([bad value "$withval" for --with-dmalloc]) ;;
-    esac
-  ]
-)
-AC_MSG_RESULT(${dmalloc=no})
-if test "$dmalloc" = yes; then
-  AC_CHECK_LIB([dmalloc],[main],[ AC_DEFINE_UNQUOTED(WITH_DMALLOC, 1,
-        [Define if using the debug malloc library.]
-      )
-      LIBS="-ldmalloc $LIBS"
-    ],[dmalloc=no
-  ],[])
-ac_cv_lib_dmalloc=ac_cv_lib_dmalloc_main
 
+
+#
+# Test for default pdsh fanout and connect timeout
+#
+AC_FANOUT
+AC_CONNECT_TIMEOUT
+
+# NOTE: support for SDR is automatic if SDRGetObjects is found
+
+#
+# Test for support of QSW Elan. If requested and available, build
+#  qshd and qcmd connect module.
+#
+AC_ELAN
+AM_CONDITIONAL(WITH_ELAN, [test $ac_with_elan = yes])
+
+#
+# Test for whether to build "machines" module.
+#
+AC_MACHINES
+AM_CONDITIONAL(WITH_MACHINES, [test $ac_with_machines = yes])
+
+#
+# Check for genders and libnodeupdown support
+#
+AC_GENDERS
+AM_CONDITIONAL(WITH_LIBGENDERS, [test "$ac_have_libgenders"    = "yes"])
+AM_CONDITIONAL(WITH_NODEUPDOWN, [test "$ac_have_libnodeupdown" = "yes"])
+AM_CONDITIONAL(WITH_NODEATTR,   [test "$ac_have_nodeattr"      = "yes"])
+
+#
+# Determine whether to build RMS module (Support for RMS allocate)
+#
+AC_RMSQUERY
+AM_CONDITIONAL([WITH_RMS], [test "$ac_have_rmsquery" = "yes"])
+
+dnl
+dnl check for whether to include readline support
+dnl
+AC_READLINE
+AM_CONDITIONAL([WITH_READLINE], [test "$ac_with_readline" = "yes"])
+
+dnl
+dnl check for inclusion of Dmalloc. 
+dnl Note: this macro defines WITH_DMALLOC for us.
+dnl 
+AC_DMALLOC
+
+#
+# Find path to SDRGetObjects.  SDR module is automatically build if found
+#
+AC_PATH_PROG([SDRGETOBJECTS], [SDRGetObjects], [], [/usr/lpp/ssp/bin:$PATH])
+if test -n "$SDRGETOBJECTS"; then
+    AC_DEFINE_UNQUOTED(_PATH_SDRGETOBJECTS, "$SDRGETOBJECTS", 
+			          [Path to SDRGetObjects])
 fi
+AM_CONDITIONAL(WITH_SDR, [test -n "$SDRGETOBJECTS"])
+
+#
+# Find path to rcp for pdcp.
+#
+AC_PATH_PROG([RCP], [rcp], [], [/usr/bin:$PATH])
+if test -n "$RCP"; then
+    AC_DEFINE_UNQUOTED(_PATH_RCP, "$RCP", [Path to rcp])
+fi
+
+
+#
+# Build PDSH_VERSION string
+#
+if test $RELEASE = 1; then
+   PDSH_VERSION="$PACKAGE-$VERSION"
+else
+   PDSH_VERSION="$PACKAGE-$VERSION-$RELEASE"
+fi
+
+if test "$ac_debug" = "yes"; then
+   PDSH_VERSION="$PDSH_VERSION +debug"
+fi
+
+if test "$ac_with_dmalloc" = "yes"; then
+   PDSH_VERSION="$PDSH_VERSION +dmalloc"
+fi
+
 AH_BOTTOM(
 [#ifdef WITH_DMALLOC
 #  include <stdlib.h>
