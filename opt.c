@@ -59,8 +59,7 @@ Usage: pdcp [-options] src [src2...] dest\n\
 -f n              use fanout of n nodes\n\
 -w host,host,...  set target node list on command line\n\
 -x                do not expand hostname ranges from -w\n\
--X c              set hostname range expansion operator (default '-')\n\
--e                use ssh to connect\n"
+-X c              set hostname range expansion operator (default '-')\n"
 
 #define OPT_USAGE_SDR "\
 -G                for -a, include all partitions of SP System\n\
@@ -103,7 +102,9 @@ void opt_default(opt_t *opt)
         } else
                 errx("%p: who are you?\n");
 
-#if HAVE_KRB4
+#if HAVE_SSH
+	opt->rcmd_type = RCMD_SSH;
+#elif HAVE_KRB4
 	/* for Kerberos IV (probably SP), assume root can K4, users cannot */
 	if (opt->luid == 0)
 		opt->rcmd_type = RCMD_K4;
@@ -276,9 +277,6 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 				break;
 			case 'R':	/* use rcmd() */
 				opt->rcmd_type = RCMD_BSD;
-				break;
-			case 'e':	/* use ssh */
-				opt->rcmd_type = RCMD_SSH;
 				break;
 			case 'E':	/* use qshell */
 				opt->rcmd_type = RCMD_QSHELL;
@@ -626,8 +624,16 @@ static void usage(opt_t *opt)
 static void show_version(void)
 {
 	printf("%s-%s (", PROJECT, VERSION);
+#ifdef	_PATH_SDRGETOBJECTS
+	printf("+sdr");
+#endif
 #ifdef	_PATH_NODEATTR
 	printf("+genders");
+#endif
+#ifdef _PATH_MACHINES
+#if	!defined(_PATH_NODEATTR) && !defined(_PATH_SDRGETOBJECTS)
+	printf("+mpichmachinesfile");
+#endif
 #endif
 #if	HAVE_ELAN3
 	printf("+elan");
@@ -635,16 +641,11 @@ static void show_version(void)
 #if	HAVE_RMS_PMANAGER
 	printf("+rms");
 #endif
+#if	HAVE_SSH
+	printf("+ssh");
+#endif
 #if	HAVE_KRB4
 	printf("+krb4");
-#endif
-#ifdef _PATH_MACHINES
-#if	!defined(_PATH_NODEATTR) && !defined(_PATH_SDRGETOBJECTS)
-	printf("+mpichmachinesfile");
-#endif
-#endif
-#ifdef	_PATH_SDRGETOBJECTS
-	printf("+sdr");
 #endif
 #if	!NDEBUG
 	printf("+debug");

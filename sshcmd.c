@@ -14,6 +14,8 @@
 #include "config.h"
 #endif
 
+#if 	HAVE_SSH
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
@@ -167,3 +169,5 @@ rshcmd(char *ahost, char *luser, char *ruser, char *cmd, int *fd2p)
 	return pipecmd(_PATH_RSH, args, ahost, fd2p);
 }
 #endif
+
+#endif /* HAVE_SSH */

@@ -85,6 +85,26 @@ AC_ARG_WITH(rms,
 )
 AC_MSG_RESULT(${withrms=no})
 
+# --with-ssh
+AC_MSG_CHECKING(whether to use SSH as primary remote shell)
+AC_ARG_WITH(ssh,
+    AC_HELP_STRING([--with-ssh], [Use SSH as primary remote shell]),
+    [ case "$withval" in
+	yes)
+	    withssh=yes
+            AC_DEFINE(HAVE_SSH, 1, [Define to use SSH as primary remote shell])
+	    ;;
+	no)
+	    withssh=no
+	    ;;
+	*)
+	    AC_MSG_RESULT(doh!)
+	    AC_MSG_ERROR([bad value "$withval" for --with-ssh])
+	    ;;
+    esac ]
+)
+AC_MSG_RESULT(${withssh=no})
+
 # --with-krb4
 # or you can say --with-krb4=/usr/local/krb4
 AC_MSG_CHECKING(whether to include Kerberos IV support)

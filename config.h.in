@@ -43,6 +43,9 @@
 /* Define if you have the `sigthreadmask' function. */
 #undef HAVE_SIGTHREADMASK
 
+/* Define to use SSH as primary remote shell */
+#undef HAVE_SSH
+
 /* Define if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 

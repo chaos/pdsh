@@ -209,6 +209,10 @@ static void fwd_signal(int signum)
 					qcmd_signal(t[i].efd, signum);
 					break;
 #endif
+#if HAVE_SSH
+				case RCMD_SSH:
+					break;
+#endif
 				default:
 					errx("%p: unknown rcmd type\n");
 					break;
@@ -549,10 +553,12 @@ static void *rcp(void *args)
 					cmd, a->nodeid, efdp);
 			break;
 #endif
+#if HAVE_SSH
 		case RCMD_SSH:
 			a->fd = sshcmdrw(a->host, a->addr, a->luser, a->ruser, 
 					cmd, a->nodeid, efdp);
 			break;
+#endif
 		default:
 			errx("%p: unknown rcmd type\n");
 			break;
@@ -649,10 +655,12 @@ static void *rsh(void *args)
 					a->dsh_cmd, a->nodeid, efdp);
 			break;
 #endif
+#if HAVE_SSH
 		case RCMD_SSH:
 			a->fd = sshcmd(a->host, a->addr, a->luser, a->ruser, 
 			    		a->dsh_cmd, a->nodeid, efdp);
 			break;
+#endif
 		default:
 			errx("%p: unknown rcmd type\n");
 			break;
@@ -834,9 +842,11 @@ int dsh(opt_t *opt)
 			k4cmd_init(opt);
 			break;
 #endif
+#if HAVE_SSH
 		case RCMD_SSH:
 			sshcmd_init(opt);
 			break;
+#endif
 		case RCMD_BSD:
 			xrcmd_init(opt);
 			break;

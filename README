@@ -16,9 +16,17 @@ As of version 1.6, pdsh uses GNU autoconf for configuration.  To configure:
 
 The following features are not enabled by default:
 
+--with-ssh
+	Use SSH as the primary remote shell type.  This is not recommended
+	unless you cannot enable rsh root equivalence between nodes.
+	SSH has not been tested extensively.  There will be no configurable
+	connect timeout.  SSH will be run with no controlling tty, so if it
+	needs to prompt for a password or a "man in the middle" message, it
+	will fail.
+
 --with-krb4[=/path/to/krb4/root]
 	Enable Kerberos IV support.  This is not recommended unless you are
-	running on an SP and cannot use enable root equivalence between nodes.
+	running on an SP and cannot enable rsh root equivalence between nodes.
 
 --with-elan
 	Enable support for running parallel jobs on the Quadrics Elan 
