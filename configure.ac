@@ -213,10 +213,10 @@ fi
 #
 # Build PDSH_VERSION string
 #
-if echo "$RELEASE" | grep '^[[0-9]][[0-9]]*$' 2>/dev/null; then
+if echo "$RELEASE" | grep '^[[0-9]][[0-9]]*$' >/dev/null 2>&1; then
    PDSH_VERSION="$PACKAGE-$VERSION"
 else
-   if echo "$RELEASE" | grep -e "pre0" -e "UNSTABLE" 2>/dev/null; then
+   if echo "$RELEASE" | grep -e "pre0" -e "UNSTABLE" >/dev/null 2>&1; then
       if test "$RELEASE" = "UNSTABLE"; then
 	     DATE=`date +"%Y%m%d%H%M"`
       else
