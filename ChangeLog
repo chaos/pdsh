@@ -209,3 +209,9 @@
 
 2002-08-12 garlick
 	* Make all static "helper" functions underbar-prefixed.
+
+2002-09-03 grondo
+	* Automake-ified
+	* Have `dshbak -c' generate bracketed ranges compatible with pdsh -w
+	* Updated testsuite for compatibility with bracketed host ranges
+	  
