@@ -362,7 +362,7 @@ readline=no
 AC_ARG_WITH(readline,
   AC_HELP_STRING([--with-readline],[compile with readline support]),
   [ readline=yes
-    READLINE_LIBS="-lreadline -lhistory"
+    READLINE_LIBS="-lreadline -lhistory -lncurses"
     AC_DEFINE(HAVE_READLINE, 1, [Define if you are compiling with readline])
   ]
 )
