@@ -13,10 +13,10 @@ INCLUDES =         -I$(top_srcdir)
 if WITH_STATIC_MODULES
 MODULE_FLAGS = 
 else
-MODULE_FLAGS =     -module -avoid-version
+MODULE_FLAGS =     -module -avoid-version --version-script=version.map
 endif
 
-nodist_libmods_la_SOURCES = static_modules.h
+nodist_libmods_la_SOURCES = $(top_builddir)/static_modules.h
 noinst_LTLIBRARIES =        libmods.la
 
 EXTRA_libmods_la_SOURCES = \
@@ -100,6 +100,8 @@ if WITH_STATIC_MODULES
 libmods_la_LIBADD = $(LIBMODS_OBJS)
 libmods_la_DEPENDENCIES = $(LIBMODS_OBJS) 
 else
+VERSION_MAP = \
+	version.map
 pkglib_LTLIBRARIES = \
 	$(RSH_MODULE) \
 	$(SSH_MODULE) \
@@ -116,38 +118,47 @@ pkglib_LTLIBRARIES = \
 	$(SLURM_MODULE)
 endif
 
-xrcmd_la_SOURCES =        xrcmd.c
+BUILT_SOURCES =           $(VERSION_MAP)
+
+xrcmd_la_SOURCES =        xrcmd.c 
 xrcmd_la_LDFLAGS =        $(MODULE_FLAGS)
 sshcmd_la_SOURCES =       sshcmd.c
 sshcmd_la_LDFLAGS =       $(MODULE_FLAGS)
-qcmd_la_SOURCES =         qcmd.c
+qcmd_la_SOURCES =         qcmd.c 
 qcmd_la_LDFLAGS =         $(MODULE_FLAGS) 
 qcmd_la_LIBADD =          $(top_builddir)/src/qsnet/libqsw.la
-mcmd_la_SOURCES =         mcmd.c
+mcmd_la_SOURCES =         mcmd.c 
 mcmd_la_LDFLAGS =         $(MODULE_FLAGS) $(MRSH_LIBS)
 mqcmd_la_SOURCES =        mqcmd.c
 mqcmd_la_LDFLAGS =        $(MODULE_FLAGS) $(MRSH_LIBS) 
 mqcmd_la_LIBADD =         $(top_builddir)/src/qsnet/libqsw.la
-k4cmd_la_SOURCES =        k4cmd.c
+k4cmd_la_SOURCES =        k4cmd.c 
 k4cmd_la_LDFLAGS =        $(MODULE_FLAGS) $(KRB_LIBS)
 
-machines_la_SOURCES =     machines.c
+machines_la_SOURCES =     machines.c 
 machines_la_LDFLAGS =     $(MODULE_FLAGS)
-genders_la_SOURCES =      genders.c
+genders_la_SOURCES =      genders.c 
 genders_la_LDFLAGS =      $(MODULE_FLAGS) $(GENDERS_LIBS)
-nodeattr_la_SOURCES =     nodeattr.c
+nodeattr_la_SOURCES =     nodeattr.c 
 nodeattr_la_LDFLAGS =     $(MODULE_FLAGS)
 nodeattr_la_LIBADD =      $(top_builddir)/src/common/libcommon.la
-nodeupdown_la_SOURCES =   nodeupdown.c
+nodeupdown_la_SOURCES =   nodeupdown.c 
 nodeupdown_la_LDFLAGS =   $(MODULE_FLAGS) $(NODEUPDOWN_LIBS)
-rms_la_SOURCES =          rms.c
+rms_la_SOURCES =          rms.c 
 rms_la_LDFLAGS =          $(MODULE_FLAGS)
-sdr_la_SOURCES =          sdr.c
+sdr_la_SOURCES =          sdr.c 
 sdr_la_LDFLAGS =          $(MODULE_FLAGS)
 sdr_la_LIBADD =           $(top_builddir)/src/common/libcommon.la
-slurm_la_SOURCES =        slurm.c
+slurm_la_SOURCES =        slurm.c 
 if WITH_STATIC_MODULES
 slurm_la_LDFLAGS =        $(SLURM_LIBS)
 else
 slurm_la_LDFLAGS =        $(MODULE_FLAGS)
 endif
+
+version.map : 
+	(echo  "{ global:";                \
+	 echo "    pdsh_module_info;";     \
+	 echo "    pdsh_module_priority;"; \
+	 echo "  local: *;";               \
+	 echo "};") > version.map
