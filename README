@@ -28,6 +28,9 @@ To configure in additional feature modules:
 
 ./configure [options]
 
+--without-rsh 
+	Disable support for BSD rcmd(3) (standard rsh).
+
 --with-ssh
         Enable support of ssh(1) remote shell service.
 
@@ -108,7 +111,10 @@ For example:
 
 If you compile the qshell and/or mqshell with PAM support, remember to
 update your PAM configuration files to support the "qshell" and/or
-"mqshell" service names.
+"mqshell" service names. There are sample xinetd(8) config files
+for qshd and mqshd in the etc/ directory. Also be sure read the
+README.QsNet file in this directory.
+
 
 +---------+
 | GOTCHAS |
