@@ -140,6 +140,7 @@ char rcsid[] = "$Id$";
 #include "err.h"
 #include "qswutil.h"
 
+/* error codes */
 enum stderr_err {__NONE = 0, __READ, __MUNGE, __PAYLOAD, __PORT,  
                  __CRED, __SYSTEM, __INTERNAL};
 
@@ -500,15 +501,13 @@ doit(struct sockaddr_in *fromp)
    *
    */
   mptr = &mbuf[0];
-  if ((m_rv = munge_decode(mbuf,0,(void **)&mptr,&buf_length,&cred.pw_uid,&cred.pw_gid)) != EMUNGE_SUCCESS) {
+  if ((m_rv = munge_decode(mbuf,0,(void **)&mptr,&buf_length,
+                           &cred.pw_uid,&cred.pw_gid)) != EMUNGE_SUCCESS) {
     errnum = __MUNGE;
     goto error_out;
   }
 
   if ((mptr == NULL) || (buf_length <= 0)) {
-    /*
-     * We got hosed somehow, or sent null payload data...
-     */
     errnum = __PAYLOAD;
     goto error_out;
   }
@@ -557,7 +556,8 @@ doit(struct sockaddr_in *fromp)
     strncpy(&m_base_hostname[0],&m_hostname[0],sizeof(m_base_hostname));
   } else {
     chrnum = (unsigned int) chrptr - (unsigned int) &m_hostname[0];
-    strncpy(&m_base_hostname[0],&m_hostname[0], MIN ((sizeof(m_base_hostname)), (chrnum-1)));
+    strncpy(&m_base_hostname[0],&m_hostname[0], 
+            MIN ((sizeof(m_base_hostname)), (chrnum-1)));
   }
   m_base_hostname[ sizeof(m_base_hostname) - 1 ] = '\0';
 
@@ -710,7 +710,8 @@ doit(struct sockaddr_in *fromp)
         break;
       case __PAYLOAD: errorsock(sock,"mqshd: Bad payload data.");
         break;
-      case __PORT: errorsock(sock,"mqshd: Cleartext stderr port number is not the same as the encrypted one.");
+      case __PORT: errorsock(sock,"mqshd: Cleartext stderr port number"
+                             " is not the same as the encrypted one.");
         break;
       case __CRED: errorsock(sock,"mqshd: failed credential check.");
         break;
@@ -973,7 +974,8 @@ static void network_init(int fd, struct sockaddr_in *fromp)
     errlog("setsockopt (SO_LINGER): %s\n", strerror(errno));
 
   if (fromp->sin_family != AF_INET) {
-    errlog("malformed \"from\" address (af %d): %s\n", fromp->sin_family, strerror(errno));
+    errlog("malformed \"from\" address (af %d): %s\n", 
+           fromp->sin_family, strerror(errno));
     exit(1);
   }
 
