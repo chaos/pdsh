@@ -131,6 +131,13 @@ installed.
 The rms module allows pdsh to target nodes based on an RMS resource.
 See TARGET NODE LIST OPTIONS below for additional details.
 .LP
+.B slurm
+.LP
+The slurm module allows pdsh to target nodes based on currently running
+SLURM jobs. The target jobid may be set via the SLURM_JOBID environment
+variable (which is set when running under a SLURM allocation), or via
+the -j option which this module provides.
+.LP
 .B SDR
 .LP
 The SDR module supports SDR on IBM SPs.  The -a, -i, -v, and -G
@@ -164,22 +171,33 @@ used in conjunction with the -a option.
 In combination with -a, include all partitions. Available only 
 if the SDR module is installed.
 .LP
-.I "-g attribute"
-Target nodes that have the specified genders attribute.  Conflicts
+.I "-g attribute[,attribute,...]"
+Target nodes that have any of the specified genders attributes.  Conflicts
 with -a and -w options.  Available only if the genders or nodeattr
-module is installed.  
+module is installed.  This option targets the alternate hostnames
+in the genders database by default. The -i option may be used to
+translate these to canonical/genders hostnames.
+.LP
+.I "-X attribute[,attribute,...]"
+Exclude nodes that have any of the specified list of attributes.
 .LP
 .I "-i"
-In conjunction with -a or -g, request canonical hostnames.  The
-default is to use reliable hostnames.  Available only if the
-genders or nodeattr module is installed.  On AIX, the -i option
-can only be used in conjunction with the -a option.
+Request translation between canonical and alternate hostnames. 
+Available only if the genders or nodeattr module is installed.  
+On AIX, the -i option can only be used in conjunction with the 
+-a option.
+.LP
+.I "-j jobid"
+If the slurm module is installed, target list of nodes allocated to
+SLURM jobid.
 .LP
 If the rms module is installed, and the RMS_RESOURCEID environment
 variable is set to an allocated RMS resource, RMS will be queried for
-the list of target nodes.  If none of the above options are specified,
-the WCOLL environment variable must point to a file that contains a
-list of nodes, one per line.
+the list of target nodes.  Likewise, if the slurm module is installed,
+and the SLURM_JOBID environment variable references a valid job, the
+list of targets will be set to the nodes in the running job. If none of 
+the above options are specified, the WCOLL environment variable must 
+point to a file that contains a list of nodes, one per line.
 .SH OTHER OPTIONS
 .I "-h" 
 Output usage menu and quit.
