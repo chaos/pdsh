@@ -1,3 +1,8 @@
+2004-02-24  Mark Grondona <mgrondona@llnl.gov>
+	
+	* src/modules/slurm.c : Use dlopen on libslurm and resolve only
+	the symbols needed by module. 
+
 2004-02-17  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/genders.c : Allow multiple genders attributes to be

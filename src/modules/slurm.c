@@ -40,6 +40,7 @@
 #include "src/common/xmalloc.h"
 #include "src/common/xstring.h"
 #include "src/pdsh/xpopen.h"
+#include "src/pdsh/ltdl.h"
 #include "src/pdsh/mod.h"
 #include "src/pdsh/opt.h"
 
@@ -59,18 +60,24 @@ int pdsh_module_priority = 10;
  *    Calling the module in postop allows us to be sure that all other
  *    modules had a chance to update the wcoll.
  */
+static int mod_slurm_init(void);
 static int mod_slurm_wcoll(opt_t *opt);
 static int mod_slurm_exit(void);
 static hostlist_t _slurm_wcoll(int32_t jobid);
 static int slurm_process_opt(opt_t *, int opt, char *arg);
 
 static char * job_arg = NULL;
+static int    (*_slurm_load_jobs) (time_t, job_info_msg_t **);
+static char * (*_slurm_strerror) (int);
+static void   (*_slurm_free_job) (job_info_msg_t *);
+
+lt_dlhandle   dlhandle = NULL;
 
 /*
  *  Export generic pdsh module options
  */
 struct pdsh_module_operations slurm_module_ops = {
-    (ModInitF)       NULL, 
+    (ModInitF)       mod_slurm_init, 
     (ModExitF)       mod_slurm_exit, 
     (ModReadWcollF)  mod_slurm_wcoll,
     (ModPostOpF)     NULL
@@ -110,6 +117,32 @@ struct pdsh_module pdsh_module_info = {
   &slurm_rcmd_ops,
   &slurm_module_options[0],
 };
+
+
+static int mod_slurm_init (void)
+{
+#if STATIC_MODULES
+    _slurm_load_jobs = &slurm_load_jobs;
+    _slurm_strerror  = &slurm_strerror;
+    _slurm_free_job  = &slurm_free_job_info_msg;
+#else
+    if (!(dlhandle = lt_dlopen ("libslurm.so")))
+        return (-1);
+
+    if (!(_slurm_load_jobs = lt_dlsym (dlhandle, "slurm_load_jobs")))
+        return (-1);
+
+    if (!(_slurm_strerror = lt_dlsym (dlhandle, "slurm_strerror")))
+        return (-1);
+
+    if (!(_slurm_free_job = lt_dlsym (dlhandle, "slurm_free_job_info_msg")))
+        return (-1);
+#endif
+
+
+    return (0);
+}
+
 
 
 static int32_t str2jobid (char *str)
@@ -186,9 +219,9 @@ static hostlist_t _slurm_wcoll(int32_t jobid)
     if ((jobid < 0) && (jobid = _slurm_jobid()) < 0)
         return (NULL);
     
-    if (slurm_load_jobs((time_t) NULL, &msg) < 0) 
+    if (_slurm_load_jobs((time_t) NULL, &msg) < 0) 
         errx ("Unable to contact slurm controller: %s\n", 
-              slurm_strerror (errno));
+              _slurm_strerror (errno));
 
     for (i = 0; i < msg->record_count; i++) {
         job_info_t *j = &msg->job_array[i];
@@ -199,7 +232,7 @@ static hostlist_t _slurm_wcoll(int32_t jobid)
         }
     }
     
-    slurm_free_job_info_msg (msg);
+    _slurm_free_job (msg);
 
     return (hl);
 }

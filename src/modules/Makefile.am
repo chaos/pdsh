@@ -146,4 +146,8 @@ sdr_la_SOURCES =          sdr.c
 sdr_la_LDFLAGS =          $(MODULE_FLAGS)
 sdr_la_LIBADD =           $(top_builddir)/src/common/libcommon.la
 slurm_la_SOURCES =        slurm.c
-slurm_la_LDFLAGS =        $(MODULE_FLAGS) $(SLURM_LIBS)
+if WITH_STATIC_MODULES
+slurm_la_LDFLAGS =        $(SLURM_LIBS)
+else
+slurm_la_LDFLAGS =        $(MODULE_FLAGS)
+endif
