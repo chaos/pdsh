@@ -1,3 +1,7 @@
+2002-10-21 garlick
+	* Bulding version for ILX cluster with genders but no elan
+	* Tagged pdsh-1-7-6noelan
+
 2002-10-09 garlick
 	* Building non-chaos version for distro.
 	* Tagged pdsh-1-7-6

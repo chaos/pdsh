@@ -8,9 +8,8 @@ Source: %{name}-%{version}-%{release}.tgz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}
 # Prereq: 
 
-# Set this to 1 to build with genders support and framework for
-# running Elan jobs.
-%define chaos 0
+%define withmachines 0
+%define withelan 1
 
 %description
 Pdsh is a multithreaded remote shell client which executes commands
@@ -30,11 +29,15 @@ executables.
 %setup -n %{name}-%{version}-%{release}
 
 %build
-%if %chaos
-./configure --prefix=/usr --with-readline --with-elan
-%else
-./configure --prefix=/usr --with-readline --with-machines=/usr/local/etc/machines
+
+%if %withelan
+WITHELAN=--with-elan
 %endif
+%if %withmachines
+WITHMACHINES=--with-machines=/usr/local/etc/machines
+%endif
+
+./configure --prefix=/usr --with-readline $WITHELAN $WITHMACHINES
 make
 
 %install
@@ -70,7 +73,7 @@ install -s in.qshd $RPM_BUILD_ROOT/usr/sbin/
 rm -f /var/cache/man/cat1/pdsh.1.*
 rm -f /var/cache/man/cat1/pdcp.1.*
 
-%if %{chaos}
+%if %{withelan}
 %files qshd
 %defattr(-,root,root)
 /usr/sbin/in.qshd
