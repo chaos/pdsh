@@ -1,15 +1,32 @@
-send_user "Testing: one, two...\n"
+set pdsh "$objdir/pdsh"
+set dshbak "$objdir/dshbak"
 
+# This test suite is for version 1.6.  Other versions cause a failure.
 set test "version"
-spawn $srcdir/pdsh -V
+spawn $pdsh -V
 expect {
 	-re "pdsh-1.5.*"		{ pass "$test" }
+	eof				{ fail "$test" }
 }
 
-set test "strerror_r"
-spawn $srcdir/pdsh -T 1
+# gnats:35 pdsh does not properly display errors on AIX
+set test "strerror_r gnats:35"
+spawn $pdsh -T 0
 expect  {
-	-re "Test 1: No such process"	{ pass "$test" }
+	-re ".*PASS"			{ pass "$test" }
+	-re ".*FAIL"			{ fail "$test" }
+	-re ".*UNSUPPORTED"		{ unsupported "$test" }
+	-re ".*unknown"			{ unsupported "$test" }
 }
 
-send_user "Blurp"
+# gnats:36 dshbak -c doesn't show difference between mult length output
+set test "dshbak gnats:36"
+spawn $dshbak -c
+send "foo1: bar\n"
+send "foo2: bar\n"
+send "foo1: baz\n"
+send \004
+expect {
+	-re "foo1-2"			{ fail "$test" }
+	eof	 			{ pass "$test" }
+}
