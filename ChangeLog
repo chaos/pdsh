@@ -1,3 +1,8 @@
+2004-06-01  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/qsnet/qswutil.c (_qsw_cap_create) : Fix multirail loop for
+	libelan3 systems to never go past ELAN_MAX_RAILS.
+
 2004-05-28  Mark Grondona <mgrondona@llnl.gov>
 
 	* scripts/dshbak : Use regex instead of split() to allow for

@@ -906,7 +906,7 @@ _qsw_cap_create(ELAN_CAPABILITY * cap, int nrails)
 
     /* Push capability into device driver */
     if (elanctrl_create_cap(handle, cap) < 0)
-        errx("%p: elancrtl_create_cap failed: %m\n");
+        errx("%p: elanctrl_create_cap failed: %m\n");
 
     /* 
      * Do not close elanctrl handle here, this can cause
@@ -919,7 +919,7 @@ _qsw_cap_create(ELAN_CAPABILITY * cap, int nrails)
     int i, n = 0;
 
     /* MULTI-RAIL: Create the capability in all rails */
-    for (i = 0; i < ELAN_MAX_RAILS, n < nrails; i++) {
+    for (i = 0; (i < ELAN_MAX_RAILS) && (n < nrails); i++) {
         void *handle;
 
         if (!(cap->RailMask & (1 << i)))
@@ -943,6 +943,8 @@ _qsw_cap_create(ELAN_CAPABILITY * cap, int nrails)
          *  
          * elan3_control_close(handle);
          */
+
+        n++;
 
     }
 
