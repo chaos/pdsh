@@ -45,7 +45,13 @@
 
 #if STATIC_MODULES
 #  define pdsh_module_info slurm_module_info
+#  define pdsh_module_priority slurm_module_priority
 #endif    
+/*
+ *  Give this module low priority 
+ */
+int pdsh_module_priority = 10;
+
 
 /*
  *  Call this module after all option processing. The module will only
@@ -91,7 +97,7 @@ struct pdsh_module_option slurm_module_options[] =
  };
 
 /* 
- * Rms module info 
+ * SLURM module info 
  */
 struct pdsh_module pdsh_module_info = {
   "misc",
@@ -104,6 +110,7 @@ struct pdsh_module pdsh_module_info = {
   &slurm_rcmd_ops,
   &slurm_module_options[0],
 };
+
 
 static int32_t str2jobid (char *str)
 {
@@ -181,7 +188,7 @@ static hostlist_t _slurm_wcoll(int32_t jobid)
     
     if (slurm_load_jobs((time_t) NULL, &msg) < 0) 
         errx ("Unable to contact slurm controller: %s\n", 
-              _slurm_strerror (errno));
+              slurm_strerror (errno));
 
     for (i = 0; i < msg->record_count; i++) {
         job_info_t *j = &msg->job_array[i];

@@ -149,7 +149,10 @@ return -1
 
 #if STATIC_MODULES
 #  define pdsh_module_info mqcmd_module_info
+#  define pdsh_module_priority mqcmd_module_priority
 #endif    
+
+int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
 
 static int mqcmd_postop(opt_t *opt);
 

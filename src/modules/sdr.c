@@ -48,7 +48,10 @@
 
 #if STATIC_MODULES
 #  define pdsh_module_info sdr_module_info
+#  define pdsh_module_priority sdr_module_priority
 #endif    
+
+int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
 
 static hostlist_t read_sdr(opt_t *opt);
 

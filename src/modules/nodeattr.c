@@ -47,7 +47,10 @@
 
 #if STATIC_MODULES
 #  define pdsh_module_info nodeattr_module_info
+#  define pdsh_module_priority nodeattr_module_priority
 #endif    
+
+int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
 
 static hostlist_t nodeattr_wcoll(opt_t *pdsh_opts);
 

@@ -41,7 +41,10 @@
 
 #if STATIC_MODULES
 #  define pdsh_module_info rms_module_info
+#  define pdsh_module_priority rms_module_priority
 #endif    
+
+int pdsh_module_priority = 10;
 
 /*
  *  Call this module after all option processing. The module will only

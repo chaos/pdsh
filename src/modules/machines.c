@@ -35,7 +35,10 @@
 
 #if STATIC_MODULES
 #  define pdsh_module_info machines_module_info
+#  define pdsh_module_priority machines_module_priority
 #endif    
+
+int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
 
 static hostlist_t read_machines(opt_t *opt);
 static int machines_opt_a(opt_t *, int, char *);

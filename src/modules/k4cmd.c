@@ -93,7 +93,10 @@
 
 #if STATIC_MODULES
 #  define pdsh_module_info k4cmd_module_info
+#  define pdsh_module_priority k4cmd_module_priority
 #endif    
+
+int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
 
 extern errno;
 extern char *inet_ntoa();

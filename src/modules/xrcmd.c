@@ -114,7 +114,10 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 
 #if STATIC_MODULES
 #  define pdsh_module_info xrcmd_module_info
+#  define pdsh_module_priority xrcmd_module_priority
 #endif    
+
+int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
 
 static int xrcmd_init(opt_t *);
 static int xrcmd_signal(int, int);

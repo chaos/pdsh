@@ -42,7 +42,10 @@
 
 #if STATIC_MODULES
 #  define pdsh_module_info nodeupdown_module_info
+#  define pdsh_module_priority nodeupdown_module_priority
 #endif    
+
+int pdsh_module_priority = 50;
 
 static int mod_nodeupdown_postop(opt_t *opt);
 static int nodeupdown_opt_v(opt_t *, int, char *);

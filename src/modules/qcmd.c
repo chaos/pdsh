@@ -116,7 +116,10 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 
 #if STATIC_MODULES
 #  define pdsh_module_info qcmd_module_info
+#  define pdsh_module_priority qcmd_module_priority
 #endif    
+
+int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
 
 extern char **environ;
 

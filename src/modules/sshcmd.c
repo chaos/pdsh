@@ -70,7 +70,10 @@
 
 #if STATIC_MODULES
 #  define pdsh_module_info sshcmd_module_info
+#  define pdsh_module_priority sshcmd_module_priority
 #endif    
+
+int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
 
 /*
  * use_rw will be set to true for PCP mode
