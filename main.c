@@ -39,6 +39,7 @@
 #include <sys/wait.h>	/* wait */
 #include <string.h>	/* strcmp */
 #include <stdlib.h>	/* exit */
+#include <stdio.h>
 
 #if	HAVE_READLINE
 #include <readline/readline.h>
