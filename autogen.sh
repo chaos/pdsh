@@ -67,7 +67,7 @@ test -n "$NO_AUTOMAKE" || (aclocal --version) < /dev/null > /dev/null 2>&1 || {
 }
 
 versiontest="
-if ( / (\d+)\.(\d+)\.(\d+) /) { 
+if ( / (\d+)\.(\d+)\.(\d+)/) { 
 	exit 1 if (\$1 < $LTLMAJOR); 
 	exit 1 if (\$1 == $LTLMAJOR && \$2 < $LTLMINOR);
         if (defined(\$3)) {
