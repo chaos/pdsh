@@ -482,7 +482,7 @@ hostlist_t get_verified_nodes(int iopt) {
 	 nodeupdown_strerror(nodeupdown_errnum(handle)));
   }
 
-  if (nodeupdown_load_data(handle, NULL, NULL, NULL, 0) == -1) {
+  if (nodeupdown_load_data(handle, NULL, NULL, NULL, 0, 0) == -1) {
     if (nodeupdown_errnum(handle) == NODEUPDOWN_ERR_CONNECT) {
       errx("%p: pdsh does not support -v on this machine\n");
     }
