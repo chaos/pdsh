@@ -574,7 +574,7 @@ gethost(char *name, char *addr)
  * Arguments are pointer to thd_t entry defined above.
  */
 static void *
-rcp(void *args)
+rcp_thread(void *args)
 {
 	thd_t *a = (thd_t *)args;
 	int result = DSH_DONE; /* the desired outcome */
@@ -685,7 +685,7 @@ extract_rc(char *buf)
  * Arguments are pointer to thd_t entry defined above.
  */
 static void *
-rsh(void *args)
+rsh_thread(void *args)
 {
 	thd_t *a = (thd_t *)args;
 	int rv, maxfd;
@@ -734,7 +734,7 @@ rsh(void *args)
 
 	/* 
 	 * Copy stdout/stderr to local stdout/stderr, 
-	 * appropriately tagged 
+	 * appropriately tagged.
 	 */
 	if (a->fd == -1) {
 		result = DSH_FAILED;	/* connect failed */
@@ -755,7 +755,7 @@ rsh(void *args)
 		}
 		FD_ZERO(&wantwfds);
 #if	STDIN_BCAST 	/* not yet supported */
-		FD_SET(fd, &wantwfds);
+		FD_SET(a->fd, &wantwfds);
 #endif
 		maxfd = (a->dsh_sopt && a->efd > a->fd) ? a->efd : a->fd;
 
@@ -1013,7 +1013,8 @@ dsh(opt_t *opt)
 		pthread_attr_setscope(&t[i].attr, PTHREAD_SCOPE_SYSTEM);
 #endif
 		rv = pthread_create(&t[i].thread, &t[i].attr, 
-		    opt->personality == DSH ? rsh : rcp, (void *)&t[i]);
+		    opt->personality == DSH 
+		    ? rsh_thread : rcp_thread, (void *)&t[i]);
 		if (rv != 0)
 			errx("%p: pthread_create %S: %m\n", t[i].host);
 		threadcount++;

@@ -54,6 +54,7 @@ typedef struct {
 	int fanout;		/* (-f, FANOUT, or default) */
 	int connect_timeout;
 	int command_timeout;
+	int nprocs;		/* -n nprocs */
 
 	/* DSH-specific options */
 	bool separate_stderr;	/* -s */
@@ -66,9 +67,6 @@ typedef struct {
 
 	/* Qshell specific */
 	alloc_t q_allocation;	/* -m block */
-	int q_nprocs;		/* -n nprocs */
-	int rms_nnodes;		/* -N nnodes */
-	char *rms_partition;	/* -P partition */
 
 	/* PCP-specific options */
 	bool preserve;		/* -p */

@@ -353,42 +353,36 @@ rms_rid_to_nodes(char *part, int rid)
 }
 
 /*
- * Allocate nodes from the RMS partition manager.
- * part (IN)		partition name
- * nnodes (IN)		number of nodes to allocate
- * nprocs (IN)		total number of cpu's to allocate
+ * If RMS_RESOURCE is set, return wcoll corresponding to RMS res allocation.
  * result (RETURN)	NULL or a list of hostnames
  */
 list_t
-rms_wcoll(char *part, int nnodes, int nprocs)
+rms_wcoll(void)
 {
-	uid_t uid = getuid();
-	int rid;
+	char *rhs;
+	list_t result = NULL;
 
-	if (!part) {
-	       if (!(part = rms_defaultPartition()))
-			errx("%p: rms: failed to lookup default partition\n");
+	/* extract partition and resource ID from environment, if present */
+	if ((rhs = getenv("RMS_RESOURCEID"))) {
+		char *part, *ridstr = strchr(rhs, '.');
+		int rid;
+
+		if (!ridstr)
+			errx("%p: malformed RMS_RESOURCEID value\n");
+		*ridstr++ = '\0';
+		rid = atoi(ridstr);
+		part = rhs;
+
+		result = rms_rid_to_nodes(part, rid);
 	}
 
-	/* need to belong to "rms" group to specify uid */
-	/* no project specified */
-	rid = rms_allocateResource(part, nprocs, RMS_UNASSIGNED, nnodes,
-			uid, NULL, "immediate=1,hwbcast=0,rails=1");
-	switch (rid) {
-		case -11:
-		case -1:
-			errx("%p: rms: request cannot be met\n");
-		case -2:
-			errx("%p: rms: request temporarily cannot be met\n");
-		default:
-			err("%p: rms: %s.%d: %d nodes, %d proc%s each\n",
-					part, rid, nnodes, 
-					nprocs / nnodes, 
-					(nprocs / nnodes) > 1 ? "s" : "");
-			break;
-	}
+	/*
+	 * Depend on PAM to keep user from setting RMS_RESOURCEID to
+	 * someone else's allocation and stealing cycles.  pam_rms should 
+	 * check to see if user has allocated the node before allowing qshd
+	 * authorization to succede.
+	 */
 
-	return rms_rid_to_nodes(part, rid);
-	/* nodes get freed when we exit so no rms_deallocateResource() req'd */
+	return result;
 }
 #endif /* HAVE_RMS */

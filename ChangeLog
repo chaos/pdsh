@@ -194,3 +194,11 @@ Release 1.6+
 
 	Print "timed out" message instead of "interrupted system call" if
 	xrcmd/qcmd times out waiting for a response from the server (gnats:45).
+
+Thu Apr 11 05:13:08 PDT 2002
+	RMS: Get rid of -P and -N options and use RMS_RESOURCEID as set by
+	the RMS 'allocate' command instead.
+
+	Change semantics of -n option: now it is tasks per node instead of 
+	total number of tasks.  This is no longer a qshell specific argument,
+	but unless qshell is used it must be == 1.
