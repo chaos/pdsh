@@ -9,6 +9,12 @@ Linux) and that your kernel be patched to run the 'elan3' or 'elan4' and
 'rms' kernel module, which is used by pdsh, is a distinct facility from
 the RMS product).
 
+Quadrics has provided a PDSH FAQ which may answer some common questions
+about getting the qshell module to run MPI jobs. Please see
+
+  http://web1.quadrics.com/twiki/bin/view/FAQs/SetupPDSH
+
+
 rms pdsh module
 ---------------------------------------
 Pdsh can also be run via the Quadrics RMS 'allocate' command such that

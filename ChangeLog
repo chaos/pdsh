@@ -1,3 +1,7 @@
+2005-03-18  Mark Grondona <mgrondona@llnl.gov>
+
+	* README.QsNet : Add reference to Quadrics' pdsh FAQ.
+
 2005-03-12  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/common/xpoll.c : Move include of sys/types.h above sys/select.h
