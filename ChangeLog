@@ -3,6 +3,7 @@
 	* Enabled PAM support in qshell & mqshell daemons
 	* Updated configuration to output warning/notice
 	  messages if particular modules cannot be built.
+	* Tagged pdsh-2-0-0-pre2
 	
 2003-07-16 achu
         * Fixed additional issues with command line options and modules
