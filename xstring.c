@@ -12,6 +12,9 @@
 #include "conf.h"
 
 #include <string.h>
+#if 	HAVE_STRERROR_R && !HAVE_DECL_STRERROR_R
+char *strerror_r(int, char *, int);
+#endif
 #include <errno.h>
 #if	HAVE_UNISTD_H
 #include <unistd.h>
