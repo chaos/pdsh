@@ -1,7 +1,7 @@
 /* 
  * $Id$  
  *
- * Copyright (C) 2000 Regents of the University of California
+ * Copyright (C) 2000-2002 Regents of the University of California
  * See ./DISCLAIMER
  */
 

@@ -1,3 +1,9 @@
+# 
+# $Id$
+#
+# Copyright (C) 2000-2002 Regents of the University of California
+# See ./DISCLAIMER
+#
 # Process this file with autoconf to produce a configure script.
 # NOTE: We distribute ./configure and do not expect people building pdsh
 # to have to regenerate from configure.ac.  However, if this is necessary,
