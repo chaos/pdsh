@@ -129,6 +129,10 @@ if test "$withkrb4" = yes; then
     AC_DEFINE(HAVE_KRB4, 1, [define for Kerberos IV support])
 fi
 
+if test "$withkrb4" = yes && test "$withssh" = yes; then
+    AC_MSG_ERROR([--with-krb4 and --with-ssh cannot both be specified])
+fi
+
 # NOTE: support for SDR is automatic if SDRGetObjects is found
 # NOTE: support for Genders is automatic if nodeattr is found
 

@@ -154,6 +154,10 @@ Release 1.6
 	Avoid non-portable gethostbyname_r call on non-AIX system by doing 
 	all DNS lookups before threads start up.
 
-	Made ssh configurable with --with-ssh (removed -e option).
+	Configure --with-ssh configures pdsh to use ssh for all connections.
+	Configure --with-krb4 configures pdsh to use krb4 for all connnections.
+	The two configuration options cannot be specified together.  In the
+	absense of either, rsh is used (the preferred option).  Got rid of 
+	-e, -R, and -k options for selecting these at runtime.
 
 	Released version 1.6.

@@ -65,10 +65,6 @@ Usage: pdcp [-options] src [src2...] dest\n\
 -G                for -a, include all partitions of SP System\n\
 -v                for -a, skip node if host_responds is false\n"
 
-#define OPT_USAGE_KRB4 "\
--k                connect using kerberos IV (default for root)\n\
--R                connect using regular rcmd (default for non-root)\n"
-
 #define OPT_USAGE_GEND "\
 -g attribute      target nodes with specified genders attribute\n"
 
@@ -82,7 +78,6 @@ Usage: pdcp [-options] src [src2...] dest\n\
 #define DSH_ARGS	"csS"
 #define PCP_ARGS	"pr"
 #define GEN_ARGS	"at:csqf:w:xX:l:u:bI:ideV"
-#define KRB4_ARGS	"Rk"
 #define SDR_ARGS	"Gv"
 #define GEND_ARGS	"g:"
 #define ELAN_ARGS	"En:m:P:N:"
@@ -102,14 +97,11 @@ void opt_default(opt_t *opt)
         } else
                 errx("%p: who are you?\n");
 
+	/* set the default connect method */
 #if HAVE_SSH
 	opt->rcmd_type = RCMD_SSH;
 #elif HAVE_KRB4
-	/* for Kerberos IV (probably SP), assume root can K4, users cannot */
-	if (opt->luid == 0)
-		opt->rcmd_type = RCMD_K4;
-	else
-		opt->rcmd_type = RCMD_BSD;
+	opt->rcmd_type = RCMD_K4;
 #else
 	opt->rcmd_type = RCMD_BSD;
 #endif
@@ -224,9 +216,6 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 	} else
 		strcpy(validargs, PCP_ARGS);
 	strcat(validargs, GEN_ARGS);
-#if HAVE_KRB4
- 	strcat(validargs, KRB4_ARGS);
-#endif
 #ifdef _PATH_SDRGETOBJECTS
  	strcat(validargs, SDR_ARGS);
 #endif
@@ -271,12 +260,6 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 				break;
 			case 's':	/* split stderr and stdout */
 				opt->separate_stderr = true;
-				break;
-			case 'k':	/* use k4cmd() */
-				opt->rcmd_type = RCMD_K4;
-				break;
-			case 'R':	/* use rcmd() */
-				opt->rcmd_type = RCMD_BSD;
 				break;
 			case 'E':	/* use qshell */
 				opt->rcmd_type = RCMD_QSHELL;

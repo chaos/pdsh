@@ -25,8 +25,10 @@ The following features are not enabled by default:
 	will fail.
 
 --with-krb4[=/path/to/krb4/root]
-	Enable Kerberos IV support.  This is not recommended unless you are
-	running on an SP and cannot enable rsh root equivalence between nodes.
+	Use Kerberos IV as the primary remote shell type.  This is not 
+	recommended unless you are running on an SP and cannot enable rsh 
+	root equivalence between nodes.  Kerberos IV has not been extensively
+	tested.  The action of refreshing TGT's is very slow under pdsh.
 
 --with-elan
 	Enable support for running parallel jobs on the Quadrics Elan 
@@ -34,24 +36,27 @@ The following features are not enabled by default:
 
 --with-rms
 	Enable support for the RMS partition manager (Quadrics resource 
-	management system).  Instead of the usual pdsh methods of specifying 
-	target nodes, specify -N cpus and/or -n nodes and have the nodes be 
-	allocated via RMS.
+	management system).  If no explicit hostnames are targeted, the
+	"-N cpus -n nodes" options may be used to allocate available nodes
+	from RMS.
 
 --enable-debug
 	Turns on assertion checking and compiles with -Wall.
 
-A word about generating targetting "all" nodes in a cluster:
+A word about -a (target "all" nodes) and -i (use alternate hostnames) option:
 
 On an SP, configure will find SDRGetObjects and use that to generate the
-list of "all" nodes for -a, transform to alternate hostnames with -i, 
-etc..
+list of "all" nodes for -a (reliable_hostname), transform to alternate 
+hostnames with -i (initial_hostname), etc..
 
-On Linux and other platforms, -a, -i, etc.. are handled differently.
-If the LLNL Genders software is available, the "nodeattr" command will
-be used, with the special "altname" attribute for alternate hostnames.  
-If that is not found, an MPICH machines file can be used (it is currently 
-hard coded to /usr/local/etc/machines).
+If SDRGetObjects is not found and if the LLNL Genders software is available, 
+configure will find the nodeattr command and use that to generate the list 
+of "all" nodes for -a ("all" attribute), transform to alternate hostnames 
+with -i (altname=name), etc.. 
+
+If neither of the above are found, a flat list of hostnames can be used.
+Currently this is hard coded to /usr/local/etc/machines for compatibility
+with MPICH.
 
 +------------+
 | INSTALLING |
