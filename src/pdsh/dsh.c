@@ -90,6 +90,9 @@
 #define MAXPATHNAMELEN MAXPATHLEN
 #endif
 
+/* set the default stacksize for threads to 128k */
+#define DSH_THREAD_STACKSIZE    128*1024
+
 /* define the filename flag as an impossible filename */
 #define EXIT_SUBDIR_FILENAME    "a!b@c#d$"
 #define EXIT_SUBDIR_FLAG        "E\n"
@@ -892,6 +895,29 @@ static void _dump_debug_stats(int rshcount)
     err("Failures:      %d\n", failed);
 }
 
+/*
+ * Initialize pthread attr pointed to by `attrp' with dsh default
+ *  detach state, and stacksize `stacksize.'
+ * 
+ * Exits program on failure.
+ */
+static int _dsh_attr_init (pthread_attr_t *attrp, int stacksize)
+{
+    int rc;
+
+    if (stacksize < PTHREAD_STACK_MIN)
+        stacksize = PTHREAD_STACK_MIN;
+
+    if ((rc = pthread_attr_init (attrp))) 
+        errx ("pthread_attr_init: %s\n", strerror (rc));
+    if ((rc = pthread_attr_setdetachstate (attrp, PTHREAD_CREATE_DETACHED)))
+        errx ("pthread_attr_setdetachstate: %s\n", strerror (rc));
+    if ((rc = pthread_attr_setstacksize (attrp, stacksize)))
+        errx ("pthread_attr_setstacksize: %s\n", strerror (rc));
+
+    return (0);
+}
+
 /* 
  * Run command on a list of hosts, keeping 'fanout' number of connections 
  * active concurrently.
@@ -1010,8 +1036,7 @@ int dsh(opt_t * opt)
     command_timeout = opt->command_timeout;
 
     /* start the watchdog thread */
-    pthread_attr_init(&attr_wdog);
-    pthread_attr_setdetachstate(&attr_wdog, PTHREAD_CREATE_DETACHED);
+    _dsh_attr_init (&attr_wdog, DSH_THREAD_STACKSIZE);
     rv = pthread_create(&thread_wdog, &attr_wdog, _wdog, (void *) t);
 
     /* start all the other threads (at most 'fanout' active at once) */
@@ -1024,8 +1049,7 @@ int dsh(opt_t * opt)
             pthread_cond_wait(&threadcount_cond, &threadcount_mutex);
 
         /* create thread */
-        pthread_attr_init(&t[i].attr);
-        pthread_attr_setdetachstate(&t[i].attr, PTHREAD_CREATE_DETACHED);
+        _dsh_attr_init (&t[i].attr, DSH_THREAD_STACKSIZE);
 #ifdef 	PTHREAD_SCOPE_SYSTEM
         /* we want 1:1 threads if there is a choice */
         pthread_attr_setscope(&t[i].attr, PTHREAD_SCOPE_SYSTEM);
