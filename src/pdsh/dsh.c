@@ -657,6 +657,55 @@ static int _extract_rc(char *buf)
     return ret;
 }
 
+typedef void (* out_f) (const char *, ...);
+
+static int _do_output (int fd, cbuf_t cb, out_f outf, bool read_rc, thd_t *t)
+{
+    char buf[8192];
+    int rc = 0;
+    int dropped = 0;
+
+    if ((rc = cbuf_write_from_fd (cb, fd, -1, &dropped)) < 0) {
+        if (errno == EAGAIN)
+            return (1);
+        err ("%p: %S: read: %m\n", t->host);
+        return (-1);
+    } else if (rc == 0) 
+        close (fd);
+
+    while (cbuf_read_line (cb, buf, 8192, 1) > 0) {
+
+        if (read_rc)
+            t->rc = _extract_rc (buf);
+
+        if ((buf != NULL) && (strlen (buf) > 0)) {
+            if (t->labels)
+                outf ("%S: %s", t->host, buf);
+            else
+                outf ("%s", buf);
+            fflush (NULL);
+        }
+    }
+
+    return (rc);
+
+}
+
+static void _flush_output (cbuf_t cb, out_f outf, thd_t *t)
+{
+    char buf[8192];
+
+    while (cbuf_read (cb, buf, 8192) > 0) {
+        if (t->labels)
+            outf ("%S: %s\n", t->host, buf);
+        else
+            outf ("%s\n", buf);
+    }
+
+    return;
+}
+
+
 /*
  * Rsh thread.  One per remote connection.
  * Arguments are pointer to thd_t entry defined above.
@@ -665,8 +714,6 @@ static void *_rsh_thread(void *args)
 {
     thd_t *a = (thd_t *) args;
     int rv;
-    FILE *fp, *efp = NULL;
-    char *buf = NULL;
     int result = DSH_DONE;      /* the desired outcome */
     int *efdp = a->dsh_sopt ? &a->efd : NULL;
     struct xpollfd xpfds[2];
@@ -698,13 +745,12 @@ static void *_rsh_thread(void *args)
         a->connect = time(NULL);
         a->state = DSH_READING;
 
-        /* use stdio package for buffered I/O */
-        fp = fdopen(a->fd, "r+");
+        fd_set_nonblocking (a->fd);
 
         /* prep for poll call */
         xpfds[0].fd = a->fd;
         if (a->dsh_sopt) {      /* separate stderr */
-            efp = fdopen(a->efd, "r");
+            fd_set_nonblocking (a->efd);
             xpfds[1].fd = a->efd;
             nfds++;
         }
@@ -735,40 +781,14 @@ static void *_rsh_thread(void *args)
 
             /* stdout ready or closed ? */
             if (xpfds[0].revents & XPOLLREAD) {
-                rv = xfgets(&buf, fp);
-                if (rv <= 0)  { /* closed */
-                    fclose(fp);  /* also closes original fd */
+                if (_do_output (a->fd, a->outbuf, (out_f) out, true, a) <= 0)
                     xpfds[0].fd = -1;
-                }
-                if (rv == -1)   /* error */
-                    err("%p: %S: xfgets: %m\n", a->host);
-                /* ready */
-                if (buf != NULL && strlen(buf) > 0)
-                    a->rc = _extract_rc(buf);
-                if (buf != NULL && strlen(buf) > 0) {
-                    if (a->labels)
-                        out("%S: %s", a->host, buf);
-                    else
-                        out("%s", buf);
-                }
             }
 
             /* stderr ready or closed ? */
             if (a->dsh_sopt && xpfds[1].revents & XPOLLREAD) {
-                rv = xfgets(&buf, efp);
-                if (rv <= 0)  {/* closed */
-                    fclose(efp);  /* also closes original fd */
+                if (_do_output (a->efd, a->errbuf, (out_f) err, false, a) <= 0)
                     xpfds[1].fd = -1;
-                }
-                if (rv == -1)   /* error */
-                    err("%p: %S: xfgets: %m\n", a->host);
-                /* ready */
-                if (buf != NULL && strlen(buf) > 0) {
-                    if (a->labels)
-                        err("%S: %s", a->host, buf);
-                    else
-                        err("%s", buf);
-                }
             }
 
 #if	STDIN_BCAST             /* not yet supported */
@@ -783,8 +803,9 @@ static void *_rsh_thread(void *args)
     a->state = result;
     a->finish = time(NULL);
 
-    /* clean up */
-    Free((void **) &buf);
+    /* flush any pending output */
+    _flush_output (a->outbuf, (out_f) out, a);
+    _flush_output (a->errbuf, (out_f) err, a);
 
     /* if a single qshell thread fails, terminate whole job */
     if (a->kill_on_fail && a->state == DSH_FAILED) {
@@ -934,6 +955,8 @@ int dsh(opt_t * opt)
         t[i].pcp_ropt = opt->recursive;
         t[i].pcp_progname = opt->progname;
         t[i].kill_on_fail = opt->kill_on_fail;
+        t[i].outbuf = cbuf_create (64, 8192);
+        t[i].errbuf = cbuf_create (64, 8192);
 #if	!HAVE_MTSAFE_GETHOSTBYNAME
         /* if MT-safe, do it in parallel in rsh/rcp threads */
         /* gethostbyname_r is not very portable so skip it */
@@ -1009,9 +1032,13 @@ int dsh(opt_t * opt)
 
     /*
      *  free hostnames allocated in hostlist_next()
+     *   and buffers allocated when initializing thread array
      */
-    for (i = 0; t[i].host != NULL; i++)
+    for (i = 0; t[i].host != NULL; i++) {
         free(t[i].host);
+        cbuf_destroy (t[i].outbuf);
+        cbuf_destroy (t[i].errbuf);
+    }
 
     Free((void **) &t);         /* cleanup */
 

@@ -38,6 +38,7 @@
 #include "src/common/macros.h"
 #include "src/common/list.h"
 #include "src/pdsh/opt.h"
+#include "src/pdsh/cbuf.h"
 
 #define INTR_TIME		1       /* secs */
 #define WDOG_POLL 		2       /* secs */
@@ -78,6 +79,10 @@ typedef struct thd {
     int nnodes;                 /* number of nodes in job */
     int fd;                     /* stdin/stdout */
     int efd;                    /* signal/stderr */
+
+    cbuf_t outbuf;              /* output buffer */
+    cbuf_t errbuf;              /* stderr buffer  */
+
     bool labels;                /* display host: labels */
     char addr[IP_ADDR_LEN];     /* IP address */
 } thd_t;

@@ -46,6 +46,8 @@ PDSH_SOURCES = \
     testcase.c \
     wcoll.c \
     wcoll.h \
+    cbuf.c \
+    cbuf.h \
     xpopen.c \
     xpopen.h
 

@@ -30,7 +30,6 @@
 #include <stdio.h>
 
 void xstrcln(char *, char *);
-int xfgets(char **, FILE *);
 
 char *xstrduplicate(char *str);
 void xstrcat(char **str1, char *str2);
