@@ -6,6 +6,7 @@ Copyright: none
 Group: System Environment/Base
 Source: %{name}-%{version}-%{release}.tgz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}
+Requires: gendersllnl
 # Prereq: 
 
 %define withmachines 0
