@@ -285,7 +285,8 @@ static int qcmd_init(opt_t * opt)
 {
     int totprocs = nprocs * hostlist_count(opt->wcoll);
 
-    qsw_init();
+    if (qsw_init() < 0)
+        exit(1);
 
     /*
      *  Verify constraints for running Elan jobs

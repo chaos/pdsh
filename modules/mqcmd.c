@@ -298,7 +298,8 @@ static int mqcmd_init(opt_t * opt)
     return -1;
   }
 
-  qsw_init();
+  if (qsw_init() < 0)
+      exit(1);
 
   /* initialize Elan capability structure. */
   if (qsw_init_capability(&cap, totprocs, opt->wcoll, cyclic) < 0) {
@@ -771,3 +772,7 @@ mqcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
   close(s);
   EXIT_PTHREAD();
 }
+
+/*
+ * vi:tabstop=4 shiftwidth=4 expandtab
+ */
