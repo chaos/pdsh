@@ -10,6 +10,7 @@ Prereq: genders
 
 %define withelan 1
 %define withrms 1
+%define withssh 0
 %define enabledebug 1
 
 %description
@@ -38,6 +39,9 @@ CONFOPTS="--enable-debug $CONFOPTS"
 %endif
 %if %withrms
 CONFOPTS="--with-rms $CONFOPTS"
+%endif
+%if %withssh
+CONFOPTS="--with-ssh $CONFOPTS"
 %endif
 CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="-s" ./configure --prefix=/usr $CONFOPTS
 make
