@@ -179,6 +179,11 @@ void errf(FILE *stream, char *format, va_list ap)
     _verr(stream, format, ap);
 }
 
+void lsd_fatal_error(char *file, int line, char *mesg)
+{
+    err ("%p: %s:%d: %s\n", file, line, mesg);
+}
+
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
  */

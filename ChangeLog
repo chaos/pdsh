@@ -3,6 +3,10 @@
 	* src/pdsh/opt.c (opt_args) : Do not abort when none of the 
 	hosts in exclude_buf (i.e. -x) match the current wcoll.
 
+	* src/common/err.c (lsd_fatal_error) : Added.
+
+	* configure.ac : Define WITH_LSD_FATAL_ERROR_FUNC.
+
 2004-06-09  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/dsh.c (_dsh_attr_init) : Added function to initialize
@@ -15,7 +19,6 @@
 	* README : Add note to look at README.QsNet for --with-qshell.
 
 	* : Tagged pdsh-2-1-1
-
 
 2004-06-01  Mark Grondona <mgrondona@llnl.gov>
 
