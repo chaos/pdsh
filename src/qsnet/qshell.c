@@ -119,8 +119,8 @@
 #include "src/common/xstring.h"
 #include "src/common/err.h"
 #include "src/common/fd.h"
-#include "qswutil.h"
-#include "qshell.h"
+#include "src/qsnet/qswutil.h"
+#include "src/qsnet/qshell.h"
 
 int keepalive = 1;
 int check_all = 0;
@@ -417,7 +417,7 @@ int get_qshell_info(ELAN_CAPABILITY *cap, qsw_info_t *qinfo,
     return 0;
 }
 
-void stderr_parent(int sock, int pype, int pid) {
+void stderr_parent(int sock, int pype, int prgid) {
     fd_set ready, readfrom;
     char buf[BUFSIZ], sig;
     int one = 1;
@@ -444,11 +444,10 @@ void stderr_parent(int sock, int pype, int pid) {
                 guys--;
                 if (guys == 1) 
                     /* pdsh client has crashed, kill the job */
-                    rms_prgsignal(pid, SIGKILL);
+                    qsw_prgsignal(prgid, SIGKILL);
             }
-            /* pid is the "program description" if using Elan */
             else
-                rms_prgsignal(pid, sig);
+                qsw_prgsignal(prgid, sig);
         }
         if (FD_ISSET(pype, &ready)) {
             if ((cc = read(pype, buf, sizeof(buf))) <= 0) {

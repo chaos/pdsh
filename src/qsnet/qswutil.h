@@ -58,6 +58,7 @@ int qsw_init_capability(ELAN_CAPABILITY * cap, int nprocs,
                         hostlist_t nodelist, int cyclic_alloc);
 int qsw_get_prgnum(void);
 void qsw_setup_program(ELAN_CAPABILITY * cap, qsw_info_t * qi, uid_t uid);
+int qsw_prgsignal(int prgid, int signo);
 
 int qsw_spawn_neterr_thr(void);
 

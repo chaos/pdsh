@@ -896,6 +896,11 @@ void qsw_setup_program(ELAN_CAPABILITY * cap, qsw_info_t * qi, uid_t uid)
     /* Exec the process... */
 }
 
+int qsw_prgsignal(int prgid, int signo)
+{
+    return rms_prgsignal(prgid, signo);
+}
+
 #ifdef TEST_MAIN
 /* encode info, then decode and check that the result is what we started with */
 static void _verify_info_encoding(qsw_info_t * qi)
