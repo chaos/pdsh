@@ -3,10 +3,11 @@ Running Elan MPI jobs on QsNet Clusters
 
 If built with --with-qshell or --with-mqshell, pdsh may be used to run
 MPI jobs on a QsNet interconnect.  This option requires that you have
-the Elan user space libraries installed (qswelan-r RPM for Linux) and
-that your kernel be patched to run the 'elan3' and 'rms' device drivers.
-Pdsh can run independently of the RMS product (the 'rms' kernel module,
-which is used by pdsh, is a distinct facility from the RMS product).
+the Elan user space libraries installed (qsnetlibs or qswelan-r RPM for
+Linux) and that your kernel be patched to run the 'elan3' or 'elan4' and
+'rms' device drivers. Pdsh can run independently of the RMS product (the
+'rms' kernel module, which is used by pdsh, is a distinct facility from
+the RMS product).
 
 rms pdsh module
 ---------------------------------------
