@@ -63,7 +63,7 @@ pkglib_LTLIBRARIES = \
 	$(RMS_MODULE) \
 	$(MACHINES_MODULE) \
 	$(SDR_MODULE) \
-	$(KRB4_MODULE) \
+	$(KRB4_MODULE)
 
 xrcmd_la_SOURCES =        xrcmd.c
 xrcmd_la_LDFLAGS =        $(MODULE_FLAGS)
