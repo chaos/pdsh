@@ -6,7 +6,7 @@ Copyright: none
 Group: System Environment/Base
 Source: %{name}-%{version}.tgz
 BuildRoot: %{_tmppath}/%{name}-%{version}
-Prereq: genders
+Prereq: /usr/bin/nodeattr
 
 %define withelan 1
 %define withrms 1
@@ -21,7 +21,7 @@ shell services, including standard "rsh", Kerberos IV, and ssh.
 %package qshd
 Summary: Remote shell daemon for pdsh/Elan3
 Group: System Environment/Base
-Prereq: xinetd, qswelan-r
+Prereq: xinetd
 %description qshd
 Remote shell service for running Quadrics Elan3 jobs under pdsh.
 Sets up Elan capabilities and environment variables needed by Quadrics MPICH
