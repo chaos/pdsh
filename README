@@ -16,6 +16,10 @@ modules of each shell service (as well as other features) will be
 compiled based on configuration.  By default, rsh, Kerberos IV, 
 and SDR (for IBM SPs) will be compiled if they exist on the system.
 
+The README.modules file distributed with pdsh contains a description
+of each module available, as well as its requirements and/or 
+conflicts.
+
 If your system does not support dynamically loadable modules, you
 may compile modules in statically using the --enable-static-modules
 option.

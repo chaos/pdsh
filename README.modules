@@ -1,0 +1,81 @@
+
+This file describes the current list of modules distributed with
+pdsh. Pdsh modules come in two flavors at this time: rcmd and
+miscellaneous. The rcmd modules provide remote command functionality
+for pdsh, while the "misc" modules extend the functionality of
+pdsh in some other way -- by providing new options to pdsh or
+modifying the pdsh working collective, for example.
+
+Multiple rcmd modules may be installed at once and are chosen
+at runtime by either the '-R type' option to pdsh, or by setting
+the environment variable PDSH_RCMD_TYPE.
+
+When pdsh initializes it reads all available modules from the
+`pkglibdir' (typically /usr/lib/pdsh or /usr/local/lib/pdsh). If
+conflicting modules are installed, they are loaded on a first-come
+first-serve basis (i.e. the first module loaded wins). There
+is no guarantee as to which module will be loaded first.
+
+PDSH MODULES:
+=============
+
+Module:      rcmd/bsd
+Package:     pdsh-rcmd-bsd
+Description: BSD rcmd(3) connect method for pdsh.
+Conflicts:   None
+Requires:    rshd server running on remote nodes
+
+Module:      rcmd/ssh
+Package:     pdsh-rmcd-ssh
+Description: SSH rcmd connect method for pdsh. 
+Conflicts:   None
+Requires:    ssh installed, sshd on remote nodes
+
+Module:      rcmd/mrsh
+Package:     pdsh-rcmd-mrsh
+Description: Rcmd connect method using Munge authentication.
+Conflicts:   None
+Requires:    munge, mrshd 
+
+Module:      rcmd/qsh
+Package:     pdsh-rcmd-qshell
+Description: Run QsNet MPI jobs with pdsh.
+Conflicts:   rcmd/mqsh
+Requires:    qsnet, pdsh-qshd (qshell server)
+
+Module:      rcmd/mqsh
+Package:     pdsh-rcmd-mqshell
+Description: Run QsNet MPI jobs with pdsh (Munge authentication)
+Conflicts:   rcmd/qsh
+Requires:    qsnet, munge, pdsh-mqshd (mqshell server)
+
+Module:      misc/genders
+Package:     pdsh-mod-genders
+Description: Provides -a,-i,-g node selection options using libgenders.
+Conflicts:   misc/nodeattr, misc/machines
+Requires:    libgenders
+
+Module:      misc/nodeattr
+Package:     pdsh-mod-nodeattr
+Description: Provides -a,-i,-g options using the nodeattr(1) program.
+Conflicts:   misc/genders, misc/machines
+Requires:    nodeattr program
+
+Module:      misc/nodeupdown
+Package:     pdsh-mod-nodeupdown
+Description: Provides -v option using nodeupdown library
+Conflicts:   None
+Requires:    libnodeupdown
+
+Module:      misc/machines
+Package:     pdsh-mod-machines
+Description: Provides -a option using a flat-file list of hosts
+Conflicts:   misc/genders, misc/nodeattr
+
+Module:      misc/rms
+Package:     pdsh-mod-rms
+Description: Allows list of targets to be built based off RMS_RESOURCEID
+             environment variable.
+Conflicts:   None
+Requires:    RMS: rmsquery, qsrmslibs
+

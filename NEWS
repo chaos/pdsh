@@ -1,0 +1,20 @@
+This file describes changes in recent version of pdsh. It primarily
+documents thos changes that are of interest to users and admins.
+
+* Changes in pdsh 2.0  
+======================
+ -- Modularized pdsh functionality into dynamic runtime "modules."
+   - Moved remote command api (e.g. rsh, ssh, etc.) into "rcmd" modules.
+   - New pdsh option `-R' for selection of rcmd type at runtime.
+   - All other optional functionality moved into "misc" modules (e.g. genders).
+   - See README.modules in pdsh distribution for more information.
+ -- Package core pdsh functionality and pdsh modules separately in order to
+    make pdsh installation much more flexible.
+ -- Removed pdsh dependency on rcp. Rcp server code used by pdsh is now
+    coded directly into pdcp.
+ -- Added mrsh and mqshell client modules, as well as mqshd server for Munge
+    authenticated rcmd() support.
+ -- QsNet support now requires "/etc/elanhosts" config file (see README.QsNet).
+ -- Added support for running Elan network error resolver thread in qshd/mqshd.
+
+$Id$
