@@ -41,6 +41,8 @@
 #include <unistd.h>             /* getopt */
 #endif
 
+#include <errno.h>
+
 #include "src/common/hostlist.h"
 #include "src/common/err.h"
 #include "src/common/list.h"
@@ -505,10 +507,16 @@ void opt_args(opt_t * opt, int argc, char *argv[])
 
         /* handle -x option */
         if (exclude_buf != NULL && opt->wcoll) {
-            if (hostlist_delete(opt->wcoll, exclude_buf) == 0) {
-                errx("%p: Invalid argument to -x: `%s'\n", exclude_buf);
-                exit(1);
+            /*
+             * Delete any hosts in exclude_buf from the wcoll,  
+             *  ignoring errors (except for an invalid hostlist
+             *  in exclude_buf)
+             */
+            if (hostlist_delete(opt->wcoll, exclude_buf) <= 0) {
+                if (errno == EINVAL)
+                    errx ("%p: Invalid argument to -x \"%s\"\n", exclude_buf);
             }
+
             Free((void **) &exclude_buf);
         }
     }
