@@ -210,3 +210,6 @@ Fri May 24 15:06:47 PDT 2002
 
 	Genders: -i option now selects canonical names.  The default is to
 	get what nodeattr -r gives you (alternate names, if any).
+
+	Released version 1.6-1 to web site: http://www.llnl.gov/icc/lc/pdsh.html
+	Released version 1.6-chaos2 internally.
