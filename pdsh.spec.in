@@ -91,7 +91,8 @@ Summary:   Provides bsd rcmd capability to pdsh.
 Group:     System Environment/Base
 Provides:  pdsh-rcmd
 %description rcmd-rsh
-Pdsh module for bsd rcmd functionality.
+Pdsh module for bsd rcmd functionality. Note: This module
+requires that the pdsh binary be installed setuid root.
 
 %package   rcmd-ssh
 Summary:   Provides ssh rcmd capability to pdsh.
@@ -104,10 +105,10 @@ Pdsh module for ssh rcmd functionality.
 Summary:   Provides qshell rcmd capability to pdsh.
 Group:     System Environment/Base
 Provides:  pdsh-rcmd
-Requires:  pdsh-qshd
 Conflicts: pdsh-rcmd-mqshell
 %description rcmd-qshell
-Pdsh module for running QsNet MPI jobs.
+Pdsh module for running QsNet MPI jobs. Note: This module
+requires that the pdsh binary be installed setuid root.
 
 %package   rcmd-mrsh
 Summary:   Provides mrsh rcmd capability to pdsh.
@@ -120,7 +121,6 @@ Pdsh module for mrsh rcmd functionality.
 Summary:   Provides mqshell rcmd capability to pdsh.
 Group:     System Environment/Base
 Provides:  pdsh-rcmd
-Requires:  pdsh-mqshd
 Conflicts: pdsh-rcmd-qshell
 %description rcmd-mqshell
 Pdsh module for mqshell rcmd functionality.
@@ -226,8 +226,8 @@ rm -rf "$RPM_BUILD_ROOT"
 %files
 %defattr(-,root,root)
 %doc README NEWS DISCLAIMER README.KRB4 README.modules
-%attr(4755, root, root) %{_bindir}/pdsh
-%attr(4755, root, root) %{_bindir}/pdcp
+%attr(755, root, root) %{_bindir}/pdsh
+%attr(755, root, root) %{_bindir}/pdcp
 %{_bindir}/dshbak
 %{_mandir}/man1/*
 ##############################################################################

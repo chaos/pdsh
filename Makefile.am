@@ -14,12 +14,6 @@ SUBDIRS =                      src testsuite doc etc scripts config
 
 install-exec-hook:
 	-mv $(DESTDIR)$(bindir)/pdsh.inst $(DESTDIR)$(bindir)/pdsh
-	@echo "chown root $(DESTDIR)$(bindir)/pdsh"
-	@chown root $(DESTDIR)$(bindir)/pdsh ||\
-         echo "Unable to chown pdsh to root"
-	@echo "chmod 4755 $(DESTDIR)$(bindir)/pdsh"
-	@chmod 4755 $(DESTDIR)$(bindir)/pdsh ||\
-         echo "Unable to set permissions on pdsh"
 	@cp -p $(DESTDIR)$(bindir)/pdsh $(DESTDIR)$(bindir)/pdcp ||\
 	 echo "Unable to copy pdsh to pdcp"
 

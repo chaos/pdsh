@@ -96,6 +96,16 @@ directory for details on which modules conflict.
 make
 make install
 
+By default, pdsh is now installed without setuid permissions. This
+is because, for the majority of the rcmd connect protocols, root
+permissions are not necessarily needed. If you are using either of
+the "rcmd/rsh" or "rcmd/qsh" modules, you will need to change the
+permissions of pdsh and pdcp to be setuid root after the install.
+For example:
+
+ > chown root PREFIX/bin/pdsh PREFIX/bin/pdcp
+ > chmod 4755 PREFIX/bin/pdsh PREFIX/bin/pdcp
+
 If you compile the qshell and/or mqshell with PAM support, remember to
 update your PAM configuration files to support the "qshell" and/or
 "mqshell" service names.
