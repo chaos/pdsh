@@ -12,18 +12,6 @@ AUTOMAKE_OPTIONS =             foreign dist-bzip2
 CONFIG_STATUS_DEPENDENCIES =   META
 SUBDIRS =                      src testsuite doc etc scripts config
 
-
-config.c: META config.h
-	@(echo "char *pdsh_version = \"$(PDSH_VERSION)\";";\
-	  echo "char *pdsh_module_dir = \"$(pkglibdir)\";"\
-         )> config.c
-
-testconfig.c: META config.h
-	@(echo "char *pdsh_version = \"$(PDSH_VERSION)\";";\
-          moddir=`cd $(top_srcdir)/modules && pwd`; \
-	  echo "char *pdsh_module_dir = \"$$moddir\";"\
-         )> testconfig.c
-
 install-exec-hook:
 	-mv $(DESTDIR)$(bindir)/pdsh.inst $(DESTDIR)$(bindir)/pdsh
 	@echo "chown root $(DESTDIR)$(bindir)/pdsh"
@@ -58,6 +46,5 @@ EXTRA_DIST = \
     pdsh.spec.in \
     README.KRB4 \
     README.QsNet \
-    README.AIX \
     README.modules \
     bootstrap 
