@@ -34,18 +34,11 @@ AC_DEFUN([AC_NODEUPDOWN],
    
   if test "$ac_with_libnodeupdown" = "yes"; then
     AC_CHECK_LIB([nodeupdown], [nodeupdown_handle_create], 
-                 [ac_have_libnodeupdown=yes], [])
+                 [ac_found_libnodeupdown=yes], [])
 
-   if test "$ac_have_libnodeupdown" != "yes" ; then
+   if test "$ac_found_libnodeupdown" != "yes" ; then
       AC_MSG_NOTICE([Cannot support nodeupdown without libnodeupdown])
-   fi 
-
-   if test "$ac_have_libnodeupdown" = "yes" ; then
-      AC_ADD_STATIC_MODULE("nodeupdown")
-      AC_DEFINE([HAVE_LIBNODEUPDOWN], [1], 
-                [Define if you have libnodeupdown.])
-      NODEUPDOWN_LIBS="-lnodeupdown"
-
+   else
       # Which nodeupdown API version do we have?
       AC_TRY_COMPILE(
            [#include <nodeupdown.h>],
@@ -61,12 +54,22 @@ AC_DEFUN([AC_NODEUPDOWN],
       if test "$ac_nodeupdown_load_data_6" = "yes"; then
            AC_DEFINE(HAVE_NODEUPDOWN_LOAD_DATA_6, 1, 
                      [6 param nodeupdown_load_data])
-      fi
-      if test "$ac_nodeupdown_load_data_5" = "yes"; then
+           ac_have_libnodeupdown=yes
+      elif test "$ac_nodeupdown_load_data_5" = "yes"; then
            AC_DEFINE(HAVE_NODEUPDOWN_LOAD_DATA_5, 1, 
                      [5 param nodeupdown_load_data])
+           ac_have_libnodeupdown=yes
+      else
+           AC_MSG_NOTICE([Unnkown libnodeupdown library])
       fi
-    fi
+      
+      if test "$ac_have_libnodeupdown" = "yes"; then
+           AC_ADD_STATIC_MODULE("nodeupdown")
+           AC_DEFINE([HAVE_LIBNODEUPDOWN], [1], 
+                     [Define if you have libnodeupdown.])
+           NODEUPDOWN_LIBS="-lnodeupdown"
+      fi
+   fi 
   fi
 
   AC_SUBST(HAVE_LIBNODEUPDOWN)
