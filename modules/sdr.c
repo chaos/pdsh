@@ -28,11 +28,14 @@
 #endif
 
 #include <assert.h>
+#include <string.h>
 
 #include "wcoll.h"
 #include "mod.h"
 #include "xpopen.h"
 #include "xmalloc.h"
+#include "err.h"
+#include "xstring.h"
 
 #define SPACES "\t\n "
 
@@ -138,7 +141,7 @@ static char *_next_tok(char *sep, char **str);
 static void _sdr_getnames(bool Gopt, char *nameType, char *nodes[]);
 static void _sdr_getresp(bool Gopt, char *nameType, bool resp[]);
 static void _sdr_getswitchname(char *switchName, int len);
-static int sdr_numswitchplanes(void);
+static int _sdr_numswitchplanes(void);
 static hostlist_t sdr_wcoll(bool Gopt, bool iopt, bool vopt);
 
 static hostlist_t read_sdr(opt_t *opt)
@@ -192,7 +195,6 @@ static void _sdr_getswitchname(char *switchName, int len)
     List words;
     char cmd[LINEBUFSIZE];
     char buf[LINEBUFSIZE];
-    int res;
 
     snprintf(cmd, sizeof(cmd), "%s -x Switch switch_number==1 switch_name",
              _PATH_SDRGETOBJECTS);
