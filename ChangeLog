@@ -206,3 +206,6 @@ Thu Apr 11 05:13:08 PDT 2002
 Thu May 23 15:25:00 PDT 2002
 	Genders: if the PDSH_GENDERS_ALL environment variable is set to an 
 	attribute name, that is used instead of the 'all' attribute.
+
+	Allow hostname ranges in WCOLL files (but require them to have
+	square brackes around the ranges, e.g. dev[0-20]).

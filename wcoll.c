@@ -80,8 +80,17 @@ read_wcoll(char *file, FILE *f)
 			if ((p = strchr(word, '#')) != NULL)
 				*p = '\0';
 			xstrcln(word, NULL);
-			if (strlen(word) > 0)
-				list_push(new, word);
+			if (strlen(word) > 0) {
+				/* we support host[i-j] ranges */
+				if (strchr(word, '[')) {
+					list_t tmp;
+
+					tmp = list_split_range(",", "-", word);
+					list_pushl(new, tmp);
+					list_free(&tmp);
+				} else
+					list_push(new, word);
+			}
 		}
 		list_free(&words);
 	}
