@@ -201,9 +201,9 @@ list_t sdr_wcoll(bool Gopt, bool iopt, bool vopt)
 		inodes[nn] = NULL;
 		rnodes[nn] = NULL;
 	}
-	if (iopt || vopt)
+	if (iopt)
 		sdr_getnames(Gopt, "initial_hostname", inodes);
-	if (!iopt || vopt)
+	else
 		sdr_getnames(Gopt, "reliable_hostname", rnodes);
 
 	/*
@@ -225,7 +225,7 @@ list_t sdr_wcoll(bool Gopt, bool iopt, bool vopt)
 			if (vopt) { 			    /* initial_host */
 				if (iopt && sresp[nn] && hresp[nn]) 
 					list_push(new, inodes[nn]);
-				else if (hresp[nn])	    /* reliable_host */
+				else if (!iopt && hresp[nn])/* reliable_host */
 					list_push(new, rnodes[nn]);
 			} else {
 				if (iopt)		    /* initial_host */

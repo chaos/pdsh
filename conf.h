@@ -11,6 +11,8 @@
 #ifndef _CONF_INCLUDED
 #define _CONF_INCLUDED
 
+#define PDSH_VERSION		"1.4pre"
+
 /* These two are user-settable - see README */
 #define HAVE_KRB4		0
 #define HAVE_GENDERS		1
