@@ -363,9 +363,10 @@ static void mqshell_get_args(struct sockaddr_in *fromp,
         goto error_out;
     }
 
-    /* Parse and verify user id */
     m_head = mptr;
     m_end = mptr + buf_length;
+
+    /* Verify User Id */
 
     if ((args->pwd = getpwnam_common(m_head)) == NULL) {
         syslog(LOG_ERR, "bad getpwnam(): %m");
@@ -378,20 +379,6 @@ static void mqshell_get_args(struct sockaddr_in *fromp,
         errmsg = "Permission Denied";
         goto error_out;
     }
-
-    if ((args->hostname = findhostname(fromp)) == NULL) {
-        errmsg = "Host Address Mismatch";
-        goto error_out;
-    }
-
-#ifdef USE_PAM
-    if (pamauth(args->pwd, "mqshell", args->pwd->pw_name, 
-                args->hostname, args->pwd->pw_name       ) < 0) {
-        syslog(LOG_ERR, "PAM failed authentication");
-        errmsg = "Permission Denied";
-        goto error_out;
-    }
-#endif
 
     /* Verify IP address */
 
@@ -461,6 +448,20 @@ static void mqshell_get_args(struct sockaddr_in *fromp,
 
     free(mptr);
     mptr = NULL;
+
+    if ((args->hostname = findhostname(fromp)) == NULL) {
+        errmsg = "Host Address Mismatch";
+        goto error_out;
+    }
+
+#ifdef USE_PAM
+    if (pamauth(args->pwd, "mqshell", args->pwd->pw_name, 
+                args->hostname, args->pwd->pw_name       ) < 0) {
+        syslog(LOG_ERR, "PAM failed authentication");
+        errmsg = "Permission Denied";
+        goto error_out;
+    }
+#endif
 
 error_out:
 
