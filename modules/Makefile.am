@@ -37,8 +37,8 @@ if WITH_SSH
 SSH_MODULE = sshcmd.la
 endif
 
-if WITH_ELAN
-ELAN_MODULE = qcmd.la
+if WITH_QSHELL
+QSHELL_MODULE = qcmd.la
 endif
 
 if WITH_LIBGENDERS
@@ -77,8 +77,8 @@ if WITH_MRSH
 MRSH_MODULE = mcmd.la
 endif
 
-if WITH_MQSH
-MQSH_MODULE = mqcmd.la
+if WITH_MQSHELL
+MQSHELL_MODULE = mqcmd.la
 endif
 
 if WITH_KRB4
@@ -92,9 +92,9 @@ else
 pkglib_LTLIBRARIES = \
 	xrcmd.la \
 	$(SSH_MODULE) \
-    $(MRSH_MODULE) \
-    $(MQSH_MODULE) \
-	$(ELAN_MODULE) \
+	$(MRSH_MODULE) \
+	$(MQSHELL_MODULE) \
+	$(QSHELL_MODULE) \
 	$(GENDERS_MODULE) \
 	$(NODEATTR_MODULE) \
 	$(NODEUPDOWN_MODULE) \

@@ -97,16 +97,16 @@ AC_KRB4
 AM_CONDITIONAL(WITH_KRB4, test  "$ac_have_krb4" =  "yes")
 
 #
-# Test for support of QSW Elan. If requested and available, build
-#  qshd and qcmd connect module.
+# Test for support of QSW Elan and Qshell support. If requested and
+#  available, build qshd and qcmd connect module.
 #
 # achu - WITH_QSW builds libqsw.  It is a separate conditional, b/c
-#        libqsw may be needed for mqsh (--with-mqsh) even if 
-#        --with-elan is not specified
+#        libqsw may be needed for mqshell (--with-mqshell) even if 
+#        --with-qshell is not specified
 #
-AC_ELAN
-AM_CONDITIONAL(WITH_ELAN, [test "$ac_have_elan" = "yes"])
-AM_CONDITIONAL(WITH_QSW,  [test "$ac_have_qsw"  = "yes"])
+AC_QSHELL
+AM_CONDITIONAL(WITH_QSHELL, [test "$ac_have_qshell" = "yes"])
+AM_CONDITIONAL(WITH_QSW,    [test "$ac_have_qsw"    = "yes"])
 
 #
 # Test for whether to build "machines" module.
@@ -140,11 +140,11 @@ AM_CONDITIONAL(WITH_LIBMUNGE,   [test "$ac_have_libmunge"      = "yes"])
 AM_CONDITIONAL(WITH_MRSH,       [test "$ac_have_mrsh"          = "yes"])
 
 #
-# Check if user wants to build mqsh
-# Run only after checks for --with-elan and --with-mrsh 
+# Check if user wants to build mqshell
+# Run only after checks for --with-qshell and --with-mrsh 
 #
-AC_MQSH
-AM_CONDITIONAL(WITH_MQSH,       [test "$ac_have_mqsh"          = "yes"])
+AC_MQSHELL
+AM_CONDITIONAL(WITH_MQSHELL,    [test "$ac_have_mqshell"       = "yes"])
 AM_CONDITIONAL(WITH_QSW,        [test "$ac_have_qsw"           = "yes"])
 
 #

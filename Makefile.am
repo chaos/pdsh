@@ -27,7 +27,7 @@ pdsh_LDFLAGS =             -export-dynamic
 LTDL_FILES =               ltdl.h ltdl.c
 endif
 
-libqsw_la_LDFLAGS =        $(ELAN_LIBS)
+libqsw_la_LDFLAGS =        $(QSHELL_LIBS)
 EXTRA_libqsw_la_SOURCES =  qswutil.c qswutil.h
 
 pdsh_SOURCES =             $(COMMON_FILES) $(LTDL_FILES)
