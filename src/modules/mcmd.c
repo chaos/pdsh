@@ -496,13 +496,13 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
      */
     m_rv = fd_write_n(s, m, mcount);
     if (m_rv != mcount) {
-        close(s2);
         free(m);
         free(tmbuf);
         if (errno == EPIPE)
             err("%p: %S: mcmd: Lost connection: %m\n", ahost);
         else
             err("%p: %S: mcmd: Write to socket failed: %m\n", ahost);
+        close(s2);
         goto bad;
     }
 

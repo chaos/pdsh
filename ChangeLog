@@ -1,3 +1,8 @@
+2003-09-16  Albert Chu <chu11@llnl.gov>
+	
+	* src/modules/mcmd.c (mcmd): Fixed an additional error message
+	inconsistency due to a close being called before an errno check.  
+
 2003-09-12  Albert Chu <chu11@llnl.gov>
 
 	* src/pdsh/dsh.c (dsh): Error message from pthread_create()
