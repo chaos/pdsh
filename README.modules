@@ -19,8 +19,8 @@ is no guarantee as to which module will be loaded first.
 PDSH MODULES:
 =============
 
-Module:      rcmd/bsd
-Package:     pdsh-rcmd-bsd
+Module:      rcmd/rsh
+Package:     pdsh-rcmd-rsh
 Description: BSD rcmd(3) connect method for pdsh.
 Conflicts:   None
 Requires:    rshd server running on remote nodes

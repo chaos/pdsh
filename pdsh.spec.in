@@ -46,7 +46,7 @@ remote shell services, including standard "rsh", Kerberos IV, and ssh.
 #           mrsh, mqshell 
 # 
 #
-%{!?_with_bsd: %{!?_without_bsd: %define _with_bsd 1}}
+%{!?_with_rsh: %{!?_without_rsh: %define _with_rsh 1}}
 
 %{!?_with_ssh: %{!?_without_ssh: %define _with_ssh --with-ssh}}
 %{!?_with_mrsh:  %{!?_without_mrsh: %define _with_mrsh --with-mrsh}}
@@ -85,11 +85,11 @@ needed by Quadrics MPICH executables.
 #
 # Module packages:
 #
-%package  rcmd-bsd
+%package  rcmd-rsh
 Summary:  Provides bsd rcmd capability to pdsh.
 Group:    System Environment/Base
 Provides: pdsh-rcmd
-%description rcmd-bsd
+%description rcmd-rsh
 Pdsh module for bsd rcmd functionality.
 
 %package  rcmd-ssh
@@ -224,8 +224,8 @@ rm -rf "$RPM_BUILD_ROOT"
 %{_mandir}/man1/*
 ##############################################################################
 
-%if %{?_with_bsd:1}%{!?_with_bsd:0}
-%files rcmd-bsd
+%if %{?_with_rsh:1}%{!?_with_rsh:0}
+%files rcmd-rsh
 %defattr(-,root,root)
 %{_libdir}/pdsh/xrcmd.*
 %endif
