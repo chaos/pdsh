@@ -23,6 +23,7 @@
 #include "xstring.h"
 #include "xpopen.h"	/* for xpopen/close */
 #include "wcoll.h"
+#include "hostrange.h"
 
 #if	HAVE_RMS
 #include <qsw/types.h>
@@ -87,7 +88,7 @@ read_wcoll(char *file, FILE *f, char *range_op)
 				/* indiv entries can be ranges */
 				tmp = (range_op == NULL) 
 					? list_split(",", word) 
-					: list_split_range(",", range_op, word);
+					: range_split(",", range_op, word);
 				list_pushl(new, tmp);
 				list_free(&tmp);
 			}
@@ -353,7 +354,7 @@ rms_rid_to_nodes(char *part, int rid)
 	xpclose(f);
 	/* should either have empty string or host[n-m] range */
 	/* turn elanid range into list of hostnames */
-	return list_split_range(" ,", "-", tmp);
+	return range_split(" ,", "-", tmp);
 }
 
 /*

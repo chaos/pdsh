@@ -20,6 +20,8 @@
 
 #include "err.h"
 #include "dsh.h"
+#include "xmalloc.h"
+#include "xstring.h"
 
 typedef enum { FAIL, PASS } testresult_t;
 typedef testresult_t ((*testfun_t)(void));
@@ -58,7 +60,7 @@ test_xstrerrorcat(void)
 		xstrerrorcat(&s1);
 		if (strcmp(s1, s2) != 0)
 			result = FAIL;
-		Free(&s1);
+		Free((void **)&s1);
 	}
 	return result;
 }

@@ -26,6 +26,7 @@
 #include "wcoll.h"
 #include "xstring.h"
 #include "xmalloc.h"	
+#include "hostrange.h"
 
 static void usage(opt_t *opt);
 static void show_version(void);
@@ -325,7 +326,7 @@ opt_args(opt_t *opt, int argc, char *argv[])
 	if (wcoll_buf != NULL) {
 		opt->wcoll = (opt->range_op == NULL) ? 
 			list_split(",", wcoll_buf) :
-			list_split_range(",", opt->range_op, wcoll_buf);
+			range_split(",", opt->range_op, wcoll_buf);
 		Free((void **)&wcoll_buf);
 	}
 
@@ -333,7 +334,7 @@ opt_args(opt_t *opt, int argc, char *argv[])
 	if (exclude_buf != NULL) {
 		opt->exclude = (opt->range_op == NULL) ? 
 			list_split(",", exclude_buf) :
-			list_split_range(",", opt->range_op, exclude_buf);
+			range_split(",", opt->range_op, exclude_buf);
 		Free((void **)&exclude_buf);
 	}
 
