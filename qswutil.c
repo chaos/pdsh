@@ -360,8 +360,21 @@ qsw_init_capability(ELAN_CAPABILITY *cap, int nprocs, list_t nodelist,
 				ELAN_MAX_VPS);
 		return -1;
 	}
+#if OLD_ELAN_DRIVER
 	if (abs(cap->HighNode - cap->LowNode) == num_nodes - 1)
 		cap->Type |= ELAN_CAP_TYPE_BROADCASTABLE;
+#else
+	/*
+ 	 * XXX: this bit seems to be manditory with the new drivers.  If not
+	 * set, mping doesn't work on noncontiguous nodes:
+ 	 *   ELAN_EXCEPTION @ 0: 14 (Invalid argument)
+ 	 *   elan_baseInit(): Broadcast is not allowed by capability (rev A 
+	 *     hardware?)
+ 	 * while setting it seems to work.  Maybe I misunderstood the 
+	 * semantic meaning of this bit all along?
+ 	 */
+	cap->Type |= ELAN_CAP_TYPE_BROADCASTABLE;
+#endif
 
 	return 0;
 }
