@@ -1,3 +1,9 @@
+2005-01-10  Mark Grondona <mgrondona@llnl.gov>
+
+	* pdsh.spec.in : Update path to xinetd init script as reported by 
+	  Daniel Blueman <daniel.blueman@quadrics.com> for compatibility
+	  with SuSE.
+
 2005-01-07  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/qsnet/qswutil.c (qsw_have_elan3) : Fix bug in m/qshd which

@@ -340,7 +340,7 @@ rm -rf "$RPM_BUILD_ROOT"
 if ! grep "^qshell" /etc/services >/dev/null; then
   echo "qshell            523/tcp                  # pdsh/qshell/elan3" >>/etc/services
 fi
-/etc/rc.d/init.d/xinetd reload
+/etc/init.d/xinetd reload
 
 %endif
 ##############################################################################
@@ -355,7 +355,7 @@ fi
 if ! grep "^mqshell" /etc/services >/dev/null; then
   echo "mqshell         21234/tcp                  # pdsh/mqshell/elan3" >>/etc/services
 fi
-/etc/rc.d/init.d/xinetd reload
+/etc/init.d/xinetd reload
 
 %endif
 ##############################################################################
