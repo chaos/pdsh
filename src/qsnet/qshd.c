@@ -95,6 +95,8 @@ char rcsid[] =
 #include <elan3/elanvp.h>
 #include <rms/rmscall.h>
 
+#include "xstring.h"
+#include "err.h"
 #include "list.h"
 #include "qswutil.h"
 
@@ -681,6 +683,7 @@ main(int argc, char *argv[])
 	_check_rhosts_file=1;
 
 	openlog("qshd", LOG_PID | LOG_ODELAY, LOG_DAEMON);
+	err_init(xbasename(argv[0]));
 
 	opterr = 0;
 	while ((ch = getopt(argc, argv, OPTIONS)) != EOF) {

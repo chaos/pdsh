@@ -27,12 +27,13 @@
 #include "err.h"
 
 /* we will allocate program descriptions in this range */
-#define ELAN_PRG_START  0
-#define ELAN_PRG_END    0
+/* XXX note: do not start at zero as libelan shifts to get unique shm id */
+#define QSW_PRG_START  1
+#define QSW_PRG_END    100
 
 /* we will allocate hardware context numbers in this range */
-#define ELAN_HWCX_START	ELAN_USER_BASE_CONTEXT_NUM
-#define ELAN_HWCX_END	ELAN_USER_TOP_CONTEXT_NUM
+#define QSW_HWCX_START	ELAN_USER_BASE_CONTEXT_NUM
+#define QSW_HWCX_END	ELAN_USER_TOP_CONTEXT_NUM
 
 
 /* 
@@ -275,8 +276,8 @@ qsw_get_prgnum(void)
 	 * Generate a random program number.  Same comment about lack of 
 	 * persistant daemon above applies.
 	 */
-	prgnum = lrand48() % (ELAN_PRG_END - ELAN_PRG_START + 1);	
-	prgnum += ELAN_PRG_START;
+	prgnum = lrand48() % (QSW_PRG_END - QSW_PRG_START + 1);	
+	prgnum += QSW_PRG_START;
 
 	return prgnum;
 }
@@ -315,8 +316,8 @@ qsw_init_capability(ELAN_CAPABILITY *cap, int tasks_per_node, list_t nodelist)
 	 * of a common capability.  With pdsh we have no persistant daemon
 	 * to allocate these, so we settle for a random one.  
 	 */
-	cap->LowContext = lrand48() % (ELAN_HWCX_END - ELAN_HWCX_START + 1);
-	cap->LowContext += ELAN_HWCX_START;
+	cap->LowContext = lrand48() % (QSW_HWCX_END - QSW_HWCX_START + 1);
+	cap->LowContext += QSW_HWCX_START;
 	cap->HighContext = cap->LowContext + tasks_per_node - 1;
 	/* not necessary to initialize cap->MyContext */
 
