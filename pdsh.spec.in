@@ -10,7 +10,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}
 
 # Set this to 1 to build with genders support and framework for
 # running Elan jobs.
-%define chaos 0
+%define chaos 1
 
 %description
 Pdsh is a multithreaded remote shell client which executes commands
