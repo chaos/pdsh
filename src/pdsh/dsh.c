@@ -108,7 +108,8 @@ static int connect_timeout, command_timeout;
  * Emulate signal() but with BSD semantics (i.e. don't restore signal to
  * SIGDFL prior to executing handler).
  */
-static void xsignal(int signal, void (*handler)(int))
+static void 
+xsignal(int signal, void (*handler)(int))
 {
 	struct sigaction sa, old_sa;
 
@@ -124,7 +125,8 @@ static void xsignal(int signal, void (*handler)(int))
  * in interrupting connect() in k4cmd/rcmd or select() in rsh() below and
  * causing them to return EINTR.
  */
-static void alarm_handler(int dummy)
+static void 
+alarm_handler(int dummy)
 {
 }
 
@@ -132,7 +134,8 @@ static void alarm_handler(int dummy)
  * Helper function for intr_handler().  Lists the status of all connected
  * threads.
  */
-static void list_slowthreads(void)
+static void 
+list_slowthreads(void)
 {
 	int i;
 	time_t ttl;
@@ -176,7 +179,8 @@ static void list_slowthreads(void)
 /*
  * Block SIGINT in this thread.
  */
-static void int_block(void)
+static void 
+int_block(void)
 {
         sigset_t blockme;
  
@@ -189,7 +193,8 @@ static void int_block(void)
  * If the underlying rsh mechanism supports it, forward signals to remote 
  * process.
  */
-static void fwd_signal(int signum)
+static void 
+fwd_signal(int signum)
 {
 	int i;
 
@@ -199,17 +204,17 @@ static void fwd_signal(int signum)
 				case RCMD_BSD:
 					xrcmd_signal(t[i].efd, signum);
 					break;
-#if HAVE_KRB4
+#if	HAVE_KRB4
 				case RCMD_K4:
 					k4cmd_signal(t[i].efd, signum);
 					break;
 #endif
-#if HAVE_ELAN3
+#if	HAVE_ELAN3
 				case RCMD_QSHELL:
 					qcmd_signal(t[i].efd, signum);
 					break;
 #endif
-#if HAVE_SSH
+#if	HAVE_SSH
 				case RCMD_SSH:
 					break;
 #endif
@@ -228,7 +233,8 @@ static void fwd_signal(int signum)
  * status.  This should only be handled by the "main" thread.  We block
  * SIGINT in other threads.
  */
-static void int_handler(int signum)
+static void 
+int_handler(int signum)
 {
 	static time_t last_intr = 0;
 
@@ -247,7 +253,8 @@ static void int_handler(int signum)
  * Simpler version of above for -b "batch mode", i.e. pdsh is run by a
  * script, and when the script dies, we should die too.
  */ 
-static void int_handler_justdie(int signum)
+static void 
+int_handler_justdie(int signum)
 {
 	fwd_signal(signum);
 	errx("%p: batch mode interrupt, aborting.\n");
@@ -260,7 +267,8 @@ static void int_handler_justdie(int signum)
  * Sleep for two seconds between polls (actually sleep for connect_timeout
  * on the first iteration).
  */
-static void *wdog(void *args)
+static void *
+wdog(void *args)
 {
 	int i;
 
@@ -289,7 +297,8 @@ static void *wdog(void *args)
 	return NULL;
 }
 
-static void rexpand_dir(list_t list, char *name)
+static void 
+rexpand_dir(list_t list, char *name)
 {
 	DIR *dir;
 	struct dirent *dp;
@@ -318,7 +327,8 @@ static void rexpand_dir(list_t list, char *name)
 	closedir(dir);
 }
 
-static list_t expand_dirs(list_t infiles)
+static list_t 
+expand_dirs(list_t infiles)
 {
 	list_t new = list_new();
 	struct stat sb;
@@ -339,53 +349,103 @@ static list_t expand_dirs(list_t infiles)
 	return new;
 }
 
-static int rcp_write(int fd, char *buf, size_t size)
+/*
+ * Wrapper for the write system call that handles short writes.
+ * Not sure if write ever returns short in practice but we have to be sure.
+ *	fd (IN)		file descriptor to write to 
+ *	buf (IN)	data to write
+ *	size (IN)	size of buf
+ *	RETURN		-1 on failure, size on success
+ */
+static int 
+rcp_write(int fd, char *buf, int size)
 {
-	return write(fd, buf, size);
+	char *bufp = buf;
+	int towrite = size;
+	int outbytes;
+
+	while (towrite > 0) {
+		outbytes = write(fd, bufp, towrite);
+		if (outbytes <= 0) {
+			assert(outbytes != 0);
+			return -1;
+		}
+		towrite -= outbytes;
+		bufp += outbytes;
+	}
+	return size;
 }
 
-static int rcp_send_file_data(int outfd, char *filename, char *host)
+/*
+ * Write the contents of the named file to the specified file descriptor.
+ *	outfd (IN)	file descriptor to write to 
+ *	filename (IN)	name of file
+ *	host (IN)	name of remote host for error messages
+ *	RETURN		-1 on failure, 0 on success.
+ */
+static int 
+rcp_send_file_data(int outfd, char *filename, char *host)
 {
-	int infd, retval = -1, inbytes, outbytes;
+	int infd, inbytes;
 	char tmpbuf[BUFSIZ];
 
 	infd = open(filename, O_RDONLY);
-	if (infd >= 0) {
-		do {
-			inbytes = read(infd, tmpbuf, BUFSIZ);
-			if (inbytes > 0)
-				outbytes = rcp_write(outfd, tmpbuf, inbytes);
-		} while (inbytes > 0 && inbytes == outbytes);
-		/* 
-	 	 * XXX we quit if write returns less than inbytes
-		 * might need to handle this 
-	 	 */
-		if (inbytes == 0)
-			retval = outbytes;
-		close(infd);
+	/* checked ahead of time - shouldn't happen */
+	if (infd < 0) {
+		err("%S: rcp_send_file_data: open %s: %m\n", host, filename);
+		return -1;
 	}
-	if (retval <= 0)
-		err("%S: error sending contents of %s\n", host, filename);
-	return retval;
+	do {
+		inbytes = read(infd, tmpbuf, BUFSIZ);
+		if (inbytes < 0) {
+			err("%S: rcp_send_file_data: read %s: %m\n", 
+					host, filename);
+			return -1;
+		} 
+		if (inbytes > 0) {
+			if (rcp_write(outfd, tmpbuf, inbytes) < 0) {
+				err("%S: rcp_send_file_data: write: %m\n", 
+						host);
+				return -1;
+			}	
+		}
+	} while (inbytes > 0); /* until EOF */
+	close(infd);
+	return 0;
 }
 
-static int rcp_sendstr(int fd, char *str, char *host)
+/*
+ * Send string to the specified file descriptor.  Do not send trailing '\0'
+ * as RCP terminates strings with newlines.
+ *	fd (IN)		file descriptor to write to
+ *	str (IN)	string to write
+ *	host (IN)	name of remote host for error messages
+ *	RETURN 		-1 on failure, 0 on success
+ */
+static int 
+rcp_sendstr(int fd, char *str, char *host)
 {
-	int result;
+	int outbytes, towrite;
+	char *bufp;
 
-	result = rcp_write(fd, str, strlen(str));
-	if (result != strlen(str)) {
-		err("%S: error sending string to remote\n", host);
-		result = -1;
+	assert(strlen(str) > 0);
+	assert(str[strlen(str) - 1] == '\n');
+
+	if (rcp_write(fd, str, strlen(str)) < 0) {
+		err("%s: rcp_sendstr: write: %m\n", host);
+		return -1;
 	}
-	return result;
+	return 0;
 }
 
 /*
  * Receive an RCP response code and possibly error message.
- * A return value of -1 indicates fatal error, 0 indicates OK.
+ *	fd (IN)		file desciptor to read from
+ *	host (IN)	hostname for error messages
+ *	RETURN		-1 on fatal error, 0 otherwise
  */
-static int rcp_response(int fd, char *host)
+static int 
+rcp_response(int fd, char *host)
 {
 	char resp;
 	int i = 0, result = -1;
@@ -417,7 +477,8 @@ static int rcp_response(int fd, char *host)
 
 #define RCP_MODEMASK (S_ISUID|S_ISGID|S_ISVTX|S_IRWXU|S_IRWXG|S_IRWXO)
 
-static int rcp_sendfile(int fd, char *file, char *host, bool popt)
+static int 
+rcp_sendfile(int fd, char *file, char *host, bool popt)
 {
 	int result = 0;
 	char tmpstr[BUFSIZ], *template;
@@ -491,7 +552,13 @@ fail:
 	return result;
 }
 
-void gethost(char *name, char *addr)
+/*
+ * Return the h_addr of a hostname, exiting if there is a lookup failure.
+ *	name (IN)	hostname
+ *	addr (OUT)	pointer to location where address will be written
+ */
+void 
+gethost(char *name, char *addr)
 {
 	struct hostent *hp;
 
@@ -507,7 +574,8 @@ void gethost(char *name, char *addr)
  * Rcp thread.  One per remote connection.
  * Arguments are pointer to thd_t entry defined above.
  */
-static void *rcp(void *args)
+static void *
+rcp(void *args)
 {
 	thd_t *a = (thd_t *)args;
 	int result = DSH_DONE; /* the desired outcome */
@@ -528,15 +596,14 @@ static void *rcp(void *args)
 
 	int_block();			/* block SIGINT */
 
-#ifdef	_AIX
-	/* AIX 4.3 man page claims gethostbyname is MT-safe so go parallel */
+#if	HAVE_MTSAFE_GETHOSTBYNAME
 	if (a->rcmd_type != RCMD_SSH)
 		gethost(a->host, a->addr);
 #endif
 	a->start = time(NULL);
 	a->state = DSH_RCMD;
 	switch (a->rcmd_type) {
-#if HAVE_KRB4
+#if 	HAVE_KRB4
 		case RCMD_K4:
 			a->fd = k4cmd(a->host, a->addr, a->luser, a->ruser, 
 					cmd, a->nodeid, efdp);
@@ -546,13 +613,13 @@ static void *rcp(void *args)
 			a->fd = xrcmd(a->host, a->addr, a->luser, a->ruser, 
 					cmd, a->nodeid, efdp);
 			break;
-#if HAVE_ELAN3
+#if 	HAVE_ELAN3
 		case RCMD_QSHELL:
 			a->fd = qcmd(a->host, a->addr, a->luser, a->ruser, 
 					cmd, a->nodeid, efdp);
 			break;
 #endif
-#if HAVE_SSH
+#if 	HAVE_SSH
 		case RCMD_SSH:
 			a->fd = sshcmdrw(a->host, a->addr, a->luser, a->ruser, 
 					cmd, a->nodeid, efdp);
@@ -598,7 +665,8 @@ static void *rcp(void *args)
  * Extract a remote command return code embedded in output, returning
  * the code as an integer and truncating the line.
  */
-static int extract_rc(char *buf)
+static int 
+extract_rc(char *buf)
 {
 	int ret = 0;
 	char *p = strstr(buf, RC_MAGIC);
@@ -617,7 +685,8 @@ static int extract_rc(char *buf)
  * Rsh thread.  One per remote connection.
  * Arguments are pointer to thd_t entry defined above.
  */
-static void *rsh(void *args)
+static void *
+rsh(void *args)
 {
 	thd_t *a = (thd_t *)args;
 	int rv, maxfd;
@@ -630,15 +699,14 @@ static void *rsh(void *args)
 	int_block();			/* block SIGINT */
 
 	a->start = time(NULL);
-#ifdef	_AIX
-	/* AIX 4.3 man page claims gethostbyname is MT-safe so go parallel */
+#if	HAVE_MTSAFE_GETHOSTBYNAME
 	if (a->rcmd_type != RCMD_SSH)
 		gethost(a->host, a->addr);
 #endif
 	/* establish the connection */
 	a->state = DSH_RCMD;
 	switch (a->rcmd_type) {
-#if HAVE_KRB4
+#if 	HAVE_KRB4
 		case RCMD_K4:
 			a->fd = k4cmd(a->host, a->addr, a->luser, a->ruser, 
 					a->dsh_cmd, a->nodeid, efdp);
@@ -648,13 +716,13 @@ static void *rsh(void *args)
 			a->fd = xrcmd(a->host, a->addr, a->luser, a->ruser, 
 					a->dsh_cmd, a->nodeid, efdp);
 			break;
-#if HAVE_ELAN3
+#if 	HAVE_ELAN3
 		case RCMD_QSHELL:
 			a->fd = qcmd(a->host, a->addr, a->luser, a->ruser, 
 					a->dsh_cmd, a->nodeid, efdp);
 			break;
 #endif
-#if HAVE_SSH
+#if 	HAVE_SSH
 		case RCMD_SSH:
 			a->fd = sshcmd(a->host, a->addr, a->luser, a->ruser, 
 			    		a->dsh_cmd, a->nodeid, efdp);
@@ -687,7 +755,7 @@ static void *rsh(void *args)
 			FD_SET(a->efd, &wantrfds);
 		}
 		FD_ZERO(&wantwfds);
-#ifdef DSH_FANOUT_STDIN
+#if	STDIN_BCAST 	/* not yet supported */
 		FD_SET(fd, &wantwfds);
 #endif
 		maxfd = (a->dsh_sopt && a->efd > a->fd) ? a->efd : a->fd;
@@ -752,10 +820,11 @@ static void *rsh(void *args)
 				}
 			}
 
+#if	STDIN_BCAST 	/* not yet supported */
 			/* stdin ready ? */
 			if (FD_ISSET(a->fd, &writefds)) {
-				/* do something here someday? */
 			}
+#endif
 		}
 	}
 	
@@ -785,7 +854,8 @@ static void *rsh(void *args)
 /*
  * If debugging, call this to dump thread connect/command times.
  */
-void dump_debug_stats(int rshcount)
+void 
+dump_debug_stats(int rshcount)
 {
 	time_t conTot = 0, conMin = TIME_T_YEAR, conMax = 0;
 	time_t cmdTot = 0, cmdMin = TIME_T_YEAR, cmdMax = 0;
@@ -822,7 +892,8 @@ void dump_debug_stats(int rshcount)
  * Run command on a list of hosts, keeping 'fanout' number of connections 
  * active concurrently.
  */
-int dsh(opt_t *opt)
+int 
+dsh(opt_t *opt)
 {
 	int i, rc = 0;
 	int rv, rshcount;
@@ -907,8 +978,9 @@ int dsh(opt_t *opt)
 		t[i].pcp_outfile = opt->outfile_name;	
 		t[i].pcp_popt = opt->preserve;
 		t[i].pcp_ropt = opt->recursive;
-#ifndef _AIX
-		/* If not AIX, gethostbyname is assumed to not be thread safe */
+#if	!HAVE_MTSAFE_GETHOSTBYNAME
+		/* if MT-safe, do it in parallel in rsh/rcp threads */
+		/* gethostbyname_r is not very portable so skip it */
 		if (opt->rcmd_type != RCMD_SSH)
 			gethost(t[i].host, t[i].addr);
 #endif
@@ -937,7 +1009,7 @@ int dsh(opt_t *opt)
 		pthread_attr_init(&t[i].attr);
 		pthread_attr_setdetachstate(&t[i].attr,
 		    PTHREAD_CREATE_DETACHED);
-#ifdef PTHREAD_SCOPE_SYSTEM
+#ifdef 	PTHREAD_SCOPE_SYSTEM
 		/* we want 1:1 threads if there is a choice */
 		pthread_attr_setscope(&t[i].attr, PTHREAD_SCOPE_SYSTEM);
 #endif

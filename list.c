@@ -53,7 +53,8 @@ static char *next_tok(char *, char **);
  * Create a new list with LIST_CHUNK elements allocated.
  *   RETURN	newly allocated list.
  */
-list_t list_new()
+list_t 
+list_new(void)
 {
 	list_t new = (list_t)Malloc(sizeof(struct list_implementation));
 #ifndef NDEBUG
@@ -70,7 +71,8 @@ list_t list_new()
  * Expand a list to accomodate LIST_CHUNK more elements.
  *   l (in)	list which will be expanded
  */
-void list_expand(list_t l)
+void 
+list_expand(list_t l)
 {
 	assert(l->magic == LIST_MAGIC);
 	l->size += LIST_CHUNK;
@@ -82,7 +84,8 @@ void list_expand(list_t l)
  * structure itself.  The casts to void are to shuddup the aix xlc_r compiler.
  *   l (IN)	pointer to list (list will be set to NULL)
  */
-void list_free(list_t *l)
+void 
+list_free(list_t *l)
 {
 	int i;
 
@@ -98,7 +101,8 @@ void list_free(list_t *l)
  *   l (IN)	list 
  *   word (IN)	word to be added to list
  */
-void list_push(list_t l, char *word)
+void 
+list_push(list_t l, char *word)
 {
 	assert(l->magic == LIST_MAGIC);
 	if (l->size == l->nitems)
@@ -112,7 +116,8 @@ void list_push(list_t l, char *word)
  *   l (IN)	list
  *   RETURN	last entry of list
  */
-char *list_pop(list_t l)
+char *
+list_pop(list_t l)
 {
 	char *word = NULL;
 
@@ -128,7 +133,8 @@ char *list_pop(list_t l)
  *   l (IN)	list
  *   RETURN	first entry of list
  */
-char *list_shift(list_t l)
+char *
+list_shift(list_t l)
 {
 	char *word = NULL;
 	int i;
@@ -152,7 +158,8 @@ char *list_shift(list_t l)
  *   str (IN)	double-pointer to string containing tokens and separators
  *   RETURN	next token
  */
-static char *next_tok(char *sep, char **str)
+static char *
+next_tok(char *sep, char **str)
 {
 	char *tok;
 
@@ -183,7 +190,8 @@ static char *next_tok(char *sep, char **str)
  *   str (IN)	string containing tokens and separators
  *   RETURN 	new list containing all tokens
  */
-list_t list_split(char *sep, char *str)
+list_t 
+list_split(char *sep, char *str)
 {
 	list_t new = list_new();
 	char *tok;
@@ -207,7 +215,8 @@ list_t list_split(char *sep, char *str)
  * r_op(IN) range operator character
  * RETURN   new list containing all tokens with ranges expanded
  */
-list_t list_split_range(char *sep, char *r_op, char *str)
+list_t 
+list_split_range(char *sep, char *r_op, char *str)
 {
 	char *tok, *cur; 
 	int high, low, fmt;
@@ -339,7 +348,8 @@ list_t list_split_range(char *sep, char *r_op, char *str)
  *   sep (IN)	string containing separater characters
  *   l (IN)	list
  */
-char *list_join(char *sep, list_t l)
+char *
+list_join(char *sep, list_t l)
 {
 	int i;
 	char *result = NULL;
@@ -359,7 +369,8 @@ char *list_join(char *sep, list_t l)
  * Dump a list, for debugging 
  *   l (IN)	list
  */
-void list_dump(list_t l)
+void 
+list_dump(list_t l)
 {
 	int i;
 
@@ -375,7 +386,8 @@ void list_dump(list_t l)
  *   l1 (IN)	target list
  *   l2 (IN)	source list
  */
-void list_pushl(list_t l1, list_t l2)
+void 
+list_pushl(list_t l1, list_t l2)
 {
 	int i;
 
@@ -390,7 +402,8 @@ void list_pushl(list_t l1, list_t l2)
  *   l (IN)	list to be searched
  *   item (IN)	string to look for 
  */
-int list_test(list_t l, char *item)
+int 
+list_test(list_t l, char *item)
 {
 	int i, found = 0;
 
@@ -409,7 +422,8 @@ int list_test(list_t l, char *item)
  *   l1 (IN)	target list
  *   l2 (IN)	source list
  */
-void list_merge(list_t l1, list_t l2)
+void 
+list_merge(list_t l1, list_t l2)
 {
 	int i;
 
@@ -425,7 +439,8 @@ void list_merge(list_t l1, list_t l2)
  *   l (IN)	target list
  *   RETURN	number of items
  */
-int list_length(list_t l)
+int 
+list_length(list_t l)
 {
 	assert(l->magic == LIST_MAGIC);
 	return l->nitems;
@@ -437,7 +452,8 @@ int list_length(list_t l)
  *   n (IN)	index into list
  *   RETURN	pointer to element
  */
-char *list_nth(list_t l, int n)
+char *
+list_nth(list_t l, int n)
 {
 	assert(l->magic == LIST_MAGIC);
 	assert(n < l->nitems && n >= 0);
@@ -449,7 +465,8 @@ char *list_nth(list_t l, int n)
  *   l (IN)	list
  *   n (IN)	index into list
  */
-void list_del(list_t l, int n)
+void 
+list_del(list_t l, int n)
 {
 	int i;
 	assert(l->magic == LIST_MAGIC);

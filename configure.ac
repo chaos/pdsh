@@ -288,5 +288,16 @@ AH_BOTTOM(
 #endif /* WITH_DMALLOC */]
 )
 
+# XXX write tests for these eventually
+AH_BOTTOM(
+[#ifdef _AIX
+#  define HAVE_MTSAFE_GETHOSTBYNAME 1
+#  define HAVE_MAGIC_RSHELL_CLEANUP 1
+#else
+#  define HAVE_MTSAFE_GETHOSTBYNAME 0
+#  define HAVE_MAGIC_RSHELL_CLEANUP 0
+#endif /* _AIX */]
+)
+
 AC_OUTPUT_COMMANDS(echo "creating dependencies"; make depend >/dev/null)
 AC_OUTPUT([Makefile pdsh.spec pdcp.1 pdsh.1])

@@ -60,7 +60,8 @@ static list_t parse_command_with_quotes(char *str);
  * mode(IN)	"r" for reading, "w" (or anything else) for writing
  * OUT		FILE * to output/input stream of child process
  */
-FILE *xpopen(char *cmd, char *mode)
+FILE *
+xpopen(char *cmd, char *mode)
 {
 	struct pid *cur;
 	int fds[2], j, read, fd;
@@ -149,7 +150,8 @@ FILE *xpopen(char *cmd, char *mode)
  *              This is different from pclose, which returns the 
  *              unmodified status from waitpid.
  */
-int xpclose(FILE *f)
+int 
+xpclose(FILE *f)
 {
 	int status;
 	pid_t pid;
@@ -189,7 +191,8 @@ int xpclose(FILE *f)
  * (OUT)	list of arguments, strings enclosed in "" are treated as
  * 		one arg. 
  */
-static list_t parse_command_with_quotes(char *str)
+static list_t 
+parse_command_with_quotes(char *str)
 {
 	list_t args = list_new();
 	char *c, *lc;

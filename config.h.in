@@ -126,3 +126,12 @@
 #  include <dmalloc.h>
 #endif /* WITH_DMALLOC */
 
+
+#ifdef _AIX
+#  define HAVE_MTSAFE_GETHOSTBYNAME 1
+#  define HAVE_MAGIC_RSHELL_CLEANUP 1
+#else
+#  define HAVE_MTSAFE_GETHOSTBYNAME 0
+#  define HAVE_MAGIC_RSHELL_CLEANUP 0
+#endif /* _AIX */
+

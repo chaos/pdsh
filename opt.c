@@ -34,7 +34,7 @@ static void show_version(void);
 Usage: pdsh [-options] command ...\n\
 -S                return largest of remote command return values\n"
 
-#ifdef 	_AIX
+#if	HAVE_MAGIC_RSHELL_CLEANUP
 #define OPT_USAGE_STDERR "\
 -s                separate stderr and stdout\n"
 #else
@@ -86,7 +86,8 @@ Usage: pdcp [-options] src [src2...] dest\n\
  * Set defaults for various options.
  *	opt (IN/OUT)	option struct
  */
-void opt_default(opt_t *opt)
+void 
+opt_default(opt_t *opt)
 {
 	struct passwd *pw;
 
@@ -147,7 +148,8 @@ void opt_default(opt_t *opt)
  * Override default options with environment variables.
  *	opt (IN/OUT)	option struct	
  */
-void opt_env(opt_t *opt)
+void 
+opt_env(opt_t *opt)
 {
 	char *rhs;
 
@@ -186,7 +188,8 @@ void opt_env(opt_t *opt)
  * 	argc (IN)	arg count passed in from main
  * 	argv (IN)	arg vector passed in from main
  */
-void opt_args(opt_t *opt, int argc, char *argv[])
+void 
+opt_args(opt_t *opt, int argc, char *argv[])
 {
 	char validargs[LINEBUFSIZE];
 	int c;
@@ -408,7 +411,8 @@ void opt_args(opt_t *opt, int argc, char *argv[])
  * Trap a few option inconsitencies.
  *	opt (IN)	option struct
  */
-bool opt_verify(opt_t *opt)
+bool 
+opt_verify(opt_t *opt)
 {
 	bool verified = true;
 	int i;
@@ -519,7 +523,8 @@ bool opt_verify(opt_t *opt)
  * List the current options.
  *	opt (IN)	option list
  */
-void opt_list(opt_t *opt)
+void 
+opt_list(opt_t *opt)
 {
 	char *wcoll_str, *infile_str;
 
@@ -574,7 +579,8 @@ void opt_list(opt_t *opt)
  * Free heap-allocated memory associated with options, etc.
  *	opt (IN/OUT)	option struct
  */
-void opt_free(opt_t *opt)
+void 
+opt_free(opt_t *opt)
 {
 	if (opt->wcoll != NULL)
 		list_free(&opt->wcoll);
@@ -586,7 +592,8 @@ void opt_free(opt_t *opt)
  * Spit out all the options and their one-line synopsis for the user, 
  * then exit.
  */
-static void usage(opt_t *opt)
+static void 
+usage(opt_t *opt)
 {
 	if (opt->personality == DSH) {
 		err(OPT_USAGE_DSH);

@@ -33,7 +33,8 @@
  *	wcoll (IN)	list of target nodes
  *	host (IN)	hostname to delete
  */
-void del_wcoll(list_t wcoll, char *host)
+void 
+del_wcoll(list_t wcoll, char *host)
 {
 	int wcoll_nitems = list_length(wcoll);
 	int n;
@@ -53,7 +54,8 @@ void del_wcoll(list_t wcoll, char *host)
  *	f (IN)		FILE pointer to wcoll file (or NULL)	
  *	RETURN		new list containing hostnames
  */
-list_t read_wcoll(char *file, FILE *f)
+list_t 
+read_wcoll(char *file, FILE *f)
 {
 	list_t new = list_new();
 	list_t words;
@@ -91,7 +93,8 @@ list_t read_wcoll(char *file, FILE *f)
 }
 
 #ifdef	_PATH_NODEATTR
-list_t read_genders(char *attr, int iopt)
+list_t 
+read_genders(char *attr, int iopt)
 {
 	FILE *f;
 	list_t new = list_new();
@@ -121,7 +124,8 @@ list_t read_genders(char *attr, int iopt)
 #endif /* _PATH_NODEATTR */
 
 #ifdef _PATH_SDRGETOBJECTS
-static int sdr_numswitchplanes(void)
+static int 
+sdr_numswitchplanes(void)
 {
 	FILE *f;
 	list_t words;
@@ -147,7 +151,8 @@ static int sdr_numswitchplanes(void)
 	return n;
 }
 
-static void sdr_getswitchname(char *switchName)
+static void 
+sdr_getswitchname(char *switchName)
 {
 	FILE *f;
 	list_t words;
@@ -175,7 +180,8 @@ static void sdr_getswitchname(char *switchName)
  *	nameType (IN)	either "switch_responds" or "host_responds"
  *	resp (OUT)	array of boolean, indexed by node number
  */
-static void sdr_getresp(bool Gopt, char *nameType, bool resp[])
+static void 
+sdr_getresp(bool Gopt, char *nameType, bool resp[])
 {
 	int nn, switchplanes;
 	FILE *f;
@@ -226,7 +232,8 @@ static void sdr_getresp(bool Gopt, char *nameType, bool resp[])
  *	nameType (IN)	either "initial_hostname" or "reliable_hostname"
  *	resp (OUT)	array of hostnames indexed by node number (heap cpy)
  */
-static void sdr_getnames(bool Gopt, char *nameType, char *nodes[])
+static void 
+sdr_getnames(bool Gopt, char *nameType, char *nodes[])
 {
 	int nn;
 	FILE *f;
@@ -258,7 +265,8 @@ static void sdr_getnames(bool Gopt, char *nameType, char *nodes[])
  *	vopt (IN)	verify switch_responds/host_responds
  *	RETURN		new list containing hostnames
  */
-list_t sdr_wcoll(bool Gopt, bool iopt, bool vopt)
+list_t 
+sdr_wcoll(bool Gopt, bool iopt, bool vopt)
 {
 	list_t new;
 	char *inodes[MAX_SP_NODE_NUMBER + 1], *rnodes[MAX_SP_NODE_NUMBER + 1];

@@ -29,7 +29,8 @@ static char *getcmd(char *);
 static void shell(uid_t, char *);
 static void interactive_dsh(opt_t *);
 
-int main(int argc, char *argv[])
+int 
+main(int argc, char *argv[])
 {
 	opt_t opt;
 	int retval = 0;
@@ -74,7 +75,8 @@ int main(int argc, char *argv[])
  * "quit", "exit", or ^D to get out.
  *	opt (IN)	program options struct
  */
-static void interactive_dsh(opt_t *opt)
+static void 
+interactive_dsh(opt_t *opt)
 {
 	pid_t pid;
 
@@ -118,7 +120,8 @@ static void interactive_dsh(opt_t *opt)
  *	uid (IN)	uid used to execute command
  *	cmd (IN)	command and args
  */
-static void shell(uid_t uid, char *cmd)
+static void 
+shell(uid_t uid, char *cmd)
 {
 	pid_t pid;
 
@@ -138,7 +141,8 @@ static void shell(uid_t uid, char *cmd)
  * Prompt for a command and return it.  
  *	prompt (IN)	string used to build prompt (e.g. program name)
  */
-static char *getcmd(char *prompt)
+static char *
+getcmd(char *prompt)
 {
 	char *cmd = NULL, *buf_cln;
 	char buf[LINEBUFSIZE];

@@ -178,3 +178,11 @@ Release 1.6+
 	Test HAVE_WORKING_STRERROR_R; strerror_r is broken on AIX.
 
 	Added "Gotchas" in README.
+
+	Remove all _AIX ifdefs from code and added a single ifdef to
+	config.h bottom which define HAVE_MTSAFE_GETHOSTBYNAME and 
+	HAVE_MAGIC_RSHELL_CLEANUP.
+
+	Rcp code to handle short writes just in case.
+
+	Updated copyright notice and normalized function defs.

@@ -35,7 +35,8 @@ static char *host = NULL;
  * for %H, %p, and %P.
  *   str (IN)	program name
  */
-void err_init(char *str)
+void 
+err_init(char *str)
 {
         char thishost[MAXHOSTNAMELEN];
         char *p;
@@ -50,7 +51,8 @@ void err_init(char *str)
 /*
  * Free heap storage allocated by err_init()
  */
-void err_cleanup()
+void 
+err_cleanup(void)
 {
 	Free((void **)&prog);
 	Free((void **)&host);
@@ -69,7 +71,8 @@ void err_cleanup()
  * %P   program name
  * %H   hostname for this host
  */
-static void verr(FILE *stream, char *format, va_list ap) 
+static void 
+verr(FILE *stream, char *format, va_list ap) 
 {
 	char *buf = NULL;
 	char *q;
@@ -118,7 +121,8 @@ static void verr(FILE *stream, char *format, va_list ap)
 	Free((void **)&buf);				/* clean up */
 }
 
-void err(char *format, ...)
+void 
+err(char *format, ...)
 {
 	va_list	ap;
 
@@ -127,7 +131,8 @@ void err(char *format, ...)
 	va_end(ap);
 }
 
-void errx(char *format, ...)
+void 
+errx(char *format, ...)
 {
 	va_list	ap;
 
@@ -137,7 +142,8 @@ void errx(char *format, ...)
 	exit(1);
 }
 
-void out(char *format, ...)
+void 
+out(char *format, ...)
 {
 	va_list	ap;
 

@@ -20,7 +20,7 @@
 #include "opt.h"
 
 
-#ifdef	_AIX
+#if	HAVE_MAGIC_RSHELL_CLEANUP
 #define DFLT_SEPARATE_STDERR	false
 #define DFLT_FANOUT 		64
 #else
