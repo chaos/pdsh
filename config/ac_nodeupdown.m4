@@ -45,6 +45,27 @@ AC_DEFUN([AC_NODEUPDOWN],
       AC_DEFINE([HAVE_LIBNODEUPDOWN], [1], 
                 [Define if you have libnodeupdown.])
       NODEUPDOWN_LIBS="-lnodeupdown"
+
+      # Which nodeupdown API version do we have?
+      AC_TRY_COMPILE(
+           [#include <nodeupdown.h>],
+           [nodeupdown_load_data(NULL, NULL, NULL, NULL, 0,0);],
+           ac_nodeupdown_load_data_6=yes,
+           ac_nodeupdown_load_data_6=no)
+      AC_TRY_COMPILE(
+           [#include <nodeupdown.h>],
+           [nodeupdown_load_data(NULL, NULL, 0, 0, NULL);],
+           ac_nodeupdown_load_data_5=yes,
+           ac_nodeupdown_load_data_5=no)
+      
+      if test "$ac_nodeupdown_load_data_6" = "yes"; then
+           AC_DEFINE(HAVE_NODEUPDOWN_LOAD_DATA_6, 1, 
+                     [6 param nodeupdown_load_data])
+      fi
+      if test "$ac_nodeupdown_load_data_5" = "yes"; then
+           AC_DEFINE(HAVE_NODEUPDOWN_LOAD_DATA_5, 1, 
+                     [5 param nodeupdown_load_data])
+      fi
     fi
   fi
 

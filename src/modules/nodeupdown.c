@@ -125,7 +125,11 @@ remove_all_down_nodes(hostlist_t wcoll)
     if ((nh = nodeupdown_handle_create()) == NULL)
         errx("%p: Unable to create nodeupdown handle.\n");
 
+#if HAVE_NODEUPDOWN_LOAD_DATA_6
+    if (nodeupdown_load_data(nh, NULL, NULL, NULL, 0, 0) < 0) 
+#else
     if (nodeupdown_load_data(nh, NULL, 0, 0, NULL) < 0) 
+#endif
         errx("%p: nodeupdown: %s\n", nodeupdown_errormsg(nh));
 
     i = hostlist_iterator_create(wcoll);

@@ -1,5 +1,13 @@
 2003-12-09  Albert Chu <chu11@llnl.gov>
 
+	* config/ac_nodeupdown.m4: Added check for old vs. new nodeupdown
+	APIs.
+
+	* src/modules/nodeupdown.c (remove_all_down_nodes): Added support
+	for both old and new nodeupdown APIs.
+	
+2003-12-09  Albert Chu <chu11@llnl.gov>
+
 	* src/modules/nodeupdown.c (remove_all_down_nodes): Updated for
 	change in nodeupdown API version 1.3.
 
