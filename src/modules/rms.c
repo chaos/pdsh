@@ -31,8 +31,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <qsnet/types.h>
-#include <rms/rmsapi.h>
 
 #include "hostlist.h"
 #include "err.h"

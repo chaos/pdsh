@@ -113,6 +113,7 @@ Pdsh module providing -v functionality using libnodeupdown.
 %package  mod-rms
 Summary:  Provides RMS support for pdsh.
 Group:    System Environment/Base
+Requires: qsrms
 %description mod-rms
 Pdsh module providing support for gathering the list of target nodes
 from an allocated RMS resource.
@@ -236,7 +237,7 @@ rm -rf "$RPM_BUILD_ROOT"
 %endif
 ##############################################################################
 
-%if %{?_with_elan:1}{!?_with_elan:0}
+%if %{?_with_elan:1}%{!?_with_elan:0}
 %files qshd
 %defattr(-,root,root)
 %{_sbindir}/in.qshd
