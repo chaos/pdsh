@@ -731,8 +731,7 @@ doit(struct sockaddr_in *fromp)
     m_rv = read(0,&c,1);
     if (m_rv != 1 || c != '\0') {
       syslog (LOG_ERR, "%s", "mqshd: Client not ready.");
-      if (errnum != __NONE)
-        goto quit_now;
+      goto quit_now;
     }
 
     if (errnum != __NONE) {
