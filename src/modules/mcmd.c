@@ -297,6 +297,7 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     struct xpollfd xpfds[2];
     char *mpvers = MRSH_PROTOCOL_VERSION;
     char num_seq[12] = {0};
+    munge_ctx_t ctx;
 
     sigemptyset(&blockme);
     sigaddset(&blockme, SIGURG);
@@ -465,13 +466,17 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     mptr += strlen(num_seq)+1;
     mptr = strcpy(mptr, cmd);
 
-    if ((m_rv = munge_encode(&m,0,mbuf,mcount)) != EMUNGE_SUCCESS) {
+    ctx = munge_ctx_create();
+
+    if ((m_rv = munge_encode(&m,ctx,mbuf,mcount)) != EMUNGE_SUCCESS) {
         close(s2);
         free(tmbuf);
-        err("%p: %S: mcmd: munge_encode: %S\n", ahost, 
-                munge_strerror((munge_err_t)m_rv));
+        err("%p: %S: mcmd: munge_encode: %s\n", ahost, munge_ctx_strerror(ctx));
+        munge_ctx_destroy(ctx);
         goto bad;
     }
+
+    munge_ctx_destroy(ctx);
 
     mcount = (strlen(m)+1);
 
