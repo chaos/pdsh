@@ -65,7 +65,6 @@
 #endif
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <sys/select.h>
 #include <sys/poll.h>
 #include <sys/time.h>
 #include <sys/stat.h>
@@ -103,6 +102,7 @@
 #include "opt.h"
 #include "wcoll.h"
 #include "mod_rcmd.h"
+#include "xpoll.h"
 
 static int debug = 0;
 
@@ -146,7 +146,7 @@ static void _xsignal(int signal, void (*handler) (int))
 
 /*
  * SIGALRM handler.  This is just a stub because we are really interested
- * in interrupting connect() in rcmd/k4cmd/etc. or select() below and
+ * in interrupting connect() in rcmd/k4cmd/etc. or xpoll() below and
  * causing them to return EINTR.
  */
 static void _alarm_handler(int dummy)
@@ -656,7 +656,7 @@ static void *_rsh_thread(void *args)
     char *buf = NULL;
     int result = DSH_DONE;      /* the desired outcome */
     int *efdp = a->dsh_sopt ? &a->efd : NULL;
-    struct pollfd pfds[2];
+    struct xpollfd xpfds[2];
     int nfds = 1;
 
     _int_block();               /* block SIGINT */
@@ -689,44 +689,42 @@ static void *_rsh_thread(void *args)
         fp = fdopen(a->fd, "r+");
 
         /* prep for poll call */
-        pfds[0].fd = a->fd;
+        xpfds[0].fd = a->fd;
         if (a->dsh_sopt) {      /* separate stderr */
             efp = fdopen(a->efd, "r");
-            pfds[1].fd = a->efd;
+            xpfds[1].fd = a->efd;
             nfds++;
         }
         else
-            pfds[1].fd = -1;
+            xpfds[1].fd = -1;
 
-        pfds[0].events = pfds[1].events = POLLIN; 
+        xpfds[0].events = xpfds[1].events = POLLIN; 
 #if	STDIN_BCAST             /* not yet supported */
-            pfds[0].events |= POLLOUT;
+        xpfds[0].events |= POLLOUT;
 #endif
 
         /*
          * poll / read / report loop.
          */
-        while (pfds[0].fd >= 0 || pfds[1].fd >= 0) {
-
-            pfds[0].revents = pfds[1].revents = 0;
+        while (xpfds[0].fd >= 0 || xpfds[1].fd >= 0) {
 
             /* poll (possibility for SIGALRM) */
-            rv = poll(pfds, nfds, -1);
+            rv = xpoll(xpfds, nfds, -1);
             if (rv == -1) {
                 if (errno == EINTR)
                     err("%p: %S: command timeout\n", a->host);
                 else
-                    err("%p: %S: poll: %m\n", a->host);
+                    err("%p: %S: xpoll: %m\n", a->host);
                 result = DSH_FAILED;
                 break;
             }
 
             /* stdout ready or closed ? */
-            if (pfds[0].revents > 0) {
+            if (xpfds[0].revents & XPOLLREAD) {
                 rv = xfgets(&buf, fp);
                 if (rv <= 0)  { /* closed */
                     fclose(fp);  /* also closes original fd */
-                    pfds[0].fd = -1;
+                    xpfds[0].fd = -1;
                 }
                 if (rv == -1)   /* error */
                     err("%p: %S: xfgets: %m\n", a->host);
@@ -742,11 +740,11 @@ static void *_rsh_thread(void *args)
             }
 
             /* stderr ready or closed ? */
-            if (a->dsh_sopt && pfds[1].revents > 0) {
+            if (a->dsh_sopt && xpfds[1].revents & XPOLLREAD) {
                 rv = xfgets(&buf, efp);
                 if (rv <= 0)  {/* closed */
                     fclose(efp);  /* also closes original fd */
-                    pfds[1].fd = -1;
+                    xpfds[1].fd = -1;
                 }
                 if (rv == -1)   /* error */
                     err("%p: %S: xfgets: %m\n", a->host);
@@ -758,6 +756,7 @@ static void *_rsh_thread(void *args)
                         err("%s", buf);
                 }
             }
+
 #if	STDIN_BCAST             /* not yet supported */
             /* stdin ready ? */
             if (FD_ISSET(a->fd, &writefds)) {

@@ -79,7 +79,6 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/time.h>
-#include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <stdio.h>
@@ -109,6 +108,7 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #include "err.h"
 #include "list.h"
 #include "mod.h"
+#include "xpoll.h"
 
 #define RSH_PORT 514
 
@@ -203,11 +203,12 @@ xrcmd(char *ahost, char *addr, char *locuser, char *remuser,
       char *cmd, int rank, int *fd2p)
 {
     struct sockaddr_in sin, from;
-    fd_set reads;
     sigset_t oldset, blockme;
     pid_t pid;
-    int s, lport, timo, rv, maxfd;
+    int s, lport, timo, rv;
     char c;
+    struct xpollfd xpfds[2];
+
     pid = getpid();
 
     sigemptyset(&blockme);
@@ -265,21 +266,17 @@ xrcmd(char *ahost, char *addr, char *locuser, char *remuser,
             (void) close(s2);
             goto bad;
         }
-        FD_ZERO(&reads);
-        FD_SET(s, &reads);
-        FD_SET(s2, &reads);
         errno = 0;
-        maxfd = (s > s2) ? s : s2;
-        if (select(maxfd + 1, &reads, 0, 0, 0) < 1
-            || !FD_ISSET(s2, &reads)) {
-            if (errno != 0)
-                err("%p: %S: rcmd: select (setting up stderr): %m\n",
-                    ahost);
-            else
-                err("%p: %S: rcmd: select: protocol failure in circuit setup\n",
-                    ahost);
-            (void) close(s2);
-            goto bad;
+        xpfds[0].fd = s;
+        xpfds[1].fd = s2;
+        xpfds[0].events = xpfds[1].events = XPOLLREAD;
+        if (((rv = xpoll(xpfds, 2, -1)) < 0) || rv != 1 || (xpfds[0].revents > 0)) {
+          if (errno != 0)
+            err("%p: %S: k4cmd: xpoll (setting up stderr): %m\n", ahost);
+          else
+            err("%p: %S: k4cmd: xpoll: protocol failure in circuit setup\n", ahost);
+          (void) close(s2);
+          goto bad;
         }
         s3 = accept(s2, (struct sockaddr *) &from, &len);
         (void) close(s2);

@@ -87,7 +87,6 @@ static char sccsid[] = "@(#)mcmd.c      Based from: 8.3 (Berkeley) 3/26/94";
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/time.h>
-#include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 
@@ -120,6 +119,7 @@ static char sccsid[] = "@(#)mcmd.c      Based from: 8.3 (Berkeley) 3/26/94";
 #include "err.h"
 #include "fd.h"
 #include "mod.h"
+#include "xpoll.h"
 
 #define MRSH_PORT       21212
 
@@ -289,8 +289,7 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
   ssize_t m_rv;
   sigset_t blockme;
   sigset_t oldset;
-  int maxfd;
-  fd_set reads;
+  struct xpollfd xpfds[2];
 
   sigemptyset(&blockme);
   sigaddset(&blockme, SIGURG);
@@ -488,20 +487,19 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
   free(m);
   free(tmbuf);
 
-  FD_ZERO(&reads);
-  FD_SET(s, &reads); 
-  FD_SET(s2, &reads);
-  maxfd = (s > s2) ? s : s2; 
-  if (select(maxfd + 1, &reads, 0, 0, 0) < 1 || !FD_ISSET(s2, &reads)) {
-    if (errno != 0) 
-      err("%p: %S: mcmd: select (setting up stderr): %m\n", ahost);
+  errno = 0;
+  xpfds[0].fd = s;
+  xpfds[1].fd = s2;
+  xpfds[0].events = xpfds[1].events = XPOLLREAD;
+  if (((rv = xpoll(xpfds, 2, -1)) < 0) || rv != 1 || (xpfds[0].revents > 0)) {
+    if (errno != 0)
+      err("%p: %S: mcmd: xpoll (setting up stderr): %m\n", ahost);
     else
-      err("%p: %S: select: protocol failure in circuit setup\n", ahost);
+      err("%p: %S: mcmd: xpoll: protocol failure in circuit setup\n", ahost);
     (void) close(s2);
     goto bad;
   }
 
-  errno = 0;
   len = sizeof(from); /* arg to accept */
   s3 = accept(s2, (struct sockaddr *)&from, &len);
   if (s3 < 0) {
@@ -511,6 +509,12 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
   }
 
   close(s2);
+
+  if (write(s,"",1) < 0) {
+      err("%p: %S: mcmd: Cannot communicate with daemon to proceed: %m\n", ahost);
+      close(s3);
+      goto bad;
+  }
 
   /*
    * Read from our stderr.  The server should have placed our random number

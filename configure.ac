@@ -68,7 +68,8 @@ CPPFLAGS="$CPPFLAGS $PTHREAD_CFLAGS"
 LIBS="$PTHREAD_LIBS $LIBS"
 
 # Checks for header files.
-AC_CHECK_HEADERS([fcntl.h strings.h sys/file.h unistd.h pthread.h])
+AC_CHECK_HEADERS([fcntl.h strings.h sys/file.h unistd.h \
+                  pthread.h poll.h sys/poll.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 TYPE_SOCKLEN_T
@@ -77,6 +78,11 @@ TYPE_SOCKLEN_T
 dnl AC_FUNC_MALLOC
 AC_FUNC_STRERROR_R
 AC_CHECK_FUNCS([strerror pthread_sigmask sigthreadmask rresvport atoi])
+
+#
+# Check for poll vs. select()
+#
+AC_POLLSELECT
 
 #
 # Test for default pdsh fanout and connect timeout

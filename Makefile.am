@@ -54,7 +54,8 @@ COMMON_FILES = \
 	mod_rcmd.c mod_rcmd.h \
 	mod.c mod.h \
 	fd.c fd.h \
-	pcp_server.h pcp_server.c
+	pcp_server.h pcp_server.c \
+	xpoll.h xpoll.c
 
 in_qshd_SOURCES = \
 	qshd.c \
@@ -62,7 +63,8 @@ in_qshd_SOURCES = \
 	xmalloc.c xmalloc.h \
 	xstring.c xstring.h \
 	err.c err.h \
-	hostlist.c hostlist.h
+	hostlist.c hostlist.h \
+	xpoll.c xpoll.h
 
 in_qshd_LDADD = $(top_builddir)/libqsw.la
 
@@ -73,7 +75,8 @@ in_mqshd_SOURCES = \
 	xstring.c xstring.h \
 	err.c err.h \
 	list.c list.h \
-	hostlist.c hostlist.h 
+	hostlist.c hostlist.h \
+	xpoll.c xpoll.h
 
 in_mqshd_LDADD = $(top_builddir)/libqsw.la
 in_mqshd_LDFLAGS = $(MRSH_LIBS)

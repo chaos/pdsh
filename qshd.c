@@ -104,6 +104,7 @@ char rcsid[] = "$Id$";
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <sys/select.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>

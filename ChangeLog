@@ -9,6 +9,8 @@
 	* Updated pdcp manpage to be clearer about pdcp functionality.
 	* "bsd" rcmd renamed to "rsh" rcmd 
 	* Fixed scalability issues with mcmd/mqcmd file descriptors
+	* Fixed scalability issues with select() by using poll()
+	* Fixed race condition in mcmd
 	* Tweaked of configuration, makefiles, manpages, and documents for
 	  readability and portability.
 	

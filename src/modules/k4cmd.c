@@ -76,7 +76,6 @@
 #include <errno.h>
 #include <krb.h>
 #include <kparse.h>
-#include <sys/select.h>
 #include <fcntl.h>              /* for F_SETOWN */
 
 #include "xmalloc.h"
@@ -84,6 +83,7 @@
 #include "dsh.h"
 #include "err.h"
 #include "list.h"
+#include "xpoll.h"
 
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN 64
@@ -200,8 +200,7 @@ k4cmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     static pthread_mutex_t mylock = PTHREAD_MUTEX_INITIALIZER;
     int status;
     int rc, rv;
-    fd_set reads;
-    int maxfd;
+    struct xpollfd xpfds[2];
 
     pid = getpid();
 
@@ -258,21 +257,17 @@ k4cmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
             (void) close(s2);
             goto bad;
         }
-        FD_ZERO(&reads);
-        FD_SET(s, &reads);
-        FD_SET(s2, &reads);
         errno = 0;
-        maxfd = (s > s2) ? s : s2;
-        if (select(maxfd + 1, &reads, 0, 0, 0) < 1
-            || !FD_ISSET(s2, &reads)) {
-            if (errno != 0)
-                err("%p: %S: k4cmd: select (setting up stderr): %m\n",
-                    ahost);
-            else
-                err("%p: %S: k4cmd: select: protocol failure in circuit setup\n",
-                    ahost);
-            (void) close(s2);
-            goto bad;
+        xpfds[0].fd = s;
+        xpfds[1].fd = s2;
+        xpfds[0].events = xpfds[1].events = XPOLLREAD;
+        if (((rv = xpoll(xpfds, 2, -1)) < 0) || rv != 1 || (xpfds[0].revents > 0)) {
+          if (errno != 0)
+            err("%p: %S: k4cmd: xpoll (setting up stderr): %m\n", ahost);
+          else
+            err("%p: %S: k4cmd: xpoll: protocol failure in circuit setup\n", ahost);
+          (void) close(s2);
+          goto bad;
         }
         s3 = accept(s2, (struct sockaddr *) &from, &len);
         (void) close(s2);

@@ -105,6 +105,7 @@ char rcsid[] = "$Id$";
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <sys/select.h>
 
 #include <pwd.h>
 #include <grp.h>
