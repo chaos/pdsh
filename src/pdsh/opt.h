@@ -37,7 +37,7 @@
 #include "src/common/list.h"
 #include "src/common/hostlist.h"
 
-#define MAX_USERNAME	9
+#define MAX_USERNAME	17
 #define MAX_GENDATTR	64
 
 #define RC_MAGIC	"XXRETCODE:"
