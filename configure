@@ -2711,66 +2711,7 @@ echo "$as_me: error: No libelan3!" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
-fi
-if test "$withrms" = yes; then
-    echo "$as_me:2716: checking for rms_numNodes in -lrmsapi" >&5
-echo $ECHO_N "checking for rms_numNodes in -lrmsapi... $ECHO_C" >&6
-if test "${ac_cv_lib_rmsapi_rms_numNodes+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lrmsapi -lrmsapi -lrms $LIBS"
-cat >conftest.$ac_ext <<_ACEOF
-#line 2724 "configure"
-#include "confdefs.h"
-
-/* Override any gcc2 internal prototype to avoid an error.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-/* We use char because int might match the return type of a gcc2
-   builtin and then its argument prototype would still apply.  */
-char rms_numNodes ();
-int
-main ()
-{
-rms_numNodes ();
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:2743: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
-  ac_status=$?
-  echo "$as_me:2746: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-         { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:2749: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:2752: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_cv_lib_rmsapi_rms_numNodes=yes
-else
-  echo "$as_me: failed program was:" >&5
-cat conftest.$ac_ext >&5
-ac_cv_lib_rmsapi_rms_numNodes=no
-fi
-rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-echo "$as_me:2763: result: $ac_cv_lib_rmsapi_rms_numNodes" >&5
-echo "${ECHO_T}$ac_cv_lib_rmsapi_rms_numNodes" >&6
-if test $ac_cv_lib_rmsapi_rms_numNodes = yes; then
-  LIBS="-lrmsapi -lrms $LIBS"
-else
-  { { echo "$as_me:2768: error: No librmsapi!" >&5
-echo "$as_me: error: No librmsapi!" >&2;}
-   { (exit 1); exit 1; }; }
-fi
-
-    echo "$as_me:2773: checking for pam_start in -lpam" >&5
+    echo "$as_me:2714: checking for pam_start in -lpam" >&5
 echo $ECHO_N "checking for pam_start in -lpam... $ECHO_C" >&6
 if test "${ac_cv_lib_pam_pam_start+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -2778,7 +2719,7 @@ else
   ac_check_lib_save_LIBS=$LIBS
 LIBS="-lpam -lpam -lpam_misc $LIBS"
 cat >conftest.$ac_ext <<_ACEOF
-#line 2781 "configure"
+#line 2722 "configure"
 #include "confdefs.h"
 
 /* Override any gcc2 internal prototype to avoid an error.  */
@@ -2797,6 +2738,65 @@ pam_start ();
 }
 _ACEOF
 rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:2741: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:2744: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:2747: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:2750: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_pam_pam_start=yes
+else
+  echo "$as_me: failed program was:" >&5
+cat conftest.$ac_ext >&5
+ac_cv_lib_pam_pam_start=no
+fi
+rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:2761: result: $ac_cv_lib_pam_pam_start" >&5
+echo "${ECHO_T}$ac_cv_lib_pam_pam_start" >&6
+if test $ac_cv_lib_pam_pam_start = yes; then
+  LIBSPAM="-lpam -lpam_misc"
+else
+  { { echo "$as_me:2766: error: No libpam!" >&5
+echo "$as_me: error: No libpam!" >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
+fi
+if test "$withrms" = yes; then
+    echo "$as_me:2773: checking for rms_numNodes in -lrmsapi" >&5
+echo $ECHO_N "checking for rms_numNodes in -lrmsapi... $ECHO_C" >&6
+if test "${ac_cv_lib_rmsapi_rms_numNodes+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lrmsapi -lrmsapi -lrms $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+#line 2781 "configure"
+#include "confdefs.h"
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char rms_numNodes ();
+int
+main ()
+{
+rms_numNodes ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
 if { (eval echo "$as_me:2800: \"$ac_link\"") >&5
   (eval $ac_link) 2>&5
   ac_status=$?
@@ -2808,22 +2808,22 @@ if { (eval echo "$as_me:2800: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:2809: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_cv_lib_pam_pam_start=yes
+  ac_cv_lib_rmsapi_rms_numNodes=yes
 else
   echo "$as_me: failed program was:" >&5
 cat conftest.$ac_ext >&5
-ac_cv_lib_pam_pam_start=no
+ac_cv_lib_rmsapi_rms_numNodes=no
 fi
 rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-echo "$as_me:2820: result: $ac_cv_lib_pam_pam_start" >&5
-echo "${ECHO_T}$ac_cv_lib_pam_pam_start" >&6
-if test $ac_cv_lib_pam_pam_start = yes; then
-  LIBSPAM="-lpam -lpam_misc"
+echo "$as_me:2820: result: $ac_cv_lib_rmsapi_rms_numNodes" >&5
+echo "${ECHO_T}$ac_cv_lib_rmsapi_rms_numNodes" >&6
+if test $ac_cv_lib_rmsapi_rms_numNodes = yes; then
+  LIBS="-lrmsapi -lrms $LIBS"
 else
-  { { echo "$as_me:2825: error: No libpam!" >&5
-echo "$as_me: error: No libpam!" >&2;}
+  { { echo "$as_me:2825: error: No librmsapi!" >&5
+echo "$as_me: error: No librmsapi!" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
