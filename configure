@@ -1391,8 +1391,8 @@ if test "${with_rangeop+set}" = set; then
     esac
 
 fi;
-echo "$as_me:1394: result: ${RANGE_OP=\"-\"}" >&5
-echo "${ECHO_T}${RANGE_OP=\"-\"}" >&6
+echo "$as_me:1394: result: ${RANGE_OP=-}" >&5
+echo "${ECHO_T}${RANGE_OP=-}" >&6
 
 cat >>confdefs.h <<EOF
 #define RANGE_OP "$RANGE_OP"
