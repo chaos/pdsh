@@ -66,7 +66,7 @@ read_wcoll(char *file, FILE *f, char *range_op)
 	hostlist_t new = hostlist_create("");
 	FILE *fp;
 
-	assert(f == NULL ^^ file == NULL);
+	assert(f != NULL || file != NULL);
 	if (!new)
 		errx("%p: hostlist_create failed\n");
 
@@ -345,7 +345,7 @@ rms_rid_to_nodes(char *part, int rid)
 	xpclose(f);
 	/* should either have empty string or host[n-m] range */
 	/* turn elanid range into list of hostnames */
-	return range_split(" ,", "-", tmp);
+	return hostlist_create(tmp);
 }
 
 /*
@@ -356,7 +356,7 @@ hostlist_t
 rms_wcoll(void)
 {
 	char *rhs;
-	list_t result = NULL;
+	hostlist_t result = NULL;
 
 	/* extract partition and resource ID from environment, if present */
 	if ((rhs = getenv("RMS_RESOURCEID"))) {
