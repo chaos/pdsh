@@ -10,8 +10,8 @@ MODULE_FLAGS =     -module -avoid-version
 endif
 
 
-libmods_la_SOURCES = static_modules.h
-noinst_LTLIBRARIES = libmods.la
+nodist_libmods_la_SOURCES = static_modules.h
+noinst_LTLIBRARIES =        libmods.la
 
 EXTRA_libmods_la_SOURCES = \
 	xrcmd.c \
@@ -26,7 +26,7 @@ EXTRA_libmods_la_SOURCES = \
 	machines.c \
 	sdr.c \
 	k4cmd.c
- 
+
 libmods_la_LDFLAGS = \
 	$(MRSH_LIBS) \
 	$(NODEUPDOWN_LIBS) \
