@@ -241,8 +241,26 @@ int getint(void) {
     return port;
 }
 
+
+static void copy_passwd_struct(struct passwd *to, struct passwd *from)
+{
+    to->pw_uid    = from->pw_uid;
+    to->pw_gid    = from->pw_gid;
+    to->pw_name   = strdup(from->pw_name);
+    to->pw_passwd = strdup(from->pw_passwd);
+    to->pw_gecos  = strdup(from->pw_gecos);
+    to->pw_dir    = strdup(from->pw_dir);
+    to->pw_shell  = strdup(from->pw_shell);
+
+    return;
+}
+
+/*
+ *  Get a *copy* of passwd struct for user ``user''
+ */
 struct passwd *getpwnam_common(char *user) {
     struct passwd *pwd;
+    struct passwd *storage;
 
     setpwent();
     if ((pwd= getpwnam(user)) == NULL)
@@ -252,7 +270,11 @@ struct passwd *getpwnam_common(char *user) {
     if (pwd->pw_uid == 0 || !strcmp(user, "root"))
         paranoid = 1;
 
-    return pwd;
+    storage = Malloc(sizeof(struct passwd));
+
+    copy_passwd_struct(storage, pwd);
+
+    return storage;
 }
 
 char *findhostname(struct sockaddr_in *fromp) {
