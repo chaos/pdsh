@@ -17,7 +17,7 @@
 #define HAVE_KRB4		0
 #define HAVE_GENDERS		1
 
-#ifdef __linux					/* RH 6.2 alpha,sparc,intel */
+#ifdef __linux					/* RH 7.1 alpha,sparc,intel */
 #define HAVE_PTHREAD_SIGMASK	1
 #define HAVE_GETHOSTBYNAME_R	1
 #define HAVE_STRERROR_R		1
@@ -29,6 +29,7 @@
 #define HAVE_SDRGETOBJECTS	1
 #define HAVE_SIGTHREADMASK	1
 #define HAVE_STRERROR		0
+#define NEED_STDERR		0
 
 #elif defined(sparc) && !defined(__linux)	/* sunos 5.7 */
 #define HAVE_GETHOSTBYNAME_R	1
@@ -93,6 +94,9 @@
 #endif
 #ifndef HAVE_ELAN3
 #define HAVE_ELAN3		0
+#endif
+#ifndef NEED_STDERR
+#define NEED_STDERR		1
 #endif
 
 #endif

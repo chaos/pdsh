@@ -30,11 +30,19 @@ static void show_version(void);
 
 #define OPT_USAGE_DSH "\
 Usage: pdsh [-options] command ...\n\
--s                combine stderr with stdout to conserve sockets\n\
 -S                return largest of remote command return values\n"
 
+#if NEED_STDERR
+#define OPT_USAGE_STDERR "\
+-s                combine stderr with stdout to conserve sockets\n"
+#else
+#define OPT_USAGE_STDERR "\
+-s                separate stderr and stdout\n"
+#endif
+
+
 #define OPT_USAGE_PCP "\
-Usage: dcp [-options] src [src2...] dest\n\
+Usage: pdcp [-options] src [src2...] dest\n\
 -r                recursively copy files\n\
 -p                preserve modification time and modes\n"
 
@@ -494,9 +502,10 @@ void opt_free(opt_t *opt)
  */
 static void usage(opt_t *opt)
 {
-	if (opt->personality == DSH)
+	if (opt->personality == DSH) {
 		err(OPT_USAGE_DSH);
-	else /* PCP */
+		err(OPT_USAGE_STDERR);
+	} else /* PCP */
 		err(OPT_USAGE_PCP);
 	err(OPT_USAGE_COMMON);
 #if KRB4

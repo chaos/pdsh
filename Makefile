@@ -23,10 +23,10 @@ PREFIX=		/usr/local
 #
 # Uncomment and set HAVE_ELAN3 to 1 in conf.h for Quadrics Elan support
 #
-#ELAN_TARGS=	qshd
-#ELAN_OBJS=	qswutil.o qcmd.o
-#ELAN_LIB=	-lelan3 -lrmscall
-#ELAN_INC=
+ELAN_TARGS=	qshd
+ELAN_OBJS=	qswutil.o qcmd.o
+ELAN_LIB=	-lelan3 -lrmscall
+ELAN_INC=
 
 # Solaris
 #LIBS =	-lpthread -lgen -lnsl -lsocket
