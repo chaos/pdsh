@@ -156,9 +156,10 @@ MODULE_AUTHOR(        "Mike Haskell and Jim Garlick"                         );
 static int mqcmd_postop(opt_t *opt);
 int opt_m(opt_t *, int, char *);
 int opt_n(opt_t *, int, char *);
-int mqcmd_init(opt_t *);
-int mqcmd_signal(int, int);
-int mqcmd(char *, char *, char *, char *, char *, int, int *);
+
+#define mqcmd_signal     pdsh_signal
+#define mqcmd_init       pdsh_rcmd_init
+#define mqcmd            pdsh_rcmd
 
 struct pdsh_module_operations pdsh_module_ops = {
   NULL,
@@ -736,23 +737,4 @@ mqcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
  bad:
   close(s);
   EXIT_PTHREAD();
-}
-
-int
-pdsh_rcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
-          int rank, int *fd2p)
-{   
-  return mqcmd(ahost, addr, luser, ruser, cmd, rank, fd2p);
-}
-
-int
-pdsh_signal(int fd, int signum)
-{   
-  return mqcmd_signal(fd, signum); 
-}
-
-int
-pdsh_rcmd_init(opt_t * opt)
-{   
-  return mqcmd_init(opt);
 }

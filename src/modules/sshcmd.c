@@ -84,6 +84,10 @@ MODULE_DESCRIPTION ( "ssh based rcmd connect method"   );
 
 static int mod_ssh_postop(opt_t *opt);
 
+#define sshcmd_init   pdsh_rcmd_init
+#define sshcmd        pdsh_rcmd
+#define sshcmd_signal pdsh_signal
+
 struct pdsh_module_operations pdsh_module_ops = {
     NULL,
     NULL,
@@ -109,6 +113,34 @@ static int mod_ssh_postop(opt_t *opt)
     return 0;
 }
 
+
+static void
+_drop_privileges()
+{
+    if (geteuid() == (uid_t) 0) {
+        setuid(getuid());
+        setgid(getgid());
+    }
+}
+
+int sshcmd_init(opt_t * opt)
+{
+    if (opt->personality == PCP)
+        use_rw = true;
+
+    /*
+     * Drop privileges if we're running setuid
+     */
+    _drop_privileges();
+
+    return 0;
+}
+
+int sshcmd_signal(int fd, int signum)
+{
+    /* not implemented */
+    return 0;
+}
 
 /*
  * This is a replacement rcmd() function that uses an arbitrary
@@ -189,7 +221,7 @@ static int _pipecmd(char *path, char *args[], const char *ahost, int *fd2p)
 
 /* pdsh uses this version */
 int
-sshcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
+sshcmdr(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
        int rank, int *fd2p)
 {
     char *prog = "ssh"; /* xbasename(_PATH_SSH); */
@@ -223,53 +255,15 @@ sshcmdrw(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
     return _pipecmd("ssh", args, ahost, fd2p);
 }
 
-void sshcmd_init(opt_t * opt)
-{
-    /* not implemented */
-}
-
-void sshcmd_signal(int fd, int signum)
-{
-    /* not implemented */
-}
-
 int
-pdsh_rcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
+sshcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
          int rank, int *fd2p)
 {
 	if (use_rw)
 		return sshcmdrw(ahost, addr, luser, ruser, cmd, rank, fd2p);
 	else
-		return sshcmd(ahost, addr, luser, ruser, cmd, rank, fd2p);
+		return sshcmdr(ahost, addr, luser, ruser, cmd, rank, fd2p);
 }
-
-int pdsh_signal(int fd, int signum)
-{
-	sshcmd_signal(fd, signum);
-    return 0;
-}
-
-static void
-_drop_privileges()
-{
-    if (geteuid() == (uid_t) 0) {
-        setuid(getuid());
-        setgid(getgid());
-    }
-}
-
-int 
-pdsh_rcmd_init(opt_t * opt)
-{
-	if (opt->personality == PCP)
-		use_rw = true;
-
-    /*
-     * Drop privileges if we're running setuid
-     */
-    _drop_privileges();
-}
-
 
 #if 0
 int rshcmd(char *ahost, char *luser, char *ruser, char *cmd, int *fd2p)

@@ -146,9 +146,9 @@ struct pdsh_module_operations pdsh_module_ops = {
   NULL
 };
 
-int mcmd_init(opt_t *);
-int mcmd_signal(int, int);
-int mcmd(char *, char *, char *, char *, char *, int, int *);
+#define mcmd_init   pdsh_rcmd_init
+#define mcmd        pdsh_rcmd
+#define mcmd_signal pdsh_signal
 
 int
 mcmd_init(opt_t * opt)
@@ -541,23 +541,4 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
  bad:
   close(s);
   EXIT_PTHREAD();
-}
-
-int
-pdsh_rcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
-          int rank, int *fd2p)
-{   
-  return mcmd(ahost, addr, luser, ruser, cmd, rank, fd2p);
-}
-
-int
-pdsh_signal(int fd, int signum)
-{   
-  return mcmd_signal(fd, signum); 
-}
-
-int
-pdsh_rcmd_init(opt_t * opt)
-{   
-  return mcmd_init(opt);
 }
