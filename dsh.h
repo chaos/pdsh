@@ -8,7 +8,9 @@
 #ifndef _DSH_INCLUDED
 #define _DSH_INCLUDED
 
-#include "conf.h"
+#if 	HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #if HAVE_PTHREAD_H
 #include <pthread.h>

@@ -62,6 +62,11 @@ char rcsid[] =
  *	elan info struct\0 
  *	data
  */
+
+#if     HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/ioctl.h>
@@ -90,8 +95,6 @@ char rcsid[] =
 #include <stdarg.h>
 #include <ctype.h>
 #include <assert.h>
-
-#include "conf.h"
 
 #include <elan3/elan3.h>
 #include <elan3/elanvp.h>

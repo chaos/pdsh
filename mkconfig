@@ -4,5 +4,5 @@
 # $Source$
 #
 autoconf configure.ac >configure
-autoheader configure.ac >conf.h.in
+autoheader configure.ac >config.h.in
 rm -f config.status config.log

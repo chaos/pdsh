@@ -966,7 +966,7 @@ fi
 PATH_SEPARATOR="$ac_path_separator"
 rm -f conftest.sh
 
-ac_config_headers="$ac_config_headers conf.h"
+ac_config_headers="$ac_config_headers config.h"
 
 ac_aux_dir=
 for ac_dir in auxdir $srcdir/auxdir; do
@@ -5047,7 +5047,7 @@ do
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
   "pdsh.spec" ) CONFIG_FILES="$CONFIG_FILES pdsh.spec" ;;
   "default-1" ) CONFIG_COMMANDS="$CONFIG_COMMANDS default-1" ;;
-  "conf.h" ) CONFIG_HEADERS="$CONFIG_HEADERS conf.h" ;;
+  "config.h" ) CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
   *) { { echo "$as_me:5051: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
    { (exit 1); exit 1; }; };;

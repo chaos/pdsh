@@ -5,9 +5,10 @@
  * See ./DISCLAIMER
  */
 
+#if     HAVE_CONFIG_H
+#include "config.h"
+#endif
 
-#include "conf.h"
- 
 #if	HAVE_UNISTD_H
 #include <unistd.h>	/* for R_OK, access() */
 #endif

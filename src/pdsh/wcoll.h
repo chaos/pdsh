@@ -8,7 +8,9 @@
 #ifndef _WCOLL_INCLUDED
 #define _WCOLL_INCLUDED
 
-#include "conf.h"
+#if     HAVE_CONFIG_H
+#include "config.h"
+#endif
  
 #include "list.h"	/* for list_t */
 

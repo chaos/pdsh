@@ -11,7 +11,9 @@
  * - unset DISPLAY and call setsid() so ssh won't hang prompting for passphrase
  */
 
-#include "conf.h"
+#if     HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #include <sys/types.h>
 #include <sys/socket.h>

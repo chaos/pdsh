@@ -44,7 +44,9 @@
 static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #endif /* LIBC_SCCS and not lint */
 
-#include "conf.h"
+#if     HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #if	HAVE_ELAN3
 

@@ -9,7 +9,9 @@
  * Error printing routines with variable arguments.
  */
 
-#include "conf.h"
+#if     HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #include <stdarg.h>
 #include <netdb.h>

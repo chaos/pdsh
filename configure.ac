@@ -5,7 +5,7 @@
 # (It does blow up with 2.13 on AIX).
 
 AC_INIT(dsh.h)
-AC_CONFIG_HEADER([conf.h])
+AC_CONFIG_HEADER([config.h])
 AC_CONFIG_AUX_DIR([auxdir])
 
 # determine project/version from META file
