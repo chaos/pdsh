@@ -59,48 +59,38 @@ int main(int argc, char *argv[])
 {
     opt_t opt;
     int retval = 0;
-    char *pname = xbasename(argv[0]);
 
     /*
      * Initialize.
      */
-    err_init(pname);       /* init err package */
-
-    mod_init();
-
-    /* 
-     * Determine program name.
-     */
-    opt.progname = pname;
-    if (!strcmp(pname, "pdsh") || !strcmp(pname, "dsh"))
-      opt.personality = DSH;
-    else if (!strcmp(pname, "pdcp") || !strcmp(pname, "dcp")
-             || !strcmp(pname, "pcp"))
-      opt.personality = PCP;
-    else
-      errx("%p: program must be named pdsh/dsh/pdcp/dcp/pcp\n");
+    err_init(xbasename(argv[0]));       /* init err package */
 
     /*
-     *  XXX: Need a better way to do this.
+     * Seed options with default values:
      */
-    if (mod_load_modules(pdsh_module_dir, opt.personality) < 0)
+    opt_default(&opt, argv[0]);
+
+    /*
+     *  Load static or dynamic pdsh modules
+     */
+    mod_init();
+    if (mod_load_modules(pdsh_module_dir) < 0)
         errx("%p: Couldn't load any pdsh modules\n");
 
     /*
      * Handle options.
      */
-    opt_default(&opt);          /* set options to default values */
-    opt_env(&opt);              /* override with env variables */
-    opt_args(&opt, argc, argv); /* override with command line */
+    opt_env(&opt);              /* override defaults with env variables */
+    opt_args(&opt, argc, argv); /* override with command line           */
 
-    if (opt_verify(&opt)) {     /* verify options, print errors */
+    if (opt_verify(&opt)) {     /* verify options, print errors         */
 
         /*
          * Do the work.
          */
         if (opt.info_only)      /* display info only */
             opt_list(&opt);
-        else if (opt.personality == PCP || opt.cmd != NULL)
+        else if (pdsh_personality() == PCP || opt.cmd != NULL)
             retval = dsh(&opt); /* single dsh/pcp command */
         else                    /* prompt loop */
             _interactive_dsh(&opt);
