@@ -1005,8 +1005,6 @@ int dsh(opt_t * opt)
 
     Free((void **) &t);         /* cleanup */
 
-    mod_rcmd_exit();
-
     return rc;
 }
 
