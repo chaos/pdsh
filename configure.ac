@@ -59,7 +59,7 @@ AC_ARG_WITH(rms,
 AC_MSG_RESULT(${withrms=no})
 
 # --with-krb4
-# XXX need to be able to say --with-krb4=/usr/local/krb4 
+# or you can say --with-krb4=/usr/local/krb4
 AC_MSG_CHECKING(whether to include Kerberos IV support)
 AC_ARG_WITH(krb4,
     AC_HELP_STRING([--with-krb4], [Include Kerberos IV support]),
@@ -138,7 +138,7 @@ if test "$ac_cv_lib_socket_socket" = yes; then
 fi
 AC_CHECK_LIB([pthread], [pthread_create])
 if test "$withelan" = yes; then
-    AC_CHECK_LIB([elan3], [elan3_create],,AC_MSG_ERROR([No libelan3!])
+    AC_CHECK_LIB([elan3], [elan3_create],,AC_MSG_ERROR([No libelan3!]))
     AC_CHECK_LIB([rmscall], [rms_prgcreate])
 fi
 if test "$withrms" = yes; then
