@@ -616,8 +616,9 @@ main(int argc, char *argv[])
 	/* generate random program number */
 	qinfo.prgnum = qsw_get_prgnum();
 
-	/* do elan stuff: qinfo.nprocs threads will continue after this */
+	/* set up capabilities, environment, fork, etc.. */
 	qsw_setup_program(&cap, &qinfo, uid);
+	/* multiple threads continue on here (one per task) */
 
 	if (seteuid(uid) < 0)
 		errx("%p: seteuid: %m\n");
