@@ -1,4 +1,7 @@
 # Process this file with autoconf to produce a configure script.
+# NOTE: We distribute ./configure and do not expect people building pdsh
+# to have to regenerate from configure.ac.  However, if this is necessary,
+# the ./mkconfig script is provided.  You may need autoconf 2.52 or greater.
 
 AC_INIT(dsh.h)
 AC_CONFIG_HEADER([conf.h])
@@ -12,7 +15,7 @@ VERSION="`perl -ne 'print,exit if s/^\s*VERSION:\s*(\S*).*/\1/i' $srcdir/META`"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Define the project's version.])
 AC_SUBST(VERSION)
 
-# Enable features
+# Enable features taht interact with external software
 # --with-elan
 AC_MSG_CHECKING(whether to support Elan interconnect)
 AC_ARG_WITH(elan,
@@ -56,6 +59,7 @@ AC_ARG_WITH(rms,
 AC_MSG_RESULT(${withrms=no})
 
 # --with-krb4
+# XXX need to be able to say --with-krb4=/usr/local/krb4 
 AC_MSG_CHECKING(whether to include Kerberos IV support)
 AC_ARG_WITH(krb4,
     AC_HELP_STRING([--with-krb4], [Include Kerberos IV support]),
@@ -68,8 +72,9 @@ AC_ARG_WITH(krb4,
             AC_DEFINE(HAVE_KRB4, 1, [define for Kerberos IV support])
 	    ;;
 	*)
-	    AC_MSG_RESULT(doh!)
-	    AC_MSG_ERROR([bad value "$withval" for --with-krb4])
+	    withkrb4=yes
+	    LIBS="$LIBS -L${withval}/lib"
+	    CPPFLAGS="$CPPFLAGS -I${withval}/include"
 	    ;;
     esac ]
 )
@@ -133,15 +138,15 @@ if test "$ac_cv_lib_socket_socket" = yes; then
 fi
 AC_CHECK_LIB([pthread], [pthread_create])
 if test "$withelan" = yes; then
-    AC_CHECK_LIB([elan3], [elan3_create])
+    AC_CHECK_LIB([elan3], [elan3_create],,AC_MSG_ERROR([No libelan3!])
     AC_CHECK_LIB([rmscall], [rms_prgcreate])
 fi
 if test "$withrms" = yes; then
-    AC_CHECK_LIB([rmsapi], [rms_numNodes])
+    AC_CHECK_LIB([rmsapi], [rms_numNodes],,AC_MSG_ERROR([No librmsapi!]))
     AC_CHECK_LIB([rms], [__builtin_new])
 fi
 if test "$withkrb4" = yes; then
-    AC_CHECK_LIB([krb], [krb_sendauth])
+    AC_CHECK_LIB([krb], [krb_sendauth],,AC_MSG_ERROR([No libkrb!]))
     AC_CHECK_LIB([des], [des_string_to_key])
 fi
 
