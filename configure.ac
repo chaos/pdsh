@@ -47,7 +47,8 @@ AC_ARG_WITH(elan,
 	yes)
 	    withelan=yes
             AC_DEFINE(HAVE_ELAN3, 1, [define if building with Elan3 support])
-            ELAN_PROGS=qshd
+	    BUILD_QSHD=1
+	    PROG_QSHD=qshd
 	    ;;
 	no)
 	    withelan=no
@@ -58,7 +59,8 @@ AC_ARG_WITH(elan,
 	    ;;
     esac ]
 )
-AC_SUBST(ELAN_PROGS)
+AC_SUBST(BUILD_QSHD)
+AC_SUBST(PROG_QSHD)
 AC_MSG_RESULT(${withelan=no})
 
 # --with-rms

@@ -8,6 +8,8 @@ Source: %{name}-%{version}.tgz
 BuildRoot: %{_tmppath}/%{name}-%{version}
 Prereq: genders
 
+%define buildqshell @BUILD_QSHD@
+
 %description
 Pdsh is a reimplementation of the dsh command supplied with the IBM PSSP
 product that uses POSIX threads within a single process, and achieves better 
@@ -34,17 +36,19 @@ rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/usr/bin
 mkdir -p $RPM_BUILD_ROOT/usr/man/man1
-mkdir -p $RPM_BUILD_ROOT/etc/xinetd.d
-mkdir -p $RPM_BUILD_ROOT/usr/sbin
 install -s pdsh $RPM_BUILD_ROOT/usr/bin/pdcp
 install -s pdsh $RPM_BUILD_ROOT/usr/bin/pdsh
-install -s qshd $RPM_BUILD_ROOT/usr/sbin/in.qshd
 cp dshbak $RPM_BUILD_ROOT/usr/bin/
 gzip pdsh.1 pdcp.1 dshbak.1
 cp pdsh.1.gz $RPM_BUILD_ROOT/usr/man/man1
 cp pdcp.1.gz $RPM_BUILD_ROOT/usr/man/man1
 cp dshbak.1.gz $RPM_BUILD_ROOT/usr/man/man1
+%if %{buildqshell}
+mkdir -p $RPM_BUILD_ROOT/etc/xinetd.d
+mkdir -p $RPM_BUILD_ROOT/usr/sbin
 cp qshell.xinetd $RPM_BUILD_ROOT/etc/xinetd.d/qshell
+install -s qshd $RPM_BUILD_ROOT/usr/sbin/in.qshd
+%endif
 
 %files
 %defattr(-,root,root)
@@ -56,7 +60,9 @@ cp qshell.xinetd $RPM_BUILD_ROOT/etc/xinetd.d/qshell
 /usr/man/man1/pdcp.1.gz
 /usr/man/man1/dshbak.1.gz
 
+%if %{buildqshell}
 %files qshd
+%defattr(-,root,root)
 /usr/sbin/in.qshd
 /etc/xinetd.d/qshell
 
@@ -65,3 +71,4 @@ if ! grep "^qshell" /etc/services >/dev/null; then
         echo "qshell   523/tcp  # pdsh/elan3" >>/etc/services
 fi
 /etc/rc.d/init.d/xinetd restart
+%endif

@@ -4,6 +4,8 @@
 PROJECT=	@PROJECT@
 VERSION=	@VERSION@
 
+PROG_QSHD=	@PROG_QSHD@
+
 SHELL=          @SHELL@
 CC=             @CC@
 DEFS=           @DEFS@
@@ -26,8 +28,7 @@ exec_prefix=    @exec_prefix@
 bindir=         @bindir@
 sbindir=        @sbindir@
 libdir=         @libdir@
-
-ELAN_PROGS=	@ELAN_PROGS@
+mandir=         @mandir@
 
 PDSH_OBJS=	list.o xmalloc.o xstring.o err.o xpopen.o \
 		dsh.o main.o opt.o wcoll.o xrcmd.o sshcmd.o \
@@ -37,31 +38,10 @@ QSHD_OBJS=	list.o xmalloc.o xstring.o err.o qswutil.o qshd.o
 
 PREFIX=		/usr/local
 
-#
-# if you wish to build with kerberos IV, uncomment these
-# and set KRB4 to 1 in conf.h
-#
-#KRB_INC=	-I/usr/local/krb4/include
-#KRB_LIB=	-L/usr/local/krb4/lib -lkrb -ldes
-#KRB_OBJS=	k4cmd.o
 
-#
-# Uncomment and set HAVE_ELAN3 to 1 in conf.h for Quadrics Elan support
-#
-#ELAN_PROGS=	qshd
-#ELAN_OBJS=	qswutil.o qcmd.o
-#ELAN_LIB=	-lelan3 -lrmscall -lrmsapi -lrms
+PROGS =	pdsh $(PROG_QSHD)
 
-# Solaris
-#LIBS =	-lpthread -lgen -lnsl -lsocket
-# AIX 4.2
-#LIBS =	-lbsd_r $(KRB_LIB) -lpthreads
-# Linux RH 6.2, AIX 4.3.x, OSF
-# LIBS = $(KRB_LIB)  -lpthread $(ELAN_LIB)
-
-PROGS =	pdsh
-
-all: pdsh $(ELAN_PROGS)
+all: $(PROGS)
 
 pdsh: $(PDSH_OBJS)
 	$(CC) -o $@ $(PDSH_OBJS) $(LDFLAGS) $(LIBS)
@@ -74,23 +54,26 @@ qswutil_main.o: qswutil.c
 
 install: $(PROGS)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	$(INSTALL) -m 4755 -o root pdsh $(DESTDIR)$(bindir)/
+	$(mkinstalldirs) $(DESTDIR)$(mandir)/man1
+	$(mkinstalldirs) $(DESTDIR)$(sbindir)
+	$(INSTALL) -m 4755 -o root pdsh $(DESTDIR)$(bindir)/pdsh
 	$(LN_S) $(DESTDIR)$(bindir)/pdsh $(DESTDIR)$(bindir)/pdcp
 	$(INSTALL) dshbak $(DESTDIR)$(bindir)/
 	$(INSTALL) pdsh.1 $(DESTDIR)$(mandir)/man1/
 	$(INSTALL) pdcp.1 $(DESTDIR)$(mandir)/man1/
 	$(INSTALL) dshbak.1 $(DESTDIR)$(mandir)/man1/
+	test -z "$(PROG_QSHD)" || $(INSTALL) qshd $(DESTDIR)$(sbindir)/in.qshd
 
 clean:
-	-rm -f *.o *.a *~ \#* .\#* cscope*.out core core.* *.core tags TAGS
+	rm -f $(PROGS)
+	rm -f *.o *.a *~ \#* .\#* cscope*.out core core.* *.core tags TAGS
 
 realclean: clean
-	-rm -f $(PROGS)
-	-rm -f *.tgz *.rpm
+	rm -f *.tgz *.rpm
 
 distclean: realclean
-	-rm -f config.cache config.log config.status stamp-h Makefile.bak
-	-rm -f $(AC_OUTPUT)
+	rm -f config.cache config.log config.status stamp-h Makefile.bak
+	rm -f $(AC_OUTPUT)
 
 depend:
 	-makedepend -Y -- $(COPTS) -- *.[ch] 2>/dev/null
