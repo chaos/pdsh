@@ -1,6 +1,9 @@
 2004-11-22  Mark Grondona <mgrondona@llnl.gov>
 
 	* README.QsNet : Update location of libelanhosts. Describe "slurm" module.
+
+	* src/pdsh/dsh.c (dsh) : Increase max number of open files to hard
+	  limit for large fanout.
 	
 2004-09-21  Albert Chu <chu11@llnl.gov>
 

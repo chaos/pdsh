@@ -85,6 +85,7 @@
 #include <errno.h>
 #include <assert.h>
 #include <netdb.h>              /* gethostbyname */
+#include <sys/resource.h>       /* get/setrlimit */
 
 #ifndef MAXPATHNAMELEN
 #define MAXPATHNAMELEN MAXPATHLEN
@@ -918,6 +919,32 @@ static int _dsh_attr_init (pthread_attr_t *attrp, int stacksize)
     return (0);
 }
 
+/*
+ * Increase nofile limit to maximum if necessary
+ */
+static void _increase_nofile_limit (opt_t *opt)
+{
+    struct rlimit rlim[1];
+    /*
+     *  We'd like to be able to have at least (2*fanout + slop) fds
+     *   open at once.
+     */
+    int nfds = (2 * opt->fanout) + 32;
+
+    if (getrlimit (RLIMIT_NOFILE, rlim) < 0) {
+        err ("getrlimit: %m\n");
+        return;
+    }
+
+    if ((rlim->rlim_cur < rlim->rlim_max) && (rlim->rlim_cur <= nfds)) {
+        rlim->rlim_cur = rlim->rlim_max;
+        if (setrlimit (RLIMIT_NOFILE, rlim) < 0) 
+            err ("Unable to increase max no. files: %m");
+    }
+
+    return;
+}
+
 /* 
  * Run command on a list of hosts, keeping 'fanout' number of connections 
  * active concurrently.
@@ -931,6 +958,8 @@ int dsh(opt_t * opt)
     List pcp_infiles = NULL;
     hostlist_iterator_t itr;
     SigFunc *old_int_handler = NULL;
+
+    _increase_nofile_limit (opt);
 
     /*
      *   Initialize rcmd modules...
