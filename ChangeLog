@@ -4,6 +4,8 @@
 
 	* src/pdsh/dsh.c (dsh) : Increase max number of open files to hard
 	  limit for large fanout.
+
+	* : tag pdsh-2-3-1
 	
 2004-09-21  Albert Chu <chu11@llnl.gov>
 
