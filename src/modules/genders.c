@@ -269,21 +269,47 @@ _handle_create()
     return gh;
 }
 
+/*
+ *  Search attr argument for an '=' char indicating an
+ *   attr=value pair. If found, nullify '=' and return
+ *   pointer to value part.
+ *
+ *  Returns NULL if no '=' found.
+ */
+static char *
+_get_val(char *attr)
+{
+    char *val = NULL;
+
+    if (attr == NULL)
+        return (NULL);
+
+    if ((val = strchr(attr, '='))) {
+        *val = '\0';
+        val++;
+    }
+
+    return (val);
+}
+
 
 static hostlist_t 
 _read_genders(char *attr, int iopt)
 {
     hostlist_t hl = NULL;
-    genders_t  gh  = NULL;
+    genders_t  gh = NULL;
+    char *val;
     char **nodes;
     int len, nnodes;
+
+    val = _get_val(attr);
 
     gh = _handle_create();
 
     if ((len = genders_nodelist_create(gh, &nodes)) < 0)
         errx("%p: genders: nodelist_create: %s", genders_errormsg(gh));
 
-    if ((nnodes = genders_getnodes(gh, nodes, len, attr, NULL)) < 0) {
+    if ((nnodes = genders_getnodes(gh, nodes, len, attr, val)) < 0) {
         errx("%p: Error querying genders for attr \"%s\": %s\n", 
                 attr ?: "(all)", genders_errormsg(gh));
     }
