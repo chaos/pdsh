@@ -227,7 +227,7 @@ mod_create(void)
     mod->handle = NULL;
     mod->filename = NULL;
 #endif
-    mod->priority = 100;
+    mod->priority = DEFAULT_MODULE_PRIORITY;
     assert(mod->magic = MOD_MAGIC);
     
     return mod;

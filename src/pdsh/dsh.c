@@ -714,6 +714,7 @@ static void *_rsh_thread(void *args)
          */
         while (xpfds[0].fd >= 0 || xpfds[1].fd >= 0) {
 
+            _xsignal (SIGPIPE, SIG_BLOCK);
             /* poll (possibility for SIGALRM) */
             rv = xpoll(xpfds, nfds, -1);
             if (rv == -1) {

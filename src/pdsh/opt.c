@@ -194,7 +194,7 @@ char * _check_path(char *dir, char *cwd, char *argv0)
 }
 
 /*
- *  Determine absolute path to the progam name based in as argv0
+ *  Determine absolute path to the program name based on argv0
  */
 char * _find_path(char *argv0) 
 {

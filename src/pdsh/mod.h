@@ -58,9 +58,9 @@ int mod_exit(void);
  *    by any other user.  After successfully loading each module, 
  *    the module's "init" routine is called and module command line 
  *    options are registered.  The module is not loaded if init 
- *    returns < 0 or any module option command be registered.
+ *    returns < 0 or any module option cannot be registered.
  *
- *  If modules are being compiled statically, The directory argument
+ *  If modules are being compiled statically, the directory argument
  *    is ignored.
  *
  *  Returns 0 for Success and -1 for Failure.
@@ -191,10 +191,10 @@ struct pdsh_rcmd_operations {
  * Stores all information about a module 
  */
 struct pdsh_module {
-    char *type;        /* module type, i.e. Jedi */
-    char *name;        /* module name, i.e. Yoda */ 
-    char *author;      /* module author, i.e. George Lucas */
-    char *descr;       /* module description, i.e. "Run pdsh with the force */
+    char *type;        /* module type, e.g. Jedi */
+    char *name;        /* module name, e.g. Yoda */ 
+    char *author;      /* module author, e.g. George Lucas */
+    char *descr;       /* module description, e.g. "Run pdsh with the force */
     int personality;   /* personality mask for module (DSH, PCP, or DSH|PCP */
 
     struct pdsh_module_operations *mod_ops;
