@@ -85,61 +85,57 @@ sub usage
 	printf STDERR ("Usage: dshbak [-c]\n");
 }
 
-# Turn long lists of nodes with numeric suffixes into ranges where possible
-#   @nodes (IN)   	flat list of nodes
-#   RETURN        	list of nodes possibly containing ranges
-sub compress
+
+sub compress 
 {
-        my @nodes = @_;
-        my @out = ();
-        my (%nn, $node, $pfx, @stack, @n, $i);
+	my %rng = comp(@_);
+	my @list = ();
 
-        # build %nn (lists of numeric hostname suffixes by prefix)
-        foreach $node (@nodes) {
-                if ($node =~ /^(.*[^\d]+)(\d+)$/) {
-                        push(@{$nn{$1}}, $2);
-                } else {
-                        push(@out, $node);
-                }       
-        }       
+	local $"=",";
 
-	# XXX debug 
-        #foreach $pfx (keys %nn) {
-	#	print("$pfx:", @{$nn{$pfx}}, "\n")
-	#}
+	@list = map {  $_ .
+		      (@{$rng{$_}}>1 || ${$rng{$_}}[0] =~ /-/ ?
+		                "[@{$rng{$_}}]" :
+				 "@{$rng{$_}}"
+		      )
+	            } sort keys %rng;
 
-        foreach $pfx (keys %nn) {
-		@stack = ();
-                @n = sort {$a <=> $b} @{$nn{$pfx}};
-                for ($i = 0; $i <= $#n; $i++) {
-                        if ($i == 0) {
-                                push(@stack, $n[$i]);
-                        } else {
-                                if ($stack[$#stack] == $n[$i] - 1) {
-                                        push(@stack, $n[$i]);
-                                } else {
-                                        push(@out, $pfx . get_range(@stack));
-                                        @stack = ($n[$i]);
-                                }
-                        }
-                }
-                if (@stack) {
-                        push(@out, $pfx . get_range(@stack));
-                }
-        }
-        return @out;
+	return wantarray ? @list : "@list";
 }
 
-# determine if a range is on the stack (helper for compress)
-#   @stack (IN)		stack
-#   RETURN		range or single value
-sub get_range
+sub comp
 {
-        my @stack = @_;
+        my (%i) = ();
+        my (%s) = ();
 
-        if ($#stack == 0) {  # one element
-                return ($stack[0]);
-        } else {
-                return ($stack[0] . "-" . $stack[$#stack]);
+        # turn off warnings here to avoid perl complaints about 
+        # uninitialized values for members of %i and %s
+        local ($^W) = 0;
+        push(@{
+               $s{$$_[0]}[ (
+                            $s{ $$_[0] }[ $i{$$_[0]} ]
+                              [$#{$s{$$_[0]}[$i{$$_[0]}]}] == ($$_[1]-1)
+                           ) ? $i{$$_[0]} : ++$i{$$_[0]}
+                         ]
+              }, ($$_[1])
+        ) for map { [/(.+?)(\d*)$/] } sortn(@_);
+
+        for my $key (keys %s) {
+                @{$s{$key}} =
+                    map { $#$_>0 ? "$$_[0]-$$_[$#$_]" : @{$_} }  @{$s{$key}};
         }
+
+	return %s;
 }
+
+# sortn:
+#
+# sort a group of alphanumeric strings by the last group of digits on
+# those strings, if such exists (good for numerically suffixed host lists)
+#
+sub sortn
+{
+	map {$$_[0]} sort {($$a[1]||0)<=>($$b[1]||0)} map {[$_,/(\d*)$/]} @_;
+}
+
+
