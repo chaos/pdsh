@@ -574,7 +574,7 @@ main(int argc, char *argv[])
 	ELAN_CAPABILITY cap;
 	int c;
 	char *p;
-	uid_t uid;
+	uid_t uid = 0;
 	list_t wcoll = list_new();
 	char hostname[MAXHOSTNAMELEN];
  	qsw_info_t qinfo = {
