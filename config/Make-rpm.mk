@@ -76,6 +76,8 @@ tar rpm:
 	test "$$tag" = "HEAD" && rel="`date +%Y%m%d%H%M`"; \
 	if test -z "$$rel"; then \
 	  pkg=$$name-$$ver; rel=1; else pkg=$$name-$$ver-$$rel; fi; \
+	if test -x "$$tmp/$$proj/autogen.sh"; then \
+          (cd $$tmp/$$proj && ln -sf autogen.sh bootstrap); fi; \
         if test -x "$$tmp/$$proj/bootstrap"; then \
 	  mv "$$tmp/$$proj" "$$tmp/$$proj.bak" || exit 1; \
 	  (cd "$$tmp/$$proj.bak"; ./bootstrap; ./configure; \
