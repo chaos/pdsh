@@ -1,15 +1,14 @@
 #
 # $Id$ 
 #
-# This makefile works for aix 4.3, linux (RedHat5.2/sparc), and 
-# Digital Unix 4.0.
-#
 PROJECT=	pdsh
 VERSION=	1.5
 
-OBJS= 		list.o xmalloc.o xstring.o dsh.o main.o opt.o wcoll.o \
-		xrcmd.o err.o sshcmd.o qcmd.o $(KRB_OBJS)
-HDRS=		list.h xmalloc.h xstring.h dsh.h opt.h wcoll.h conf.h err.h 
+PDSH_OBJS=	list.o xmalloc.o xstring.o err.o \
+		dsh.o main.o opt.o wcoll.o xrcmd.o sshcmd.o \
+		$(ELAN_OBJS) $(KRB_OBJS)
+
+QSHD_OBJS=	list.o xmalloc.o xstring.o err.o qswutil.o base64.o qshd.o 
 
 PREFIX=		/usr/local
 
@@ -21,24 +20,31 @@ PREFIX=		/usr/local
 #KRB_LIB=	-L/usr/local/krb4/lib -lkrb -ldes
 #KRB_OBJS=	k4cmd.o
 
+#
+# Uncomment and set HAVE_ELAN3 to 1 in conf.h for Quadrics Elan support
+#
+ELAN_TARGS=	qshd
+ELAN_OBJS=	qswutil.o qcmd.o base64.o
+ELAN_LIB=	-lelan3 -lrmscall
+
 # Solaris
 #LIBS =	-lpthread -lgen -lnsl -lsocket
 # AIX 4.2
 #LIBS =	-lbsd_r $(KRB_LIB) -lpthreads
 # Linux RH 6.2, AIX 4.3.x, OSF
-LIBS = $(KRB_LIB) -lpthread
+LIBS = $(KRB_LIB)  -lpthread $(ELAN_LIB)
 
 CC=		cc
 CFLAGS=		-Wall -I. -g $(KRB_INC)
 LDFLAGS=
 
-all: pdsh qshd
+all: pdsh $(ELAN_TARGS)
 
-pdsh: $(OBJS) $(LIBOBJS)
-	$(CC) -o $@ $(OBJS) $(LDFLAGS) $(LIBS) $(LIBOBJS)
+pdsh: $(PDSH_OBJS)
+	$(CC) -o $@ $(PDSH_OBJS) $(LDFLAGS) $(LIBS)
 
-qshd: qshd.o
-	$(CC) -o $@ $< -lelan3 -lrmscall
+qshd: $(QSHD_OBJS)
+	$(CC) -o $@ $(QSHD_OBJS) $(LIBS)
 
 install:
 	install -m 555 -o root -g root qshd /usr/sbin/in.qshd
@@ -50,7 +56,7 @@ install:
 	#install -m 444  -o root -g root dshbak.1 $(PREFIX)/man/man1/dshbak.1
 
 clean:
-	rm -f *.o core a.out pdsh qshd
+	rm -f *.o core a.out pdsh qshd qswutil base64
 	rm -f *.rpm *.tgz 
 
 $(OBJS): $(HDRS)

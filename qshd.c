@@ -58,10 +58,8 @@ char rcsid[] =
  *	environment var 2\0
  *	...
  *	environment var (count)\0
- *	elan userkey\0
- *	elan prgnum\0
- *	elan ctxt\0
- *	elan nodelist\0
+ *	elan capability struct\0
+ *	elan info struct\0 
  *	data
  */
 #include <sys/types.h>
@@ -93,11 +91,11 @@ char rcsid[] =
 
 #include "conf.h"
 
-#if	HAVE_ELAN3
 #include <elan3/elan3.h>
 #include <elan3/elanvp.h>
 #include <rms/rmscall.h>
-#endif
+
+#include "qswutil.h"
 
 #if defined(__GLIBC__) && (__GLIBC__ >= 2)
 #define _check_rhosts_file  __check_rhosts_file
@@ -229,12 +227,8 @@ static void stderr_parent(int sock, int pype, int pid) {
 	       FD_CLR(sock, &readfrom);
 	       guys--;
 	    }
-#if	HAVE_ELAN
 	    /* pid is the "program description" if using Elan */
 	    else rms_prgsignal(pid, sig);
-#else
-	    else killpg(pid, sig);
-#endif
 	}
 	if (FD_ISSET(pype, &ready)) {
 	    cc = read(pype, buf, sizeof(buf));
@@ -366,54 +360,6 @@ static const char *findhostname(struct sockaddr_in *fromp,
 	return NULL; /* not reachable */
 }
 
-#if	HAVE_ELAN3
-/*
- * Turn a comma separated list of nodes into cap->LowNode, cap->HighNode,
- * cap->Entries, and cap->Bitmap.
- * 	cap (IN/OUT)	Elan capability structure
- * 	instring (IN)	comma separated list of node numbers
- * Returns 0 on success, -1 on failure.
- */
-static int
-elan_nodelist(ELAN_CAPABILITY *cap, char *instring)
-{
-	char *scpy, *tok, *s;
-	int node;
-
-	/* determine high and low node numbers */
-	cap->HighNode = cap->LowNode = -1;
-	s = scpy = strdup(instring);
-	while ((tok = strtok(s, ",")) != NULL) {
-		node = atoi(tok);
-		if (node < cap->LowNode || cap->LowNode == -1)
-			cap->LowNode = node;
-		if (node > cap->HighNode || cap->HighNode == -1)
-			cap->HighNode = node;
-		s = NULL;
-	}
-	free(scpy);
-	if (cap->HighNode == -1 || cap->LowNode == -1)
-		return -1;
-	/*if (cap->HighNode < cap->LowNode)
-		return -1;*/
-
-	/* set bits corresponding to node#'s, normalized at LowNode = bit 0 */
-	cap->Entries = 0;
-	s = scpy = strdup(instring);
-	while ((tok = strtok(s, ",")) != NULL) {
-		node = atoi(tok);
-		BT_SET(cap->Bitmap, node - cap->LowNode);
-		s = NULL;
-		cap->Entries++;
-	}
-	free(scpy);
-	if (cap->Entries == 0)
-		return -1;
-
-	return 0;
-}
-#endif
-
 static void
 doit(struct sockaddr_in *fromp)
 {
@@ -429,11 +375,10 @@ doit(struct sockaddr_in *fromp)
 	char envstr[1024];
 	char tmpstr[1024];
 	int envcount;
-	int prgnum;
-#if	HAVE_ELAN3
 	ELAN_CAPABILITY cap;
 	ELAN3_CTX *ctx;
-#endif
+	qsw_info_t qinfo;
+
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
 	signal(SIGTERM, SIG_DFL);
@@ -494,46 +439,20 @@ doit(struct sockaddr_in *fromp)
 		putenv(strdup(envstr));
 	}
 
-
-	/* init elan capability and read the 128-bit user key */
-	getstr(tmpstr, sizeof(tmpstr), "userkey");
-#if	HAVE_ELAN3
-	elan3_nullcap(&cap);
-	cap.Type = ELAN_CAP_TYPE_BLOCK;
-	cap.Type |= ELAN_CAP_TYPE_BROADCASTABLE;
-	cap.Type |= ELAN_CAP_TYPE_MULTI_RAIL;
-	cap.RailMask = 1;
-	if (sscanf(tmpstr, "%x.%x.%x.%x", &cap.UserKey.Values[0],
-			&cap.UserKey.Values[1], &cap.UserKey.Values[2],
-			&cap.UserKey.Values[3]) != 4) {
-		errlog("error reading userkey: %s", tmpstr);
-		exit(1);
-	}
-#endif
-	/* read the "program description" (similar to process group) */
-	getstr(tmpstr, sizeof(tmpstr), "prgnum");
-	if (sscanf(tmpstr, "%x", &prgnum) != 1) {
-		errlog("error reading prgnum: %s", tmpstr);
+	/* read elan capability */
+	getstr(tmpstr, sizeof(tmpstr), "capability");
+	if (qsw_unpack_cap(tmpstr, &cap) < 0) {
+		errlog("error reading capability: %s", tmpstr);
 		exit(1);
 	}
 
-	/* read elan hw context numbers */
-	getstr(tmpstr, sizeof(tmpstr), "context");
-#if	HAVE_ELAN3
-	if (sscanf(tmpstr, "%x.%x.%x", &cap.LowContext, &cap.HighContext, 
-				&cap.MyContext) != 3) {
-		errlog("error reading context: %s", tmpstr);
+	/* read info structure */
+	getstr(tmpstr, sizeof(tmpstr), "qsw info");
+	if (qsw_unpack_info(tmpstr, &qinfo) < 0) {
+		errlog("error reading qsw info: %s", tmpstr);
 		exit(1);
 	}
-#endif
-	/* read list of node numbers for capability bitmap, low/hi node */
-	getstr(tmpstr, sizeof(tmpstr), "nodelist");
-#if	HAVE_ELAN3
-	if (elan_nodelist(&cap, tmpstr) < 0) {
-		errlog("error reading nodelist: %s", tmpstr);
-		exit(1);
-	}
-#endif
+
 	/* 
 	 * End qshell arguments.
 	 */
@@ -563,6 +482,7 @@ doit(struct sockaddr_in *fromp)
 
 	/* 
 	 * Fork here.  Parent waits for child to terminate, then cleans up.
+	 * NOTE: Cannot destroy prg if we are the process that created it.
 	 */
 	pid = fork();
 	switch (pid) {
@@ -576,16 +496,21 @@ doit(struct sockaddr_in *fromp)
 				errlog("waitpid: %s", strerror(errno));
 				exit(1);
 			}
-			syslog(LOG_DEBUG, "cleaning up prg %d", prgnum);
-			rms_prgsignal(prgnum, SIGKILL);
-			if (rms_prgdestroy(prgnum) < 0) {
-				errlog("rms_prgdestroy: %s", strerror(errno));
+			syslog(LOG_DEBUG, "destroying prg %d", qinfo.prgnum);
+			while (rms_prgdestroy(qinfo.prgnum) < 0) {
+				if (errno != ECHILD) {
+					errlog("rms_prgdestroy: %s", 
+							strerror(errno));
+					exit(1);
+				}
+				sleep(1); /* waitprg would be nice! */
 			}
+			syslog(LOG_DEBUG, "successfully destroyed prg %d", 
+					qinfo.prgnum);
 			exit(0);
 	}
 	/* child continues here */
 
-#if	HAVE_ELAN3
 	/*
 	 * At this point we are authenticated to run as 'locuser' but are 
 	 * still root.
@@ -596,8 +521,10 @@ doit(struct sockaddr_in *fromp)
 		exit(1);
 	}
 	/* associate this process and its children with prgnum */
-	if (rms_prgcreate(prgnum, pwd->pw_uid, 2) < 0) { /* 2 cpus */
-		errlog("rms_prgcreate failed: %s", strerror(errno));
+	rms_prgdestroy(qinfo.prgnum); /* XXX remove after debug over */
+	if (rms_prgcreate(qinfo.prgnum, pwd->pw_uid, 1) < 0) { /* 1 cpu */
+		errlog("rms_prgcreate %d failed: %s", qinfo.prgnum,
+				strerror(errno));
 		exit(1);
 	}
 	/* make cap known via rms_getcap/rms_ncaps to members of this prgnum */
@@ -605,13 +532,17 @@ doit(struct sockaddr_in *fromp)
 		errlog("elan3_create failed: %s", strerror(errno));
 		exit(1);
 	}
-	if (rms_prgaddcap(prgnum, 0, &cap) < 0) {
+	if (rms_prgaddcap(qinfo.prgnum, 0, &cap) < 0) {
 		errlog("rms_prgaddcap failed: %s", strerror(errno));
 		exit(1);
 	}
-	syslog(LOG_DEBUG, "prg %d cap %s bitmap 0x%.8x", prgnum,
+	syslog(LOG_DEBUG, "prg %d cap %s bitmap 0x%.8x", qinfo.prgnum,
 			elan3_capability_string(&cap, tmpstr), cap.Bitmap[0]);
-#endif
+
+	if (qsw_qshell_setenv(&qinfo) < 0) {
+		errlog("error setting env variables");
+		exit(1);
+	}
 
 	/*
  	 * Fork off a process to send back stderr if requested.
@@ -631,11 +562,7 @@ doit(struct sockaddr_in *fromp)
 			close(1);
 			close(2); 
 			close(pv[1]);
-#if	HAVE_ELAN
-			stderr_parent(sock, pv[0], prgnum);
-#else
-			stderr_parent(sock, pv[0], pid);
-#endif
+			stderr_parent(sock, pv[0], qinfo.prgnum);
 			/* NOTREACHED */
 		}
 		setpgrp();
@@ -646,7 +573,6 @@ doit(struct sockaddr_in *fromp)
 	}
 
 
-#if	HAVE_ELAN3
 	/*
 	 * Assign elan hardware context to current process.
 	 * This is a context index, not the context number.
@@ -655,7 +581,7 @@ doit(struct sockaddr_in *fromp)
 		errlog("rms_setcap: %s", strerror(errno));
 		exit(1);
 	}
-#endif
+
 	/* 
 	 * Fork again.  It seems that setcap needs to happen in the parent
 	 * of the user process.

@@ -505,20 +505,20 @@ static void *rcp(void *args)
 		case RCMD_K4:
 #if KRB4
 			a->fd = k4cmd(a->host, a->luser, a->ruser, 
-					cmd, a->rank, efdp);
+					cmd, a->nodeid, efdp);
 #endif
 			break;
 		case RCMD_BSD:
 			a->fd = xrcmd(a->host, a->luser, a->ruser, 
-					cmd, a->rank, efdp);
+					cmd, a->nodeid, efdp);
 			break;
 		case RCMD_QSHELL:
 			a->fd = qcmd(a->host, a->luser, a->ruser, 
-					cmd, a->rank, efdp);
+					cmd, a->nodeid, efdp);
 			break;
 		case RCMD_SSH:
 			a->fd = sshcmdrw(a->host, a->luser, a->ruser, 
-					cmd, a->rank, efdp);
+					cmd, a->nodeid, efdp);
 	}
 	if (a->fd == -1) 
 		result = DSH_FAILED;
@@ -595,20 +595,20 @@ static void *rsh(void *args)
 		case RCMD_K4:
 #if KRB4
 			a->fd = k4cmd(a->host, a->luser, a->ruser, 
-					a->dsh_cmd, a->rank, efdp);
+					a->dsh_cmd, a->nodeid, efdp);
 #endif
 			break;
 		case RCMD_BSD:
 			a->fd = xrcmd(a->host, a->luser, a->ruser, 
-					a->dsh_cmd, a->rank, efdp);
+					a->dsh_cmd, a->nodeid, efdp);
 			break;
 		case RCMD_QSHELL:
 			a->fd = qcmd(a->host, a->luser, a->ruser, 
-					a->dsh_cmd, a->rank, efdp);
+					a->dsh_cmd, a->nodeid, efdp);
 			break;
 		case RCMD_SSH:
 			a->fd = sshcmd(a->host, a->luser, a->ruser, 
-			    		a->dsh_cmd, a->rank, efdp);
+			    		a->dsh_cmd, a->nodeid, efdp);
 			break;
 	}
 
@@ -765,7 +765,7 @@ int dsh(opt_t *opt)
 
 	switch (opt->rcmd_type) {
 		case RCMD_QSHELL:
-			qcmd_init(opt->wcoll);
+			qcmd_init(opt->wcoll, opt->tasks_per_node);
 			break;
 		case RCMD_K4:
 #if KRB4
@@ -834,7 +834,7 @@ int dsh(opt_t *opt)
 		t[i].pcp_outfile = opt->outfile_name;	
 		t[i].pcp_popt = opt->preserve;
 		t[i].pcp_ropt = opt->recursive;
-		t[i].rank = i;
+		t[i].nodeid = i;
 		t[i].fd = t[i].efd = -1;
 	} 
 	t[i].host = NULL;

@@ -46,7 +46,6 @@ Usage: dcp [-options] src [src2...] dest\n\
 -u seconds        set command timeout (no default)\n\
 -f n              use fanout of n nodes\n\
 -w host,host,...  set target node list on command line\n\
--E                run Elan job using xrshd\n\
 -e                use ssh to connect\n"
 
 #define OPT_USAGE_SDR "\
@@ -60,12 +59,17 @@ Usage: dcp [-options] src [src2...] dest\n\
 #define OPT_USAGE_GEND "\
 -g attribute      target nodes with specified genders attribute\n"
 
+#define OPT_USAGE_ELAN "\
+-E                run Quadrics Elan job using qshell\n\
+-n n              specify number of tasks per node for qshell\n"
+
 #define DSH_ARGS	"csS"
 #define PCP_ARGS	"pr"
-#define GEN_ARGS	"at:csqf:w:l:u:bI:idEeV"
+#define GEN_ARGS	"at:csqf:w:l:u:bI:ideV"
 #define KRB4_ARGS	"Rk"
 #define SDR_ARGS	"Gv"
 #define GEND_ARGS	"g:"
+#define ELAN_ARGS	"En:"
 
 /*
  * Set defaults for various options.
@@ -116,12 +120,12 @@ void opt_default(opt_t *opt)
 	opt->delete_nextpass = true;
 	opt->separate_stderr = false; 
 	*(opt->gend_attr) = '\0';
+	opt->tasks_per_node = 1;
 
 	/* PCP specific */
 	opt->outfile_name = NULL;
 	opt->recursive = false;
 	opt->preserve = false;
-
 }
 
 /*
@@ -198,6 +202,9 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 #if HAVE_GENDERS
 	strcat(validargs, GEND_ARGS);
 #endif
+#if HAVE_ELAN3
+	strcat(validargs, ELAN_ARGS);
+#endif
 #ifdef __linux
 	/* Tell glibc getopt to stop eating after the first non-option arg */
 	putenv("POSIXLY_CORRECT=1");
@@ -239,6 +246,9 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 				break;
 			case 'E':	/* use qshell */
 				opt->rcmd_type = RCMD_QSHELL;
+				break;
+			case 'n':	/* set number of tasks per node */
+				opt->tasks_per_node = atoi(optarg);
 				break;
 			case 'a':	/* indicates all nodes */
 				opt->allnodes = true;

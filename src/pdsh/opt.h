@@ -50,6 +50,7 @@ typedef struct {
 	int fanout;		/* (-f, FANOUT, or default) */
 	int connect_timeout;
 	int command_timeout;
+	int tasks_per_node;	/* -n */
 
 	/* DSH-specific options */
 	bool separate_stderr;	/* -s */

@@ -73,7 +73,7 @@ typedef struct thd {
 	bool 		pcp_popt;		/* preserve mtime/mode */
 	bool 		pcp_ropt;		/* recursive */
 	int		rc;			/* remote return code (-S) */
-	int		rank;			/* mpi rank */
+	int		nodeid;			/* node index */
 	int		nnodes;			/* number of nodes in job */
 	int		fd;			/* stdin/stdout */
 	int		efd;			/* signal/stderr */
@@ -97,7 +97,7 @@ void sshcmd_signal(int, int);
 void sshcmd_init(list_t);
 
 int qcmd(char *, char *, char *, char *, int, int *);
-void qcmd_init(list_t);
+void qcmd_init(list_t, int);
 void qcmd_signal(int, int);
 
 #endif /* _DSH_INCLUDED */
