@@ -26,15 +26,15 @@
 void *xmalloc(size_t size)
 {	
 	void *new;
-	char *cp = (char *)malloc(size + 1);
+	int *p = (int *)malloc(size + sizeof(int));
 
-	if (!cp) {
+	if (!p) {
 		perror("malloc failed");
 		exit(1);
 	}
-	cp[0] = XMALLOC_MAGIC;			/* add "secret" magic cookie */
+	p[0] = XMALLOC_MAGIC;			/* add "secret" magic cookie */
 
-	new = &cp[1];
+	new = &p[1];
 	memset(new, 0, size);
 	return new;
 }
@@ -47,18 +47,18 @@ void *xmalloc(size_t size)
  */
 void xrealloc(void **item, size_t newsize)
 {
-	char *cp = (char *)*item - 1;
+	int *p = (int *)*item - 1;
 
 	assert(*item != NULL && newsize != 0);
-	assert(cp[0] == XMALLOC_MAGIC);		/* magic cookie still there? */
+	assert(p[0] == XMALLOC_MAGIC);		/* magic cookie still there? */
 
-	cp = (char *)realloc(cp, newsize + 1);
-	if (!cp) {
+	p = (int *)realloc(p, newsize + 1);
+	if (!p) {
 		perror("realloc failed");
 		exit(1);
 	}
-	assert(cp[0] == XMALLOC_MAGIC);
-	*item = &cp[1];
+	assert(p[0] == XMALLOC_MAGIC);
+	*item = &p[1];
 }
 
 /* 
@@ -68,11 +68,11 @@ void xrealloc(void **item, size_t newsize)
  */
 void xfree(void **item)
 {
-	char *cp = (char *)*item - 1;
+	int *p = (int *)*item - 1;
 
 	if (*item != NULL) {
-		assert(cp[0] == XMALLOC_MAGIC);	/* magic cookie still there? */
-		free(cp);
+		assert(p[0] == XMALLOC_MAGIC);	/* magic cookie still there? */
+		free(p);
 		*item = NULL;
 	}
 }
