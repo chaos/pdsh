@@ -116,7 +116,7 @@ static char sccsid[] = "@(#)mcmd.c      Based from: 8.3 (Berkeley) 3/26/94";
 
 #include <munge.h>
 
-#include "dsh.h"       /* LINEBUFSIZE */
+#include "dsh.h"       /* LINEBUFSIZE && IP_ADDR_LEN */
 #include "err.h"
 #include "fd.h"
 #include "mod.h"
@@ -182,6 +182,13 @@ mcmd_signal(int fd, int signum)
  *      cmd (IN)                remote command to execute under shell
  *      fd2p (IN)               if non NULL, return stderr file descriptor here
  *      int (RETURN)            -1 on error, socket for I/O on success
+ *
+ * Originally by Mike Haskell for mrsh, modified slightly to work with pdsh by:
+ * - making mcmd always thread safe
+ * - using "err" function output errors.
+ * - passing in address as addr intead of calling gethostbyname
+ * - using default mshell port instead of calling getservbyname
+ * 
  */
 int 
 mcmd(char *ahost, char *addr, char *remuser, char *cmd, int *fd2p)
@@ -192,7 +199,7 @@ mcmd(char *ahost, char *addr, char *remuser, char *cmd, int *fd2p)
         struct sockaddr_in sin, from;
         struct sockaddr_storage ss;
         struct in_addr m_in;
-        unsigned int randy, rand;
+        unsigned int randy, rand, randl;
         unsigned char *hptr;
         int s, lport, rv, rand_fd;
         int mcount;
@@ -397,6 +404,30 @@ mcmd(char *ahost, char *addr, char *remuser, char *cmd, int *fd2p)
 
         mcount = (strlen(m)+1);
         
+        /*
+         * Write stderr port in the clear in case we can't decode for
+         * some reason (i.e. bad credentials).
+         */
+        m_rv = fd_write_n(s, num, strlen(num)+1);
+        if (m_rv != sizeof(num)) {
+                 close(s);
+                 close(s2);
+                 free(m);
+                 free(tmbuf);
+                 if (m_rv == -1) {
+                         if (errno == SIGPIPE) {
+                                  err("%p: %S: mcmd: Lost connection (SIGPIPE).", ahost);
+                                  EXIT_PTHREAD();
+                         } else {
+                                  err("%p: %S: mcmd: Write of stderr port num to socket failed: %m\n", ahost);
+                                  EXIT_PTHREAD();
+                         }
+                 }
+        }
+
+        /*
+         * Write the munge_encoded blob to the socket.
+         */
         m_rv = fd_write_n(s, m, mcount);
         if (m_rv != mcount) {
                 close(s);
@@ -445,13 +476,24 @@ mcmd(char *ahost, char *addr, char *remuser, char *cmd, int *fd2p)
                 EXIT_PTHREAD();
         }
 
-        rand = ntohl(rand);
-        if (rand != randy) {
-                errno = EBADE;
+        randl = ntohl(rand);
+        if (randl != randy) {
+                char tmpbuf[LINEBUFSIZE] = {0};
+                char *tptr = &tmpbuf[0];
+
+                memcpy(tptr,(char *) &rand,sizeof(rand));
+                tptr += sizeof(rand);
+                m_rv = fd_read_line (s3, tptr, LINEBUFSIZE - sizeof(rand));
+                if (m_rv < 0) {
+                        if (lport)
+                                close(*fd2p);
+                        close(s);
+                        err("%p: %S: mcmd: Bad read of error from stderr: %m\n", ahost);
+                        EXIT_PTHREAD();
+                }
+                err("%p: %S: mcmd: Error: %s\n", ahost, &tmpbuf[0]);
                 close(s);
                 close(s3);
-                fprintf(stderr,"Expected %x, received %x\n", randy, rand);
-                err("%p: %S: Bad verification number\n", ahost);
                 EXIT_PTHREAD();
         }
 
