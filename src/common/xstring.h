@@ -36,6 +36,7 @@ int xfgets(char **, FILE *);
 
 char *xstrduplicate(char *str);
 void xstrcat(char **str1, char *str2);
+void xstrcpy(char **str1, char *str2);
 void xstrcatchar(char **str1, char c);
 void xstrerrorcat(char **str1);
 char *xbasename(char *path);

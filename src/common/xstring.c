@@ -226,7 +226,6 @@ _makespace(char **str, int needed)
 /* 
  * Concatenate str2 onto str1, expanding str1 as needed.
  *   str1 (IN/OUT)	target string (pointer to in case of expansion)
- *   size (IN/OUT)	size of str1 (pointer to in case of expansion)
  *   str2 (IN)		source string
  */
 void 
@@ -234,6 +233,18 @@ xstrcat(char **str1, char *str2)
 {
 	_makespace(str1, strlen(str2));
 	strcat(*str1, str2);
+}
+
+/* 
+ * Copy str2 to str1, expanding str1 as needed.
+ *   str1 (IN/OUT)	target string (pointer to in case of expansion)
+ *   str2 (IN)		source string
+ */
+void 
+xstrcpy(char **str1, char *str2)
+{
+	_makespace(str1, strlen(str2));
+	strcpy(*str1, str2);
 }
 
 static void 

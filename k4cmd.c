@@ -205,7 +205,7 @@ k4cmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
 			goto bad;
 		}
 		listen(s2, 1);
-                (void)sprintf(num, "%d", lport);
+                (void)snprintf(num, sizeof(num), "%d", lport);
 		if (write(s, num, strlen(num) + 1) != strlen(num) + 1) {
 			err("%p: %S: write: setting up stderr: %m\n", ahost);
 			(void) close(s2);

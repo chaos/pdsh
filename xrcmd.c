@@ -183,7 +183,7 @@ xrcmd(char *ahost, char *addr, char *locuser, char *remuser,
 		if (s2 < 0)
 			goto bad;
 		listen(s2, 1);
-		sprintf(num, "%d", lport);
+		snprintf(num, sizeof(num), "%d", lport);
 		if (write(s, num, strlen(num)+1) != strlen(num)+1) {
 			err("%p: %S: rcmd: write (setting up stderr): %m\n", 
 			    ahost);

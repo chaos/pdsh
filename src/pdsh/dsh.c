@@ -336,7 +336,7 @@ _rexpand_dir(list_t list, char *name)
 			continue;
 		if (!strcmp(dp->d_name, ".") || !strcmp(dp->d_name, ".."))
 			continue;
-		sprintf(file, "%s/%s", name, dp->d_name);
+		snprintf(file, sizeof(file), "%s/%s", name, dp->d_name);
 		if (stat(file, &sb) < 0)
 			errx("%p: can't stat %s: %m\n", file);
 		if (access(name, R_OK) < 0)
@@ -516,7 +516,7 @@ _rcp_sendfile(int fd, char *file, char *host, bool popt)
 		 * 1: SEND stat time: "T%ld %ld %ld %ld\n" 
 		 *    (st_atime, st_atime_usec, st_mtime, st_mtime_usec)
 		 */
-		sprintf(tmpstr, "T%ld %ld %ld %ld\n", 
+		snprintf(tmpstr, sizeof(tmpstr), "T%ld %ld %ld %ld\n", 
 		    sb.st_atime, 0L, sb.st_mtime, 0L);
 		if (_rcp_sendstr(fd, tmpstr, host) < 0)
 			goto fail;
@@ -531,7 +531,7 @@ _rcp_sendfile(int fd, char *file, char *host, bool popt)
 	 	 * 3a: SEND directory mode: "D%04o %d %s\n"
 		 *     (st_mode & RCP_MODEMASK, 0, name)
 		 */
-		sprintf(tmpstr, "D%04o %d %s\n", 
+		snprintf(tmpstr, sizeof(tmpstr), "D%04o %d %s\n", 
 		    sb.st_mode & RCP_MODEMASK, 0, xbasename(file));
 		if (_rcp_sendstr(fd, tmpstr, host) < 0)
 			goto fail;
@@ -543,7 +543,7 @@ _rcp_sendfile(int fd, char *file, char *host, bool popt)
 		 */
 		template = (sizeof(sb.st_size) > sizeof(long) 
 		    ? "C%04o %lld %s\n" : "C%04o %ld %s\n");
-		sprintf(tmpstr, template, sb.st_mode & RCP_MODEMASK, 
+		snprintf(tmpstr, sizeof(tmpstr), template, sb.st_mode & RCP_MODEMASK, 
 		    sb.st_size, xbasename(file));
 		if (_rcp_sendstr(fd, tmpstr, host) < 0)
 			goto fail;

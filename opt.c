@@ -30,7 +30,7 @@
 #include "config.h"
 #endif
 
-#include <string.h>	/* strcpy */
+/*#include <string.h>*/	/* strcpy */
 #include <stdlib.h>	/* getenv */
 #include <pwd.h>	/* getpwuid */
 
@@ -210,7 +210,7 @@ opt_env(opt_t *opt)
 void 
 opt_args(opt_t *opt, int argc, char *argv[])
 {
-	char validargs[LINEBUFSIZE];
+	char *validargs = NULL;
 	int c;
 	extern int optind;
 	extern char *optarg;
@@ -230,18 +230,18 @@ opt_args(opt_t *opt, int argc, char *argv[])
 
 	/* construct valid arg list */
 	if (opt->personality == DSH) {
-		strcpy(validargs, DSH_ARGS);
+		xstrcpy(&validargs, DSH_ARGS);
 #if 	HAVE_ELAN
-		strcat(validargs, ELAN_ARGS);
+		xstrcat(&validargs, ELAN_ARGS);
 #endif
 	} else
-		strcpy(validargs, PCP_ARGS);
-	strcat(validargs, GEN_ARGS);
+		xstrcpy(&validargs, PCP_ARGS);
+	xstrcat(&validargs, GEN_ARGS);
 #if	HAVE_SDR
- 	strcat(validargs, SDR_ARGS);
+ 	xstrcat(&validargs, SDR_ARGS);
 #endif
 #if	HAVE_GENDERS
-	strcat(validargs, GEND_ARGS);
+	xstrcat(&validargs, GEND_ARGS);
 #endif
 #ifdef __linux
 	/* Tell glibc getopt to stop eating after the first non-option arg */
@@ -338,6 +338,8 @@ opt_args(opt_t *opt, int argc, char *argv[])
 				_usage(opt);
 		}
 	}
+
+	Free((void **)&validargs);
 
 	/* expand wcoll if needed */
 	if (wcoll_buf != NULL) {

@@ -99,7 +99,8 @@ read_genders(char *attr, int iopt)
 	char cmd[LINEBUFSIZE];
 	char buf[LINEBUFSIZE];
 
-	sprintf(cmd, "%s -%sn %s", _PATH_NODEATTR, iopt ? "" : "r", attr);
+	snprintf(cmd, sizeof(cmd), "%s -%sn %s", _PATH_NODEATTR, 
+			iopt ? "" : "r", attr);
 	f = xpopen(cmd, "r");
 	if (f == NULL)
 		errx("%p: error running %s\n", _PATH_NODEATTR);
@@ -125,7 +126,8 @@ _sdr_numswitchplanes(void)
 	char buf[LINEBUFSIZE];
 	int n;
 
-	sprintf(cmd, "%s -x SP number_switch_planes", _PATH_SDRGETOBJECTS);
+	snprintf(cmd, sizeof(cmd), "%s -x SP number_switch_planes", 
+			_PATH_SDRGETOBJECTS);
 
 	f = xpopen(cmd, "r");
 
@@ -144,14 +146,15 @@ _sdr_numswitchplanes(void)
 }
 
 static void 
-_sdr_getswitchname(char *switchName)
+_sdr_getswitchname(char *switchName, int len)
 {
 	FILE *f;
 	list_t words;
 	char cmd[LINEBUFSIZE];
 	char buf[LINEBUFSIZE];
+	int res;
 		
-	sprintf(cmd, "%s -x Switch switch_number==1 switch_name",
+	snprintf(cmd, sizeof(cmd), "%s -x Switch switch_number==1 switch_name",
 	    _PATH_SDRGETOBJECTS);
 	f = xpopen(cmd, "r");
 	if (f == NULL)
@@ -159,7 +162,7 @@ _sdr_getswitchname(char *switchName)
 	while (fgets(buf, LINEBUFSIZE, f) != NULL) {
 		words = list_split(NULL, buf);
 		assert(list_length(words) == 1);
-		strcpy(switchName, list_nth(words, 0));
+		snprintf(switchName, len, list_nth(words, 0));
 		list_free(&words);
 	}
 	xpclose(f);
@@ -186,7 +189,7 @@ _sdr_getresp(bool Gopt, char *nameType, bool resp[])
 
 	/* deal with Colony switch attribute name change */
 	if (!strcmp(nameType, "switch_responds")) {
-		_sdr_getswitchname(buf);
+		_sdr_getswitchname(buf, sizeof(buf));
 		if (!strcmp(buf, "SP_Switch2")) {
 			switchplanes = _sdr_numswitchplanes();
 			attr = (switchplanes == 1) ?  "switch_responds0" : 
@@ -195,7 +198,7 @@ _sdr_getresp(bool Gopt, char *nameType, bool resp[])
 			attr = "switch_responds";
 	}
 		
-	sprintf(cmd, "%s %s -x %s node_number %s", 
+	snprintf(cmd, sizeof(cmd), "%s %s -x %s node_number %s", 
 	    _PATH_SDRGETOBJECTS, Gopt ? "-G" : "", nameType, attr);
 	f = xpopen(cmd, "r");
 	if (f == NULL)
@@ -233,7 +236,7 @@ _sdr_getnames(bool Gopt, char *nameType, char *nodes[])
 	char cmd[LINEBUFSIZE];
 	char buf[LINEBUFSIZE];
 
-	sprintf(cmd, "%s %s -x Node node_number %s", 
+	snprintf(cmd, sizeof(cmd), "%s %s -x Node node_number %s", 
 	    _PATH_SDRGETOBJECTS, Gopt ? "-G" : "", nameType);
 	f = xpopen(cmd, "r");
 	if (f == NULL)
@@ -333,7 +336,8 @@ _rms_rid_to_nodes(char *part, int rid)
 	char tmp[256];
 
 	/* XXX how to specify partition?  do we need to? */
-	sprintf(tmp, "%s \"select hostnames from resources where name='%d'\"",
+	snprintf(tmp, sizeof(tmp), 
+			"%s \"select hostnames from resources where name='%d'\"",
 			_PATH_RMSQUERY, rid);
 	f = xpopen(tmp, "r");
 	if (f == NULL)

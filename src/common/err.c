@@ -100,6 +100,8 @@ _verr(FILE *stream, char *format, va_list ap)
 	int percent = 0;
 	char tmpstr[LINEBUFSIZE];
 
+	/* Note: snprintf silently truncates if argument exceeds size of tmpstr */
+
 	assert(prog != NULL && host != NULL);
 	while (format && *format) {			/* iterate thru chars */
 		if (percent == 1) { 
@@ -107,18 +109,21 @@ _verr(FILE *stream, char *format, va_list ap)
 			if (*format == 's') {		/* %s - string */
 				xstrcat(&buf, va_arg(ap, char *));
 			} else if (*format == 'S') {	/* %S - string, trunc */
-				strcpy(tmpstr, va_arg(ap, char *));
+				snprintf(tmpstr, sizeof(tmpstr), "%s", 
+						va_arg(ap, char *));
 				if (!isdigit(*tmpstr) 
 						&& (q = strchr(tmpstr, '.')))
 					*q = '\0';
 				xstrcat(&buf, tmpstr);
 			} else if (*format == 'z') {	/* %z - same as %.3d */
-				sprintf(tmpstr, "%.3d", va_arg(ap, int));
+				snprintf(tmpstr, sizeof(tmpstr), "%.3d", 
+						va_arg(ap, int));
 				xstrcat(&buf, tmpstr);
 			} else if (*format == 'c') {	/* %c - character */
 				xstrcatchar(&buf, va_arg(ap, int));
 			} else if (*format == 'd') {	/* %d - integer */
-				sprintf(tmpstr, "%d", va_arg(ap, int));
+				snprintf(tmpstr, sizeof(tmpstr), "%d", 
+						va_arg(ap, int));
 				xstrcat(&buf, tmpstr);
 			} else if (*format == 'm') {	/* %m - error code */
 				xstrerrorcat(&buf);
@@ -131,7 +136,7 @@ _verr(FILE *stream, char *format, va_list ap)
 			} else if (*format == 'p') {	/* %p - prog@host */
 				assert(prog != NULL);
 				assert(host != NULL);
-				sprintf(tmpstr, "%s@%s", prog, host);
+				snprintf(tmpstr, sizeof(tmpstr), "%s@%s", prog, host);
 				xstrcat(&buf, tmpstr);
 			} else				/* pass thru */
 				xstrcatchar(&buf, *format);

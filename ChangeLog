@@ -1,3 +1,8 @@
+2002-09-26 garlick
+	* Mark fixed pdsh/118 (bad usage of hostlist api)
+	* Removed possibilty of string overflow in a couple places.
+	* Taggged pdsh-1-7-3chaos (sent to LNXI for MCR)
+
 2002-09-12 garlick
 	* Reordered ChangeLog in reverse chronological order.
 

@@ -160,7 +160,7 @@ _qcmd_send_extra_args(int s, int nodeid)
 	/* send environment (count followed by variables, each \0-term) */
 	for (ep = environ; *ep != NULL; ep++)
 		count++;
-	sprintf(tmpstr, "%d", count);
+	snprintf(tmpstr, sizeof(tmpstr), "%d", count);
 	(void)write(s, tmpstr, strlen(tmpstr)+1);
 	for (ep = environ; *ep != NULL; ep++)	
 		(void)write(s, *ep, strlen(*ep)+1);
@@ -258,7 +258,7 @@ qcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
 		if (s2 < 0)
 			goto bad;
 		listen(s2, 1);
-		(void)sprintf(num, "%d", lport);
+		(void)snprintf(num, sizeof(num), "%d", lport);
 		if (write(s, num, strlen(num)+1) != strlen(num)+1) {
 			err("%p: %S: rcmd: write (setting up stderr): %m\n", 
 			    ahost);
