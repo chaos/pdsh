@@ -20,7 +20,7 @@
 	* Added genders support.
 	* Released version 1.2.
 
-xx-xx-xx garlick
+2000-07-14 garlick
 	* Activated POSIX mode for getopt() on linux.
 	* Abort cleanly if working collective is empty.
 	* Fixed bug in pcp option handling (core on empty source file list).
