@@ -344,6 +344,24 @@ _cmp_type(mod_t mod, char *type)
     return (strcmp(mod->pmod->type, type) == 0);
 }
 
+int
+mod_count(char *type)
+{
+    mod_t mod;
+    int i = 0;
+
+    assert(module_list != NULL);
+
+    if (type == NULL)
+        return list_count(module_list);
+
+    list_iterator_reset(module_itr);
+    while ((mod = list_find(module_itr, (ListFindF) _cmp_type, type))) 
+        i++;
+
+    return i;
+}
+
 List
 mod_get_module_names(char *type)
 {
@@ -351,12 +369,16 @@ mod_get_module_names(char *type)
     mod_t mod;
 
     assert(module_list != NULL);
-    assert(type != NULL);
-    assert(*type != '\0');
 
     l = list_create(NULL);
-
     list_iterator_reset(module_itr);
+
+    if (type == NULL) {
+        while((mod = list_next(module_itr)))
+            list_push(l, mod->pmod->name);
+        return l;
+    }
+
     while ((mod = list_find(module_itr, (ListFindF) _cmp_type, type))) {
         list_push(l, mod->pmod->name);
     }

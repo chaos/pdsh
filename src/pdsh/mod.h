@@ -106,7 +106,14 @@ int mod_postop(opt_t *pdsh_opts);
 mod_t mod_get_module(const char *type, const char *name);
 
 /*
+ *  Return the number of loaded modules of type `"type." Returns the
+ *    total number of modules if type is NULL.
+ */
+int mod_count(char *type);
+
+/*
  *  Build list of module names of type "type"
+ *  List contains all module names if type is NULL.
  */
 List mod_get_module_names(char *type);
 
