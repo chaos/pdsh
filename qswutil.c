@@ -430,7 +430,7 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 	if (qi->nprocs > ELAN_MAX_VPS) /* should catch this in client */
 		errx("%p: too many processes requested\n");
 
-#if NEW_ELAN_DRIVER
+#if 	NEW_ELAN_DRIVER
 	/* 
 	 * 'uid' needs to be able to read/write /dev/elan3/sdram0,user0
 	 * This avoids a rather cryptic and broken error message:
@@ -438,19 +438,19 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 	 *     elan_init(0): Failed elan3_init(0 a4100000 c800000 a0100000 
 	 *     4000000 d) 1108507576: ~KM‡~IAt«Ax
 	 */
+	{
 #define ELAN_PATH_SDRAM		"/dev/elan3/sdram0"
 #define ELAN_PATH_USER		"/dev/elan3/user0"
 #define S_IRWOTH		(S_IROTH | S_IWOTH)
-	{
 		struct stat sb;
 
 		if (stat(ELAN_PATH_SDRAM, &sb) < 0)
 			errx("%p: cant stat %s\n", ELAN_PATH_SDRAM);
-		if (sb.st_mode & S_IRWOTH != S_IRWOTH)
+		if ((sb.st_mode & S_IRWOTH) != S_IRWOTH)
 			errx("%p: need o+rw on %s\n", ELAN_PATH_SDRAM);
 		if (stat(ELAN_PATH_USER, &sb) < 0)
 			errx("%p: cant stat %s\n", ELAN_PATH_USER);
-		if (sb.st_mode & S_IRWOTH != S_IRWOTH)
+		if ((sb.st_mode & S_IRWOTH) != S_IRWOTH)
 			errx("%p: need o+rw on %s\n", ELAN_PATH_USER);
 	}
 #endif /* NEW_ELAN_DRIVER */
