@@ -172,3 +172,6 @@ $(VERSION_SCRIPT) :
 	 echo "    pdsh_module_priority;"; \
 	 echo "  local: *;";               \
 	 echo "};") > $(VERSION_SCRIPT)
+
+DISTCLEANFILES = \
+	$(VERSION_SCRIPT)
