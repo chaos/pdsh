@@ -164,7 +164,7 @@
 2002-06-14 garlick
 	* Moved list_split_range to hostrange.c (now called range_split)
 
-TODO:
+TODO for version 1.7
 	- improve deja-gnu support
 	- make rms queries to db using direct msql as in pam_rms module
 	- switch to libqsw (modify to set env vars)
@@ -173,3 +173,6 @@ TODO:
 	- ganglia: support gexec/authd connection method?
 	- implement C interface to genders
 	- implement node range conversion functions (both directions)
+	- GPL release 1.7
+	- need a better way to build chaos/non-chaos RPM's
+	- link statically to avoid runtime elan dependencies?
