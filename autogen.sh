@@ -11,21 +11,35 @@
 
 DIE=0
 
-(autoconf --version) < /dev/null >/dev/null 2>&1 || {
+# minimum required versions of autoconf/automake:
+ACMAJOR=2
+ACMINOR=52
+
+AMMAJOR=1
+AMMINOR=4
+
+(autoconf --version | 2>&1 \
+ perl -n0e "(/(\d+)\.(\d+)/ && \$1>=$ACMAJOR && \$2>=$ACMINOR) || exit 1") || {
    echo
-   echo "Error: You must have \`autoconf' installed to run $0."
-   echo "Get the latest version from ftp://ftp.gnu.org/pub/gnu/autoconf/"
+   echo "Error: You must have \`autoconf' version $ACMAJOR.$ACMINOR or greater"
+   echo "installed to run $0. Get the latest version from"
+   echo "ftp://ftp.gnu.org/pub/gnu/autoconf/"
+   echo
    NO_AUTOCONF=yes
    DIE=1
 }
 
-(automake --version) < /dev/null > /dev/null 2>&1 || {
-   echo 
-   echo "Error: You must have \`automake' installed to run $0."
-   echo "Get the latest version from ftp://ftp.gnu.org/pub/gnu/automake/"
-   NO_AUTOMAKE=yes
+(automake --version | 2>&1 \
+ perl -n0e "(/(\d+)\.(\d+)/ && \$1>=$AMMAJOR && \$2>=$AMMINOR) || exit 1") || {
+   echo
+   echo "Error: You must have \`automake' version $ACMAJOR.$ACMINOR or greater"
+   echo "installed to run $0. Get the latest version from"
+   echo "ftp://ftp.gnu.org/pub/gnu/automake/"
+   echo
+   NO_AUTOCONF=yes
    DIE=1
 }
+
 
 test -n "$NO_AUTOMAKE" || (aclocal --version) < /dev/null > /dev/null 2>&1 || {
    echo
@@ -36,7 +50,7 @@ test -n "$NO_AUTOMAKE" || (aclocal --version) < /dev/null > /dev/null 2>&1 || {
    DIE=1
 }
 
-if test "$DIE" -eq 1; then
+if test $DIE -eq 1; then
    exit 1
 fi
 
