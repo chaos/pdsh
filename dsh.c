@@ -725,7 +725,7 @@ static void *_rsh_thread(void *args)
                 if (rv <= 0) {  /* closed */
                     FD_CLR(a->fd, &wantrfds);
                     FD_CLR(a->fd, &wantwfds);
-                    fclose(fp);
+                    fclose(fp);  /* also closes original fd */
                 }
                 if (rv == -1)   /* error */
                     err("%p: %S: xfgets: %m\n", a->host);
@@ -745,7 +745,7 @@ static void *_rsh_thread(void *args)
                 rv = xfgets(&buf, efp);
                 if (rv <= 0) {  /* closed */
                     FD_CLR(a->efd, &wantrfds);
-                    fclose(efp);
+                    fclose(efp);  /* also closes original fd */
                 }
                 if (rv == -1)   /* error */
                     err("%p: %S: xfgets: %m\n", a->host);
