@@ -194,13 +194,21 @@ static int mod_slurm_wcoll(opt_t *opt)
     if (job_arg && opt->wcoll)
         errx("%p: do not specify -j with any other node selection option.\n");
 
-    if (opt->wcoll)
-        return 0;
+    if (!opt->wcoll) {
+        if (job_arg)
+            opt->wcoll = _slurm_wcoll (str2jobid (job_arg));
+        else
+            opt->wcoll = _slurm_wcoll (-1); 
+    }
 
-    if (job_arg)
-        opt->wcoll = _slurm_wcoll (str2jobid (job_arg));
-    else
-        opt->wcoll = _slurm_wcoll (-1); 
+    /*
+     * Close libslurm handle to avoid symbol collision in 
+     *  slurm and pdsh qsnet functions. This is a temporary
+     *  work-around until libslurm is able to hide local
+     *  symbols.
+     */
+    if (dlhandle)
+        lt_dlclose (dlhandle);
 
     return 0;
 }
