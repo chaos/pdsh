@@ -25,5 +25,7 @@ documents thos changes that are of interest to users and admins.
  -- QsNet support includes support for QSW elanctrl interface. (Elan3/Elan4)
  -- Added support for running Elan network error resolver thread in qshd/mqshd.
     (Elan3 only)
+ -- Nominal support for Elan multirail jobs (largely untested). See
+    qshell and mqshell `-r railmask' option.
 
 $Id$
