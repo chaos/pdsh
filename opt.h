@@ -64,9 +64,9 @@ typedef struct {
 
 	/* Qshell specific */
 	alloc_t q_allocation;	/* -m block */
-	int q_nnodes;		/* -N nnodes */
-	char *q_partition;	/* -P partition */
 	int q_nprocs;		/* -n nprocs */
+	int rms_nnodes;		/* -N nnodes */
+	char *rms_partition;	/* -P partition */
 
 	/* PCP-specific options */
 	bool preserve;		/* -p */

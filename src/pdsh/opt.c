@@ -139,8 +139,8 @@ void opt_default(opt_t *opt)
 	*(opt->gend_attr) = '\0';
 	opt->q_nprocs = -1;
 	opt->q_allocation = ALLOC_UNSPEC;
-	opt->q_partition = NULL;
-	opt->q_nnodes = -1;
+	opt->rms_partition = NULL;
+	opt->rms_nnodes = -1;
 
 	/* PCP specific */
 	opt->outfile_name = NULL;
@@ -294,10 +294,10 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 					usage(opt);
 				break;
 			case 'N':	/* set number of nodes (qshell) */
-				opt->q_nnodes = atoi(optarg);
+				opt->rms_nnodes = atoi(optarg);
 				break;
 			case 'P':	/* allocate nodes from RMS partition (qshell) */
-				opt->q_partition = strdup(optarg);
+				opt->rms_partition = strdup(optarg);
 				break;
 			case 'a':	/* indicates all nodes */
 				opt->allnodes = true;
@@ -384,21 +384,21 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 #endif
 #if HAVE_RMS_PMANAGER
 	/* get wcoll from RMS partition manager */
-	if (opt->q_partition) { 
+	if (opt->rms_partition) { 
 		/* catch couple of errors early */
 		if (opt->wcoll)
 			errx("%p: -P cannot be used with -w or other lists\n");
-		if (opt->q_nnodes == -1 && opt->q_nprocs == -1)
+		if (opt->rms_nnodes == -1 && opt->q_nprocs == -1)
 			errx("%p: -P requires -N and/or -n\n");
 		if (opt->q_nprocs != -1 && opt->rcmd_type != RCMD_QSHELL)
 			errx("%p: -n requires -E\n");
 
 		if (opt->q_nprocs == -1)
-			opt->q_nprocs = opt->q_nnodes;
-		if (opt->q_nnodes == -1)
-			opt->q_nnodes = opt->q_nprocs;
+			opt->q_nprocs = opt->rms_nnodes;
+		if (opt->rms_nnodes == -1)
+			opt->rms_nnodes = opt->q_nprocs;
 
-		opt->wcoll = rms_wcoll(opt->q_partition, opt->q_nnodes, 
+		opt->wcoll = rms_wcoll(opt->rms_partition, opt->rms_nnodes, 
 					opt->q_nprocs);
 	}
 #endif /* HAVE_RMS_PMANAGER */
