@@ -31,9 +31,6 @@
 /* Define if you have the `fork' function. */
 #undef HAVE_FORK
 
-/* define for Genders support */
-#undef HAVE_GENDERS
-
 /* Define if you have the `getcwd' function. */
 #undef HAVE_GETCWD
 

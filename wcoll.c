@@ -89,7 +89,7 @@ list_t read_wcoll(char *file, FILE *f)
 	return new;
 }
 
-#if HAVE_GENDERS
+#ifdef	_PATH_NODEATTR
 list_t read_genders(char *attr, int iopt)
 {
 	FILE *f;
@@ -117,7 +117,7 @@ list_t read_genders(char *attr, int iopt)
 
 	return new;
 }
-#endif
+#endif /* _PATH_NODEATTR */
 
 #ifdef _PATH_SDRGETOBJECTS
 static int sdr_numswitchplanes(void)

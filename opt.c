@@ -228,7 +228,7 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 #ifdef _PATH_SDRGETOBJECTS
  	strcat(validargs, SDR_ARGS);
 #endif
-#if HAVE_GENDERS
+#ifdef _PATH_NODEATTR
 	strcat(validargs, GEND_ARGS);
 #endif
 #ifdef __linux
@@ -370,13 +370,13 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 #ifdef _PATH_SDRGETOBJECTS
 		opt->wcoll = sdr_wcoll(opt->sdr_global, 
 		    opt->altnames, opt->sdr_verify);
-#elif HAVE_GENDERS
+#elif defined(_PATH_NONDEATTR)
 		opt->wcoll = read_genders("all", opt->altnames);
 #elif HAVE_MACHINES
 		opt->wcoll = read_wcoll(_PATH_MACHINES, NULL);
 #endif
 	} 
-#if HAVE_GENDERS
+#ifdef _PATH_NODEATTR
 	/* get wcoll from genders - all nodes with a particular attribute */
 	if (*(opt->gend_attr)) {
 		opt->wcoll = read_genders(opt->gend_attr, opt->altnames);
@@ -616,7 +616,7 @@ static void usage(opt_t *opt)
 #ifdef _PATH_SDRGETOBJECTS
 	err(OPT_USAGE_SDR);
 #endif
-#if HAVE_GENDERS
+#ifdef _PATH_NODEATTR
 	err(OPT_USAGE_GEND);
 #endif
 	exit(1);
@@ -625,7 +625,7 @@ static void usage(opt_t *opt)
 static void show_version(void)
 {
 	printf("%s-%s", PROJECT, VERSION);
-#if	HAVE_GENDERS
+#ifdef	_PATH_NODEATTR
 	printf("+genders");
 #endif
 #if	HAVE_ELAN3
@@ -637,8 +637,11 @@ static void show_version(void)
 #if	HAVE_KRB4
 	printf("+krb4");
 #endif
-#if	HAVE_MACHINES
+#ifdef	_PATH_MACHINES
 	printf("+mpich");
+#endif
+#ifdef	_PATH_SDRGETATTRIBUTES
+	printf("+sdr");
 #endif
 	printf("\n");
 	exit(0);

@@ -38,7 +38,7 @@ else
 fi
 AC_MSG_RESULT(${debug=no})
 
-# Enable features taht interact with external software
+# Enable features that interact with external software
 # --with-elan
 AC_MSG_CHECKING(whether to support Elan interconnect)
 AC_ARG_WITH(elan,
@@ -105,25 +105,8 @@ if test "$withkrb4" = yes; then
     AC_DEFINE(HAVE_KRB4, 1, [define for Kerberos IV support])
 fi
 
-# --with-genders
-AC_MSG_CHECKING(whether to include Genders support)
-AC_ARG_WITH(genders,
-    AC_HELP_STRING([--with-genders], [Include Genders support]),
-    [ case "$withval" in
-	no)
-	    withgenders=no
-	    ;;
-	yes)
-	    withgenders=yes
-            AC_DEFINE(HAVE_GENDERS, 1, [define for Genders support])
-	    ;;
-	*)
-	    AC_MSG_RESULT(doh!)
-	    AC_MSG_ERROR([bad value "$withval" for --with-genders])
-	    ;;
-    esac ]
-)
-AC_MSG_RESULT(${withgenders=no})
+# NOTE: support for SDR is automatic if SDRGetObjects is found
+# NOTE: support for Genders is automatic if nodeattr is found
 
 # Not yet configurable features
 RANGE_OP='-'

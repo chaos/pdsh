@@ -23,7 +23,7 @@ void del_wcoll(list_t, char *);
 #ifdef _PATH_SDRGETOBJECTS
 list_t sdr_wcoll(bool, bool, bool);
 #endif
-#if HAVE_GENDERS
+#ifdef _PATH_NODEATTR
 list_t read_genders(char *attr, int ropt);
 #endif
 #if HAVE_RMS_PMANAGER
