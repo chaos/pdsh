@@ -465,9 +465,8 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
 
   rv = bind(s, (struct sockaddr *)&ss, len); 
   if (rv < 0) {
-    close(s);
     err("%p: %S: mqcmd: bind failed: %m\n", ahost);
-    EXIT_PTHREAD();
+    goto bad;
   }
 
   sin.sin_family = AF_INET;
@@ -477,9 +476,8 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
   sin.sin_port = htons(MQSH_PORT);
   rv = connect(s, (struct sockaddr *)&sin, sizeof(sin));
   if (rv < 0) {
-    close(s);
     err("%p: %S: mqcmd: connect failed: %m\n", ahost);
-    EXIT_PTHREAD();
+    goto bad;
   }
 
   /*
@@ -487,16 +485,14 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
    */
   lport = 0;
   if (fd2p == 0) {
-    close(s);
     err("%p: %S: mqcmd: no stderr defined\n", ahost);
-    EXIT_PTHREAD();
+    goto bad;
   }
 
   s2 = socket(AF_INET, SOCK_STREAM, 0);
   if (s2 < 0) {
-    close(s);
     err("%p: %S: mqcmd: socket call for stderr failed: %m\n", ahost);
-    EXIT_PTHREAD();
+    goto bad;
   }
 
   memset (&stderr_sock, 0, sizeof(stderr_sock));
@@ -505,10 +501,9 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
   stderr_sock.sin_port = 0;
 
   if (bind(s2, (struct sockaddr *)&stderr_sock, sizeof(stderr_sock)) < 0) {
-    close(s);
     close(s2);
     err("%p: %S: bind failed: %m\n", ahost);
-    EXIT_PTHREAD();
+    goto bad;
   }
                 
   len = sizeof(struct sockaddr);
@@ -520,10 +515,9 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
 
   /* getsockname is thread safe */
   if (getsockname(s2,&m_socket,&len) < 0) {
-    close(s);
     close(s2);
     err("%p: %S: getsockname failed: %m\n", ahost);
-    EXIT_PTHREAD();
+    goto bad;
   }
 
   getp = (struct sockaddr_in *)&m_socket;
@@ -541,10 +535,9 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
 
   rv = listen(s2, 1);
   if (rv < 0) {
-    close(s);
     close(s2);
     err("%p: %S: mqcmd: listen() failed: %m\n", ahost);
-    EXIT_PTHREAD();
+    goto bad;
   }
 
   /*
@@ -575,10 +568,9 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
             (strlen(num_seq)+1) + strlen(cmd)+2);
   tmbuf = mbuf = malloc(mcount);
   if (tmbuf == NULL) {
-    close(s);
     close(s2);
     err("%p: %S: mqcmd: Error from malloc\n", ahost);
-    EXIT_PTHREAD();
+    goto bad;
   }
   /*
    * The following memset() call takes the extra trailing null as part of its
@@ -597,12 +589,11 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
   mptr = strcpy(mptr, cmd);
 
   if ((m_rv = munge_encode(&m,0,mbuf,mcount)) != EMUNGE_SUCCESS) {
-    close(s);
     close(s2);
     free(tmbuf);
-    fprintf(stderr,"%s\n",munge_strerror((munge_err_t)m_rv));
-    err("%p: %S: mqcmd: munge_encode: %m\n", ahost);
-    EXIT_PTHREAD();
+    err("%p: %S: mqcmd: munge_encode: %S\n", ahost, 
+        munge_strerror((munge_err_t)m_rv));
+    goto bad;
   }
 
   mcount = (strlen(m)+1);
@@ -613,17 +604,14 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
    */
   m_rv = fd_write_n(s, num, strlen(num)+1);
   if (m_rv != sizeof(num)) {
-    close(s);
     close(s2);
     free(m);
     free(tmbuf);
-    if (errno == SIGPIPE) {
+    if (errno == SIGPIPE)
       err("%p: %S: mqcmd: Lost connection (SIGPIPE).", ahost);
-      EXIT_PTHREAD();
-    } else {
+    else
       err("%p: %S: mqcmd: Write of stderr port num to socket failed: %m\n", ahost);
-      EXIT_PTHREAD();
-    }
+    goto bad;
   }
 
   /*
@@ -635,13 +623,11 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
     close(s2);
     free(m);
     free(tmbuf);
-    if (errno == SIGPIPE) {
+    if (errno == SIGPIPE)
       err("%p: %S: mqcmd: Lost connection (SIGPIPE): %m\n", ahost);
-      EXIT_PTHREAD();
-    } else {
+    else
       err("%p: %S: mqcmd: Write to socket failed: %m\n", ahost);
-      EXIT_PTHREAD();
-    }
+    goto bad;
   }
 
   free(m);
@@ -653,9 +639,8 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
   s3 = accept(s2, (struct sockaddr *)&from, &len);
   if (s3 < 0) {
     close(s2);
-    close(s);
     err("%p: %S: mqcmd: accept (stderr) failed: %m\n", ahost);
-    EXIT_PTHREAD();
+    goto bad;
   }
 
   close(s2);
@@ -666,11 +651,10 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
    */
   m_rv = fd_read_n(s3, &rand, sizeof(rand));
   if (m_rv != (ssize_t) (sizeof(rand))) {
-    close(s);
-    close(*fd2p);
     err("%p: %S: mqcmd: Bad read of expected verification "
         "number off of stderr socket: %m\n", ahost);
-    EXIT_PTHREAD();
+    close(s3);
+    goto bad;
   }
 
   randl = ntohl(rand);
@@ -685,9 +669,8 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
       err("%p: %S: mqcmd: Bad read of error from stderr: %m\n", ahost);
     else
       err("%p: %S: mqcmd: Error: %s\n", ahost, &tmpbuf[0]);
-    close(s);
-    close(*fd2p);
-    EXIT_PTHREAD();
+    close(s3);
+    goto bad;
   }
 
   /*
@@ -696,33 +679,25 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
   *fd2p = s3;
   from.sin_port = ntohs((u_short)from.sin_port);
   if (from.sin_family != AF_INET) {
-    close(s);
-    close(*fd2p);
     err("%p: %S: mqcmd: socket: protocol failure in circuit setup\n", ahost);
-    EXIT_PTHREAD();
+    goto bad2;
   }
 
   /* send extra information */
   if (_mqcmd_send_extra_args(s, nodeid) < 0) {
-    close(s);
-    close(*fd2p);
     err("%p: %S: mqcmd: error sending extra args\n", ahost);
-    EXIT_PTHREAD();
+    goto bad2;
   }
 
   m_rv = read(s, &c, 1);
   if (m_rv < 0) {
-    close(s);
-    close(*fd2p);
     err("%p: %S: mqcmd: read: protocol failure: %m\n", ahost);
-    EXIT_PTHREAD(); 
+    goto bad2;
   }
 
   if (m_rv != 1) {
-    close(s);
-    close(*fd2p);
     err("%p: %S: mqcmd: read: protocol failure: invalid response\n", ahost);
-    EXIT_PTHREAD();
+    goto bad2;
   }
 
   if (c != '\0') {
@@ -730,16 +705,21 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
     char tmpbuf[LINEBUFSIZE];
         
     m_rv = fd_read_line (s, &tmpbuf[0], LINEBUFSIZE);
-    if (m_rv < 0) {
-      close(s);
-      close(*fd2p);
+    if (m_rv < 0)
       err("%p: %S: mqcmd: Error from remote host\n", ahost);
-      EXIT_PTHREAD();
-    }
+    else
+      err("%p: %S: %s\n", ahost, tmpbuf);
+    goto bad2;
   }
   RESTORE_PTHREAD();
 
   return (s);
+
+ bad2:
+  close(*fd2p);
+ bad:
+  close(s);
+  EXIT_PTHREAD();
 }
 
 int
