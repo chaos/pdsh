@@ -79,13 +79,14 @@
 
 #include <dlfcn.h>
 
+#include <elanhosts.h>
+
 #include "src/common/xmalloc.h"
 #include "src/common/xstring.h"
 #include "src/common/hostlist.h"
 #include "src/common/list.h"
 #include "src/common/err.h"
 #include "qswutil.h"
-#include "elanhosts.h"
 
 /* we will allocate program descriptions in this range */
 /* XXX note: do not start at zero as libelan shifts to get unique shm id */

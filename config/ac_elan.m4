@@ -48,5 +48,16 @@ AC_DEFUN([AC_ELAN],
       AC_MSG_NOTICE([Cannot build mqshell without libelan3 or libelanctrl!])
    fi
 
+   AC_CHECK_LIB([elanhosts], [elanhost_config_create],
+                [ac_elan_have_elanhosts=yes], [])
+
+   if test "$ac_elan_have_elanhosts" = "yes"; then
+      AC_DEFINE(HAVE_LIBELANHOSTS, 1, [define if you have libelanhosts.])
+      ELAN_LIBS="$ELAN_LIBS -lelanhosts"
+   else
+      ac_have_elan="no"
+      AC_MSG_NOTICE([Cannot build QsNet modules without libelanhosts])
+   fi
+
    AC_SUBST(ELAN_LIBS)
 ])

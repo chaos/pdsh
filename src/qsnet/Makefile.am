@@ -49,6 +49,4 @@ libqsw_la_LDFLAGS = \
 
 libqsw_la_SOURCES = \
     qswutil.c \
-    qswutil.h \
-    elanhosts.c \
-    elanhosts.h
+    qswutil.h 
