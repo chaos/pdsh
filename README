@@ -39,10 +39,6 @@ As of version 1.6, pdsh uses GNU autoconf for configuration.  To configure:
 	Enable support for running parallel jobs on the Quadrics Elan 
 	interconnect via the -E option and qshell daemon.
 
---with-rms
-	Enable support for running on a set of nodes allocated via the RMS
-	(Quadrics resource management system) allocate command. 
-
 --enable-debug
 	Turns on assertion checking and compiles with -Wall.
 
@@ -52,9 +48,8 @@ As of version 1.6, pdsh uses GNU autoconf for configuration.  To configure:
 --with-connect-timeout=N
 	Set default connect timeout (default is 10 seconds)
 
---without-rangeop
-	Disable hostname range expansion.
-
+--with-readline
+	Use the GNU readline library to parse input in interactive mode.
 
 A word about -a (target "all" nodes) and -i (use alternate hostnames) option:
 

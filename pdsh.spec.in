@@ -31,9 +31,9 @@ executables.
 
 %build
 %if %chaos
-./configure --prefix=/usr --with-elan --with-readline
+./configure --prefix=/usr --with-readline --with-elan
 %else
-./configure --prefix=/usr --with-machines=/usr/local/etc/machines
+./configure --prefix=/usr --with-readline --with-machines=/usr/local/etc/machines
 %endif
 make
 
