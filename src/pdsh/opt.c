@@ -284,7 +284,7 @@ void opt_default(opt_t * opt, char *argv0)
     opt->command_timeout = 0;
     opt->fanout = DFLT_FANOUT;
     opt->sigint_terminates = false;
-    opt->infile_names = list_create(NULL);
+    opt->infile_names = NULL;
     opt->altnames = false;
     opt->debug = false;
     opt->labels = true;
@@ -468,9 +468,10 @@ void opt_args(opt_t * opt, int argc, char *argv[])
                 xstrcat(&opt->cmd, " ");
             xstrcat(&opt->cmd, argv[optind]);
         }
-
     /* PCP: build file list */
     } else {
+        if (!opt->infile_names)
+            opt->infile_names = list_create(NULL);
         for (; optind < argc - 1; optind++)
             list_append(opt->infile_names, argv[optind]);
         if (optind < argc)
@@ -505,8 +506,6 @@ void opt_args(opt_t * opt, int argc, char *argv[])
 bool opt_verify(opt_t * opt)
 {
     bool verified = true;
-    ListIterator i;
-    char *name;
 
     /*
      *  Call all post option processing functions for modules
@@ -540,6 +539,9 @@ bool opt_verify(opt_t * opt)
 
     /* PCP: must have source and destination filename(s) */
     if (personality == PCP && !opt->pcp_server) {
+        ListIterator i;
+        char *name;
+
         if (!opt->outfile_name || list_is_empty(opt->infile_names)) {
             err("%p: pcp requires source and dest filenames\n");
             verified = false;
@@ -549,11 +551,32 @@ bool opt_verify(opt_t * opt)
             err("%p: target is directory can only be specified with pcp server\n");
             verified = false;
         }
+
+        i = list_iterator_create(opt->infile_names);
+        while ((name = list_next(i))) {
+            struct stat sb;
+            if (stat(name, &sb) < 0) {
+                err("%p: can't stat %s\n", name);
+                verified = false;
+                continue;
+            }
+            if (!S_ISREG(sb.st_mode) && !S_ISDIR(sb.st_mode)) {
+                err("%p: not a regular file or directory: %s\n", name);
+                verified = false;
+                break;
+            }
+            if (S_ISDIR(sb.st_mode) && !opt->recursive) {
+                err("%p: use -r to copy directories: %s\n", name);
+                verified = false;
+                break;
+            }
+        }
+        list_iterator_destroy(i);
     }
 
     /* PCP: verify options when -z option specified */
     if (personality == PCP  && opt->pcp_server) {
-        if (!list_is_empty(opt->infile_names)) {
+        if (opt->infile_names && !list_is_empty(opt->infile_names)) {
             err("%p: do not list source files with pcp server\n");
             verified = false;
         }
@@ -563,27 +586,6 @@ bool opt_verify(opt_t * opt)
             verified = false;
         }
     }
-
-    i = list_iterator_create(opt->infile_names);
-    while ((name = list_next(i))) {
-        struct stat sb;
-        if (stat(name, &sb) < 0) {
-            err("%p: can't stat %s\n", name);
-            verified = false;
-            continue;
-        }
-        if (!S_ISREG(sb.st_mode) && !S_ISDIR(sb.st_mode)) {
-            err("%p: not a regular file or directory: %s\n", name);
-            verified = false;
-            break;
-        }
-        if (S_ISDIR(sb.st_mode) && !opt->recursive) {
-            err("%p: use -r to copy directories: %s\n", name);
-            verified = false;
-            break;
-        }
-    }
-    list_iterator_destroy(i);
 
     return verified;
 }
@@ -642,6 +644,11 @@ void opt_list(opt_t * opt)
         out("Command:		%s\n", STRORNULL(opt->cmd));
     } else {
         out("-- PCP-specific options --\n");
+        infile_str = _list_join(", ", opt->infile_names);
+        if (infile_str) {
+            out("Infile(s)		%s\n", infile_str);
+            Free((void **) &infile_str);
+        }
         out("Outfile			%s\n",
             STRORNULL(opt->outfile_name));
         out("Recursive		%s\n", BOOLSTR(opt->recursive));
@@ -665,11 +672,6 @@ void opt_list(opt_t * opt)
         out("Command timeout (secs)	%d\n", opt->command_timeout);
         out("Fanout			%d\n", opt->fanout);
         out("Display hostname labels	%s\n", BOOLSTR(opt->labels));
-        infile_str = _list_join(", ", opt->infile_names);
-        if (infile_str) {
-            out("Infile(s)		%s\n", infile_str);
-            Free((void **) &infile_str);
-        }
         out("Debugging       	%s\n", BOOLSTR(opt->debug));
 
         out("\n-- Target nodes --\n");
@@ -706,6 +708,8 @@ void opt_free(opt_t * opt)
         Free((void **) &opt->dshpath);
     if (opt->path_progname)
         Free((void **) &opt->path_progname);
+    if (opt->infile_names)
+        list_destroy(opt->infile_names);
 }
 
 /*
