@@ -106,6 +106,7 @@ char rcsid[] = "$Id$";
 #include <netdb.h>                /* gethostbyname */ 
 #include <net/if.h>               /* struct ifconf, struct ifreq */
 #include <sys/ioctl.h>            /* ioctl */
+#include <sys/param.h>            /* MAXHOSTNAMELEN / INET_ADDRSTRLEN */
 
 #include <stdio.h>  
 #include <stdlib.h>
@@ -122,11 +123,17 @@ char rcsid[] = "$Id$";
 #define MAXHOSTNAMELEN 64
 #endif
 
+#ifndef INET_ADDRSTRLEN
+#define INET_ADDRSTRLEN 16
+#endif
+
 #define MAX_MBUF_SIZE 4096
 
 extern int paranoid;
 extern int sent_null;
 
+#define ERRMSGLEN           4096
+static char errmsgbuf[ERRMSGLEN];
 static const char *errmsg = NULL;
 
 static char *munge_parse(char *buf, char *buf_end) {
@@ -178,7 +185,7 @@ static int getifrlen(struct ifreq *ifr) {
     return len;
 }
 
-static int check_interfaces(void *munge_addr, int h_length) {
+static int check_interfaces(void *munge_addr, int addr_len) {
     struct ifconf ifc;
     struct ifreq *ifr;
     struct ifreq ifaddr;
@@ -257,7 +264,7 @@ static int check_interfaces(void *munge_addr, int h_length) {
         if (strcmp(addr,"127.0.0.1") == 0)
             continue;
 
-        if (memcmp(munge_addr, (void *)&sin->sin_addr.s_addr, h_length) == 0) {
+        if (memcmp(munge_addr, (void *)&sin->sin_addr.s_addr, addr_len) == 0) {
             found++;
             break;
         }
@@ -271,25 +278,37 @@ bad:
     return -1;
 }
 
+static int check_munge_ip(char *ip) {
+    struct in_addr in;
+    char ipbuf[INET_ADDRSTRLEN];
+
+    strncpy(ipbuf, ip, INET_ADDRSTRLEN);
+    ipbuf[INET_ADDRSTRLEN-1] = '\0';
+
+    if (inet_pton(AF_INET, ipbuf, &in) <= 0) {
+        syslog(LOG_ERR, "failed inet_pton: %m");
+        errmsg = "Internal System Error";
+        return -1;
+    }
+    
+    return check_interfaces(&in, sizeof(struct in_addr));
+}
+
+
 static void mqshell_get_args(struct sockaddr_in *fromp, 
                              struct qshell_args *args) 
 {
     struct sockaddr_in sin;
-    struct hostent *hptr;
-    struct in_addr *h_addr;
     struct passwd cred;
     int rv = -1, m_rv = -1;
-    int buf_length, found;
+    int buf_length;
     unsigned short port = 0;
     unsigned int randnum;
     char *mptr = NULL;
     char *m_end = NULL;
     char *m_head = NULL;
-    char *chrptr = NULL;
     char mbuf[MAX_MBUF_SIZE];
-    char hostname[MAXHOSTNAMELEN] = {0};
     char cmdbuf[ARG_MAX + 1];
-    char dec_addr[16] = {0};
 
     errmsg = NULL;
 
@@ -332,7 +351,9 @@ static void mqshell_get_args(struct sockaddr_in *fromp,
                     &cred.pw_uid,&cred.pw_gid)) != EMUNGE_SUCCESS) {
 
         syslog(LOG_ERR, "%s: %s", "munge_decode error", munge_strerror(rv));
-        errmsg = "Authentication Failure";
+        snprintf(errmsgbuf, ERRMSGLEN, "Authentication Failure: %s",
+                 munge_strerror(rv));
+        errmsg = &errmsgbuf[0];
         goto error_out;
     }
 
@@ -348,7 +369,7 @@ static void mqshell_get_args(struct sockaddr_in *fromp,
 
     if ((args->pwd = getpwnam_common(m_head)) == NULL) {
         syslog(LOG_ERR, "bad getpwnam(): %m");
-        errmsg = "Internal System Error";
+        errmsg = "Permission Denied";
         goto error_out;
     }
 
@@ -372,65 +393,28 @@ static void mqshell_get_args(struct sockaddr_in *fromp,
     }
 #endif
 
-    /* Parse & check that IP address matches an interface IP address */
+    /* Verify IP address */
+
     if ((m_head = munge_parse(m_head, m_end)) == NULL)
         goto error_out;
-
-    strncpy(&dec_addr[0], m_head, sizeof(dec_addr));
-    dec_addr[sizeof(dec_addr) - 1] = '\0';
-
-    if (gethostname(&hostname[0], MAXHOSTNAMELEN) < 0) {
-        syslog(LOG_ERR, "failed gethostname: %m");
-        errmsg = "Internal System Error";
+    
+    if ((rv = check_munge_ip(m_head)) < 0)
         goto error_out;
+
+    if (rv == 0) {
+        syslog(LOG_ERR, "%s: %s", "Munge IP address doesn't match", m_head);
+        errmsg = "Permission Denied";
+        goto error_out; 
     }
 
-    /* ensure shortened hostname */
-    if ((chrptr = strchr(&hostname[0],'.')) != NULL)
-        *chrptr = '\0';
+    /* Verify Port */
 
-    if ((hptr = gethostbyname(&hostname[0])) == NULL) {
-        syslog(LOG_ERR, "failed gethostbyname: %m");
-        errmsg = "Internal System Error";
-        goto error_out;
-    }
-
-    if ((m_rv = inet_pton(AF_INET, &dec_addr[0], &sin.sin_addr.s_addr)) <= 0) {
-        syslog(LOG_ERR, "failed inet_pton: %m");
-        errmsg = "Internal System Error";
-        goto error_out;
-    }
-
-    found = 0;
-    while ((h_addr = (struct in_addr *) *hptr->h_addr_list++) != NULL) {
-        if (memcmp( &h_addr->s_addr, 
-                    &sin.sin_addr.s_addr, 
-                    hptr->h_length       ) == 0) {
-            found++;
-            break;
-        }
-    }
-
-    if (!found) {
-        found = check_interfaces(&sin.sin_addr.s_addr, hptr->h_length);
-        if (found < 0)
-            goto error_out;
-
-        /* Address does not match an interface on this machine */
-        if (found == 0) {
-            syslog(LOG_ERR, "%s: %s", "Munge IP address doesn't match", dec_addr);
-            errmsg = "Permission Denied";
-            goto error_out; 
-        }
-    }
-
-    /* parse and check port number */
     if ((m_head = munge_parse(m_head, m_end)) == NULL)
         goto error_out;
 
     errno = 0;
     port = strtol(m_head, (char **)NULL, 10);
-    if (port == 0 && errno != 0) {
+    if (errno != 0) {
         syslog(LOG_ERR, "%s: %s", "Bad port number from client", m_head);
         errmsg = "Internal Error";
         goto error_out;
@@ -442,30 +426,31 @@ static void mqshell_get_args(struct sockaddr_in *fromp,
         goto error_out;
     }
 
-    /* parse and check random number */
+    /* Get Random Number */
+
     if ((m_head = munge_parse(m_head, m_end)) == NULL)
         goto error_out;
 
     errno = 0;
     randnum = strtol(m_head,(char **)NULL,10);
-    if (randnum == 0 && errno != 0) {
-        syslog(LOG_ERR, "%s: %s", "mqshd: Bad random number from client.", m_head);
+    if (errno != 0) {
+        syslog(LOG_ERR, "%s: %d", "mqshd: Bad random number from client.", randnum);
         errmsg = "Internal Error";
         goto error_out;
     }
 
-    /* Double check to make sure protocol is ok */
     if (args->port == 0 && randnum != 0) {
         syslog(LOG_ERR,"protocol error, rand should be 0, %d", randnum);
         errmsg = "Protocol Error";
         goto error_out;
     }
 
-    /* parse command */
+    /* Get Command */
+
     if ((m_head = munge_parse(m_head, m_end)) == NULL)
         goto error_out;
 
-    if (strlen(m_head) <= (ARG_MAX+1)) {
+    if (strlen(m_head) < ARG_MAX) {
         strncpy(&cmdbuf[0], m_head, sizeof(cmdbuf));
         cmdbuf[sizeof(cmdbuf) - 1] = '\0';
     } else {
@@ -485,19 +470,20 @@ error_out:
         char c;
 
         if ((args->sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-            syslog(LOG_ERR,"can't get stderr port: socket call failed.: %m");
+            syslog(LOG_ERR,"create socket: %m");
             goto bad;
         }
         sin.sin_family = AF_INET;
         sin.sin_port = htons(args->port);
         sin.sin_addr.s_addr = fromp->sin_addr.s_addr;
         if (connect(args->sock, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
-            syslog(LOG_ERR,"%s: %m","connect stderr port: failed.");
+            syslog(LOG_ERR,"%s: %m","connect second port: %m");
             goto bad;
         }
 
-        /* Need to wait for client to accept stderr socket */
-        if ((m_rv = read(0,&c,1)) != 1 || c != '\0') { 
+        /* Sync with client to avoid race condition */
+        m_rv = read(0,&c,1);
+        if (m_rv != 1 || c != '\0') { 
             syslog (LOG_ERR, "%s", "mqshd: Client not ready.");
             goto bad;
         }
@@ -515,8 +501,8 @@ error_out:
     if (args->port != 0) {
         randnum = htonl(randnum);
         if ((rv = fd_write_n(args->sock, &randnum, sizeof(randnum))) == -1) {
-            syslog(LOG_ERR,"couldn't write to stderr port: %m");
-            error("mqshd: internal system error.");
+            syslog(LOG_ERR, "%s: %m", "write to stderr port: ");
+            error("Write error, %s\n", strerror(errno));
             goto bad;
         }
     }

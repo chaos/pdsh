@@ -1,3 +1,22 @@
+2003-12-12  Albert Chu <chu11@llnl.gov>
+
+	* src/modules/mqcmd.c (mqcmd): Added munge ctx for better error
+	message.
+
+	Upgraded mqshd daemon based on changes in the original mrshd
+	daemon.
+	
+	* src/qsnet/mqshd.c (check_interfaces): Changed h_length parameter
+	to addr_len.
+
+	* src/qsnet/mqshd.c (check_munge_ip): New function.
+
+	* src/qsnet/mqshd.c (mqshell_get_args): Use new check_munge_ip
+	function.  Remove calls to gethostname and gethostbyname.
+	getpwnam error now outputs "Permission Denied" instead of
+	"Internal System Error".  Cleaned up code to be more similar to
+	mrshd daemon code.
+
 2003-12-10  Mark Grondona <mgrondona@llnl.gov>
 	
 	* src/common/Makefile.am, src/modules/Makefile.am, 
