@@ -1,7 +1,7 @@
 /*****************************************************************************\
  *  $Id$
  *****************************************************************************
- *  $LSDId: hostlist.c,v 1.14 2003/10/14 20:11:54 grondo Exp $
+ *  $LSDId: hostlist.c,v 1.15 2004/02/02 19:09:04 grondo Exp $
  *****************************************************************************
  *  Copyright (C) 2002 The Regents of the University of California.
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
@@ -761,7 +761,7 @@ static int hostrange_width_combine(hostrange_t h0, hostrange_t h1)
 static int hostrange_empty(hostrange_t hr)
 {
     assert(hr != NULL);
-    return hr->hi < hr->lo;
+    return ((hr->hi < hr->lo) || (hr->hi == (unsigned long) -1));
 }
 
 /* return the string representation of the last host in hostrange hr
