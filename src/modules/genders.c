@@ -49,6 +49,7 @@
 #endif    
 
 static hostlist_t genders_wcoll(opt_t *pdsh_opts);
+static void       genders_fini(void);
 
 static int genders_process_opt(opt_t *, int, char *);
 static hostlist_t _read_genders(char *attr, int iopt);
@@ -64,7 +65,7 @@ static char *gend_attr = NULL;
  */
 struct pdsh_module_operations genders_module_ops = {
     (ModInitF)       NULL, 
-    (ModExitF)       NULL, 
+    (ModExitF)       genders_fini, 
     (ModReadWcollF)  genders_wcoll, 
     (ModPostOpF)     NULL,
 };
@@ -147,6 +148,13 @@ genders_process_opt(opt_t *pdsh_opts, int opt, char *arg)
     return 0;
 }
 
+static void
+genders_fini(void)
+{
+    if (gend_attr)
+        Free((void **)&gend_attr);
+    return;
+}
 
 /* 
  * Verify options passed to this module
