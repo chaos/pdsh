@@ -57,10 +57,8 @@ static hostlist_t _read_genders(char *attr, int iopt);
  *   -g attr select all nodes with genders attribute "attr"
  *
  */
-#if !GENDERS_G_ONLY
 static bool allnodes   = false;
 static bool altnames   = false;
-#endif  /* !G_ONLY */
 static char *gend_attr = NULL;
 
 /* 
