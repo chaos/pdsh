@@ -241,7 +241,7 @@ void
 xstrerrorcat(char **buf)
 {
 #if HAVE_STRERROR_R
-#  if HAVE_WORKING_STRERROR_R
+#  if HAVE_WORKING_STRERROR_R || STRERROR_R_CHAR_P
         char errbuf[64];
         char *err = strerror_r(errno, errbuf, 64);
 #  else
