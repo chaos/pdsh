@@ -47,12 +47,13 @@
 #include <stdlib.h>
 
 #include "xpoll.h"
+#include "xmalloc.h"
 
 #if HAVE_POLL
 static int 
 _poll(struct xpollfd *xfds, unsigned int nfds, int timeout) {
     int i, rv;
-    struct pollfd pfds[nfds];
+    struct pollfd *pfds = Malloc(nfds * sizeof(struct pollfd));
 
     for (i = 0; i < nfds; i++) {
         pfds[i].fd = xfds[i].fd;
@@ -65,8 +66,10 @@ _poll(struct xpollfd *xfds, unsigned int nfds, int timeout) {
             pfds[i].events |= POLLOUT;
     }
 
-    if ((rv = poll(pfds, nfds, timeout)) < 0)
+    if ((rv = poll(pfds, nfds, timeout)) < 0) {
+        Free((void **)&pfds);
         return -1;
+    }
 
     for (i = 0; i < nfds; i++) {
         if (pfds[i].revents & POLLIN)
@@ -79,6 +82,7 @@ _poll(struct xpollfd *xfds, unsigned int nfds, int timeout) {
             xfds[i].revents |= XPOLLINVAL;
     }
     
+    Free((void **)&pfds);
     errno = 0;
     return rv;
 }
@@ -198,3 +202,6 @@ int xpoll(struct xpollfd *xfds, int nfds, int timeout) {
 #endif     
 }
    
+/*
+ * vi: tabstop=4 shiftwidth=4 expandtab
+ */
