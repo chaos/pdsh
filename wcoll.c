@@ -504,7 +504,7 @@ hostlist_t get_verified_nodes(int iopt) {
     }
     memset(str, '\0', str_len);
 
-    if (!iopt) {
+    if (iopt) {
       if (nodeupdown_get_up_nodes_string(handle, str, str_len) == -1) {
 	errx("%p: error getting up nodes strings, %s\n",
 	     nodeupdown_strerror(nodeupdown_errnum(handle)));
