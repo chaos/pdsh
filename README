@@ -13,8 +13,12 @@ See the man page in this directory for usage information.
 
 Pdsh uses GNU autoconf for configuration.  Dynamically loadable
 modules of each shell services (as well as other features) will be
-compiled based on configuration.  By default, rsh, Kerberos IV, ssh,
+compiled based on configuration.  By default, rsh, Kerberos IV, 
 and SDR (for IBM SPs) will be compiled if they exist on the system.
+
+If your system does not support dynamically loadable modules, you
+may compile modules in statically using the --enable-static-modules
+option.
 
 To configure in additional feature modules:
 
@@ -24,7 +28,7 @@ To configure in additional feature modules:
 	Use a flat file list of machine names for -a instead of
         genders, nodeattr, or SDRGetObjects.  
 
---with-elan
+--with-qshell
 	Enable support for running parallel jobs on the Quadrics Elan
 	interconnect via the qshell service option (-R qsh) and qshell daemon.
 
@@ -44,7 +48,7 @@ To configure in additional feature modules:
 --with-mrsh
         Enable support of the mrsh(1) shell service.
    
---with-mqsh
+--with-mqshell
         Enable support for runnig parallel jobs on the Quadrics Elan
         interconnect via the mqshell service option (-R mqsh) and
         mqshell dameon.  Mqshell is identical to qshell but adds munge
@@ -62,12 +66,12 @@ To configure in additional feature modules:
 --with-readline
 	Use the GNU readline library to parse input in interactive mode.
 
-Note that a number of the above configuration "conflict" with each
-other, in that they perform identical operations.  For example,
-genders and nodeattr both support the -g option.  In the event several
+Note that a number of the above configurations options may "conflict"
+with each other because they perform identical operations.  For
+example, genders and nodeattr both support the -g option.  If several
 modules are built that support identical options, the options will
 default to one particular module.  See the man page in this directory
-for details on "conflicting" modules.
+for details on which modules conflict.
 
 +------------+
 | INSTALLING |
@@ -117,11 +121,12 @@ not possible, you may wish to reduce pdsh's default fanout (configure
 +---------------------+
 We will generalize for the common remote shell service rsh.  The
 following is similar for all other shell services (ssh, krb4, qsh,
-etc.), but other shell services may include additional security.
+etc.), but other shell services may include additional security or
+features.
 
 A thread is created for each rsh connection to a node.  Each thread
-opens a connection using an MT-safe rcmd-like function, then copies
-stdin/stderr and terminates.
+opens a connection using an MT-safe rcmd-like function, returns
+stdin and stderr streams, then terminates.
 
 The mainline starts fanout number of rsh threads and waits on a
 condition variable that is signalled by the rsh threads as they
@@ -149,8 +154,8 @@ nodes are in your cluster).
 | NOTE |
 +------+
 This product includes software developed by the University of
-California, Berkeley and its contributors (xrcmd.c, k4cmd.c, qcmd.c).
-Modifications have been made and bugs are probably mine.
+California, Berkeley and its contributors.  Modifications have been
+made and bugs are probably mine.
 
 The PDSH software package has no affiliation with the Democratic Party
 of Albania (www.pdsh.org).
