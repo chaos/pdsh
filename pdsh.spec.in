@@ -44,7 +44,8 @@ remote shell services, including standard "rsh", Kerberos IV, and ssh.
 # Other pdsh modules to build
 # Defaults:
 #  without: 
-#  with:    genders, nodeupdown, nodeattr, rmsquery 
+#  with:    genders, nodeupdown, nodeattr, rmsquery, machines
+#           mrsh, mqsh 
 # 
 #
 %{!?_with_ssh: %{!?_without_ssh: %define _with_ssh 1}}
