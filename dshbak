@@ -1,0 +1,136 @@
+#!/usr/bin/perl
+#
+# $Id$
+# $Source$
+# 
+require 5.003;
+
+use Getopt::Std;
+
+getopts('c') or usage();
+
+#
+# Stdin consists of lines of the form "hostname: output...".
+# Store these in a hash, keyed by hostname, of lists of lines.
+#
+while (<>) {
+	($tag, $data) = split(/:/, $_, 2);
+	push(@{$lines{$tag}}, $data);
+}
+
+#
+# If -c was specified, hosts with identical output are displayed as a list
+# of hosts followed by one copy of the output.
+#
+if ($opt_c) {
+	foreach $tag (keys %lines) {			# look thru each host
+		next if (!defined($lines{$tag}));	# skip deleted keys
+		@identical = ();			# init list of matches
+		foreach $tag2 (keys %lines) {	
+			next if ($tag2 eq $tag);	# skip over myself
+			if (cmp_list(\@{$lines{$tag}}, \@{$lines{$tag2}})) {
+				push(@identical, $tag2);# equal?  stash match
+				delete($lines{$tag2});	# delete data from hash
+			}
+		}
+		print("----------------\n");		# header: list of hosts
+		printf("%s\n", 				# plus myself
+		    join(",", compress(sort(@identical, $tag)))); 
+		print("----------------\n");
+		foreach $data (@{$lines{$tag}}) {	# lines of data (once)
+			print($data);
+		}
+	}
+#
+# If no -c, all hosts appear individually with their output.
+#
+} else {
+	foreach $tag (keys %lines) {
+		print("----------------\n");		# header: one host
+		print("$tag\n");
+		print("----------------\n");
+		foreach $data (@{$lines{$tag}}) {	# lines of data
+			print($data);
+		}
+	}
+}
+
+#
+# Compare two lists-o-strings
+#	\@l1 (IN)	list1
+#	\@l2 (IN)	list2
+#	RETURN		1 if match, 0 if not
+#
+sub cmp_list
+{
+	my ($l1, $l2) = @_;
+	my ($i, $retval);
+
+	$retval = 1;
+
+	for ($i = 0; $i <= $#{$l1} && $retval == 1; $i++) {
+		if (!defined(${$l2}[$i]) || ${$l1}[$i] ne ${$l2}[$i]) {
+			$retval = 0;
+		}
+	}
+
+	return $retval;
+}
+
+sub usage
+{
+	printf STDERR ("Usage: dshbak [-c]\n");
+}
+
+# Turn long lists of nodes with numeric suffixes into ranges where possible
+#   @nodes (IN)   	flat list of nodes
+#   RETURN        	list of nodes possibly containing ranges
+sub compress
+{
+        my @nodes = @_;
+        my @out = ();
+        my (%nn, $node, $pfx, @stack, @n, $i);
+
+        # build %nn (lists of numeric hostname suffixes by prefix)
+        foreach $node (@nodes) {
+                if ($node =~ /(\D+)(\d+)/) {
+                        push(@{$nn{$1}}, $2);
+                } else {
+                        push(@out, $node);
+                }       
+        }       
+
+        foreach $pfx (keys %nn) {
+                @n = sort {$a <=> $b} @{$nn{$pfx}};
+                for ($i = 0; $i <= $#n; $i++) {
+                        if ($i == 0) {
+                                push(@stack, $n[$i]);
+                        } else {
+                                if ($stack[$#stack] == $n[$i] - 1) {
+                                        push(@stack, $n[$i]);
+                                } else {
+                                        push(@out, $pfx . get_range(@stack));
+                                        @stack = ($n[$i]);
+                                }
+                        }
+                }
+                if (@stack) {
+                        push(@out, $pfx . get_range(@stack));
+                }
+        }
+        return @out;
+}
+
+# determine if a range is on the stack (helper for compress)
+#   @stack (IN)		stack
+#   RETURN		range or single value
+sub get_range
+{
+        my @stack = @_;
+
+        if ($#stack == 0) {  # one element
+                return ($stack[0]);
+        } else {
+                return ($stack[0] . "-" . $stack[$#stack]);
+        }
+}

@@ -1,0 +1,30 @@
+\." $Id$
+.\"
+.TH DSHBAK 1 "Release 1.3" "LLNL" "DSHBAK"
+.SH NAME
+dshbak \- format output from pdsh command
+.SH SYNOPSIS
+.B dshbak 
+.I "[-c]"
+.br
+.SH DESCRIPTION
+.B dshbak
+formats 
+.B pdsh
+output for humans.  Output from each node is consolidated, the leading
+.I "node:"
+prefix is stripped, and a header block with the node name is added.
+If the
+.I "-c"
+option is specified, nodes with identical output are not displayed twice;
+instead, the header will contain a list of nodes.  The list of nodes is
+further compressed into node ranges if the node names have a numeric suffix.
+
+.SH "ORIGIN"
+A rewrite of IBM dshbak(1) by Jim Garlick
+.br
+<garlick@llnl.gov>
+on LLNL's ASCI Blue-Pacific IBM SP system.  
+
+.SH "SEE ALSO"
+pdsh(1)

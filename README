@@ -1,0 +1,103 @@
++-------------+
+| Description |
++-------------+
+Pdsh is a reimplementation of the dsh command supplied with the IBM PSSP
+product that uses POSIX threads within a single process, and achieves better 
+performance while using fewer system resources (in particular, privileged 
+sockets and process slots).
+
+This version of pdsh has been tested on RH Linux 6.2 (sparc/intel/alpha) and 
+AIX 4.3.3.
+
+See the man page in this directory for usage information.
+
++---------------+
+| Configuration |
++---------------+
+Makefile:   Set DEST and MANDEST to your destionation directories
+            (default: /usr/local/bin and /usr/local/man/man1).
+
+	    Set MODE and OWN as appropriate for your environment.  Pdsh needs 
+	    root to use privileged sockets;  however if only root will run 
+	    pdsh, the setuid bit can be cleared (default: 4555 root:root).
+
+            Set KRB_INC and KRB_LIB if you are building with Kerberos IV
+	    support.  See README.KRB4 for instructions for building k4 libs
+	    on AIX (default: no kerberos).
+
+conf.h:     Set KRB4 to 1 if using kerberos (default: no kerberos).
+
+            Set HAVE_GENDERS to 1 if you have nodeattr/genders, LLNL's cluster
+	    database.  On non-SP's, pdsh -a will use genders if available, 
+	    else the MPICH machines file: /usr/local/etc/machines.  
+	    
+	    If you have a different cluster database, you can supply a 
+	    nodeattr-like front end which takes the following arguments
+	    and supplies a list of nodes on stdout, one per line:
+	        nodeattr -[r]n all
+	        nodeattr -[r]n attr
+
+            -r means use alternate hostnames (pdsh -i).  "all" means list all 
+	    nodes in the cluster (pdsh -a).  "attr" is an attribute like 
+	    "login" or "raidserver" (pdsh -g).
+
+
++------------+
+| INSTALLING |
++------------+
+make
+make install
+
++---------------------+
+| THEORY OF OPERATION |
++---------------------+
+A separate thread is created for each rsh connection to a node.  Each thread 
+opens a connection to a node using an MT-safe rcmd() or kcmd() [kerberos IV] 
+function, then copies stdin/stderr and terminates.
+
+The main thread starts fanout number of rsh threads and waits on a condition
+variable that is signalled by the rsh threads as they terminate.  When 
+the condition variable is signalled, the main thread starts a new rsh thread
+to maintain the fanout (until all the nodes have been contacted).
+
+A special timeout thread is created that monitors the state of the threads and
+terminates any that take too much time connecting or (optionally) executing the
+remote command.
+
+Typing ^C causes pdsh to list threads that are in the connected state.
+Another ^C immediately following the first one terminates the program.
+
+Unlike IBM dsh, pdsh attempts to conserve sockets by combining the remote 
+stdout and stderr into pdsh stdout.  This can be defeated via command line 
+option.
+
++-------------------------+
+| PERFORMANCE PDSH VS DSH |
++-------------------------+
+This implementation results in a pretty big performance increase over IBM dsh;
+for example, I just ran a little test on our 256-node SP [old 1997 numbers!]:
+
+   Command                Real time (sec)
+   pdsh -av date          6            # stdin/stderr combined
+   pdsh -sav date         8            # separate stdin/stderr
+   dsh -av date           22
+
+Also, nodes that are responding according to the SDR but effectively out to 
+lunch can cause IBM's dsh to hang for long periods of time (sometimes forever?),
+while pdsh handles "half-way-down" nodes expeditiously with its timeout thread.
+
++--------+
+| AUTHOR |
++--------+
+Jim Garlick <garlick@llnl.gov>
+
+Please send suggestions, bug reports, or just a note letting me know that you
+are using pdsh (it would be interesting to hear how many nodes are in your 
+cluster).
+
++------+
+| NOTE |
++------+
+This product includes software developed by the University of California, 
+Berkeley and its contributors [rcmd.c, k4cmd.c].  Modifications have been
+made, however, and bugs are probably mine.

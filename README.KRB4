@@ -1,0 +1,178 @@
+NOTE: this has not been tested in a long while.  We have stopped using KRB4
+for pdsh on our SP's because we would occasionally overwhelm our KDC --jg.
+---
+To build the *API only* on an SP with AIX 4.2.1 / PSSP 2.4 and install in 
+/usr/local/krb4, use the following manual procedure or run the attached script
+(but look at it first:  set paths appropriate to your environment and note
+that it destroys an old copy of the API if it is in the way).
+
+NOTE: gcc needs to be in your PATH.
+
+1) Obtain cns-96q4.tar.gz distribution from MIT and untar in ./kerberos.
+   See: http://web.mit.edu/network/kerberos-form.html (verified this 3/98).
+   Hmm there may be Y2K problems in this release...
+
+2) Make sure the destination exists
+	mkdir /usr/local/krb4
+	chmod 755 /usr/local/krb4
+
+3) Configure
+	mkdir krb4.aix4
+	cd krb4.aix4
+	../kerberos/configure --prefix=/usr/local/krb4
+
+3a) [You may skip this option and do 5a instead if you wish]
+
+    Hand edit src/Makefile and src/include/Makefile and change 
+	CONFDIR=$(LIBDIR) 
+    to 
+	CONFDIR=/etc
+
+    *** We choose to go with /etc at LLNL because the API is installed on an
+    *** NFS mounted partition and we don't want things compiled with the API
+    *** to break if the partition isn't mounted.
+
+3b) Depend
+	make depend
+
+4) Build/install the pieces we want
+	cd src/util/et
+	make all install
+	cd ../ss
+	make all install
+	cd ../../include
+	make all
+	cp ../lib/kadm/kadm_err.h .
+	cp ../lib/krb/krb_err.h .
+	make install
+	cd ../lib/acl
+	make all install
+	cd ../des
+	make all install
+	cd ../krb
+	make all install
+	cd ../kdb
+	make all install
+	cd ../kstream
+	make all install
+	cd ../kadm
+	cp ../krb/krb_err.h .
+	make all install
+
+5) Perform a little cleanup	
+	# return to directory that contains ./kerberos and ./krb4.aix4
+	cp ./kerberos/src/include/kparse.h /usr/local/krb4/include
+	cd /usr/local/krb4
+	rm -rf man bin 
+	cd include
+	rm -f c-386aix.h c-386bsd.h c-386linux.h c-386sco.h c-alpha.h \
+	    c-apollo.h c-aux.h c-hp68k.h c-hpsnake.h c-ibm370.h c-next.h \
+	    c-pc.h c-pyr.h c-rtpc.h c-sgi.h c-sol2.h c-sun3.h c-sun386i.h \
+	    c-sunos4.h c-tahoe.h c-ultmips.h c-vax.h
+
+5a) [Only if step 3a was skipped] 
+    Link SP config files into the locations wanted by the API
+	cd /usr/local/krb4/lib
+	ln -s /etc/krb.conf .
+	ln -s /etc/krb.realms .
+
+------SNIP------
+
+#!/bin/ksh
+
+
+# this script blows away /usr/local/krb4 and installs the new stuff
+
+# make sure gcc is in our path
+PATH=/usr/bin:/usr/ucb:/usr/sbin:/usr/local/gnu/bin:/usr/local/bin
+
+# the install/build paths
+PATH_TOP=/usr/local/src/krb4
+PATH_BUILD=$PATH_TOP/krb4.aix4
+PATH_SRC=$PATH_TOP/kerberos
+PATH_DEST=/usr/local/krb4
+
+# sanity check before we get started
+if [ ! -d $PATH_TOP ]; then
+	echo $PATH_TOP must exist, bye.
+	exit 1
+fi
+if [ ! -d $PATH_SRC ]; then
+	echo $PATH_SRC must exist, bye.
+	exit 1
+fi
+
+set -o verbose
+
+# blow away any build cruft
+rm -rf $PATH_BUILD
+mkdir $PATH_BUILD
+chmod 755 $PATH_BUILD
+
+# blow away any old copies <--- danger will robinson!
+rm -rf $PATH_DEST
+mkdir $PATH_DEST
+chmod 755 $PATH_DEST
+
+# configure
+cd $PATH_BUILD || exit 1
+../kerberos/configure --prefix=/usr/local/krb4
+
+# force krb.conf and krb.realms to /etc
+cd $PATH_BUILD/src || exit 1
+sed 's/^CONFDIR=.*/CONFDIR=\/etc/' <Makefile >/tmp/blah.$$
+cp /tmp/blah.$$ Makefile
+
+cd $PATH_BUILD/src/include || exit 1
+sed 's/^CONFDIR=.*/CONFDIR=\/etc/' <Makefile >/tmp/blah2.$$
+cp /tmp/blah2.$$ Makefile
+
+# make depend
+cd $PATH_BUILD || exit 1
+make depend
+
+# make the relevant pieces
+cd $PATH_BUILD/src/util/et || exit 1
+make all install
+
+cd $PATH_BUILD/src/util/ss || exit 1
+make all install
+
+cd $PATH_BUILD/src/include || exit 1
+make all
+cp ../lib/kadm/kadm_err.h .
+cp ../lib/krb/krb_err.h .
+make install
+
+cd $PATH_BUILD/src/lib/acl || exit 1
+make all install
+
+cd $PATH_BUILD/src/lib/des || exit 1
+make all install
+
+cd $PATH_BUILD/src/lib/krb || exit 1
+make all install
+
+cd $PATH_BUILD/src/lib/kdb || exit 1
+make all install
+
+cd $PATH_BUILD/src/lib/kstream || exit 1
+make all install
+
+cd $PATH_BUILD/src/lib/kadm || exit 1
+cp ../krb/krb_err.h .
+make all install
+
+cd $PATH_SRC || exit 1
+cp ./src/include/kparse.h $PATH_DEST/include
+
+# clean up useless directories and includes
+cd $PATH_DEST || exit 1
+rm -rf man bin 
+cd include || exit 1
+rm -f c-386aix.h c-386bsd.h c-386linux.h c-386sco.h c-alpha.h \
+    c-apollo.h c-aux.h c-hp68k.h c-hpsnake.h c-ibm370.h c-next.h \
+    c-pc.h c-pyr.h c-rtpc.h c-sgi.h c-sol2.h c-sun3.h c-sun386i.h \
+    c-sunos4.h c-tahoe.h c-ultmips.h c-vax.h
+
+exit 0
