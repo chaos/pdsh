@@ -1,3 +1,8 @@
+2004-05-12  Albert Chu <chu11@llnl.gov>
+
+	* doc/pdcp.1.in: Added note that pdcp must be installed on remote
+	destination nodes.
+	
 2004-05-06  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/qsnet/elanhosts.c, src/qsnet/elanhosts.h, src/qsnet/Makefile.am :

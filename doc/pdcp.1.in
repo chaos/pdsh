@@ -17,7 +17,8 @@ multiple remote hosts in parallel.  However, \fBpdcp\fR does
 not recognize files in the format ``rname@rhost:path,'' therefore all
 source files must be on the local host machine.  Destination nodes must
 be listed on the \fBpdcp\fR command line using a suitable target
-nodelist option (See the \fIOPTIONS\fR section below).
+nodelist option (See the \fIOPTIONS\fR section below).  Each destination
+node listed must have \fBpdcp\fR installed for the copy to succeed.
 .LP
 When \fBpdcp\fR receives SIGINT (ctrl-C), it lists the status of current
 threads.  A second SIGINT within one second terminates the program.
