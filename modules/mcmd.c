@@ -148,7 +148,7 @@ struct pdsh_module_operations pdsh_module_ops = {
 
 int mcmd_init(opt_t *);
 int mcmd_signal(int, int);
-int mcmd(char *, char *, char *, char *, int *);
+int mcmd(char *, char *, char *, char *, char *, int, int *);
 
 int
 mcmd_init(opt_t * opt)

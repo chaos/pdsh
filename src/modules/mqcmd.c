@@ -158,7 +158,7 @@ int opt_m(opt_t *, int, char *);
 int opt_n(opt_t *, int, char *);
 int mqcmd_init(opt_t *);
 int mqcmd_signal(int, int);
-int mqcmd(char *, char *, char *, char *, int, int *);
+int mqcmd(char *, char *, char *, char *, char *, int, int *);
 
 struct pdsh_module_operations pdsh_module_ops = {
   NULL,
