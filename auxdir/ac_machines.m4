@@ -20,7 +20,7 @@ AC_DEFUN([AC_MACHINES],
 [
   AC_MSG_CHECKING([for path to machines file])
   AC_ARG_WITH([machines],
-    AC_HELP_STRING([--with-machines], [Specify a flat file list of all nodes]),
+    AC_HELP_STRING([--with-machines(=PATH)], [Specify a flat file list of all nodes]),
     [ case "$withval" in
         no)  ac_with_machines=no ;;
         yes) ac_with_machines=yes
