@@ -164,6 +164,9 @@
 2002-06-14 garlick
 	* Moved list_split_range to hostrange.c (now called range_split)
 
+2002-06-20 akeane@quadrics.com (via garlick)
+	* configure.ac fix to find pthreads on OSF/TRU64.
+
 TODO for version 1.7
 	- improve deja-gnu support
 	- make rms queries to db using direct msql as in pam_rms module

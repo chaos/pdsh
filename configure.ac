@@ -309,6 +309,18 @@ fi
 # Checks for libraries.
 AC_CHECK_LIB([socket], [socket], LIBS="-lsocket -lnsl $LIBS",, [-lsocket -lnsl])
 AC_CHECK_LIB([pthread], [pthread_create])
+AC_CHECK_LIB([pthread], [pthread_create], )
+
+# OSF pthread stuff
+# library syms are in form __pthread_foobar, and pthread_foobar is
+# defined as a macro in <pthread.h> , this breaks AC_CHECK_LIB
+# as <pthread.h> does not get included which means compile fails.
+# Also Compaq cc is very strict so must be sure to check for a
+# __pthread_foo(void) else the compiler complains about wrong num arguments
+# to the particular __pthread_foo being checked. unless it takes void args. 
+
+AC_CHECK_LIB([pthread], [__pthread_testcancel], )
+
 if test "$withelan" = yes || test "$withrms" = yes; then
     AC_CHECK_LIB([rmscall], [rms_prgcreate],, AC_MSG_ERROR([No librmscall!]))
 fi
@@ -329,6 +341,10 @@ fi
 
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h strings.h sys/file.h unistd.h pthread.h])
+
+# Now to check if pthread.h is really available with OSF cc
+CFLAGS=-pthread
+AC_CHECK_HEADERS([pthread.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_CHECK_TYPE(socklen_t, int)
