@@ -423,6 +423,9 @@ void stderr_parent(int sock, int pype, int pid) {
             if (read(sock, &sig, 1) <= 0) {
                 FD_CLR(sock, &readfrom);
                 guys--;
+                if (guys == 1) 
+                    /* pdsh client has crashed, kill the job */
+                    rms_prgsignal(pid, SIGKILL);
             }
             /* pid is the "program description" if using Elan */
             else
@@ -433,8 +436,10 @@ void stderr_parent(int sock, int pype, int pid) {
                 shutdown(sock, 2);
                 FD_CLR(pype, &readfrom);
                 guys--;
-            } else
-                write(sock, buf, cc);
+            } else {
+                if (guys == 2)
+                    write(sock, buf, cc);
+            }
         }
     }
 

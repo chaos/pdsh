@@ -1,13 +1,17 @@
 2003-09-17  Albert Chu <chu11@llnl.gov>
 
 	* src/pdsh/dsh.c (dsh): 
-	Fixed bug in which _rsh_thread does not terminate jobs.  But
+	Fixed bug in which _rsh_thread does not terminate jobs.  Bug
 	caused by kill_on_fail value not being propogated properly to
 	_rsh_thread.
 
 	* src/pdsh/dsh.c (dsh): 
 	Before exitting on a pthread_create failure, added code to kill
 	all remote jobs if kill_on_fail is true.
+
+	* src/qsnet/qshell.c (stderr_parent):
+	Added feature so that the remote daemon and job are killed if
+	pdsh crashes.
 	
 2003-09-16  Albert Chu <chu11@llnl.gov>
 	
