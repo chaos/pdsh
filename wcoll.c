@@ -257,7 +257,7 @@ list_t sdr_wcoll(bool Gopt, bool iopt, bool vopt)
 	for (nn = 0; nn <= MAX_SP_NODE_NUMBER; nn++) {
 		if (inodes[nn] != NULL || rnodes[nn] != NULL) {
 			if (vopt) { 			    /* initial_host */
-				if (iopt && sresp[nn]) 
+				if (iopt && sresp[nn] && hresp[nn]) 
 					list_push(new, inodes[nn]);
 				else if (!iopt && hresp[nn])/* reliable_host */
 					list_push(new, rnodes[nn]);
