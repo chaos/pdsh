@@ -97,9 +97,8 @@ hostlist_t read_genders(char *attr, int iopt)
 #ifdef HAVE_LIBGENDERS
   hostlist_t new;
   genders_t handle;
-  char **nodelist;
-  char *altname;
-  int maxvallen, nodelist_len, num_nodes_found, ret, i;
+  char **list;
+  int list_len, num_nodes_found, ret, i;
 
   if ((new = hostlist_create(NULL)) == NULL)
     errx("%p: error creating hostlist\n");
@@ -113,60 +112,54 @@ hostlist_t read_genders(char *attr, int iopt)
          genders_strerror(genders_errnum(handle)));
   }
 
-  if ((nodelist_len = genders_nodelist_create(handle, &nodelist)) == -1) {
-    errx("%p: error creating genders nodelist, %s\n",
-         genders_strerror(genders_errnum(handle)));
-  }
-  
-  if ((num_nodes_found = genders_getnodes(handle, 
-                                          nodelist, 
-                                          nodelist_len, 
-                                          attr,
-                                          NULL)) == -1) {
-    errx("%p: error getting genders nodes, %s\n",
-         genders_strerror(genders_errnum(handle)));
-  }
-  
-  /* does user want alternate names? */
-  if (!iopt) {
-    if ((maxvallen = genders_getmaxvallen(handle)) == -1) {
-      errx("%p: error getting max value length, %s\n",
+  if (!opt) {
+    if ((list_len = genders_altnodelist_create(handle, &list)) == -1) {
+      errx("%p: error creating genders altnodelist, %s\n",
            genders_strerror(genders_errnum(handle)));
     }
 
-    maxvallen = (MAXHOSTNAMELEN > maxvallen) ? MAXHOSTNAMELEN : maxvallen;
-    
-    if ((altname = (char *)malloc(maxvallen + 1)) == NULL)
-      errx("%p: Out of memory\n");
-
-    /* get each alternate name.  If no alternate name exists, use default */
-    for (i = 0; i < num_nodes_found; i++) {
-      memset(altname, '\0', maxvallen + 1);
-
-      if (genders_to_altname_preserve(handle,
-                                      nodelist[i],
-                                      altname,
-                                      maxvallen + 1) == -1) {
-        errx("%p: genders_to_altname_preserve(), %s\n",
-             genders_errormsg(handle));
-      }
-
-      if (hostlist_push_host(new, altname) == 0)
-        err("%p: warning: target '%s' not parsed\n", altname);
+    if ((num_nodes_found = genders_getaltnodes_preserve(handle, 
+                                                        list, 
+                                                        list_len, 
+                                                        attr,
+                                                        NULL)) == -1) {
+      errx("%p: error getting genders altnodes, %s\n",
+           genders_strerror(genders_errnum(handle)));
     }
-
-    free(altname);
   }
   else {
-    for (i = 0; i < num_nodes_found; i++) {
-      if (hostlist_push_host(new, nodelist[i]) == 0)
-        err("%p: warning: target '%s' not parsed\n", nodelist[i]);
+    if ((list_len = genders_nodelist_create(handle, &list)) == -1) {
+      errx("%p: error creating genders nodelist, %s\n",
+           genders_strerror(genders_errnum(handle)));
+    }
+
+    if ((num_nodes_found = genders_getnodes(handle, 
+                                            list, 
+                                            list_len, 
+                                            attr,
+                                            NULL)) == -1) {
+      errx("%p: error getting genders nodes, %s\n",
+           genders_strerror(genders_errnum(handle)));
     }
   }
+
+  /* does user want alternate names? */
+  for (i = 0; i < num_nodes_found; i++) {
+    if (hostlist_push_host(new, list[i]) == 0)
+      err("%p: warning: target '%s' not parsed\n", list[i]);
+  }
            
-  if (genders_nodelist_destroy(handle, nodelist) == -1) {
-    errx("%p: error destroying genders nodelist, %s\n",
-         genders_strerror(genders_errnum(handle)));
+  if (!opt) {
+    if (genders_altnodelist_destroy(handle, list) == -1) {
+      errx("%p: error destroying genders altnodelist, %s\n",
+           genders_strerror(genders_errnum(handle)));
+    }
+  }
+  else {
+    if (genders_nodelist_destroy(handle, list) == -1) {
+      errx("%p: error destroying genders nodelist, %s\n",
+           genders_strerror(genders_errnum(handle)));
+    }
   }
   
   if (genders_handle_destroy(handle) == -1) {
