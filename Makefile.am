@@ -8,7 +8,7 @@ bin_PROGRAMS   = pdsh
 sbin_PROGRAMS  = @PROG_QSHD@
 bin_SCRIPTS    = dshbak
 
-EXTRA_PROGRAMS = qshd
+EXTRA_PROGRAMS = in.qshd
 
 man1_MANS      = pdsh.1 pdcp.1 dshbak.1
 
@@ -44,7 +44,7 @@ EXTRA_pdsh_SOURCES =		\
 	sshcmd.c		\
 	k4cmd.c	
 
-qshd_SOURCES =			\
+in_qshd_SOURCES =		\
 	qshd.c 			\
 	list.c list.h		\
 	xmalloc.c xmalloc.h	\
@@ -55,6 +55,17 @@ qshd_SOURCES =			\
 
 # Makefile rule for building rpm directly from CVS repository
 include $(top_srcdir)/Make-rpm.mk
+
+install-exec-hook:
+	@echo "chmod 4755 $(DESTDIR)$(bindir)/pdsh"
+	@chmod 4755 $(DESTDIR)$(bindir)/pdsh ||\
+	   echo "Unable to set permissions on pdsh"
+	$(LN_S) $(DESTDIR)$(bindir)/pdsh $(DESTDIR)$(bindir)/pdcp || \
+	   cp -p $(DESTDIR)$(bindir)/pdsh $(DESTDIR)$(bindir)/pdcp || :
+
+uninstall-local:
+	$(RM) $(DESTDIR)$(bindir)/pdcp
+
 
 MAINTAINERCLEANFILES = 		\
 	Makefile.in aclocal.m4 config.guess \

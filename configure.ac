@@ -90,7 +90,7 @@ AC_ARG_WITH(elan,
 	    HAVE_ELAN=1
 	    AC_DEFINE_UNQUOTED(HAVE_ELAN, 1, [define for Elan support])
 #	    AC_DEFINE_UNQUOTED(USE_PAM, 1, [define for PAM support in qshd])
-	    PROG_QSHD=qshd
+	    PROG_QSHD=in.qshd
 	    ;;
 	no)
 	    ;;
