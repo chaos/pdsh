@@ -52,6 +52,7 @@ remote shell services, including standard "rsh", Kerberos IV, and ssh.
 # everything else is disabled
 #
 %{!?_without_rms: %{!?_with_rms: %define _without_rms --without-rms}}
+%{!?_without_slurm: %{!?_with_slurm: %define _without_slurm --without-slurm}}
 %{!?_without_mrsh: %{!?_with_mrsh: %define _without_mrsh --without-mrsh}}
 %{!?_without_qshell: %{!?_with_qshell: %define _without_qshell --without-qshell}}
 %{!?_without_mqshell: %{!?_with_mqshell: %define _without_mqshell --without-mqshell}}
@@ -170,6 +171,15 @@ Conflicts: pdsh-mod-nodeattr
 %description mod-machines
 Pdsh module for gathering list of all target nodes from a machines file.
 
+%package   mod-slurm
+Summary:   Provides support for running pdsh under SLURM allocations.
+Group:     System Environment/Base
+Requires:  slurm
+%description mod-slurm
+Pdsh module providing support for gathering the list of target nodes
+from an allocated SLURM job.
+
+
 
 ##############################################################################
 
@@ -201,7 +211,9 @@ Pdsh module for gathering list of all target nodes from a machines file.
     %{?_with_mrsh}          \
     %{?_without_mrsh}       \
     %{?_with_mqshell}       \
-    %{?_without_mqshell}  
+    %{?_without_mqshell}    \
+    %{?_with_slurm}         \
+    %{?_without_slurm}        
     
            
 if [ "$SMP" != "" ] ; then
@@ -305,6 +317,13 @@ rm -rf "$RPM_BUILD_ROOT"
 %files mod-machines
 %defattr(-,root,root)
 %{_libdir}/pdsh/machines.*
+%endif
+##############################################################################
+
+%if %{?_with_slurm:1}%{!?_with_slurm:0}
+%files mod-slurm
+%defattr(-,root,root)
+%{_libdir}/pdsh/slurm.*
 %endif
 ##############################################################################
 
