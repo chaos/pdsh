@@ -246,7 +246,7 @@ rm -rf "$RPM_BUILD_ROOT"
 
 %files
 %defattr(-,root,root)
-%doc README NEWS DISCLAIMER README.KRB4 README.modules
+%doc README ChangeLog NEWS DISCLAIMER README.KRB4 README.modules README.QsNet
 %attr(755, root, root) %{_bindir}/pdsh
 %attr(755, root, root) %{_bindir}/pdcp
 %{_bindir}/dshbak
