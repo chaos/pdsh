@@ -47,7 +47,6 @@ same effect.
 In combination with -w, use character 'c' as a range operator when expanding 
 hostname ranges.  Alternatively, the PDSH_RANGE_OPERATOR enviornment variable 
 can be used to set this value.
-.LP
 .if @HAVE_MACHINES@ \{
 .I "-a"
 Target "all" nodes in the cluster.
