@@ -192,7 +192,7 @@ fi
 if test $RELEASE = 1; then
    PDSH_VERSION="$PACKAGE-$VERSION"
 else
-   PDSH_RELEASE="`echo $RELEASE | sed 's/^.*\.//'`"
+   PDSH_RELEASE="`echo $RELEASE | sed 's/^[[^\.]]*\.//'`"
    PDSH_VERSION="$PACKAGE-$VERSION-$PDSH_RELEASE"
 fi
 test "$ac_static_modules" = "yes" && EXTRA_VERS="+static-modules"
