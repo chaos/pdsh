@@ -8,3 +8,5 @@
 - Improve xpoll() interface??
 - autoconf putenv
 - support long options
+- logical querying of genders attributes
+  i.e. -g "foo-(bar,car+dar)"
