@@ -1,0 +1,12 @@
+Compiling pdsh under AIX:
+
+Pdsh has been compiled successfully under AIX 5.1 with both dynamic
+as well as static modules (--enable-static-modules). To get dynamically
+loadable module support, you must run configure with:
+
+ LDFLAGS="-Wl,-bexpall -Wl,-brtl" ./configure [configure args]
+
+To use the AIX native complier, use the configure semantics:
+
+ CC=xlc LDFLAGS="-Wl,-bexpall -Wl,-brtl" ./configure ...
+
