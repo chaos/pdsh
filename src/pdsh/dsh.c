@@ -222,7 +222,7 @@ static void _fwd_signal(int signum)
     int i;
 
     for (i = 0; t[i].host != NULL; i++) {
-        if (t[i].state == DSH_READING) 
+        if ((t[i].state == DSH_READING) && (t[i].efd >= 0)) 
 			mod_rcmd_signal(t[i].efd, signum);
     }
 
@@ -727,6 +727,7 @@ static void *_rsh_thread(void *args)
     if (a->resolve_hosts)
         _gethost(a->host, a->addr);
 #endif
+    _xsignal (SIGPIPE, SIG_BLOCK);
 
     /* establish the connection */
     a->state = DSH_RCMD;
@@ -767,7 +768,6 @@ static void *_rsh_thread(void *args)
          */
         while (xpfds[0].fd >= 0 || xpfds[1].fd >= 0) {
 
-            _xsignal (SIGPIPE, SIG_BLOCK);
             /* poll (possibility for SIGALRM) */
             rv = xpoll(xpfds, nfds, -1);
             if (rv == -1) {
