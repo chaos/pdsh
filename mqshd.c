@@ -133,12 +133,6 @@ char rcsid[] = "$Id$";
 #include "err.h"
 #include "qswutil.h"
 
-/* error codes */
-enum stderr_err {__NONE = 0, __READ, __MUNGE, __PAYLOAD, __PORT,  
-                 __CRED, __SYSTEM, __INTERNAL};
-
-enum stderr_err errnum = __NONE;
-
 #define HOSTNAME_MAX_LEN 80
 #define MAX_MBUF_SIZE 4096
 
@@ -160,6 +154,12 @@ struct if_ipaddr_list {
 };
 
 struct if_ipaddr_list *list_head;
+
+/* error codes */
+enum stderr_err {__NONE = 0, __READ, __MUNGE, __PAYLOAD, __PORT,  
+                 __CRED, __SYSTEM, __INTERNAL};
+
+enum stderr_err errnum = __NONE;
 
 #ifdef DEBUG
 static int mdebug = 1;
@@ -350,13 +350,15 @@ int get_interface_addresses()
       goto bad;
     }
 
+    /* store address in list */
+
     if ((list_node = malloc(sizeof(struct if_ipaddr_list))) < 0) {
       syslog(LOG_ERR, "malloc failed: %m");
       errnum = __SYSTEM;
       goto bad;
     }
 
-    if (!list_head) {
+    if (list_head == NULL) {
       list_head = list_node;
       list_tail = list_node;
     }
@@ -778,7 +780,7 @@ doit(struct sockaddr_in *fromp)
     if (getstr(envstr, sizeof(envstr), "envstr") < 0) {
       goto bad2;
     }
-    putenv(strdup(envstr));             /* achu, mem-leak? */
+    putenv(strdup(envstr));             /* achu: mem-leak fix later */
   } 
  
   /* read elan capability */
