@@ -150,12 +150,12 @@ static ELAN_CAPABILITY cap;
 
 static int mqcmd_postop(opt_t *opt);
 
-int opt_m(opt_t *, int, char *);
-int opt_n(opt_t *, int, char *);
+static int mqcmd_opt_m(opt_t *, int, char *);
+static int mqcmd_opt_n(opt_t *, int, char *);
 
-int mqcmd_init(opt_t *);
-int mqcmd_signal(int, int);
-int mqcmd(char *, char *, char *, char *, char *, int, int *); 
+static int mqcmd_init(opt_t *);
+static int mqcmd_signal(int, int);
+static int mqcmd(char *, char *, char *, char *, char *, int, int *); 
 
 /* 
  * Export pdsh module operations structure
@@ -181,9 +181,9 @@ struct pdsh_rcmd_operations mqcmd_rcmd_ops = {
  */
 struct pdsh_module_option mqcmd_module_options[] =
   { { 'm', "block|cyclic", "(mqshell) control assignment of procs to nodes",
-      (optFunc) opt_m },
+      (optFunc) mqcmd_opt_m },
     { 'n', "n",            "(mqshell) set number of tasks per node",
-      (optFunc) opt_n },
+      (optFunc) mqcmd_opt_n },
     PDSH_OPT_TABLE_END
   };
 
@@ -201,8 +201,8 @@ struct pdsh_module mqcmd_module = {
   &mqcmd_module_options[0],
 };
 
-int
-opt_m(opt_t *pdsh_opts, int opt, char *arg)
+static int
+mqcmd_opt_m(opt_t *pdsh_opts, int opt, char *arg)
 {
     if (strcmp(arg, "block") == 0)
         cyclic = false;
@@ -216,8 +216,8 @@ opt_m(opt_t *pdsh_opts, int opt, char *arg)
     return 0;
 }
 
-int
-opt_n(opt_t *pdsh_opts, int opt, char *arg)
+static int
+mqcmd_opt_n(opt_t *pdsh_opts, int opt, char *arg)
 {
     nprocs = atoi(arg);
     return 0;
@@ -277,7 +277,7 @@ _mqcmd_opt_init(opt_t *opt)
  * running the job.
  *  wcoll (IN)  list of nodes
  */
-int mqcmd_init(opt_t * opt)
+static int mqcmd_init(opt_t * opt)
 {
   int totprocs = nprocs * hostlist_count(opt->wcoll);
 
@@ -308,7 +308,7 @@ int mqcmd_init(opt_t * opt)
   return 0;
 }
 
-int
+static int
 mqcmd_signal(int fd, int signum)
 {
   char c;
@@ -406,7 +406,7 @@ static int _mqcmd_send_extra_args(int s, int nodeid, const char *ahost)
  * Combination of code derived from mcmd by Mike Haskell, qcmd by
  * Jim Garlick, and a variety of minor modifications.
  */
-int 
+static int 
 mqcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd, 
       int nodeid, int *fd2p)
 {

@@ -94,9 +94,9 @@
 extern errno;
 extern char *inet_ntoa();
 
-int k4cmd_init(opt_t *);
-int k4cmd_signal(int, int);
-int k4cmd(char *, char *, char *, char *, char *, int, int *); 
+static int k4cmd_init(opt_t *);
+static int k4cmd_signal(int, int);
+static int k4cmd(char *, char *, char *, char *, char *, int, int *); 
 
 /* 
  * Export pdsh module operations structure
@@ -139,7 +139,7 @@ struct pdsh_module k4cmd_module = {
     &k4cmd_module_options[0],
 };
 
-int k4cmd_init(opt_t * opt)
+static int k4cmd_init(opt_t * opt)
 {
     /* not implemented */
     return 0;
@@ -150,7 +150,7 @@ int k4cmd_init(opt_t * opt)
  *      efd (IN)        file descriptor connected socket (-1 if not used)
  *      signum (IN)     signal number to send
  */
-int k4cmd_signal(int efd, int signum)
+static int k4cmd_signal(int efd, int signum)
 {
     char c;
 
@@ -175,7 +175,7 @@ int k4cmd_signal(int efd, int signum)
  *      fd2p (IN/OUT)   if non-NULL, open stderr backchannel on this fd
  *      s (RETURN)      socket for stdout/sdin or -1 on failure
  */
-int
+static int
 k4cmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
       int rank, int *fd2p)
 {

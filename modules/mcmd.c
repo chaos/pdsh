@@ -134,9 +134,9 @@ static char sccsid[] = "@(#)mcmd.c      Based from: 8.3 (Berkeley) 3/26/94";
 #define EXIT_PTHREAD()          return -1
 #endif
 
-int mcmd_init(opt_t *);
-int mcmd_signal(int, int);
-int mcmd(char *, char *, char *, char *, char *, int, int *); 
+static int mcmd_init(opt_t *);
+static int mcmd_signal(int, int);
+static int mcmd(char *, char *, char *, char *, char *, int, int *); 
 
 /* 
  * Export pdsh module operations structure
@@ -179,14 +179,14 @@ struct pdsh_module mcmd_module = {
   &mcmd_module_options[0],
 };
 
-int
+static int
 mcmd_init(opt_t * opt)
 {
   /* not implemented */
   return 0;
 }
 
-int
+static int
 mcmd_signal(int fd, int signum)
 {
   char c;
@@ -221,7 +221,7 @@ mcmd_signal(int fd, int signum)
  * - using default mshell port instead of calling getservbyname
  * 
  */
-int 
+static int 
 mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd, 
      int rank, int *fd2p)
 {

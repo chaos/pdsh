@@ -45,7 +45,7 @@
 #  define GENDERS_ALTNAME_ATTRIBUTE   "altname"
 #endif
 
-hostlist_t genders_wcoll(opt_t *pdsh_opts);
+static hostlist_t genders_wcoll(opt_t *pdsh_opts);
 
 static int genders_process_opt(opt_t *, int, char *);
 static hostlist_t _read_genders(char *attr, int iopt);
@@ -111,7 +111,7 @@ struct pdsh_module genders_module = {
 };
 
 #if 0
-int mod_genders_init(void)
+static int mod_genders_init(void)
 {
     err("genders module initializing\n");
     return 0;
@@ -163,7 +163,7 @@ _genders_opt_verify(opt_t *opt)
     }
 }
 
-hostlist_t 
+static hostlist_t 
 genders_wcoll(opt_t *opt)
 {
     _genders_opt_verify(opt);

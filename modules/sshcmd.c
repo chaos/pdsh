@@ -75,9 +75,9 @@ static bool use_rw = false;
 
 static int mod_ssh_postop(opt_t *opt);
 
-int sshcmd_init(opt_t *);
-int sshcmd_signal(int, int);
-int sshcmd(char *, char *, char *, char *, char *, int, int *);
+static int sshcmd_init(opt_t *);
+static int sshcmd_signal(int, int);
+static int sshcmd(char *, char *, char *, char *, char *, int, int *);
 
 /*
  *  Export generic pdsh module operations:
@@ -147,7 +147,7 @@ _drop_privileges()
     }
 }
 
-int sshcmd_init(opt_t * opt)
+static int sshcmd_init(opt_t * opt)
 {
     if (opt->personality == PCP)
         use_rw = true;
@@ -160,7 +160,7 @@ int sshcmd_init(opt_t * opt)
     return 0;
 }
 
-int sshcmd_signal(int fd, int signum)
+static int sshcmd_signal(int fd, int signum)
 {
     /* not implemented */
     return 0;
@@ -244,7 +244,7 @@ static int _pipecmd(char *path, char *args[], const char *ahost, int *fd2p)
 }
 
 /* pdsh uses this version */
-int
+static int
 sshcmdr(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
        int rank, int *fd2p)
 {
@@ -264,7 +264,7 @@ sshcmdr(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
 }
 
 /* pdcp uses this version */
-int
+static int
 sshcmdrw(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
          int rank, int *fd2p)
 {
@@ -279,7 +279,7 @@ sshcmdrw(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
     return _pipecmd("ssh", args, ahost, fd2p);
 }
 
-int
+static int
 sshcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
          int rank, int *fd2p)
 {
@@ -290,7 +290,7 @@ sshcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
 }
 
 #if 0
-int rshcmd(char *ahost, char *luser, char *ruser, char *cmd, int *fd2p)
+static int rshcmd(char *ahost, char *luser, char *ruser, char *cmd, int *fd2p)
 {
     char *args[] = { "rsh", 0, "-l", 0, 0, 0 };
 

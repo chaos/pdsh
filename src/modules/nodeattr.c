@@ -45,7 +45,7 @@
 #  define LINEBUFSIZE 2048
 #endif
 
-hostlist_t nodeattr_wcoll(opt_t *pdsh_opts);
+static hostlist_t nodeattr_wcoll(opt_t *pdsh_opts);
 
 static int nodeattr_process_opt(opt_t *, int, char *);
 static hostlist_t _read_genders(char *attr, int iopt);
@@ -172,7 +172,7 @@ _nodeattr_opt_verify(opt_t *opt)
 }
 
 
-hostlist_t 
+static hostlist_t 
 nodeattr_wcoll(opt_t *opt)
 {
     _nodeattr_opt_verify(opt);

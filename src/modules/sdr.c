@@ -45,7 +45,7 @@
 
 static hostlist_t read_sdr(opt_t *opt);
 
-static int opt_sdr(opt_t *, int, char *);
+static int sdr_process_opt(opt_t *, int, char *);
 
 static bool allnodes = false;
 static bool altnames = false;
@@ -76,16 +76,16 @@ struct pdsh_rcmd_operations sdr_rcmd_ops = {
  */
 struct pdsh_module_option sdr_module_options[] = 
  { { 'a', NULL, "target all nodes", 
-     (optFunc) opt_sdr
+     (optFunc) sdr_process_opt
    },
    { 'v', NULL, "with -a, verify nodes are up using host/switch_responds",
-     (optFunc) opt_sdr
+     (optFunc) sdr_process_opt
    },
    { 'i', NULL, "use alternate hostnames from SDR",
-     (optFunc) opt_sdr
+     (optFunc) sdr_process_opt
    },
    { 'G', NULL, "with -a, run on all SP partitions",
-     (optFunc) opt_sdr
+     (optFunc) sdr_process_opt
    },
    PDSH_OPT_TABLE_END
  };
@@ -104,7 +104,7 @@ struct pdsh_module sdr_module = {
   &sdr_module_options[0],
 };
 
-static int opt_sdr(opt_t *pdsh_opt, int opt, char *arg)
+static int sdr_process_opt(opt_t *pdsh_opt, int opt, char *arg)
 {
     switch (opt) {
      case 'a': 
@@ -288,7 +288,7 @@ static void _sdr_getnames(bool Gopt, char *nameType, char *nodes[])
  *      vopt (IN)       verify switch_responds/host_responds
  *      RETURN          new list containing hostnames
  */
-hostlist_t sdr_wcoll(bool Gopt, bool iopt, bool vopt)
+static hostlist_t sdr_wcoll(bool Gopt, bool iopt, bool vopt)
 {
     hostlist_t new;
     char *inodes[MAX_SP_NODE_NUMBER + 1], *rnodes[MAX_SP_NODE_NUMBER + 1];

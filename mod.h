@@ -56,6 +56,9 @@ int mod_exit(void);
  *    After successfully loading each module, the module's "init"
  *    routine is called, and the module is unloaded if init returns < 0.
  *
+ *  If modules are being compiled statically, The directory argument
+ *    is ignored.
+ *
  *  Returns 0 for Success and -1 for Failure.
  */
 int mod_load_modules(const char *dir);
@@ -128,7 +131,6 @@ char * mod_get_type(mod_t mod);
 void * mod_get_rcmd_init(mod_t mod);
 void * mod_get_rcmd_signal(mod_t mod);
 void * mod_get_rcmd(mod_t mod);
-void * mod_get_sym(mod_t mod, const char *sym);
 
 #endif /* !_MOD_H */
 
@@ -150,7 +152,9 @@ typedef int        (*RcmdSigF)      (int, int);
 typedef int        (*RcmdF)         (char *, char *, char *, char *, char *,
                                      int, int *);
 
-/* stores all module operations of a module */
+/* 
+ * Store all module operations of a module 
+ */
 struct pdsh_module_operations {
     ModInitF      init;         /* Called just after module is loaded      */
     ModExitF      exit;         /* Called just before module unloaded      */
@@ -162,14 +166,18 @@ struct pdsh_module_operations {
     ModPostOpF    postop;       /* Called after argv option processing     */
 };
 
-/* stores all rcmd operations of a module */
+/* 
+ * Stores all rcmd operations of a module 
+ */
 struct pdsh_rcmd_operations {
     RcmdInitF  rcmd_init;
     RcmdSigF   rcmd_signal;
     RcmdF      rcmd;
 };
 
-/* stores all information about a module */
+/* 
+ * Stores all information about a module 
+ */
 struct pdsh_module {
     char *type;
     char *name;
@@ -177,8 +185,8 @@ struct pdsh_module {
     char *descr;
   
     struct pdsh_module_operations *mod_ops;
-    struct pdsh_rcmd_operations *rcmd_ops;
-    struct pdsh_module_option *opt_table;
+    struct pdsh_rcmd_operations   *rcmd_ops;
+    struct pdsh_module_option     *opt_table;
 };
 
 /* 

@@ -65,12 +65,12 @@ int main(int argc, char *argv[])
      */
     err_init(xbasename(argv[0]));       /* init err package */
 
-	mod_init();
+    mod_init();
 
-	/*
-	 *  XXX: Need a better way to do this.
-	 */
-	if (mod_load_modules(pdsh_module_dir) < 0)
+    /*
+     *  XXX: Need a better way to do this.
+     */
+    if (mod_load_modules(pdsh_module_dir) < 0)
         errx("%p: Couldn't load any pdsh modules\n");
 
 

@@ -41,10 +41,10 @@
 #endif
 
 static int mod_nodeupdown_postop(opt_t *opt);
-static int opt_v(opt_t *, int, char *);
+static int nodeupdown_opt_v(opt_t *, int, char *);
 static void remove_all_down_nodes(hostlist_t);
 
-static bool verify   = false;
+static bool verify = false;
 
 /* 
  * Export pdsh module operations structure
@@ -70,7 +70,7 @@ struct pdsh_rcmd_operations nodeupdown_rcmd_ops = {
  */
 struct pdsh_module_option nodeupdown_module_options[] = 
  { { 'v', NULL, "exclude targets if they are down", 
-     (optFunc) opt_v
+     (optFunc) nodeupdown_opt_v
    },
    PDSH_OPT_TABLE_END
  };
@@ -89,7 +89,7 @@ struct pdsh_module nodeupdown_module = {
   &nodeupdown_module_options[0],
 };
 
-static int opt_v(opt_t *pdsh_opt, int opt, char *arg)
+static int nodeupdown_opt_v(opt_t *pdsh_opt, int opt, char *arg)
 {
     verify = true;
     return 0;

@@ -105,7 +105,6 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #include "list.h"
 #include "qswutil.h"
 #include "err.h"
-
 #include "dsh.h"                /* LINEBUFSIZE */
 #include "mod.h"
 
@@ -128,12 +127,12 @@ static ELAN_CAPABILITY cap;
 
 static int qcmd_postop(opt_t *opt);
 
-int opt_m(opt_t *, int, char *);
-int opt_n(opt_t *, int, char *);
+static int qcmd_opt_m(opt_t *, int, char *);
+static int qcmd_opt_n(opt_t *, int, char *);
 
-int qcmd_init(opt_t *);
-int qcmd_signal(int, int);
-int qcmd(char *, char *, char *, char *, char *, int, int *); 
+static int qcmd_init(opt_t *);
+static int qcmd_signal(int, int);
+static int qcmd(char *, char *, char *, char *, char *, int, int *); 
 
 /*
  *  Export generic pdsh module operations
@@ -159,9 +158,9 @@ struct pdsh_rcmd_operations qcmd_rcmd_ops = {
  */
 struct pdsh_module_option qcmd_module_options[] =
  { { 'm', "block|cyclic", "(qshell) control assignment of procs to nodes",
-       (optFunc) opt_m },
+       (optFunc) qcmd_opt_m },
    { 'n', "n",            "(qshell) set number of tasks per node",
-       (optFunc) opt_n },
+       (optFunc) qcmd_opt_n },
    PDSH_OPT_TABLE_END
  };
 
@@ -179,8 +178,8 @@ struct pdsh_module qcmd_module = {
   &qcmd_module_options[0],
 };
 
-int
-opt_m(opt_t *pdsh_opts, int opt, char *arg)
+static int
+qcmd_opt_m(opt_t *pdsh_opts, int opt, char *arg)
 {
     if (strcmp(arg, "block") == 0)
         cyclic = false;
@@ -194,8 +193,8 @@ opt_m(opt_t *pdsh_opts, int opt, char *arg)
     return 0;
 }
 
-int 
-opt_n(opt_t *pdsh_opts, int opt, char *arg)
+static int 
+qcmd_opt_n(opt_t *pdsh_opts, int opt, char *arg)
 {
     nprocs = atoi(arg);
     return 0;
@@ -207,7 +206,7 @@ opt_n(opt_t *pdsh_opts, int opt, char *arg)
  *      efd (IN)        file descriptor connected socket (-1 if not used)
  *      signum (IN)     signal number to send
  */
-int qcmd_signal(int efd, int signum)
+static int qcmd_signal(int efd, int signum)
 {
     char c;
 
@@ -223,7 +222,7 @@ int qcmd_signal(int efd, int signum)
 }
 
 
-static int qcmd_postop(opt_t *opt)
+static static int qcmd_postop(opt_t *opt)
 {
     int errors = 0;
 
@@ -277,7 +276,7 @@ _qcmd_opt_init(opt_t *opt)
  * running the job.
  * 	wcoll (IN)	list of nodes
  */
-int qcmd_init(opt_t * opt)
+static int qcmd_init(opt_t * opt)
 {
     int totprocs = nprocs * hostlist_count(opt->wcoll);
 
@@ -357,7 +356,7 @@ static int _qcmd_send_extra_args(int s, int nodeid)
  *	fd2p (IN)		if non NULL, return stderr file descriptor here
  *	int (RETURN)		-1 on error, socket for I/O on success
  */
-int
+static int
 qcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
      int nodeid, int *fd2p)
 {

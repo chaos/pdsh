@@ -1,7 +1,75 @@
+# $Id$
+
+CPPFLAGS = -I ..
+
+if WITH_STATIC_MODULES
+
+noinst_LTLIBRARIES = libmods.la
+
+if WITH_ELAN
+ELAN_FILE = qcmd.c
+endif
+
+if WITH_LIBGENDERS
+GENDERS_FILE = genders.c
+endif
+
+if WITH_NODEATTR
+NODEATTR_FILE = nodeattr.c
+endif
+
+if WITH_NODEUPDOWN
+NODEUPDOWN_FILE = nodeupdown.c
+endif
+
+if WITH_RMS
+RMS_FILE = rms.c
+endif
+
+if WITH_MACHINES
+MACHINES_FILE = machines.c
+endif
+
+if WITH_SDR
+SDR_FILE = sdr.c
+endif
+
+if WITH_MRSH
+MRSH_FILE = mcmd.c
+endif
+
+if WITH_MQSH
+MQSH_FILE = mqcmd.c
+endif
+
+if WITH_KRB4
+KRB4_FILE = k4cmd.c
+endif
+
+libmods_la_SOURCES = \
+	sshcmd.c \
+	xrcmd.c \
+        $(MRSH_FILE) \
+        $(MQSH_FILE) \
+	$(ELAN_FILE) \
+	$(GENDERS_FILE) \
+	$(NODEATTR_FILE) \
+	$(NODEUPDOWN_FILE) \
+	$(RMS_FILE) \
+	$(MACHINES_FILE) \
+	$(SDR_FILE) \
+	$(KRB4_FILE)
+
+libmods_la_LDFLAGS = \
+	$(MRSH_LIBS) \
+	$(NODEUPDOWN_LIBS) \
+	$(KRB_LIBS) \
+	$(GENDERS_LIBS)
+
+else
 
 AUTOMAKE_OPTIONS = foreign
 MODULE_FLAGS =     -module -avoid-version
-INCLUDES =         -I $(top_srcdir)
 
 if WITH_ELAN
 ELAN_MODULE = qcmd.la
@@ -96,3 +164,5 @@ rms_la_SOURCES =          rms.c
 rms_la_LDFLAGS =          $(MODULE_FLAGS)
 sdr_la_SOURCES =          sdr.c
 sdr_la_LDFLAGS =          $(MODULE_FLAGS)
+
+endif

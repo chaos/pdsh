@@ -32,9 +32,9 @@
 #include "mod.h"
 
 static hostlist_t read_machines(opt_t *opt);
+static int machines_opt_a(opt_t *, int, char *);
 
 static bool allnodes = false;
-static int opt_a(opt_t *, int, char *);
 
 /* 
  * Export pdsh module operations structure
@@ -59,7 +59,7 @@ struct pdsh_rcmd_operations machines_rcmd_ops = {
  * Export module options
  */
 struct pdsh_module_option machines_module_options[] = 
- { { 'a', NULL, "target all nodes", (optFunc) opt_a },
+ { { 'a', NULL, "target all nodes", (optFunc) machines_opt_a },
    PDSH_OPT_TABLE_END
  };
 
@@ -77,7 +77,7 @@ struct pdsh_module machines_module = {
   &machines_module_options[0],
 };
 
-static int opt_a(opt_t *pdsh_opt, int opt, char *arg)
+static int machines_opt_a(opt_t *pdsh_opt, int opt, char *arg)
 {
     allnodes = true;
     return 0;

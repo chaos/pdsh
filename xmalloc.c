@@ -106,7 +106,12 @@ void Realloc(void **item, size_t newsize)
  */
 char *Strdup(char *str)
 {
-    char *result = Malloc(strlen(str) + 1);
+    char *result;
+
+    if (str == NULL)
+        return NULL;
+    else
+        result = Malloc(strlen(str) + 1);
 
     return strcpy(result, str);
 }

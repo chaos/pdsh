@@ -568,6 +568,16 @@ static void _usage(opt_t * opt)
     char *names = NULL;
     char *def   = NULL;
 
+    /* first, make sure atleast some rcmd modules are loaded */
+    l = mod_get_module_names("rcmd");
+    if (list_count(l) == 0)
+      errx("%p: no rcmd modules are loaded\n");
+    names = _list_join(",", l);
+    list_destroy(l);
+
+    if (!(def = mod_rcmd_get_default_module()))
+        def = "(none)";
+
     if (opt->personality == DSH) {
         err(OPT_USAGE_DSH);
 #if	HAVE_MAGIC_RSHELL_CLEANUP
@@ -579,13 +589,6 @@ static void _usage(opt_t * opt)
     err(OPT_USAGE_COMMON);
 
     mod_print_all_options(18);
-
-    l = mod_get_module_names("rcmd");
-    names = _list_join(",", l);
-    list_destroy(l);
-
-    if (!(def = mod_rcmd_get_default_module()))
-        def = "(none)";
 
     err("available rcmd modules: %s (default: %s)\n", names, def);
     Free((void **) &names);

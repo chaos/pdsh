@@ -40,6 +40,18 @@ AC_LIBTOOL_DLOPEN
 AC_PROG_LIBTOOL
 AC_LIB_LTDL
 
+#
+# Do we want static modules?
+#
+AC_ARG_ENABLE([static-modules],
+              AC_HELP_STRING([--enable-static-modules], [Build static modules]),
+              ac_static_modules=yes)
+AM_CONDITIONAL(WITH_STATIC_MODULES, test "$ac_static_modules" = "yes")
+
+if test "$ac_static_modules" = "yes" ; then
+   AC_DEFINE_UNQUOTED(STATIC_MODULES, [1], [Use Static Modules])
+fi
+
 # Checks for libraries.
 AC_CHECK_LIB([socket], [socket], LIBS="-lsocket -lnsl $LIBS",, [-lsocket -lnsl])
 
@@ -53,7 +65,6 @@ AC_DEFINE(WITH_PTHREADS, 1, [Define if you have pthreads])
 LDFLAGS="$LDFLAGS $PTHREAD_CFLAGS"
 CPPFLAGS="$CPPFLAGS $PTHREAD_CFLAGS"
 LIBS="$PTHREAD_LIBS $LIBS"
-
 
 #
 # Check for kerberos libraries, if they exist, automatically built

@@ -112,9 +112,9 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 
 #define RSH_PORT 514
 
-int xrcmd_init(opt_t *);
-int xrcmd_signal(int, int);
-int xrcmd(char *, char *, char *, char *, char *, int, int *); 
+static int xrcmd_init(opt_t *);
+static int xrcmd_signal(int, int);
+static int xrcmd(char *, char *, char *, char *, char *, int, int *); 
 
 /* 
  * Export pdsh module operations structure
@@ -157,7 +157,7 @@ struct pdsh_module xrcmd_module = {
   &xrcmd_module_options[0],
 };
 
-int xrcmd_init(opt_t * opt)
+static int xrcmd_init(opt_t * opt)
 {
     /* not implemented */
     return 0;
@@ -168,7 +168,7 @@ int xrcmd_init(opt_t * opt)
  * 	efd (IN)	file descriptor connected socket (-1 if not used)
  *	signum (IN)	signal number to send
  */
-int xrcmd_signal(int efd, int signum)
+static int xrcmd_signal(int efd, int signum)
 {
     char c;
 
@@ -193,7 +193,7 @@ int xrcmd_signal(int efd, int signum)
  *	fd2p (IN/OUT)	if non-NULL, open stderr backchannel on this fd
  *	s (RETURN)	socket for stdout/sdin or -1 on failure
  */
-int
+static int
 xrcmd(char *ahost, char *addr, char *locuser, char *remuser,
       char *cmd, int rank, int *fd2p)
 {

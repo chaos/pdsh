@@ -35,10 +35,13 @@
 #include <assert.h>
 #include <string.h>
 
+#if STATIC_MODULES
+#include "modules/static_modules.h"
+#else
 #include "ltdl.h"
+#endif 
 
 #include "mod.h"
-
 #include "err.h"
 #include "xmalloc.h"
 #include "xstring.h"
@@ -53,23 +56,31 @@ struct module_components {
 #define MOD_MAGIC 0xc0c0b0b
     int magic;
 #endif
+
+#if !STATIC_MODULES
     lt_dlhandle handle;
     char *filename;
-  
-    struct pdsh_module            *pmod;
+#endif
+ 
+    struct pdsh_module *pmod;
 };
 
 /* 
- *  Static prototypes:
+ *  Static function prototypes:
  */
-static int  _is_loaded(char *filename); 
+#if STATIC_MODULES
+static int  _mod_load(int);
+#else
 static int  _mod_load(const char *, const char *);
+static int  _cmp_filenames(mod_t, char *);
+static int  _is_loaded(char *filename); 
+static bool _dir_ok(struct stat *);
+static bool _path_permissions_ok(const char *dir);
+#endif
 static void _mod_destroy(mod_t mod);
 static bool _mod_opts_ok(mod_t mod);
 static int  _mod_print_info(mod_t mod);
 static void _print_option_help(struct pdsh_module_option *p, int col);
-static bool _path_permissions_ok(const char *dir);
-static bool _dir_ok(struct stat *);
 static struct pdsh_module_option * _mod_find_opt(mod_t mod, int opt);
 
 /*
@@ -89,7 +100,11 @@ mod_init(void)
             return -1;
         }
         initialized = true;
+#if STATIC_MODULES
+        return 0;
+#else
         return lt_dlinit();
+#endif
     } else
         return 0;
 }
@@ -107,7 +122,11 @@ mod_exit(void)
     list_iterator_destroy(module_itr);
     list_destroy(module_list);
     
+#if STATIC_MODULES
+    return 0;
+#else
     return lt_dlexit(); 
+#endif
 }
 
 hostlist_t
@@ -124,6 +143,7 @@ _mod_postop(mod_t mod, opt_t *pdsh_opts)
 {
     if (mod->pmod->mod_ops && mod->pmod->mod_ops->postop)
         return (*mod->pmod->mod_ops->postop) (pdsh_opts);
+
     return 0;
 }
 
@@ -185,7 +205,10 @@ mod_t
 mod_create(void)
 {
     mod_t mod = Malloc(sizeof(*mod));
+#if !STATIC_MODULES
     mod->handle = NULL;
+    mod->filename = NULL;
+#endif
     assert(mod->magic = MOD_MAGIC);
     
     return mod;
@@ -196,17 +219,22 @@ _mod_destroy(mod_t mod)
 {
     assert(mod->magic == MOD_MAGIC);
 
-    if (mod->pmod->mod_ops && mod->pmod->mod_ops->exit)
-        (*mod->pmod->mod_ops->exit)();
+    /* must assert mod->mod, loading of module may have failed */
+    if (mod->pmod) {
+        mod->pmod->type = NULL;
+        mod->pmod->name = NULL;
+
+        if (mod->pmod->mod_ops && mod->pmod->mod_ops->exit)
+            (*mod->pmod->mod_ops->exit)();
+    }
     
+#if !STATIC_MODULES
     if (mod->filename)
         Free((void **) &mod->filename);
 
-    mod->pmod->type = NULL;
-    mod->pmod->name = NULL;
-
     if (mod->handle)
         lt_dlclose(mod->handle);
+#endif
 
     assert(mod->magic = ~MOD_MAGIC);
     Free((void **) &mod);
@@ -214,24 +242,11 @@ _mod_destroy(mod_t mod)
     return;
 }
 
-static int _cmp_filenames(mod_t mod, char *filename)
-{
-    return (strcmp(mod->filename, filename) == 0);
-}
-
-static int
-_is_loaded(char *filename)
-{
-    if (list_find_first(module_list, (ListFindF) _cmp_filenames, filename))
-        return 1;
-
-    return 0;
-}
-
 static bool
 _mod_opts_ok(mod_t mod)
 {
     struct pdsh_module_option *p;
+    
     for (p = mod->pmod->opt_table; p && (p->opt != 0); p++) {
         if (!opt_register(p)) 
             return false;
@@ -241,19 +256,33 @@ _mod_opts_ok(mod_t mod)
 }
 
 /*
- *  Load a single module from file `fq_path' and append to module_list.
+ *  if STATIC_MODULES 
+ *     set pdsh_module (pmod) pointer to point to internal structure.
+ *     After this is done, rest of the mod.c functions work essentially
+ *     the same.
+ *
+ *  if !STATIC_MODULES
+ *     Load a single module from file `fq_path' and append to module_list.
  */
 static int
+#if STATIC_MODULES
+_mod_load(int index)
+#else
 _mod_load(const char *fq_path, const char *filename)
+#endif
 {
     mod_t mod = NULL;
+#if !STATIC_MODULES
     const lt_dlinfo *info;
     char mod_name[MAXPATHLEN + strlen("_module") + 1];   
-
     assert(fq_path != NULL);
+#endif
 
     mod = mod_create();
 
+#if STATIC_MODULES
+    mod->pmod = static_mods[index];
+#else
     if (!(mod->handle = lt_dlopen(fq_path)))
         goto fail;
 
@@ -270,9 +299,8 @@ _mod_load(const char *fq_path, const char *filename)
         goto fail;
     }
 
-    /* Determine structure name that holds all module info 
-     * move pointer.  We subtract -3 in order to remove ".la"
-     * from the filename.  
+    /* Determine structure name that holds all module info.  Subtract
+     * three in order to remove ".la" from the filename.
      */
 
     strncpy(mod_name, filename, MAXPATHLEN);
@@ -283,10 +311,16 @@ _mod_load(const char *fq_path, const char *filename)
         err("%p:[%s] can't resolve pdsh module\n", mod->filename);
         goto fail;
     }
+#endif /* STATIC_MODULES */
 
     /* Must have atleast a name and type */
     if (!mod->pmod->type || !mod->pmod->name) {
-        err("%p:[%s] type or name not specified in module\n", mod->filename);
+        err("%p:[%s] type or name not specified in module\n", 
+#if STATIC_MODULES
+            static_mod_names[index]);
+#else
+            mod->filename);
+#endif
         goto fail;
     }
 
@@ -307,11 +341,13 @@ _mod_load(const char *fq_path, const char *filename)
 
     return 0;
 
+#if !STATIC_MODULES
  fail_libtool_broken:
     /*
      * Avoid dlclose() of invalid handle
      */
     mod->handle = NULL;
+#endif
  fail:
     _mod_destroy(mod);
     return -1;
@@ -321,18 +357,28 @@ _mod_load(const char *fq_path, const char *filename)
 int 
 mod_load_modules(const char *dir)
 {
-    int            retval = 0;
+#if STATIC_MODULES
+    int i = 0;
+#else
     DIR           *dirp   = NULL;
     struct dirent *entry  = NULL;
     char           path[MAXPATHLEN + 1];
     char           *p;
+    int            count = 0;
 
     assert(dir != NULL);
     assert(*dir != '\0');
+#endif
 
-    if (!initialized)
+    if (!initialized) 
         mod_init();
 
+#if STATIC_MODULES
+    while (static_mods[i] != NULL) {
+        if (_mod_load(i++) < 0)
+            continue;
+    }
+#else
     if (!_path_permissions_ok(dir)) 
         return -1;
 
@@ -363,11 +409,15 @@ mod_load_modules(const char *dir)
         if (_mod_load(path, entry->d_name) < 0) 
             continue;
 
-        retval++;
+        count++;
     }
 
     if (closedir(dirp) < 0)
         err("%p: error closing %s: %m", dir);
+
+    if (count == 0)
+        errx("%p: no modules found\n"); 
+#endif
 
     return 0;
 }
@@ -392,7 +442,12 @@ _print_option_help(struct pdsh_module_option *p, int col)
 void
 mod_print_options(mod_t mod, int col)
 {
-    struct pdsh_module_option *p = mod->pmod->opt_table;
+    struct pdsh_module_option *p;
+
+    assert(mod != NULL);
+    assert(mod->pmod != NULL);
+
+    p = mod->pmod->opt_table;
     if (!p || !p->opt)
         return;
     /* 
@@ -475,17 +530,6 @@ mod_list_module_info(void)
 }
 
 
-void *
-mod_get_sym(mod_t mod, const char *name)
-{
-    assert(mod != NULL);
-    assert(mod->magic == MOD_MAGIC);
-    assert(name != NULL);
-
-    return (void *) lt_dlsym(mod->handle, name);
-}
-
-
 mod_t
 mod_get_module(const char *type, const char *name)
 {
@@ -506,17 +550,27 @@ mod_get_module(const char *type, const char *name)
 char *
 mod_get_name(mod_t mod)
 {
+    assert(mod != NULL);
+    assert(mod->pmod != NULL);
+
     return mod->pmod->name;
 }
 
 char *
 mod_get_type(mod_t mod)
 {
+    assert(mod != NULL);
+    assert(mod->pmod != NULL);
+
     return mod->pmod->type;
 }
 
 void * 
 mod_get_rcmd_init(mod_t mod) {
+
+    assert(mod != NULL);
+    assert(mod->pmod != NULL);
+
     if (mod->pmod->rcmd_ops && mod->pmod->rcmd_ops->rcmd_init)
         return mod->pmod->rcmd_ops->rcmd_init;
     else
@@ -525,6 +579,10 @@ mod_get_rcmd_init(mod_t mod) {
 
 void * 
 mod_get_rcmd_signal(mod_t mod) {
+
+    assert(mod != NULL);
+    assert(mod->pmod != NULL);
+
     if (mod->pmod->rcmd_ops && mod->pmod->rcmd_ops->rcmd_signal)
         return mod->pmod->rcmd_ops->rcmd_signal;
     else
@@ -533,6 +591,10 @@ mod_get_rcmd_signal(mod_t mod) {
 
 void * 
 mod_get_rcmd(mod_t mod) {
+
+    assert(mod != NULL);
+    assert(mod->pmod != NULL);
+
     if (mod->pmod->rcmd_ops && mod->pmod->rcmd_ops->rcmd)
         return mod->pmod->rcmd_ops->rcmd;
     else
@@ -569,6 +631,22 @@ _mod_find_opt(mod_t mod, int opt)
 }
 
 
+#if !STATIC_MODULES
+
+static int _cmp_filenames(mod_t mod, char *filename)
+{
+    return (strcmp(mod->filename, filename) == 0);
+}
+
+static int
+_is_loaded(char *filename)
+{
+    if (list_find_first(module_list, (ListFindF) _cmp_filenames, filename))
+        return 1;
+
+    return 0;
+}
+
 /*
  *  Return true if stat struct show ownership of root or calling user,
  *    and write permissions for user and group only.
@@ -580,9 +658,9 @@ _dir_ok(struct stat *st)
         return false;
     if ((st->st_mode & S_IWOTH) /* || (st->st_mode & S_IWGRP) */) 
         return false;
+
     return true;
 }
-
 
 /*
  *  Returns true if, for the directory "dir" and all of its parent 
@@ -645,6 +723,8 @@ _path_permissions_ok(const char *dir)
 
     return true;
 }
+
+#endif /* !STATIC_MODULES */
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

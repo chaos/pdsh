@@ -47,7 +47,6 @@ static char * rcmd_rank[] = { "bsd", "mrsh", "ssh", "krb4", "qsh", "mqsh", NULL 
  *  Container for information specific to rcmd modules.
  */
 struct _rmodule {
-    mod_t mod;
     RcmdInitF init;
     RcmdSigF  signal;
     RcmdF     rcmd;
@@ -59,18 +58,18 @@ struct _rmodule {
  */
 static struct _rmodule *rmod;
 
-
 /*
  *  Called within opt.c to load requested rcmd module, or default if no
  *    module was specifically requested. Loads rcmd-specific symbols from
- *    module, if exported. Symbols "pdsh_signal" and "pdsh_rcmd" *must*
- *    be exported from the module or the load will fail.
+ *    module, if exported.  Each rcmd module must have an init, signal, and
+ *    base function, even if the function does nothing.  
  *
  *  Returns 0 on success and -1 on failure.
  */
 int 
 mod_rcmd_load(opt_t * opt)
 {
+    mod_t mod = NULL;
     rmod = Malloc(sizeof(*rmod));
 
     if (!opt->rcmd_name) {
@@ -81,20 +80,26 @@ mod_rcmd_load(opt_t * opt)
         }
     }
 
-    if (!(rmod->mod = mod_get_module("rcmd", opt->rcmd_name))) {
+    if (!(mod = mod_get_module("rcmd", opt->rcmd_name))) {
         err("%p: Unable to find rcmd module \"%s\"\n", opt->rcmd_name);
         goto fail;
     }
 
-    rmod->init = (RcmdInitF) mod_get_rcmd_init(rmod->mod);
-
-    if (!(rmod->signal = (RcmdSigF) mod_get_rcmd_signal(rmod->mod))) {
-        err("Unable to resolve \"rcmd_signal\" in module \"%s\"\n", "XXX");
+    if (!(rmod->init = (RcmdInitF) mod_get_rcmd_init(mod))) {
+        err("Unable to resolve \"rcmd_init\" in module \"%s\"\n", 
+            mod_get_name(mod));
         goto fail;
     }
 
-    if (!(rmod->rcmd = (RcmdF) mod_get_rcmd(rmod->mod))) {
-        err("Unable to resolve \"rcmd\" in module \"%s\"\n", "XXX");
+    if (!(rmod->signal = (RcmdSigF) mod_get_rcmd_signal(mod))) {
+        err("Unable to resolve \"rcmd_signal\" in module \"%s\"\n", 
+            mod_get_name(mod));
+        goto fail;
+    }
+
+    if (!(rmod->rcmd = (RcmdF) mod_get_rcmd(mod))) {
+        err("Unable to resolve \"rcmd\" in module \"%s\"\n", 
+            mod_get_name(mod));
         goto fail;
     }
 
@@ -115,7 +120,7 @@ char * mod_rcmd_get_default_module(void)
     mod_t mod = NULL;
     int i = 0;
     const char *name = NULL;
-
+    
     while ((name = rcmd_rank[i++]) && !mod) 
         mod = mod_get_module("rcmd", name);
 
@@ -126,10 +131,8 @@ char * mod_rcmd_get_default_module(void)
 int
 mod_rcmd_init(opt_t *opt)
 {
-    if (rmod->init)
-        return ((*rmod->init)(opt));
-    else 
-        return 0;
+    assert(rmod != NULL);
+    return ((*rmod->init)(opt));
 }
 
 
@@ -143,7 +146,6 @@ mod_rcmd_exit(void)
 int mod_rcmd_signal(int efd, int signum)
 {
     assert(rmod != NULL);
-
     return (*rmod->signal) (efd, signum);
 }
 
