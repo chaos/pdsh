@@ -490,8 +490,13 @@ hostlist_t get_verified_nodes(int iopt) {
   }
 
   if (nodeupdown_load_data(handle, NULL, NULL, NULL, 0) == -1) {
-    errx("%p: error loading nodeupdown data, %s\n", 
-	 nodeupdown_strerror(nodeupdown_errnum(handle)));
+    if (nodeupdown_errnum(handle) == NODEUPDOWN_ERR_CONNECT) {
+      errx("%p: pdsh does not support -v on this machine");
+    }
+    else {
+      errx("%p: error loading nodeupdown data, %s\n", 
+	   nodeupdown_strerror(nodeupdown_errnum(handle)));
+    }
   }
 
   if (nodeupdown_get_up_nodes_hostlist(handle, new) == -1) {
