@@ -1,3 +1,8 @@
+2003-06-13 achu
+	* added support for mqsh rcmd and mqshd daemon
+	* updated manpages for pdsh and pdcp for modules 
+	* variety of minor tweaks and modifications in code and autoconf
+        
 2003-06-03 achu
 	* added support for mrsh rcmd
 	
