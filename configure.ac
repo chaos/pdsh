@@ -56,7 +56,8 @@ LIBS="$PTHREAD_LIBS $LIBS"
 
 
 #
-# Check for kerberos libraries
+# Check for kerberos libraries, if they exist, automatically built
+# kerberos module
 #
 AC_CHECK_LIB([krb], [krb_sendauth], [KRB_LIBS="-lkrb -ldes"; withkrb4=yes],
 	[withkrb4=no], [-lkrb -ldes])

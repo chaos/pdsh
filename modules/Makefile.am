@@ -47,6 +47,10 @@ if WITH_MQSH
 MQSH_MODULE = mqcmd.la
 endif
 
+if WITH_KRB4
+KRB4_MODULE = k4cmd.la
+endif
+
 pkglib_LTLIBRARIES = \
 	sshcmd.la \
 	xrcmd.la \
@@ -58,7 +62,8 @@ pkglib_LTLIBRARIES = \
 	$(NODEUPDOWN_MODULE) \
 	$(RMS_MODULE) \
 	$(MACHINES_MODULE) \
-	$(SDR_MODULE)
+	$(SDR_MODULE) \
+	$(KRB4_MODULE) \
 
 xrcmd_la_SOURCES =        xrcmd.c
 xrcmd_la_LDFLAGS =        $(MODULE_FLAGS)
@@ -70,6 +75,8 @@ mcmd_la_SOURCES =         mcmd.c
 mcmd_la_LDFLAGS =         $(MODULE_FLAGS) $(MRSH_LIBS)
 mqcmd_la_SOURCES =        mqcmd.c
 mqcmd_la_LDFLAGS =        $(MODULE_FLAGS) $(MRSH_LIBS) $(top_builddir)/libqsw.la
+krb4_la_SOURCES =         k4cmd.c
+krb4_la_LDFLAGS =         $(MODULE_FLAGS) $(KRB_LIBS)
 
 machines_la_SOURCES =     machines.c
 machines_la_LDFLAGS =     $(MODULE_FLAGS)
