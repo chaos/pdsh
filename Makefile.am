@@ -1,26 +1,32 @@
 # $Id$
 
-AUTOMAKE_OPTIONS =        foreign 
-SUBDIRS =                 . modules testsuite 
+AUTOMAKE_OPTIONS =         foreign dist-bzip2
+SUBDIRS =                  . modules testsuite 
 
-noinst_PROGRAMS=          pdsh 
-bin_PROGRAMS =		  pdsh.inst
-sbin_PROGRAMS =           @PROG_QSHD@
-bin_SCRIPTS =             dshbak
-EXTRA_PROGRAMS =          in.qshd
-man_MANS =                pdsh.1 pdcp.1 dshbak.1
-noinst_LTLIBRARIES =      libqsw.la
+noinst_PROGRAMS=           pdsh 
+bin_PROGRAMS =		   pdsh.inst
+sbin_PROGRAMS =            @PROG_QSHD@
+bin_SCRIPTS =              dshbak
+EXTRA_PROGRAMS =           in.qshd
+man_MANS =                 pdsh.1 pdcp.1 dshbak.1
+noinst_LTLIBRARIES =       libqsw.la
 
 if WITH_ELAN
-libqsw_la_SOURCES =       qswutil.c qswutil.h
+libqsw_la_SOURCES =        qswutil.c qswutil.h
 endif
 
-libqsw_la_LDFLAGS =       $(ELAN_LIBS)
-EXTRA_libqsw_la_SOURCES = qswutil.c qswutil.h
+libqsw_la_LDFLAGS =        $(ELAN_LIBS)
+EXTRA_libqsw_la_SOURCES =  qswutil.c qswutil.h
 
-BUILT_SOURCES = \
-    config.c \
-    testconfig.c
+pdsh_SOURCES =             $(COMMON_SOURCES)
+nodist_pdsh_SOURCES =      testconfig.c
+pdsh_inst_SOURCES =        $(COMMON_SOURCES) 
+nodist_pdsh_inst_SOURCES = config.c
+
+pdsh_LDADD =               $(LIBADD_DL) $(READLINE_LIBS) 
+pdsh_LDFLAGS =             -export-dynamic  
+pdsh_inst_LDADD =          $(pdsh_LDADD)
+pdsh_inst_LDFLAGS =        $(pdsh_LDFLAGS)
 
 
 COMMON_SOURCES = \
@@ -38,19 +44,6 @@ COMMON_SOURCES = \
     mod_rcmd.c mod_rcmd.h \
     ltdl.h ltdl.c \
     mod.c mod.h 
-
-pdsh_SOURCES = \
-    $(COMMON_SOURCES) \
-    testconfig.c
-
-pdsh_inst_SOURCES = \
-    $(COMMON_SOURCES) \
-    config.c
-
-pdsh_LDADD =        $(LIBADD_DL) $(READLINE_LIBS) 
-pdsh_LDFLAGS =      -export-dynamic  
-pdsh_inst_LDADD =   $(pdsh_LDADD)
-pdsh_inst_LDFLAGS = $(pdsh_LDFLAGS)
 
 in_qshd_SOURCES = \
     qshd.c \
@@ -93,7 +86,7 @@ maintainer-clean-local:
 distclean-local::
 	-rm -fr autom4te*.cache autoscan.*
 
-CLEANFILES = \
+MOSTLYCLEANFILES = \
     config.c \
     testconfig.c 
 
