@@ -433,10 +433,11 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 #if 	NEW_ELAN_DRIVER
 	/* 
 	 * 'uid' needs to be able to read/write /dev/elan3/sdram0,user0
-	 * This avoids a rather cryptic and broken error message:
+	 * Catch this before libelan does and issues this message:
 	 *    ELAN_EXCEPTION @ --: 6 (Initialisation error)
 	 *     elan_init(0): Failed elan3_init(0 a4100000 c800000 a0100000 
 	 *     4000000 d) 1108507576: ~KM‡~IAt«Ax
+	 * XXX ug+rw for this uid and its groups not sufficient (should it be?)
 	 */
 	{
 #define ELAN_PATH_SDRAM		"/dev/elan3/sdram0"
@@ -445,11 +446,11 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 		struct stat sb;
 
 		if (stat(ELAN_PATH_SDRAM, &sb) < 0)
-			errx("%p: cant stat %s\n", ELAN_PATH_SDRAM);
+			errx("%p: can't stat %s\n", ELAN_PATH_SDRAM);
 		if ((sb.st_mode & S_IRWOTH) != S_IRWOTH)
 			errx("%p: need o+rw on %s\n", ELAN_PATH_SDRAM);
 		if (stat(ELAN_PATH_USER, &sb) < 0)
-			errx("%p: cant stat %s\n", ELAN_PATH_USER);
+			errx("%p: can't stat %s\n", ELAN_PATH_USER);
 		if ((sb.st_mode & S_IRWOTH) != S_IRWOTH)
 			errx("%p: need o+rw on %s\n", ELAN_PATH_USER);
 	}
