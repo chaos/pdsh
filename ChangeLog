@@ -1,3 +1,7 @@
+2002-09-26 grondo
+	* configure.ac: workaround autoconf-2.53 bug affecting improper
+	  expansion of path in AC_PATH_PROG macro (fix for pdsh/116)
+
 2002-09-26 garlick
 	* Mark fixed pdsh/118 (bad usage of hostlist api)
 	* Removed possibilty of string overflow in a couple places.
