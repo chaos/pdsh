@@ -90,3 +90,5 @@ Release 1.4pre
 	Changed wcoll logic on SP so pdsh -aiv drops nodes which have
 	either switch_responds or host_responds false instead of falling
 	back to the reliable_hostname.
+
+	Added wcoll hack to deal with changed SDR attributes for Colony switch
