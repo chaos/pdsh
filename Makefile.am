@@ -135,6 +135,7 @@ EXTRA_DIST = \
     README.KRB4 \
     README.QsNet\
     README.AIX \
+	README.modules \
     TODO \
     META \
     Make-rpm.mk \
