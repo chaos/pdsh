@@ -1,19 +1,28 @@
-2003-08-07 achu
+2003-08-12  Albert Chu  <chu11@llnl.gov> 
+
+	* qshd_common.h, qshd_common.c: New Files.
+
+	* qshd.c, mqshd.c: Moved common code into qshd_common.c.
+
+	* ChangeLog: Slightly reformatted ChangeLog to conform to GNU
+	standards.  Older entries will still contain their old format.
+
+2003-08-07  Albert Chu  <chu11@llnl.gov>
 	* mqshd daemon now properly uses remote hostname with PAM
 	* Tagged pdsh-2-0-0-pre4
 	
-2003-08-04 achu
+2003-08-04  Albert Chu  <chu11@llnl.gov>
 	* Re-worked mcmd/mqcmd to handle stderr & stdout in one stream
 	* Tagged pdsh-2-0-0-pre3
 	
-2003-07-21 achu
+2003-07-21  Albert Chu  <chu11@llnl.gov>
 	* Fixed typos in manpages.
 	* Enabled PAM support in qshell & mqshell daemons
 	* Updated configuration to output warning/notice
 	  messages if particular modules cannot be built.
 	* Tagged pdsh-2-0-0-pre2
 	
-2003-07-16 achu
+2003-07-16  Albert Chu  <chu11@llnl.gov>
         * Fixed additional issues with command line options and modules
 	  recognized (or not-recognized) between pdsh and pdcp.
 	* Removed dependence of rcp command from pdcp.  All functionality
@@ -30,7 +39,7 @@
 	* Tweaked configuration, makefiles, manpages, and documents for
 	  readability and portability.
 	
-2003-06-24 achu
+2003-06-24  Albert Chu  <chu11@llnl.gov>
 	* added ability to compile modules in statically with
 	  --enable-static-modules option
 	* ssh no longer compiled automatically, needs --with-ssh option
@@ -41,22 +50,22 @@
 	* minor tweaking of configuration, makefiles, documents, and manpages
 	  for readability and portability.
 
-2003-06-13 achu
+2003-06-13  Albert Chu  <chu11@llnl.gov>
 	* added support for mqsh rcmd and mqshd daemon
 	* updated manpages and docs for pdsh and pdcp
 	* variety of minor tweaks and modifications in code and autoconf
         
-2003-06-03 achu
+2003-06-03  Albert Chu  <chu11@llnl.gov>
 	* added support for mrsh rcmd
 	
-2003-05-21 grondo
+2003-05-21  Mark Grondona  <grondona1@llnl.gov>
 	* Changed behavior of mod_read_wcoll() to call exported read_wcoll
  	functions from all modules (instead of only first to return non-NULL).
 	* Added --with-* configure options for all modules mainly to support 
 	rpmbuild which doesn't support configure-time determination of 
  	subpackages.
 
-2003-05-21 grondo
+2003-05-21  Mark Grondona  <grondona1@llnl.gov>
 	* Changed pdsh list implementation to Chris Dunlap's list.[ch]
 	* Added mod.[ch] and mod_rcmd.[ch] for pdsh module loading/unloading.
 	* Added ltdl.[ch] from libtool 1.4.3 (1.922.2.111 2002/10/23 02:54:36)
@@ -66,31 +75,31 @@
 	sdr specific code from main pdsh code into modules. 
 	* Reorganized configure.ac and added new tests as auxdir/*.m4
 
-2003-05-16 achu
+2003-05-16  Albert Chu  <chu11@llnl.gov>
 	* updated for gendersllnl API changes and removal of -r
 	  option from nodeattr
 	* tagged pdsh-1-8-5chaos
 
-2003-04-22 achu
+2003-04-22  Albert Chu  <chu11@llnl.gov>
 	* updated for genders API changes in genders-1-1-9
 	* updated for whatsup API changes in whatsup-1-0-5
 	* tagged pdsh-1-8-4chaos
 	
-2003-03-12 achu
+2003-03-12  Albert Chu  <chu11@llnl.gov>
 	* tagged pdsh-1-8-3chaos
 	* updated for changes in whatsup-1-0-3 libnodeupdown API
 	* updated for changes in genders-1-1-3 libgenders API
 	* minor fix on "--help" output
 	
-2003-03-07 achu
+2003-03-07  Albert Chu  <chu11@llnl.gov>
 	* tagged pdsh-1-8-2chaos
 	* fixed logic bug with -i option.
 	* fixed output from -V option
 
-2003-02-28 achu
+2003-02-28  Albert Chu  <chu11@llnl.gov>
 	* tagged pdsh-1-8-1chaos
 
-2003-02-26 achu
+2003-02-26  Albert Chu  <chu11@llnl.gov>
 	* Added linux support for -v option by using nodeupdown library
 	  to check for up and down nodes.
 	* Upgraded read_genders() function to use genders C library
@@ -103,61 +112,61 @@
           vi footers (except hostlist.[ch])
 	* Tagged pdsh-1-7-7noelan
 
-2002-10-21 garlick
+2002-10-21  Jim Garlick  <garlick1@llnl.gov>
 	* Bulding version for ILX cluster with genders but no elan
 	* Tagged pdsh-1-7-6noelan
 
-2002-10-09 garlick
+2002-10-09  Jim Garlick  <garlick1@llnl.gov>
 	* Building non-chaos version for distro.
 	* Tagged pdsh-1-7-6
 
-2002-10-09 garlick
+2002-10-09  Jim Garlick  <garlick1@llnl.gov>
 	* Eliminate third fork in qswutil.c per Addy at Quadrics.
 	* Tagged pdsh-1-7-6chaos
 
-2002-10-02 grondo
+2002-10-02  Mark Grondona  <grondona1@llnl.gov>
 	* hostlist.c: properly handle deletion of unsuffixed hosts (pdsh/120)
 	* opt.c: Abort when -x option given but hostlist_delete() returns 0
 	* Makefile.am, configure.ac: only need READLINE_LIBS for pdsh binary
 	* Tagged pdsh-1-7-5chaos (sent this version to addy@quadrics.com)
 
-2002-09-27 garlick
+2002-09-27  Jim Garlick  <garlick1@llnl.gov>
 	* Added support for readline in interactive mode if found.
 	* Taggged pdsh-1-7-4chaos
 
-2002-09-27 grondo
+2002-09-27  Mark Grondona  <grondona1@llnl.gov>
 	* Make-rpm.mk: Updated rpm target for compatibility with automake
 	* pdsh.1.in, pdcp.1.in: Improve documentation of hostname 
 	  range handling (gnat pdsh/97)
 
-2002-09-26 grondo
+2002-09-26  Mark Grondona  <grondona1@llnl.gov>
 	* configure.ac: workaround autoconf-2.53 bug affecting improper
 	  expansion of path in AC_PATH_PROG macro (fix for pdsh/116)
 
-2002-09-26 garlick
+2002-09-26  Jim Garlick  <garlick1@llnl.gov>
 	* Mark fixed pdsh/118 (bad usage of hostlist api)
 	* Removed possibilty of string overflow in a couple places.
 	* Taggged pdsh-1-7-3chaos (sent to LNXI for MCR)
 
-2002-09-12 garlick
+2002-09-12  Jim Garlick  <garlick1@llnl.gov>
 	* Reordered ChangeLog in reverse chronological order.
 	* Mark fixed Elan context number wrap-around bug.
 
-2002-09-12 garlick
+2002-09-12  Jim Garlick  <garlick1@llnl.gov>
 	* Repair a file descriptor leak in rcp_thread  (gnat pdsh/113)
 	* More error reporting in qswutil.c, qcmd.c, qshd.c
 	* Fixed bug in sending of long bitmaps.
 	* Taggged pdsh-1-7-2chaos (sent to LNXI for MCR)
 
-2002-09-03 grondo
+2002-09-03  Mark Grondona  <grondona1@llnl.gov>
 	* Automake-ified
 	* Have `dshbak -c' generate bracketed ranges compatible with pdsh -w
 	* Updated testsuite for compatibility with bracketed host ranges
 
-2002-08-12 garlick
+2002-08-12  Jim Garlick  <garlick1@llnl.gov>
 	* Make all static "helper" functions underbar-prefixed.
 
-2002-08-11 garlick
+2002-08-11  Jim Garlick  <garlick1@llnl.gov>
 	* If no genders, mpich machines, or SDR, allow configuration, but 
 	  pdsh -a generates an error.
 	* Fix SDR wcoll generation to use hostlist package.
@@ -166,7 +175,7 @@
 	* Enable "reckless hostrange expansion" (foo1-4 style ranges) for AIX
 
 
-2002-08-10 garlick
+2002-08-10  Jim Garlick  <garlick1@llnl.gov>
 	* Broke TODO out of ChangeLog
 	* Removed aborted attempt at QsNet cleanup (libqsw dir)
 	* Added support for Mark's hostlist.[ch].
@@ -178,7 +187,7 @@
 	* Handle arbitrarily large cap->Bitmap in qcmd/qshd protocol.
 	* Taggged pdsh-1-7-1chaos
 
-2002-08-10 addy@quadrics.com (via garlick)
+2002-08-10 addy@quadrics.com (via Jim Garlick)
 	* Removed garlick's conditional support for new driver
 	  (addy's changes below are more complete)
 	* ELAN_CAPABILITY has had the Generation element name changed. 
@@ -193,24 +202,24 @@
 	  shortly after starting when done with pdsh or prun. I changed it to
 	  'reload' inside the specfile which seems safer.
 
-2002-07-22 grondona (via garlick)
+2002-07-22  Mark Grondona  <grondona1@llnl.gov> (via Jim Garlick)
 	* Support HAVE_WORKING_STRERROR_R || STRERROR_R_CHAR_P
 	  mail.gnu.org/pipermail/autoconf-patches/2001-October/007964.html
 
-2002-06-20 akeane@quadrics.com (via garlick)
+2002-06-20 akeane@quadrics.com (via Jim Garlick)
 	* configure.ac fix to find pthreads on OSF/TRU64.
 	* Taggged pdsh-1-6-4chaos.
 
-2002-06-14 garlick
+2002-06-14  Jim Garlick  <garlick1@llnl.gov>
 	* Moved list_split_range to hostrange.c (now called range_split)
 
-2002-06-03 garlick
+2002-06-03  Jim Garlick  <garlick1@llnl.gov>
 	* Fixed a bug in dshbak which did not properly compress multi-digit
 	  hostname suffixes.
 	* Switch ChangeLog format.
 	* Added a few test cases to deja-gnu.
 
-2002-05-29 garlick
+2002-05-29  Jim Garlick  <garlick1@llnl.gov>
 	* Pdsh would sometimes block when cleaning up after a Ctrl-C.
 	  Change fcntl(efd, F_SETFD, O_NONBLOCK) to F_SETFL (xrcmd.c)
 	  Add fcntl call to k4cmd.c and qcmd.c.
@@ -219,7 +228,7 @@
 	* Temporarily disable --with-rms and PAM support in qshd
 	* Taggged pdsh-1-6-3chaos.
 
-2002-05-24 garlick
+2002-05-24  Jim Garlick  <garlick1@llnl.gov>
 	* Allow hostname ranges in WCOLL files.
 	* Add -x option to exclude a list of hostnames from WCOLL.
 	* Genders: -i option now selects canonical names.  The default is to
@@ -228,14 +237,14 @@
 	* Released 1.6-2 to http://www.llnl.gov/icc/lc/pdsh.html
 	* Chaos flag in spec file back on, tagged pdsh-1-6-2chaos
 
-2002-04-11 garlick
+2002-04-11  Jim Garlick  <garlick1@llnl.gov>
 	* RMS: Get rid of -P and -N options and use RMS_RESOURCEID as set by
 	  the RMS 'allocate' command instead.
 	* Change semantics of -n option: now it is tasks per node instead of 
 	  total number of tasks.  This is no longer a qshell specific argument,
   	  but unless qshell is used it must be == 1.
 
-2002-02-09 garlick
+2002-02-09  Jim Garlick  <garlick1@llnl.gov>
 	* Misc cleanup of headers, function defs, README, and man pages.
 	  Run man pages through autoconf.
 	* Test HAVE_WORKING_STRERROR_R before using strerror_r (pdsh-1.6 %m 
@@ -253,7 +262,8 @@
 	  xrcmd/qcmd times out waiting for a response from the server 
 	  (gnats:45).
 
-2001-12-24 garlick, grondona
+2001-12-24  Jim Garlick  <garlick1@llnl.gov>
+	    Mark Grondona  <grondona1@llnl.gov>
 	* Call htons on hard-coded port numbers before using (rcmd.c, k4cmd.c)
 	* Renamed rcmd.c -> xrcmd.c, pipecmd.c -> sshcmd.c.
 	* Add -Wall to CFLAGS and eliminate all warnings on Linux.
@@ -295,7 +305,7 @@
 	* Released 1.6 to http://www.llnl.gov/icc/lc/pdsh.html
 	* Chaos flag in spec file back on, tagged pdsh-1-6-1chaos
 
-2001-06-28 garlick
+2001-06-28  Jim Garlick  <garlick1@llnl.gov>
 	* Renamed spec file to pdsh.spec.  Gzip installed man pages on Linux.
 	* Moved path definitions to conf.h.  Changed nodeattr path to /usr/bin.
 	* Fixed handling of numerical ranges with multiple root names (dshbak)
@@ -304,7 +314,7 @@
 	* Updated RPM rules for chaos release.
 	* Released version 1.5 (linux only)
 
-2001-04-25 garlick
+2001-04-25  Jim Garlick  <garlick1@llnl.gov>
 	* Added RPM spec file.
 	* Fixed bug with opt_list dumping core on linux.
 	* Added pdsh -V to display version (PDSH_VERSION in conf.h).
@@ -314,7 +324,7 @@
 	* Added wcoll hack to deal with changed SDR attributes for Colony switch
 	* Released version 1.4
 
-2000-07-14 garlick
+2000-07-14  Jim Garlick  <garlick1@llnl.gov>
 	* Activated POSIX mode for getopt() on linux.
 	* Abort cleanly if working collective is empty.
 	* Fixed bug in pcp option handling (core on empty source file list).
@@ -345,7 +355,7 @@
 	  SunOS 5.7 sun4u sparc SUNW,Ultra-Enterprise
 	* Released version 1.3
 
-2000-06-22 garlick
+2000-06-22  Jim Garlick  <garlick1@llnl.gov>
 	* -b option to cause single SIGINT to terminate pdsh (needed when pdsh
 	  is run from a script).
 	* 1:1 feature in release 1.1 was actually #ifdefed out.
@@ -358,11 +368,11 @@
 	* Added genders support.
 	* Released version 1.2.
 
-1999-04-13 garlick
+1999-04-13  Jim Garlick  <garlick1@llnl.gov>
 	* Portability to linux, OSF1, AIX4.3.2, Solaris 2.5.
 	* Request 1:1 mapping to kernel threads, if M:N available.
 	* Kerberos IV off by default.
 	* Released version 1.1
 
-1998-09-04 garlick
+1998-09-04  Jim Garlick  <garlick1@llnl.gov>
 	* Initial release of version 1.0

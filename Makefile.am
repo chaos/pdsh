@@ -59,12 +59,14 @@ COMMON_FILES = \
 
 in_qshd_SOURCES = \
 	qshd.c \
+	fd.c fd.h \
 	list.c list.h \
 	xmalloc.c xmalloc.h \
 	xstring.c xstring.h \
 	err.c err.h \
 	hostlist.c hostlist.h \
-	xpoll.c xpoll.h
+	xpoll.c xpoll.h \
+	qshd_common.c qshd_common.h 
 
 in_qshd_LDADD = $(top_builddir)/libqsw.la
 
@@ -76,7 +78,8 @@ in_mqshd_SOURCES = \
 	err.c err.h \
 	list.c list.h \
 	hostlist.c hostlist.h \
-	xpoll.c xpoll.h
+	xpoll.c xpoll.h \
+	qshd_common.c qshd_common.h 
 
 in_mqshd_LDADD = $(top_builddir)/libqsw.la
 in_mqshd_LDFLAGS = $(MRSH_LIBS)
