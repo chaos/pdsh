@@ -41,12 +41,19 @@ endif
 
 if WITH_MRSH
 MRSH_MODULE = mcmd.la
+
+if WITH_ELAN
+MQSH_MODULE = mqcmd.la
 endif
+
+endif
+
 
 pkglib_LTLIBRARIES = \
 	sshcmd.la \
 	xrcmd.la \
         $(MRSH_MODULE) \
+        $(MQSH_MODULE) \
 	$(ELAN_MODULE) \
 	$(GENDERS_MODULE) \
 	$(NODEATTR_MODULE) \
@@ -63,6 +70,8 @@ qcmd_la_SOURCES =         qcmd.c
 qcmd_la_LDFLAGS =         $(MODULE_FLAGS) $(top_builddir)/libqsw.la
 mcmd_la_SOURCES =         mcmd.c
 mcmd_la_LDFLAGS =         $(MODULE_FLAGS) $(MRSH_LIBS)
+mqcmd_la_SOURCES =        mqcmd.c
+mqcmd_la_LDFLAGS =        $(MODULE_FLAGS)
 
 machines_la_SOURCES =     machines.c
 machines_la_LDFLAGS =     $(MODULE_FLAGS)

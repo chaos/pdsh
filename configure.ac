@@ -114,6 +114,16 @@ AM_CONDITIONAL(WITH_LIBMUNGE,   [test "$ac_have_libmunge"      = "yes"])
 AM_CONDITIONAL(WITH_MRSH,       [test "$ac_have_mrsh"          = "yes"])
 
 #
+# Check --with-mqsh, only allowed if user also --with-elan and --with-mrsh
+#
+if test "$ac_with_elan" = "yes"; then
+   if test "$ac_with_mrsh" = "yes"; then
+      AC_MQSH
+   fi
+fi
+AM_CONDITIONAL(WITH_MQSH, [test "$ac_have_mqsh"          = "yes"])
+
+#
 # Determine whether to build RMS module (Support for RMS allocate)
 #
 AC_RMSQUERY
@@ -192,6 +202,8 @@ AC_CONFIG_FILES([
   testsuite/Makefile 
   modules/Makefile
   testsuite/pdsh.test/Makefile 
+  net-toollib/Makefile
+  net-toollib/lib/Makefile
   pdsh.spec 
   pdcp.1 pdsh.1
  ]

@@ -1,13 +1,14 @@
 # $Id$
 
 AUTOMAKE_OPTIONS =         foreign dist-bzip2
-SUBDIRS =                  . modules testsuite 
+SUBDIRS =                  net-toollib . modules testsuite 
 
 noinst_PROGRAMS=           pdsh 
 bin_PROGRAMS =		   pdsh.inst
-sbin_PROGRAMS =            @PROG_QSHD@
+sbin_PROGRAMS =            @PROG_QSHD@ @PROG_MQSHD@
+
 bin_SCRIPTS =              dshbak
-EXTRA_PROGRAMS =           in.qshd
+EXTRA_PROGRAMS =           in.qshd in.mqshd
 man_MANS =                 pdsh.1 pdcp.1 dshbak.1
 noinst_LTLIBRARIES =       libqsw.la
 
@@ -55,6 +56,17 @@ in_qshd_SOURCES = \
     hostlist.c hostlist.h
 
 in_qshd_LDADD = libqsw.la
+
+in_mqshd_SOURCES = \
+	mqshd.c \
+	fd.c fd.h \
+	xmalloc.c xmalloc.h \
+	xstring.c xstring.h \
+	err.c err.h \
+	hostlist.c hostlist.h 
+
+in_mqshd_LDADD = libqsw.la net-toollib/lib/libnettools.la
+in_mqshd_LDFLAGS = $(MQSH_LIBS)
 
 # Makefile rule for building rpm directly from CVS repository
 include $(top_srcdir)/Make-rpm.mk

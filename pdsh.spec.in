@@ -49,13 +49,14 @@ remote shell services, including standard "rsh", Kerberos IV, and ssh.
 #
 %{!?_with_ssh: %{!?_without_ssh: %define _with_ssh 1}}
 %{!?_with_bsd: %{!?_without_bsd: %define _with_bsd 1}}
-%{!?_with_mrsh:  %{!?_without_mrsh: %define _with_mrsh --with-mrsh}}
 
+%{!?_with_mrsh:  %{!?_without_mrsh: %define _with_mrsh --with-mrsh}}
 %{!?_with_rms: %{!?_without_rms: %define _with_rms --with-rms}}
 %{!?_with_genders:  %{!?_without_genders: %define _with_genders --with-genders}}
 %{!?_with_nodeattr: %{!?_without_nodeattr: %define _with_nodeattr --with-nodeattr}}
 %{!?_with_machines: %{!?_without_machines: %define _with_machines --with-machines}}
 %{!?_with_nodeupdown:  %{!?_without_nodeupdown: %define _with_nodeupdown --with-nodeupdown}}
+%{!?_with_mqsh:  %{!?_without_mqsh: %define _with_mqsh --with-mqsh}}
 
 ##############################################################################
 
@@ -67,6 +68,16 @@ Prereq:  xinetd
 Remote shell service for running Quadrics Elan3 jobs under pdsh.
 Sets up Elan capabilities and environment variables needed by Quadrics
 MPICH executables.
+##############################################################################
+
+%package mqshd
+Summary: Remote shell daemon for pdsh/mrsh/Elan3
+Group:   System Environment/Base
+Prereq:  xinetd
+%description mqshd
+Remote shell service for running Quadrics Elan3 jobs under pdsh with
+mrsh authentication.  Sets up Elan capabilities and environment variables 
+needed by Quadrics MPICH executables.
 ##############################################################################
 
 #
@@ -99,6 +110,13 @@ Group:    System Environment/Base
 Provides: pdsh-rcmd
 %description rcmd-mrsh
 Pdsh module for mrsh rcmd functionality.
+
+%package  rcmd-mqsh
+Summary:  Provides mqsh rcmd capability to pdsh.
+Group:    System Environment/Base
+Provides: pdsh-rcmd
+%description rcmd-mqsh
+Pdsh module for mqsh rcmd functionality.
 
 %package  mod-genders
 Summary:  Provides libgenders support for pdsh.
@@ -157,7 +175,9 @@ Pdsh module for gathering list of all target nodes from a machines file.
     %{?_with_nodeattr}      \
     %{?_without_nodeattr}   \
     %{?_with_mrsh}          \
-    %{?_without_mrsh}  
+    %{?_without_mrsh}       \
+    %{?_with_mqsh}          \
+    %{?_without_mqsh}  
     
            
 if [ "$SMP" != "" ] ; then
@@ -174,6 +194,9 @@ mkdir -p $RPM_BUILD_ROOT
 DESTDIR="$RPM_BUILD_ROOT" make install
 if [ -x $RPM_BUILD_ROOT/%{_sbindir}/in.qshd ]; then
    install -D -m644 qshell.xinetd $RPM_BUILD_ROOT/etc/xinetd.d/qshell
+fi
+if [ -x $RPM_BUILD_ROOT/%{_sbindir}/in.mqshd ]; then
+   install -D -m644 mqshell.xinetd $RPM_BUILD_ROOT/etc/xinetd.d/mqshell
 fi
 
 ##############################################################################
@@ -216,6 +239,13 @@ rm -rf "$RPM_BUILD_ROOT"
 %files rcmd-mrsh
 %defattr(-,root,root)
 %{_libdir}/pdsh/mcmd.*
+%endif
+##############################################################################
+
+%if %{?_with_mqsh:1}%{!?_with_mqsh:0}
+%files rcmd-mqsh
+%defattr(-,root,root)
+%{_libdir}/pdsh/mqcmd.*
 %endif
 ##############################################################################
 
@@ -263,6 +293,21 @@ rm -rf "$RPM_BUILD_ROOT"
 %post qshd
 if ! grep "^qshell" /etc/services >/dev/null; then
   echo "qshell   523/tcp  # pdsh/elan3" >>/etc/services
+fi
+/etc/rc.d/init.d/xinetd reload
+
+%endif
+##############################################################################
+
+%if %{?_with_mqsh:1}%{!?_with_mqsh:0}
+%files mqshd
+%defattr(-,root,root)
+%{_sbindir}/in.mqshd
+/etc/xinetd.d/mqshell
+
+%post mqshd
+if ! grep "^mqshell" /etc/services >/dev/null; then
+  echo "mqshell   21234/tcp  # pdsh/mrsh/elan3" >>/etc/services
 fi
 /etc/rc.d/init.d/xinetd reload
 
