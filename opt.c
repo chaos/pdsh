@@ -74,6 +74,7 @@ Usage: pdcp [-options] src [src2...] dest\n\
 -p                preserve modification time and modes\n"
 
 #define OPT_USAGE_COMMON "\
+-h                output usage menu and quit\n\
 -q                list the option settings and quit\n\
 -b                disable ^C status feature (batch mode)\n\
 -l user           execute remote commands as user\n\
