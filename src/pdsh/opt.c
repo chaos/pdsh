@@ -306,6 +306,7 @@ void opt_default(opt_t * opt, char *argv0)
     /* DSH specific */
     opt->dshpath = NULL;
     opt->getstat = NULL;
+    opt->ret_remote_rc = false;
     opt->cmd = NULL;
     opt->stdin_unavailable = false;
 #if	HAVE_MAGIC_RSHELL_CLEANUP
@@ -387,7 +388,7 @@ void opt_args(opt_t * opt, int argc, char *argv[])
             opt->rcmd_name = Strdup(optarg);
             break;
         case 'S':              /* get remote command status */
-            opt->getstat = ";echo " RC_MAGIC "$?";
+            opt->ret_remote_rc = true;
             break;
         case 'd':              /* debug */
             opt->debug = true;

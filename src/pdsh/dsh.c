@@ -706,6 +706,21 @@ static void _flush_output (cbuf_t cb, out_f outf, thd_t *t)
 }
 
 
+static int _die_if_signalled (thd_t *t)
+{
+    int sig;
+
+    if ((sig = (t->rc - 128)) <= 0)
+        return (0);
+
+    err ("%p: process on host %S killed by signal %d\n", t->host, sig);
+    _fwd_signal (SIGTERM);
+    errx ("%p: terminating all processes.\n");
+
+    /* NOTREACHED */
+    return (0);
+}
+
 /*
  * Rsh thread.  One per remote connection.
  * Arguments are pointer to thd_t entry defined above.
@@ -790,6 +805,10 @@ static void *_rsh_thread(void *args)
                 if (_do_output (a->efd, a->errbuf, (out_f) err, false, a) <= 0)
                     xpfds[1].fd = -1;
             }
+    
+            /* kill parallel job if kill_on_fail and one task was signaled */
+            if (a->kill_on_fail) 
+                _die_if_signalled (a);
 
 #if	STDIN_BCAST             /* not yet supported */
             /* stdin ready ? */
@@ -898,6 +917,10 @@ int dsh(opt_t * opt)
         Free((void **) &opt->cmd);
         opt->cmd = cmd;
     }
+
+    /* Initialize getstat if needed */
+    if (opt->kill_on_fail || opt->ret_remote_rc) 
+        opt->getstat = ";echo " RC_MAGIC "$?";
 
     /* append echo $? to command */
     if (pdsh_personality() == DSH && opt->getstat) {
@@ -1021,7 +1044,7 @@ int dsh(opt_t * opt)
     _xsignal(SIGINT, old_int_handler);
 
     /* if -S, our exit value is the largest of the return codes */
-    if (opt->getstat) {
+    if (opt->ret_remote_rc) {
         for (i = 0; t[i].host != NULL; i++) {
             if (t[i].state == DSH_FAILED)
                 rc = RC_FAILED;

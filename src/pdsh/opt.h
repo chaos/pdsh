@@ -77,6 +77,7 @@ typedef struct {
     char *cmd;
     char *dshpath;              /* optional PATH command prepended to cmd */
     char *getstat;              /* optional echo $? appended to cmd */
+    bool ret_remote_rc;         /* -S: return largest remote return val */
     bool labels;                /* display host: before output */
 
     /* PCP-specific options */

@@ -1,3 +1,20 @@
+2004-04-26  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/qsnet/qswutil.c : Add missing variable in #ifdef HAVE_LIBELAN3
+
+	* src/qsnet/qshell.c : Add missing newlines to error messages.
+
+	* src/pdsh/opt.h, src/pdsh/opt.c : Added and initialized ret_remote_rc.
+
+	* src/pdsh/dsh.c (dsh) : Initialize opt->getstat if either of
+	ret_remote_rc or kill_on_fail are true, but only adjust exit value
+	of pdsh process when ret_remote_rc is true.
+
+	* src/pdsh/dsh.c (_rsh_thread) : Kill all processes if remote
+	process is killed by a signal and opt->kill_on_fail is true.
+
+	* src/pdsh/dsh.c (_die_if_signalled) : Added.
+
 2004-04-08  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/qsnet/qswutil.c (_qsw_cap_create, _qsw_elan_nrails) : Added.
