@@ -32,12 +32,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "hostlist.h"
-#include "err.h"
-#include "xmalloc.h"
-#include "mod.h"
-#include "xpopen.h"
-#include "xstring.h"
+#include "src/common/hostlist.h"
+#include "src/common/err.h"
+#include "src/common/xmalloc.h"
+#include "src/common/xstring.h"
+#include "src/pdsh/xpopen.h"
+#include "src/pdsh/mod.h"
 
 #define ALL_NODES "all"
 

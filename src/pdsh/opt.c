@@ -41,15 +41,14 @@
 #include <unistd.h>             /* getopt */
 #endif
 
+#include "src/common/hostlist.h"
+#include "src/common/err.h"
+#include "src/common/list.h"
+#include "src/common/xstring.h"
+#include "src/common/xmalloc.h"
 #include "dsh.h"                
-#include "hostlist.h"
 #include "opt.h"
-#include "err.h"
-#include "list.h"
 #include "wcoll.h"
-#include "xstring.h"
-#include "xmalloc.h"
-
 #include "mod.h"
 #include "mod_rcmd.h"
 

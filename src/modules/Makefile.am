@@ -1,14 +1,14 @@
 # $Id$
 
-INCLUDES =         -I $(top_srcdir)
 AUTOMAKE_OPTIONS = foreign
+
+INCLUDES =         -I $(top_srcdir)
 
 if WITH_STATIC_MODULES
 MODULE_FLAGS = 
 else
 MODULE_FLAGS =     -module -avoid-version
 endif
-
 
 nodist_libmods_la_SOURCES = static_modules.h
 noinst_LTLIBRARIES =        libmods.la
@@ -104,12 +104,12 @@ sshcmd_la_SOURCES =       sshcmd.c
 sshcmd_la_LDFLAGS =       $(MODULE_FLAGS)
 qcmd_la_SOURCES =         qcmd.c
 qcmd_la_LDFLAGS =         $(MODULE_FLAGS) 
-qcmd_la_LIBADD =          $(top_builddir)/libqsw.la
+qcmd_la_LIBADD =          $(top_builddir)/src/qsnet/libqsw.la
 mcmd_la_SOURCES =         mcmd.c
 mcmd_la_LDFLAGS =         $(MODULE_FLAGS) $(MRSH_LIBS)
 mqcmd_la_SOURCES =        mqcmd.c
 mqcmd_la_LDFLAGS =        $(MODULE_FLAGS) $(MRSH_LIBS) 
-mqcmd_la_LIBADD =         $(top_builddir)/libqsw.la
+mqcmd_la_LIBADD =         $(top_builddir)/src/qsnet/libqsw.la
 k4cmd_la_SOURCES =        k4cmd.c
 k4cmd_la_LDFLAGS =        $(MODULE_FLAGS) $(KRB_LIBS)
 
@@ -125,8 +125,3 @@ rms_la_SOURCES =          rms.c
 rms_la_LDFLAGS =          $(MODULE_FLAGS)
 sdr_la_SOURCES =          sdr.c
 sdr_la_LDFLAGS =          $(MODULE_FLAGS)
-
-$(top_builddir)/libqsw.la : force-dependency-check
-	@cd `dirname $@` && make `basename $@`
-
-force-dependency-check:

@@ -116,14 +116,13 @@ static char sccsid[] = "@(#)mcmd.c      Based from: 8.3 (Berkeley) 3/26/94";
 #include <elan3/elanvp.h>
 #include <munge.h>
 
-#include "xmalloc.h"   /* Free() */
-#include "qswutil.h"
-
-#include "dsh.h"       /* LINEBUFSIZE && IP_ADDR_LEN */
-#include "err.h"
-#include "fd.h"
-#include "mod.h"
-#include "xpoll.h"
+#include "src/qsnet/qswutil.h"
+#include "src/common/xmalloc.h"      /* Free() */
+#include "src/common/macros.h"       /* LINEBUFSIZE && IP_ADDR_LEN */
+#include "src/common/err.h"
+#include "src/common/fd.h"
+#include "src/common/xpoll.h"
+#include "src/pdsh/mod.h"
 
 #define MQSH_PORT       21234
 
@@ -532,6 +531,7 @@ mqcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
    * Start the socket setup for the stderr.
    */
   lport = 0;
+  s2 = -1;
   if (fd2p != NULL) {
 
     s2 = socket(AF_INET, SOCK_STREAM, 0);

@@ -47,12 +47,12 @@
 #include <elan3/elanvp.h>
 #include <rms/rmscall.h>
 
-#include "xmalloc.h"
-#include "xstring.h"
-#include "hostlist.h"
+#include "src/common/xmalloc.h"
+#include "src/common/xstring.h"
+#include "src/common/hostlist.h"
+#include "src/common/err.h"
 #include "qswutil.h"
 #include "elanhosts.h"
-#include "err.h"
 
 /* we will allocate program descriptions in this range */
 /* XXX note: do not start at zero as libelan shifts to get unique shm id */

@@ -33,11 +33,10 @@
 
 #include <genders.h>
 
-#include "hostlist.h"
-#include "err.h"
-#include "xmalloc.h"
-#include "mod.h"
-#include "xpopen.h"
+#include "src/common/hostlist.h"
+#include "src/common/err.h"
+#include "src/common/xmalloc.h"
+#include "src/pdsh/mod.h"
 
 #define ALL_NODES NULL
 

@@ -29,11 +29,10 @@
 
 #include <assert.h>
 
-#include "err.h"
-#include "xmalloc.h"
-#include "xstring.h"
+#include "src/common/err.h"
+#include "src/common/xmalloc.h"
+#include "src/common/xstring.h"
 #include "opt.h"
-
 #include "mod.h"
 #include "mod_rcmd.h"
 

@@ -22,7 +22,7 @@
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
-\*****************************************************************************/
+ \*****************************************************************************/
 
 /*
  * This code is based on the BSD rcmd.c with MT safety added, and the 
@@ -67,8 +67,8 @@
  */
 
 char copyright[] =
-    "@(#) Copyright (c) 1988, 1989 The Regents of the University of California.\n"
-    "All rights reserved.\n";
+"@(#) Copyright (c) 1988, 1989 The Regents of the University of California.\n"
+"All rights reserved.\n";
 
 /*
  * From: @(#)rshd.c	5.38 (Berkeley) 3/2/91
@@ -89,14 +89,14 @@ char rcsid[] = "$Id$";
 #include <syslog.h>          /* syslog */
 #include <stdio.h>              
 #include <stdlib.h>
+#include <netdb.h>
 
-#include "qshd_common.h"
+#include "src/common/xmalloc.h"
+#include "qshell.h"
 
 extern int paranoid;
 extern int sent_null;
 extern int allow_root_rhosts;
-
-static void doit(struct sockaddr_in *fromp);
 
 static struct passwd *doauth(char *remuser, char *hostname, char *locuser) {
     struct passwd *pwd;
@@ -116,26 +116,24 @@ static struct passwd *doauth(char *remuser, char *hostname, char *locuser) {
     return pwd;
 }
 
-static void doit(struct sockaddr_in *fromp) {
-    char locuser[16], remuser[16], cmdbuf[ARG_MAX + 1];
-    int port, sock = -1;
-    struct passwd *pwd;
-    char *hostname;
+static void qshd_get_args(struct sockaddr_in *fp, struct qshell_args *args) 
+{
+    char remuser[16];
+    char locuser[16];
+    char cmdbuf[ARG_MAX + 1];
 
-    port = doit_start();
-
-    if (port != 0) {
+    if (args->port != 0) {
         int lport = IPPORT_RESERVED - 1;
-        if ((sock = rresvport(&lport)) < 0) {
+        if ((args->sock = rresvport(&lport)) < 0) {
             syslog(LOG_ERR, "can't get stderr port: %m");
             exit(1);
         }
-        if (port >= IPPORT_RESERVED) {
+        if (args->port >= IPPORT_RESERVED) {
             syslog(LOG_ERR, "2nd port not reserved\n");
             exit(1);
         }
-        fromp->sin_port = htons(port);
-        if (connect(sock, (struct sockaddr *) fromp, sizeof(*fromp)) < 0) {
+        fp->sin_port = htons(args->port);
+        if (connect(args->sock, (struct sockaddr *) fp, sizeof(*fp)) < 0) {
             syslog(LOG_INFO, "connect second port: %m");
             exit(1);
         }
@@ -149,24 +147,27 @@ static void doit(struct sockaddr_in *fromp) {
     if (getstr(locuser, sizeof(locuser), "locuser") < 0)
         exit(1);
 
-    if (getstr(cmdbuf, sizeof(cmdbuf), "command") < 0)
+    if (getstr(cmdbuf,  sizeof(cmdbuf),  "command") < 0)
         exit(1);
 
-    if ((hostname = findhostname(fromp)) == NULL)
+    if ((args->hostname = findhostname(fp)) == NULL)
         exit(1);
 
-    if ((pwd = doauth(remuser, hostname, locuser)) == NULL) {
+    if ((args->pwd = doauth(remuser, args->hostname, locuser)) == NULL) {
         syslog(LOG_INFO | LOG_AUTH, "Permission denied\n");
         error("Permission denied");
         exit(1);
     }
 
-    doit_end(sock, port, pwd, remuser, hostname, locuser, cmdbuf);
-    exit(1);
+    args->remuser = Strdup(remuser);
+    args->locuser = Strdup(remuser);
+    args->cmdbuf =  Strdup(remuser);
+
+    return;
 }
 
 int main(int argc, char *argv[]) {
-    return main_common(argc, argv, &doit, "qshd", 1);
+    return qshell(argc, argv, &qshd_get_args, "qshd", 1);
 }
 
 /*

@@ -94,15 +94,15 @@
 #define EXIT_SUBDIR_FILENAME    "a!b@c#d$"
 #define EXIT_SUBDIR_FLAG        "E\n"
 
-#include "list.h"
-#include "xmalloc.h"
-#include "xstring.h"
+#include "src/common/list.h"
+#include "src/common/xmalloc.h"
+#include "src/common/xstring.h"
+#include "src/common/err.h"
+#include "src/common/xpoll.h"
 #include "dsh.h"
-#include "err.h"
 #include "opt.h"
 #include "wcoll.h"
 #include "mod_rcmd.h"
-#include "xpoll.h"
 
 static int debug = 0;
 

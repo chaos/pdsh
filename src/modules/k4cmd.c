@@ -78,12 +78,12 @@
 #include <kparse.h>
 #include <fcntl.h>              /* for F_SETOWN */
 
-#include "xmalloc.h"
-#include "xstring.h"
-#include "dsh.h"
-#include "err.h"
-#include "list.h"
-#include "xpoll.h"
+#include "src/common/xmalloc.h"
+#include "src/common/xstring.h"
+#include "src/common/macros.h"
+#include "src/common/err.h"
+#include "src/common/list.h"
+#include "src/common/xpoll.h"
 
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN 64

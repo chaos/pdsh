@@ -115,11 +115,11 @@ static char sccsid[] = "@(#)mcmd.c      Based from: 8.3 (Berkeley) 3/26/94";
 
 #include <munge.h>
 
-#include "dsh.h"       /* LINEBUFSIZE && IP_ADDR_LEN */
-#include "err.h"
-#include "fd.h"
-#include "mod.h"
-#include "xpoll.h"
+#include "src/common/macros.h"       /* LINEBUFSIZE && IP_ADDR_LEN */
+#include "src/common/err.h"
+#include "src/common/fd.h"
+#include "src/common/xpoll.h"
+#include "src/pdsh/mod.h"
 
 #define MRSH_PROTOCOL_VERSION    "1.5"
 
@@ -345,6 +345,7 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
    * Start the socket setup for the stderr.
    */
   lport = 0;
+  s2 = -1;
   if (fd2p != NULL) {
 
     s2 = socket(AF_INET, SOCK_STREAM, 0);

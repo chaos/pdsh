@@ -44,7 +44,7 @@
 
 #include "xstring.h"
 #include "xmalloc.h"
-#include "dsh.h"
+#include "macros.h" 
 
 static char *prog = NULL;
 static char *host = NULL;

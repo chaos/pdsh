@@ -44,8 +44,8 @@
 #include <unistd.h>
 #include <limits.h>             /* INT_MAX */
 
-#include "list.h"
-#include "hostlist.h"
+#include "src/common/list.h"
+#include "src/common/hostlist.h"
 #include "elanhosts.h"
 
 /* Default ElanId config file */

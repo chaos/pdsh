@@ -27,7 +27,7 @@
 #ifndef _QSWUTIL_INCLUDED
 #define _QSWUTIL_INCLUDED
 
-#include "hostlist.h"
+#include "src/common/hostlist.h"
 
 typedef struct {
     int prgnum;

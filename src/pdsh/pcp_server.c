@@ -89,8 +89,8 @@ char rcsid[] = "$Id$";
 #include <string.h>
 #include <ctype.h>
 
+#include "src/common/err.h"
 #include "opt.h"
-#include "err.h"
 
 /* The majority of the code below is unchanged from the original
  * rcp code.  Changes include:

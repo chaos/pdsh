@@ -24,25 +24,43 @@
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 \*****************************************************************************/
 
-#ifndef _WCOLL_INCLUDED
-#define _WCOLL_INCLUDED
+#ifndef _MACROS_INCLUDED
+#define _MACROS_INCLUDED
 
-#if     HAVE_CONFIG_H
+#if 	HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include <stdio.h>              /* FILE *     */
+#if HAVE_PTHREAD_H
+#include <pthread.h>
+#endif
 
-#include "src/common/hostlist.h"
+#define LINEBUFSIZE     	2048
+
+#ifndef MAXHOSTNAMELEN
+#define MAXHOSTNAMELEN 64
+#endif
+
+#ifndef MAX
+#define MAX(a,b)	((a) > (b) ? (a) : (b))
+#endif
+#ifndef MIN
+#define MIN(a,b)	((a) < (b) ? (a) : (b))
+#endif
+
+#define IP_ADDR_LEN	4       /* XXX */
+
+#if !HAVE_PTHREAD_SIGMASK && HAVE_SIGTHREADMASK
+#define pthread_sigmask(x, y, z)	sigthreadmask(x, y, z)
+#endif
 
 #ifndef _BOOL_DEFINED
 #define _BOOL_DEFINED
 typedef enum { false, true } bool;
-#endif /* !_BOOL_DEFINED */
-
-hostlist_t read_wcoll(char *, FILE *);
-
 #endif
+
+#endif                          /* !_MACROS_INCLUDED */
+
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
  */

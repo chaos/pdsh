@@ -104,11 +104,11 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #include <strings.h>            /* AIX FD_SET calls bzero */
 #endif
 
-#include "dsh.h"
-#include "err.h"
-#include "list.h"
-#include "mod.h"
-#include "xpoll.h"
+#include "src/common/err.h"
+#include "src/common/list.h"
+#include "src/common/xpoll.h"
+#include "src/pdsh/dsh.h"
+#include "src/pdsh/mod.h"
 
 #define RSH_PORT 514
 

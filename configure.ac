@@ -8,8 +8,8 @@
 
 AC_INIT([pdsh])
 AC_META
-AC_CONFIG_AUX_DIR(auxdir)
-AC_CONFIG_SRCDIR([dsh.h])
+AC_CONFIG_AUX_DIR([config])
+AC_CONFIG_SRCDIR([src/pdsh/dsh.h])
 AC_CANONICAL_SYSTEM
 AC_GPL_LICENSED
 
@@ -22,7 +22,7 @@ fi
 #  Automake support
 # 
 AM_INIT_AUTOMAKE([$PACKAGE], [$VERSION])
-AM_CONFIG_HEADER(config.h)
+AM_CONFIG_HEADER([config.h])
 
 #
 # Checks for programs.
@@ -228,11 +228,20 @@ AH_BOTTOM(
 
 AC_CONFIG_FILES([ 
   Makefile 
+  config/Makefile
+  src/Makefile
+  src/common/Makefile
+  src/qsnet/Makefile
+  src/pdsh/Makefile
+  src/modules/Makefile
   testsuite/Makefile 
-  modules/Makefile
   testsuite/pdsh.test/Makefile 
+  doc/Makefile
+  etc/Makefile
+  scripts/Makefile
   pdsh.spec 
-  pdcp.1 pdsh.1
+  doc/pdcp.1 
+  doc/pdsh.1
  ]
 )
 AC_OUTPUT

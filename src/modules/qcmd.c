@@ -99,14 +99,14 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 
 #include <elan3/elanvp.h>
 
-#include "xmalloc.h"
-#include "xstring.h"
-#include "list.h"
-#include "qswutil.h"
-#include "err.h"
-#include "dsh.h"                /* LINEBUFSIZE */
-#include "mod.h"
-#include "xpoll.h"
+#include "src/common/xmalloc.h"
+#include "src/common/xstring.h"
+#include "src/common/list.h"
+#include "src/common/err.h"
+#include "src/common/macros.h"                /* LINEBUFSIZE */
+#include "src/common/xpoll.h"
+#include "src/pdsh/mod.h"
+#include "src/qsnet/qswutil.h"
 
 #define QSHELL_PORT 523
 
@@ -226,7 +226,7 @@ static int qcmd_signal(int efd, int signum)
 }
 
 
-static static int qcmd_postop(opt_t *opt)
+static int qcmd_postop(opt_t *opt)
 {
     int errors = 0;
 

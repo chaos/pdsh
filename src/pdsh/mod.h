@@ -30,7 +30,7 @@
 #  include <config.h>
 #endif 
 
-#include "opt.h"
+#include "src/pdsh/opt.h"
 
 typedef struct module_components * mod_t;
 

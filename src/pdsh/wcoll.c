@@ -35,14 +35,14 @@
 #endif
 #include <stdlib.h>             /* atoi */
 
-#include "dsh.h"
-#include "err.h"
-#include "list.h"
-#include "xmalloc.h"
-#include "xstring.h"
+#include "src/common/err.h"
+#include "src/common/list.h"
+#include "src/common/xmalloc.h"
+#include "src/common/xstring.h"
+#include "src/common/hostlist.h"
 #include "xpopen.h"
+#include "dsh.h"
 #include "wcoll.h"
-#include "hostlist.h"
 
 /* 
  * Read wcoll from specified file or from the specified FILE pointer.

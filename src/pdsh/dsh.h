@@ -35,10 +35,9 @@
 #include <pthread.h>
 #endif
 
-#include "list.h"
-#include "opt.h"
-
-#define LINEBUFSIZE     	2048
+#include "src/common/macros.h"
+#include "src/common/list.h"
+#include "src/pdsh/opt.h"
 
 #define INTR_TIME		1       /* secs */
 #define WDOG_POLL 		2       /* secs */
@@ -48,28 +47,6 @@
 #define MAX_SP_NODES 		512
 #define MAX_SP_NODES_PER_FRAME	16
 #define MAX_SP_NODE_NUMBER (MAX_SP_NODES * MAX_SP_NODES_PER_FRAME - 1)
-
-#ifndef MAXHOSTNAMELEN
-#define MAXHOSTNAMELEN 64
-#endif
-
-#ifndef MAX
-#define MAX(a,b)	((a) > (b) ? (a) : (b))
-#endif
-#ifndef MIN
-#define MIN(a,b)	((a) < (b) ? (a) : (b))
-#endif
-
-#define IP_ADDR_LEN	4       /* XXX */
-
-#if !HAVE_PTHREAD_SIGMASK && HAVE_SIGTHREADMASK
-#define pthread_sigmask(x, y, z)	sigthreadmask(x, y, z)
-#endif
-
-#ifndef _BOOL_DEFINED
-#define _BOOL_DEFINED
-typedef enum { false, true } bool;
-#endif
 
 typedef enum { DSH_NEW, DSH_RCMD, DSH_READING, DSH_DONE,
         DSH_FAILED } state_t;

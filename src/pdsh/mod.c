@@ -36,17 +36,17 @@
 #include <string.h>
 
 #if STATIC_MODULES
-#include "modules/static_modules.h"
+#include "src/modules/static_modules.h"
 #else
 #include "ltdl.h"
 #endif 
 
+#include "src/common/err.h"
+#include "src/common/xmalloc.h"
+#include "src/common/xstring.h"
+#include "src/common/hostlist.h"
+#include "src/common/list.h"
 #include "mod.h"
-#include "err.h"
-#include "xmalloc.h"
-#include "xstring.h"
-#include "hostlist.h"
-#include "list.h"
 
 /*
  *  Components of a module.

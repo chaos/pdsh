@@ -30,12 +30,12 @@
 #include <assert.h>
 #include <string.h>
 
-#include "wcoll.h"
-#include "mod.h"
-#include "xpopen.h"
-#include "xmalloc.h"
-#include "err.h"
-#include "xstring.h"
+#include "src/pdsh/wcoll.h"
+#include "src/pdsh/mod.h"
+#include "src/common/xpopen.h"
+#include "src/common/xmalloc.h"
+#include "src/common/err.h"
+#include "src/common/xstring.h"
 
 #define SPACES "\t\n "
 

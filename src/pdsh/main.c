@@ -44,9 +44,9 @@
 #include <readline/history.h>
 #endif
 
-#include "err.h"
-#include "xmalloc.h"
-#include "xstring.h"
+#include "src/common/err.h"
+#include "src/common/xmalloc.h"
+#include "src/common/xstring.h"
 #include "dsh.h"
 #include "opt.h"
 #include "mod.h"

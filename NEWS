@@ -3,6 +3,7 @@ documents thos changes that are of interest to users and admins.
 
 * Changes in pdsh 2.0  
 ======================
+ -- Reorganized pdsh source tree.
  -- Modularized pdsh functionality into dynamic runtime "modules."
    - Moved remote command api (e.g. rsh, ssh, etc.) into "rcmd" modules.
    - New pdsh option `-R' for selection of rcmd type at runtime.

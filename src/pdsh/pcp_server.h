@@ -31,7 +31,7 @@
 #  include <config.h>
 #endif 
 
-#include "opt.h"
+#include "src/pdsh/opt.h"
 
 int pcp_server(opt_t *pdsh_opts);
 

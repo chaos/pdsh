@@ -28,9 +28,10 @@
 #  include "config.h"
 #endif
 
-#include "wcoll.h"
-#include "mod.h"
-#include "hostlist.h"
+#include "src/pdsh/wcoll.h"
+#include "src/pdsh/mod.h"
+#include "src/common/hostlist.h"
+#include "src/common/err.h"
 
 #if STATIC_MODULES
 #  define pdsh_module_info machines_module_info

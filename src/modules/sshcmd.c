@@ -60,11 +60,11 @@
 #include <stddef.h>
 #include <sys/socket.h> 
 
-#include "xstring.h"
-#include "err.h"
-#include "dsh.h"
-#include "list.h"
-#include "mod.h"
+#include "src/common/xstring.h"
+#include "src/common/err.h"
+#include "src/common/list.h"
+#include "src/pdsh/dsh.h"
+#include "src/pdsh/mod.h"
 
 #define HBUF_LEN	1024
 

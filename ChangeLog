@@ -1,3 +1,10 @@
+2003-08-28  Mark Grondona <mgrondona@llnl.gov>
+
+        * : Reorganized pdsh code and changed sources accordingly.
+
+        * qshd_common.h, qshd_common.c: Renamed to qshell.[ch], changed	
+	main_common() to qshell() and removed references to ``doit.''
+
 2003-08-19  Albert Chu  <chu11@llnl.gov>
 
 	* mqshd.c (check_interfaces): Skip localhost IP address (127.0.0.1).

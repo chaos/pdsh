@@ -32,12 +32,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "hostlist.h"
-#include "err.h"
-#include "xmalloc.h"
-#include "xpopen.h"
-#include "xstring.h"
-#include "mod.h"
+#include "src/common/hostlist.h"
+#include "src/common/err.h"
+#include "src/common/xmalloc.h"
+#include "src/common/xpopen.h"
+#include "src/common/xstring.h"
+#include "src/pdsh/mod.h"
 
 #if STATIC_MODULES
 #  define pdsh_module_info rms_module_info

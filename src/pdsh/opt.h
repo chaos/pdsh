@@ -33,13 +33,9 @@
 
 #include <sys/types.h>          /* for uid_t */
 
-#include "list.h"
-#include "hostlist.h"
-
-#ifndef _BOOL_DEFINED
-#define _BOOL_DEFINED
-typedef enum { false, true } bool;
-#endif
+#include "src/common/macros.h"
+#include "src/common/list.h"
+#include "src/common/hostlist.h"
 
 #define MAX_USERNAME	9
 #define MAX_GENDATTR	64

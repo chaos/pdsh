@@ -31,10 +31,10 @@
 #include <stdlib.h>
 #include <nodeupdown.h>
 
-#include "hostlist.h"
-#include "err.h"
-#include "xmalloc.h"
-#include "mod.h"
+#include "src/common/hostlist.h"
+#include "src/common/err.h"
+#include "src/common/xmalloc.h"
+#include "src/pdsh/mod.h"
 
 #ifndef GENDERS_ALTNAME_ATTRIBUTE
 #  define GENDERS_ALTNAME_ATTRIBUTE   "altname"
