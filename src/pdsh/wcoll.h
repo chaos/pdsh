@@ -38,6 +38,9 @@
 
 #ifdef HAVE_LIBNODEUPDOWN
 #include <nodeupdown.h>
+#ifndef PDSH_BUFFERLEN
+#define PDSH_BUFFERLEN 65536
+#endif
 #endif
 
 #endif

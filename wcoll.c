@@ -476,13 +476,10 @@ hostlist_t rms_wcoll(void)
 #ifdef HAVE_LIBNODEUPDOWN
 /* get a list of up nodes by using the nodeupdown library */
 hostlist_t get_verified_nodes(int iopt) {
-  hostlist_t new;
-  hostlist_t altnames;
+  char *str = NULL;
+  int str_len = 0;
+  hostlist_t hl;
   nodeupdown_t handle;
-
-  if ((new = hostlist_create(NULL)) == NULL) {
-    errx("%p: error creating hostlist\n");
-  }
 
   if ((handle = nodeupdown_create()) == NULL) {
     errx("%p: error creating nodeupdown handle, %s\n", 
@@ -499,34 +496,39 @@ hostlist_t get_verified_nodes(int iopt) {
     }
   }
 
-  if (nodeupdown_get_up_nodes_hostlist(handle, new) == -1) {
-    errx("%p: error getting up nodes hostlist, %s\n",
-	 nodeupdown_strerror(nodeupdown_errnum(handle)));
-  }
-
-  /* convert to alternate names if necessary */ 
-  if (!iopt) {
-    if ((altnames = hostlist_create(NULL)) == NULL) {
-      errx("%p: error creating hostlist\n");
+  do {
+    free(str);
+    str_len += PDSH_BUFFERLEN;
+    if ((str = (char *)malloc(str_len)) == NULL) {
+      errx("%p: malloc error\n");
     }
+    memset(str, '\0', str_len);
 
-    if (nodeupdown_get_hostlist_alternate_names(handle,
-						new, 
-						altnames) == -1) {
-      errx("%p: error getting node alternate names, %s\n",
-	   nodeupdown_strerror(nodeupdown_errnum(handle)));
+    if (!opt) {
+      if (nodeupdown_get_up_nodes_string(handle, str, str_len) == -1) {
+	errx("%p: error getting up nodes strings, %s\n",
+	     nodeupdown_strerror(nodeupdown_errnum(handle)));
+      }
     }
+    else {
+      if (nodeupdown_get_up_nodes_string_altnames(handle, str, str_len) == -1) {
+	errx("%p: error getting up nodes string altnames, %s\n",
+	     nodeupdown_strerror(nodeupdown_errnum(handle)));
+      }
+    }
+  } while (nodeupdown_errnum(handle) == NODEUPDOWN_ERR_OVERFLOW);
 
-    hostlist_destroy(new);
-    new = altnames;
+  if ((hl = hostlist_create(str)) == NULL) {
+    errx("%p: error creating hostlist\n");
   }
-
+  
   if (nodeupdown_destroy(handle) == -1) {
     errx("%p: error destroying nodeupdown handle, %s\n", 
 	 nodeupdown_strerror(nodeupdown_errnum(handle)));
   }
-  
-  return new;
+
+  free(str);
+  return hl;
 }
 #endif /* HAVE_LIBNODEUPDOWN */
 #endif /* HAVE_LIBGENDERS */
