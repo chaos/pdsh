@@ -5,6 +5,9 @@
 
 	* src/modules/nodeupdown.c (remove_all_down_nodes): Added support
 	for both old and new nodeupdown APIs.
+
+	* pdsh.spec.in: Changed whatsup >= 1.3 requirement to just
+	whatsup.
 	
 2003-12-09  Albert Chu <chu11@llnl.gov>
 
