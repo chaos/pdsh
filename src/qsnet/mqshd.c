@@ -129,6 +129,17 @@ extern int sent_null;
 
 static const char *errmsg = NULL;
 
+static char *munge_parse(char *buf, char *buf_end) {
+    int len = strlen(buf);
+
+    buf += (len + 1);
+    if (buf >= buf_end) {
+        syslog(LOG_ERR, "parser went beyond valid data");
+        errmsg = "Internal Error";
+        return NULL;
+    }
+    return buf;
+}
 
 static int getifrlen(struct ifreq *ifr) {
     int len;
@@ -252,18 +263,6 @@ bad:
     return -1;
 }
 
-static char *munge_parse(char *buf, char *buf_end) {
-    int len = strlen(buf);
-
-    buf += (len + 1);
-    if (buf >= buf_end) {
-        syslog(LOG_ERR, "parser went beyond valid data");
-        errmsg = "parse error";
-        return NULL;
-    }
-    return buf;
-}
-
 static void mqshell_get_args(struct sockaddr_in *fromp, 
                              struct qshell_args *args) 
 {
@@ -292,7 +291,7 @@ static void mqshell_get_args(struct sockaddr_in *fromp,
     memset(&mbuf[0],0,sizeof(mbuf));
     if ((buf_length = fd_null_read_n(0, &mbuf[0], MAX_MBUF_SIZE)) < 0) {
         syslog(LOG_ERR, "%s: %m", "mqshd: bad read error.");
-        errmsg = "read error";
+        errmsg = "Internal System Error";
         goto error_out;
     }
 
@@ -325,7 +324,7 @@ static void mqshell_get_args(struct sockaddr_in *fromp,
                     &cred.pw_uid,&cred.pw_gid)) != EMUNGE_SUCCESS) {
 
         syslog(LOG_ERR, "%s: %s", "munge_decode error", munge_strerror(rv));
-        errmsg = "Internal Failure";
+        errmsg = "Authentication Failure";
         goto error_out;
     }
 
@@ -411,8 +410,7 @@ static void mqshell_get_args(struct sockaddr_in *fromp,
 
         /* Address does not match an interface on this machine */
         if (found == 0) {
-            syslog(LOG_ERR, "Target addr %s does not match this machine", 
-                   dec_addr);
+            syslog(LOG_ERR, "%s: %s", "Munge IP address doesn't match", dec_addr);
             errmsg = "Permission Denied";
             goto error_out; 
         }
@@ -426,7 +424,7 @@ static void mqshell_get_args(struct sockaddr_in *fromp,
     port = strtol(m_head, (char **)NULL, 10);
     if (port == 0 && errno != 0) {
         syslog(LOG_ERR, "%s: %s", "Bad port number from client", m_head);
-        errmsg = "internal Error";
+        errmsg = "Internal Error";
         goto error_out;
     }
 
@@ -444,7 +442,7 @@ static void mqshell_get_args(struct sockaddr_in *fromp,
     randnum = strtol(m_head,(char **)NULL,10);
     if (randnum == 0 && errno != 0) {
         syslog(LOG_ERR, "%s: %s", "mqshd: Bad random number from client.", m_head);
-        errmsg = "internal system error";
+        errmsg = "Internal Error";
         goto error_out;
     }
 
@@ -501,7 +499,7 @@ error_out:
         /* Error may be sent on stdout or stderr streams, depending on if
          * user requested stderr stream.
          */
-        errorsock(args->sock, "mqshd: %s", errmsg);
+        errorsock(args->sock, "mqshd: %s.\n", errmsg);
         goto bad;
     }
 

@@ -3,6 +3,9 @@
 	* src/modules/mcmd.c (mcmd): Fixed an additional error message
 	inconsistency due to a close being called before an errno check.  
 
+	* src/qsnet/mrshd.c (mqshell_get_args): Modified error messages to
+	be more consistent with mrshd error messages in the mrshd project.
+
 	* doc/pdsh.1.in: Added note to LIMITATIONS about how the maximum
 	number of simultaneous jobs that can be executed is limited by the
 	maximum number of concurrent threads that can be spawned.
