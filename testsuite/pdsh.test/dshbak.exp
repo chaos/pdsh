@@ -12,7 +12,7 @@ send "foo2: bar\n"
 send "foo1: baz\n"
 send \004
 expect {
-	-re "foo1-2"			{ fail "$test" }
+	-re "foo\\\[1-2\\\]"		{ fail "$test" }
 	eof	 			{ pass "$test" }
 }
 
@@ -24,7 +24,7 @@ send "foo10: bar\n"
 send "foo11: bar\n"
 send \004
 expect {
-	-re "foo8-11"			{ pass "$test" }
+	-re "foo\\\[8-11\\\]"		{ pass "$test" }
 	eof	 			{ fail "$test" }
 }
 
@@ -36,7 +36,7 @@ send "foo1x10: bar\n"
 send "foo1x11: bar\n"
 send \004
 expect {
-	-re "foo1x8-11"			{ pass "$test" }
+	-re "foo1x\\\[8-11\\\]"		{ pass "$test" }
 	eof	 			{ fail "$test" }
 }
 
@@ -48,6 +48,6 @@ send "foo01: bar\n"
 send "foo02: bar\n"
 send \004
 expect {
-	-re "foo00-03"			{ pass "$test" }
+	-re "foo\\\[00-03\\\]"		{ pass "$test" }
 	eof	 			{ fail "$test" }
 }

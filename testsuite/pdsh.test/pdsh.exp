@@ -1,13 +1,13 @@
 set pdsh "$objdir/pdsh"
 
-expect_after {
-	timeout				{ unresolved "$test" }
-	eof				{ unresolved "$test" }
-}
+#expect_after {
+#	timeout				{ unresolved "$test" }
+#	eof				{ unresolved "$test" }
+#}
 
 # This is required for the following test to work but I have no idea
 # why. Let's blame DejaGNU.
-expect eof
+#expect eof
 
 set test "pdsh: version (if this fails beware that testsuite is outdated)"
 spawn $pdsh -V
@@ -26,38 +26,38 @@ expect  {
 }
 
 set test "pdsh: hostname range expansion works"
-spawn  $pdsh -qw foo\[0-3\],foo\[4-5\]
+spawn  $pdsh -Qw foo\[0-3\]
 expect  {
-	-re "foo\\\[0-5\\\]" 		{ pass "$test" }
+	-re "foo0,foo1,foo2,foo3" 	{ pass "$test" }
 	eof	 			{ fail "$test" }
 }
 
 set test "pdsh: hostname range expansion does not strip leading zeros"
-spawn $pdsh -qw foo\[00-02\]
+spawn $pdsh -Qw foo\[00-02\]
 expect  {
-	-re "foo\\\[00-02\\\]"		{ pass "$test" }
+	-re "foo00,foo01,foo02"		{ pass "$test" }
 	eof	 			{ fail "$test" }
 }
 
 set test "pdsh: hostname range expansion handles mixed size suffixes"
-spawn $pdsh -qw "foo\[9-11\]"
+spawn $pdsh -Qw "foo\[9-11\]"
 expect  {
-	-re "foo\\\[9-11\\\]"		{ pass "$test" }
+	-re "foo9,foo10,foo11"		{ pass "$test" }
 	eof	 			{ fail "$test" }
 }
 
 set test "pdsh: -x option works"
-spawn $pdsh -qw foo\[9-11\] -x foo10
+spawn $pdsh -Qw foo\[9-11\] -x foo10
 expect  {
-	-re "foo\\\[9,11\\\]"		{ pass "$test" }
+	-re "foo9,foo11"		{ pass "$test" }
 	eof	 			{ fail "$test" }
 }
 
 set test "pdsh: ranges can be embedded in wcoll files"
-spawn $pdsh -qw-
+spawn $pdsh -Qw-
 send "foo\[9-11\]\n"
 send \004
 expect  {
-	-re "foo\\\[9-11\\\]"		{ pass "$test" }
+	-re "foo9,foo10,foo11"		{ pass "$test" }
 	eof	 			{ fail "$test" }
 }
