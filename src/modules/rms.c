@@ -83,7 +83,7 @@ struct pdsh_module_option rms_module_options[] =
 /* 
  * Rms module info 
  */
-struct pdsh_module pdsh_module_inf = {
+struct pdsh_module pdsh_module_info = {
   "misc",
   "rms",
   "Jim Garlick <garlick@llnl.gov>",
