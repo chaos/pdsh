@@ -386,7 +386,7 @@ opt_args(opt_t *opt, int argc, char *argv[])
 			opt->rms_nnodes = opt->q_nprocs;
 
 		opt->wcoll = rms_wcoll(opt->rms_partition, opt->rms_nnodes, 
-					opt->q_nprocs);
+				opt->q_nprocs);
 	}
 #endif /* HAVE_RMS */
 #if 	HAVE_ELAN

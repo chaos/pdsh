@@ -28,7 +28,7 @@ list_t sdr_wcoll(bool, bool, bool);
 #if 	HAVE_GENDERS
 list_t read_genders(char *attr, int ropt);
 #endif
-#if 	HAVE_RMS_PMANAGER
+#if 	HAVE_RMS
 list_t rms_wcoll(char *part, int nnodes, int nprocs);
 #endif
 
