@@ -316,7 +316,7 @@ int get_interface_addresses()
       len = sizeof(struct sockaddr);
     else
       len = ifr->ifr_addr.sa_len;
-#else
+#else /* !HAVE_SA_LEN */
     /* For now we only assume AF_INET and AF_INET6, we'll 
      * add others as necessary
      */
@@ -325,13 +325,13 @@ int get_interface_addresses()
     case AF_INET6:
       len = sizeof(struct sockaddr_in6);
       break;
-#endif
+#endif /* HAVE_IPV6 */
     case AF_INET:
     default:
       len = sizeof(struct sockaddr_in);
       break;
     }
-#endif
+#endif /* HAVE_SA_LEN */ 
 
     ptr += sizeof(ifr->ifr_name) + len;
 
