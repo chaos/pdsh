@@ -74,13 +74,51 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #include <dsh.h>
 #include <err.h>
 
+#include "list.h"
+
 #define RSH_PORT 514
 
 #if HAVE_GETHOSTBYNAME_R
 #define HBUF_LEN	1024
 #endif
 
-int xrcmd(char *ahost, char *locuser, char *remuser, char *cmd, int *fd2p)
+void
+xrcmd_init(list_t wcoll)
+{
+	/* not implemented */
+}
+
+/*
+ * Use rcmd backchannel to propagate signals.
+ * 	efd (IN)	file descriptor connected socket (-1 if not used)
+ *	signum (IN)	signal number to send
+ */
+void
+xrcmd_signal(int efd, int signum)
+{
+	char c;
+
+	if (efd >= 0) {
+		/* set non-blocking mode for write - just take our best shot */
+		if (fcntl(efd, F_SETFD, O_NONBLOCK) < 0) 
+			err("%p: fcntl: %m\n");
+		c = (char)signum;
+		write(efd, &c, 1);
+	}
+}
+
+/*
+ * The rcmd call itself.
+ * 	ahost (IN)	remote hostname
+ *	locuser (IN)	local username
+ *	remuser (IN)	remote username
+ *	cmd (IN)	command to execute
+ *	rank (IN)	MPI rank for this process
+ *	fd2p (IN/OUT)	if non-NULL, open stderr backchannel on this fd
+ *	s (RETURN)	socket for stdout/sdin or -1 on failure
+ */
+int 
+xrcmd(char *ahost, char *locuser, char *remuser, char *cmd, int rank, int *fd2p)
 {
 	struct hostent *hp;
 	struct sockaddr_in sin, from;
@@ -97,7 +135,7 @@ int xrcmd(char *ahost, char *locuser, char *remuser, char *cmd, int *fd2p)
 #endif
 	pid = getpid();
 #if HAVE_GETHOSTBYNAME_R
-	bzero(hbuf, HBUF_LEN);
+	memset(hbuf, 0, HBUF_LEN);
 #ifdef __linux
 	pthread_mutex_lock(&mylock); 	/* RH 6.2 - race on /etc/hosts.conf? */
 	/* linux compat args */
@@ -249,5 +287,3 @@ bad:
 	pthread_sigmask(SIG_SETMASK, &oldset, NULL);
 	return (-1);
 }
-
-

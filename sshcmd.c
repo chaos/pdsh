@@ -27,6 +27,7 @@
 #include <xstring.h>
 #include <err.h>
 #include <dsh.h>
+#include <list.h>
 
 #define HBUF_LEN	1024
 
@@ -34,7 +35,8 @@
  * This is a replacement rcmd() function that uses an arbitrary
  * program in place of a direct rcmd() function call.
  */
-static int pipecmd(char *path, char *args[], const char *ahost, int *fd2p)
+static int 
+pipecmd(char *path, char *args[], const char *ahost, int *fd2p)
 {
 	int             cpid;
 	struct hostent  *hp;
@@ -47,7 +49,7 @@ static int pipecmd(char *path, char *args[], const char *ahost, int *fd2p)
 #endif
 	/* validate remote hostname. */
 #if HAVE_GETHOSTBYNAME_R
-        bzero(hbuf, HBUF_LEN);
+        memset(hbuf, 0, HBUF_LEN);
 #ifdef __linux
         pthread_mutex_lock(&mylock);    /* RH 6.2 - race on /etc/hosts.conf? */
 	/* linux compat args */
@@ -133,7 +135,8 @@ static int pipecmd(char *path, char *args[], const char *ahost, int *fd2p)
 	return 0;
 }
 
-int sshcmd(char *ahost, char *luser, char *ruser, char *cmd, int *fd2p)
+int 
+sshcmd(char *ahost, char *luser, char *ruser, char *cmd, int rank, int *fd2p)
 {
 	char *args[] = { "ssh", "-q", "-a", "-x", "-f", "-l", 0, 0, 0, 0 };
 
@@ -144,7 +147,8 @@ int sshcmd(char *ahost, char *luser, char *ruser, char *cmd, int *fd2p)
 	return pipecmd(_PATH_SSH, args, ahost, fd2p);
 }
 
-int sshcmdrw(char *ahost, char *luser, char *ruser, char *cmd, int *fd2p)
+int 
+sshcmdrw(char *ahost, char *luser, char *ruser, char *cmd, int rank, int *fd2p)
 {
 	char *args[] = { "ssh", "-q", "-a", "-x", "-l", 0, 0, 0, 0 };
 
@@ -155,8 +159,21 @@ int sshcmdrw(char *ahost, char *luser, char *ruser, char *cmd, int *fd2p)
 	return pipecmd(_PATH_SSH, args, ahost, fd2p);
 }
 
+void
+sshcmd_init(list_t wcoll)
+{
+	/* not implemented */
+}
+
+void
+sshcmd_signal(int fd, int signum)
+{
+	/* not implemented */
+}
+
 #if 0
-int rshcmd(char *ahost, char *luser, char *ruser, char *cmd, int *fd2p)
+int 
+rshcmd(char *ahost, char *luser, char *ruser, char *cmd, int *fd2p)
 {
 	char *args[] = { "rsh", 0, "-l", 0, 0, 0 };
 

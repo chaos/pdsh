@@ -14,6 +14,8 @@
 
 #include <assert.h>
 
+#include "xmalloc.h"
+
 /*
  * "Safe" version of malloc().
  *   size (IN)	number of bytes to malloc
@@ -21,14 +23,17 @@
  */
 void *xmalloc(size_t size)
 {	
-	char *new;
+	void *new;
+	char *cp = (char *)malloc(size + 1);
 
-	new = (char *)malloc(size);
-	if (!new) {
+	if (!cp) {
 		perror("malloc failed");
 		exit(1);
 	}
-	bzero(new, size);
+	cp[0] = XMALLOC_MAGIC;			/* add "secret" magic cookie */
+
+	new = &cp[1];
+	memset(new, 0, size);
 	return new;
 }
 
@@ -40,12 +45,18 @@ void *xmalloc(size_t size)
  */
 void xrealloc(void **item, size_t newsize)
 {
+	char *cp = (char *)*item - 1;
+
 	assert(*item != NULL && newsize != 0);
-	*item = realloc(*item, newsize);
-	if (!*item) {
+	assert(cp[0] == XMALLOC_MAGIC);		/* magic cookie still there? */
+
+	cp = (char *)realloc(cp, newsize + 1);
+	if (!cp) {
 		perror("realloc failed");
 		exit(1);
 	}
+	assert(cp[0] == XMALLOC_MAGIC);
+	*item = &cp[1];
 }
 
 /* 
@@ -55,8 +66,11 @@ void xrealloc(void **item, size_t newsize)
  */
 void xfree(void **item)
 {
+	char *cp = (char *)*item - 1;
+
 	if (*item != NULL) {
-		free(*item);
+		assert(cp[0] == XMALLOC_MAGIC);	/* magic cookie still there? */
+		free(cp);
 		*item = NULL;
 	}
 }

@@ -114,7 +114,7 @@ void opt_default(opt_t *opt)
 	opt->cmd = NULL;
 	opt->stdin_unavailable = false;
 	opt->delete_nextpass = true;
-	opt->separate_stderr = false;
+	opt->separate_stderr = false; 
 	*(opt->gend_attr) = '\0';
 
 	/* PCP specific */
@@ -384,6 +384,20 @@ bool opt_verify(opt_t *opt)
 			break;
 		}
 	}		
+
+	/* Constraints when running Elan jobs */
+	if (opt->rcmd_type == RCMD_QSHELL) {
+		/* all processes have to start in parallel */
+		if (opt->fanout != DFLT_FANOUT) {
+			err("%p: cannot specify fanout with -E\n");
+			verified = false;
+		}
+		opt->fanout = list_length(opt->wcoll);
+
+		/* proper cleanup of qshd is dependent on stderr backchannel */
+		opt->separate_stderr = true;
+	}
+
 
 	return verified;
 }

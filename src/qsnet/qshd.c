@@ -58,16 +58,17 @@ char rcsid[] =
  *	environment var 2\0
  *	...
  *	environment var (count)\0
- *	elan cap userkey\0
- *	elan prgnum and ctxt\0
+ *	elan userkey\0
+ *	elan prgnum\0
+ *	elan ctxt\0
  *	elan nodelist\0
  *	data
  */
 #include <sys/types.h>
-#include <sys/wait.h>	/* waitpid */
 #include <sys/param.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
+#include <sys/wait.h>
 #include <fcntl.h>
 #include <signal.h>
 
@@ -148,6 +149,20 @@ error(const char *fmt, ...) {
     write(2, buf, strlen(buf));
 }
 
+/* same as above but also syslog the error (jg) */
+static void
+errlog(const char *fmt, ...) {
+    va_list ap;
+    char buf[BUFSIZ], *bp = buf;
+    
+    if (sent_null == 0)	*bp++ = 1;
+    va_start(ap, fmt);
+    vsnprintf(bp, sizeof(buf)-1, fmt, ap);
+    va_end(ap);
+    syslog(LOG_ERR, (sent_null == 0) ? buf + 1 : buf);
+    write(2, buf, strlen(buf));
+}
+
 static void fail(const char *errorstr, 
 		 const char *remuser, const char *hostname, 
 		 const char *locuser,
@@ -214,7 +229,12 @@ static void stderr_parent(int sock, int pype, int pid) {
 	       FD_CLR(sock, &readfrom);
 	       guys--;
 	    }
+#if	HAVE_ELAN
+	    /* pid is the "program description" if using Elan */
+	    else rms_prgsignal(pid, sig);
+#else
 	    else killpg(pid, sig);
+#endif
 	}
 	if (FD_ISSET(pype, &ready)) {
 	    cc = read(pype, buf, sizeof(buf));
@@ -352,8 +372,9 @@ static const char *findhostname(struct sockaddr_in *fromp,
  * cap->Entries, and cap->Bitmap.
  * 	cap (IN/OUT)	Elan capability structure
  * 	instring (IN)	comma separated list of node numbers
+ * Returns 0 on success, -1 on failure.
  */
-static void
+static int
 elan_nodelist(ELAN_CAPABILITY *cap, char *instring)
 {
 	char *scpy, *tok, *s;
@@ -371,6 +392,10 @@ elan_nodelist(ELAN_CAPABILITY *cap, char *instring)
 		s = NULL;
 	}
 	free(scpy);
+	if (cap->HighNode == -1 || cap->LowNode == -1)
+		return -1;
+	/*if (cap->HighNode < cap->LowNode)
+		return -1;*/
 
 	/* set bits corresponding to node#'s, normalized at LowNode = bit 0 */
 	cap->Entries = 0;
@@ -382,6 +407,10 @@ elan_nodelist(ELAN_CAPABILITY *cap, char *instring)
 		cap->Entries++;
 	}
 	free(scpy);
+	if (cap->Entries == 0)
+		return -1;
+
+	return 0;
 }
 #endif
 
@@ -400,16 +429,19 @@ doit(struct sockaddr_in *fromp)
 	char envstr[1024];
 	char tmpstr[1024];
 	int envcount;
+	int prgnum;
 #if	HAVE_ELAN3
 	ELAN_CAPABILITY cap;
 	ELAN3_CTX *ctx;
-	int prgnum;
 #endif
-
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
 	signal(SIGTERM, SIG_DFL);
 
+	/*
+	 * Remote side sends us a stringified port number to send back
+	 * stderr on.  If zero, stderr is folded in with stdout.
+	 */
 	alarm(60);
 	port = getint();
 	alarm(0);
@@ -439,16 +471,22 @@ doit(struct sockaddr_in *fromp)
 	dup2(f, 1);
 	dup2(f, 2);
 #endif
-
+	/* 
+	 * Second, third, and fourth args are remote and local user, and the 
+	 * command to execute under the shell.
+	 */
 	getstr(remuser, sizeof(remuser), "remuser");
 	getstr(locuser, sizeof(locuser), "locuser");
 	getstr(cmdbuf, sizeof(cmdbuf), "command");
 
 	/*
-	 * Here is where we deviate from regular rshd protocol.
- 	 * Accept working dir to chdir into and environment strings.
+	 * Begin arguments added for qshell.
 	 */
+
+	/* read cwd of client - will change to cwd on remote side */
 	getstr(cwd, sizeof(cwd), "cwd");
+
+	/* read environment of client - will replicate on remote side */
 	getstr(tmpstr, sizeof(tmpstr), "envcount");
 	envcount = atoi(tmpstr);
 	while (envcount-- > 0) {
@@ -456,33 +494,55 @@ doit(struct sockaddr_in *fromp)
 		putenv(strdup(envstr));
 	}
 
-	/*
-	 * Now for Elan-specific arguments:  the capability userkey,
-	 * hardware context number, program number, and list of node numbers.
-	 */
-	getstr(tmpstr, sizeof(tmpstr), "key.key.key.key");
+
+	/* init elan capability and read the 128-bit user key */
+	getstr(tmpstr, sizeof(tmpstr), "userkey");
 #if	HAVE_ELAN3
 	elan3_nullcap(&cap);
 	cap.Type = ELAN_CAP_TYPE_BLOCK;
 	cap.Type |= ELAN_CAP_TYPE_BROADCASTABLE;
 	cap.Type |= ELAN_CAP_TYPE_MULTI_RAIL;
 	cap.RailMask = 1;
-	sscanf(tmpstr, "%x.%x.%x.%x", &cap.UserKey.Values[0],
-			&cap.UserKey.Values[1],
-			&cap.UserKey.Values[2],
-			&cap.UserKey.Values[3]);
+	if (sscanf(tmpstr, "%x.%x.%x.%x", &cap.UserKey.Values[0],
+			&cap.UserKey.Values[1], &cap.UserKey.Values[2],
+			&cap.UserKey.Values[3]) != 4) {
+		errlog("error reading userkey: %s", tmpstr);
+		exit(1);
+	}
 #endif
-	getstr(tmpstr, sizeof(tmpstr), "prgnum.ctxt");
+	/* read the "program description" (similar to process group) */
+	getstr(tmpstr, sizeof(tmpstr), "prgnum");
+	if (sscanf(tmpstr, "%x", &prgnum) != 1) {
+		errlog("error reading prgnum: %s", tmpstr);
+		exit(1);
+	}
+
+	/* read elan hw context numbers */
+	getstr(tmpstr, sizeof(tmpstr), "context");
 #if	HAVE_ELAN3
-	sscanf(tmpstr, "%x.%x", &prgnum, &cap.MyContext);
-	cap.LowContext = cap.HighContext = cap.MyContext;
+	if (sscanf(tmpstr, "%x.%x.%x", &cap.LowContext, &cap.HighContext, 
+				&cap.MyContext) != 3) {
+		errlog("error reading context: %s", tmpstr);
+		exit(1);
+	}
 #endif
+	/* read list of node numbers for capability bitmap, low/hi node */
 	getstr(tmpstr, sizeof(tmpstr), "nodelist");
 #if	HAVE_ELAN3
-	elan_nodelist(&cap, tmpstr);	
+	if (elan_nodelist(&cap, tmpstr) < 0) {
+		errlog("error reading nodelist: %s", tmpstr);
+		exit(1);
+	}
 #endif
-	/* Done reading Elan-specific args from socket */
+	/* 
+	 * End qshell arguments.
+	 */
 
+	/* 
+	 * A single \0 written back on the socket indicates success.  Error 
+	 * would be inidicated by a nonzero code followed by error string,
+	 * e.g. through calling error() or fail() above.
+	 */
 	(void) write(2, "\0", 1);
 	sent_null = 1;
 
@@ -496,46 +556,66 @@ doit(struct sockaddr_in *fromp)
 		fail("Permission denied.\n", 
 		     remuser, hostname, locuser, cmdbuf);
 	}
-
-#if	HAVE_ELAN3
-	/*
-	 * Set up program number to apply to all children descending from
-	 * this xrshd process, and associate Elan capability with it.
-	 */
-	if ((ctx = _elan3_init(0)) == NULL) {
-		syslog(LOG_ERR, "_elan3_init() failed: %m");
-		exit(1);
-	}
-	rms_prgdestroy(prgnum);
-	if (rms_prgcreate(prgnum, pwd->pw_uid, 2) < 0) {
-		syslog(LOG_ERR, "rms_prgcreate failed: %m");
-		exit(1);
-	}
-	/* elan3_destroy() implicitly called when we exit */
-	if (elan3_create(ctx, &cap) < 0) {
-		syslog(LOG_ERR, "elan3_create failed: %m");
-		exit(1);
-	}
-	if (rms_prgaddcap(prgnum, 0, &cap) < 0) {
-		syslog(LOG_ERR, "rms_prgaddcap failed: %m");
-		exit(1);
-	}
-	syslog(LOG_DEBUG, "prg %d cap %s bitmap 0x%.8x", prgnum,
-			elan3_capability_string(&cap, tmpstr), cap.Bitmap[0]);
-#endif
-	if (chdir(pwd->pw_dir) < 0) {
-		chdir("/");
-		/*
-		 * error("No remote directory.\n");
-		 * exit(1);
-		 */
-	}
-
 	if (pwd->pw_uid != 0 && !access(_PATH_NOLOGIN, F_OK)) {
 		error("Logins currently disabled.\n");
 		exit(1);
 	}
 
+	/* 
+	 * Fork here.  Parent waits for child to terminate, then cleans up.
+	 */
+	pid = fork();
+	switch (pid) {
+		case -1:	/* error */
+			errlog("fork: %s", strerror(errno));
+			exit(1);
+		case 0:		/* child falls thru */
+			break;
+		default:	/* parent */
+			if (waitpid(pid, NULL, 0) < 0) {
+				errlog("waitpid: %s", strerror(errno));
+				exit(1);
+			}
+			syslog(LOG_DEBUG, "cleaning up prg %d", prgnum);
+			rms_prgsignal(prgnum, SIGKILL);
+			if (rms_prgdestroy(prgnum) < 0) {
+				errlog("rms_prgdestroy: %s", strerror(errno));
+			}
+			exit(0);
+	}
+	/* child continues here */
+
+#if	HAVE_ELAN3
+	/*
+	 * At this point we are authenticated to run as 'locuser' but are 
+	 * still root.
+	 */
+	/* obtain an Elan context to use in call to elan3_create */
+	if ((ctx = _elan3_init(0)) == NULL) {
+		errlog("_elan3_init failed: %s", strerror(errno));
+		exit(1);
+	}
+	/* associate this process and its children with prgnum */
+	if (rms_prgcreate(prgnum, pwd->pw_uid, 2) < 0) { /* 2 cpus */
+		errlog("rms_prgcreate failed: %s", strerror(errno));
+		exit(1);
+	}
+	/* make cap known via rms_getcap/rms_ncaps to members of this prgnum */
+	if (elan3_create(ctx, &cap) < 0) {
+		errlog("elan3_create failed: %s", strerror(errno));
+		exit(1);
+	}
+	if (rms_prgaddcap(prgnum, 0, &cap) < 0) {
+		errlog("rms_prgaddcap failed: %s", strerror(errno));
+		exit(1);
+	}
+	syslog(LOG_DEBUG, "prg %d cap %s bitmap 0x%.8x", prgnum,
+			elan3_capability_string(&cap, tmpstr), cap.Bitmap[0]);
+#endif
+
+	/*
+ 	 * Fork off a process to send back stderr if requested.
+	 */
 	if (port) {
 		if (pipe(pv) < 0) {
 			error("Can't make pipe.\n");
@@ -551,7 +631,11 @@ doit(struct sockaddr_in *fromp)
 			close(1);
 			close(2); 
 			close(pv[1]);
+#if	HAVE_ELAN
+			stderr_parent(sock, pv[0], prgnum);
+#else
 			stderr_parent(sock, pv[0], pid);
+#endif
 			/* NOTREACHED */
 		}
 		setpgrp();
@@ -560,42 +644,70 @@ doit(struct sockaddr_in *fromp)
 		dup2(pv[1], 2);
 		close(pv[1]);
 	}
-	theshell = pwd->pw_shell;
-	if (!theshell || !*theshell) {
-	    /* shouldn't we deny access? */
-	    theshell = _PATH_BSHELL;
-	}
+
+
 #if	HAVE_ELAN3
 	/*
 	 * Assign elan hardware context to current process.
 	 * This is a context index, not the context number.
 	 */
 	if (rms_setcap(0, 0) < 0) {
-		syslog(LOG_ERR, "rms_setcap: %m");
+		errlog("rms_setcap: %s", strerror(errno));
 		exit(1);
 	}
 #endif
+	/* 
+	 * Fork again.  It seems that setcap needs to happen in the parent
+	 * of the user process.
+	 */
+	pid = fork();
+	switch (pid) {
+		case -1:	/* error */
+			errlog("fork: %s", strerror(errno));
+			exit(1);
+		case 0:	 	/* child falls through */
+			break;
+		default:	/* parent...just need to wait */
+			if (waitpid(pid, NULL, 0) < 0) {
+				errlog("waitpid: %s", strerror(errno));
+				exit(1);
+			}
+			exit(0);
+	}
+	/* child falls through here */
+
+	/*
+	 *  Become the locuser, etc. etc. then exec the shell command.
+	 */
+
+	/* set the path to the shell */
+	theshell = pwd->pw_shell;
+	if (!theshell || !*theshell) {
+	    /* shouldn't we deny access? */
+	    theshell = _PATH_BSHELL;
+	}
 #if BSD > 43
 	if (setlogin(pwd->pw_name) < 0) {
-	    syslog(LOG_ERR, "setlogin() failed: %m");
+		errlog("setlogin() failed: %s", 
+				strerror(errno));
 	}
 #endif
 #ifndef USE_PAM
 	/* if PAM, already done */
 	if (setgid(pwd->pw_gid)) {
-		syslog(LOG_ERR, "setgid: %m");
+		errlog("setgid: %s", strerror(errno));
 		exit(1);
 	}
 	if (initgroups(pwd->pw_name, pwd->pw_gid)) {
-		syslog(LOG_ERR, "initgroups: %m");
+		errlog("initgroups: %s", strerror(errno));
 		exit(1);
 	}
 #endif
 	if (setuid(pwd->pw_uid)) {
-		syslog(LOG_ERR, "setuid: %m");
+		errlog("setuid: %s", strerror(errno));
 		exit(1);
 	}
-	/*environ = envinit;*/
+
 	strncat(homedir, pwd->pw_dir, sizeof(homedir)-6);
 	homedir[sizeof(homedir)-1] = 0;
 
@@ -608,58 +720,42 @@ doit(struct sockaddr_in *fromp)
 	username[sizeof(username)-1] = 0;
 
 	shellname = strrchr(theshell, '/');
-	if (shellname) shellname++;
-	else shellname = theshell;
+	if (shellname) 
+		shellname++;
+	else 
+		shellname = theshell;
 
 	endpwent();
+
 	if (paranoid) {
-	    syslog(LOG_INFO|LOG_AUTH, "%s@%s as %s: cmd='%s' cwd='%s'",
-		   remuser, hostname, locuser, cmdbuf, cwd);
+		syslog(LOG_INFO|LOG_AUTH, 
+			"%s@%s as %s: cmd='%s' cwd='%s'",
+			remuser, hostname, locuser, cmdbuf, 
+			cwd);
 	}
 
+
+	/* override USER, HOME, SHELL environment vars */
+	putenv(username);
+	putenv(homedir);
+	putenv(shell);
+
+	/* change to client working dir */
+	if (chdir(cwd) < 0) {
+		errlog("chdir to client working directory: %s", 
+				strerror(errno));
+		exit(1);
+	}
 	/*
 	 * Close all fds, in case libc has left fun stuff like 
 	 * /etc/shadow open.
 	 */
-	for (ifd = getdtablesize()-1; ifd > 2; ifd--) close(ifd);
+	for (ifd = getdtablesize()-1; ifd > 2; ifd--) 
+		close(ifd);
 
-	putenv(username);
-	putenv(homedir);
-	putenv(shell);
-	/*putenv(path);*/
-
-	/*
-	 * JG Added this - chdir to working directory of client.
-	 */
-	if (chdir(cwd) < 0) {
-		perror(cwd);
-		exit(1);
-	}
-
-	/*
-	 * JG Added this fork - needed or rms_setcap above doesn't seem to
-	 * have the desired effect (capability will not be found by execed
-	 * process)
-	 */
-	pid = fork();
-	switch (pid) {
-		case -1:	/* error */
-			syslog(LOG_ERR, "fork: %m");
-			exit(1);
-		case 0:	 	/* child */
-			execl(theshell, shellname, "-c", cmdbuf, 0);
-			perror(theshell);
-			exit(1);
-		default:	/* parent */
-			if (waitpid(pid, NULL, 0) < 0) {
-				syslog(LOG_ERR, "waitpid: %m");
-				exit(1);
-			}
-			/* parent needs to hang around or cap won't be found */
-			/* could do any cleanup here, but none needed? */
-			exit(0);
-	}
-	/*NOTREACHED*/
+	execl(theshell, shellname, "-c", cmdbuf, 0);
+	errlog("failed to exec shell: %s", strerror(errno));
+	exit(1);
 }
 
 static void network_init(int fd, struct sockaddr_in *fromp)
@@ -744,7 +840,7 @@ main(int argc, char *argv[])
 	struct sockaddr_in from;
 	_check_rhosts_file=1;
 
-	openlog("xrshd", LOG_PID | LOG_ODELAY, LOG_DAEMON);
+	openlog("qshd", LOG_PID | LOG_ODELAY, LOG_DAEMON);
 
 	opterr = 0;
 	while ((ch = getopt(argc, argv, OPTIONS)) != EOF) {
@@ -771,7 +867,7 @@ main(int argc, char *argv[])
 
 		case '?':
 		default:
-			syslog(LOG_ERR, "usage: rshd [-%s]", OPTIONS);
+			syslog(LOG_ERR, "usage: qshd [-%s]", OPTIONS);
 			exit(2);
 		}
 	}

@@ -109,18 +109,31 @@ Release 1.5
 
 Release 1.5+
 
-	Call htons on hard-coded port numbers before using them.
+	Call htons on hard-coded port numbers before using (rcmd.c, k4cmd.c)
+
+	Renamed rcmd.c -> xrcmd.c, pipecmd.c -> sshcmd.c.
+
+	Add -Wall to CFLAGS and eliminate all warnings on Linux.
+
+	Updated to latest Chris Dunlap RPM Make target for Linux.
+
+	Support signal propagation via rsh backchannel (dsh.c, xrcmd.c).
+
+	Added a magic cookie check to xmalloc functions.
+
+	Use memset instead of bzero.
 
 	Added qshell support for running Quadrics Elan3 jobs on Linux
-	with -E option and qshd server.  
+	with -E option and qshd server (added qshd subpackage to RPM target).
 
-	Added qshd subpackage to RPM target.
+Todo
 
-	Todo: handle multiple Elan3 tasks per node.
-	Todo: qshd cleanup, packaging.
-	Todo: handle Elan3 multirail.
-	Todo: force fanout == numnodes for -E
+	Consider making -s the default for proper cleanup on ctrl-C.
+	
+	Add -n# to specify number of tasks per node.
 
-	Make compile with -Wall on linux with no warnings.
+	Add option to close stdin on remote side.
 
-	Updated to latest rpm target
+	Autoconf!
+
+	Regression tests on AIX, Tru64, Linux/Alpha, Linux/ia32, Linux/Sparc.

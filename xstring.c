@@ -12,6 +12,7 @@
 #include <conf.h>
 #include <string.h>
 #include <errno.h>
+#include <unistd.h>
 
 #include <assert.h>
 
@@ -28,7 +29,8 @@
  *   str (IN/OUT)	pointer to string
  *   verboten (IN)	list of characters to be zapped (if NULL, zap spaces)
  */
-void xstrcln(char **str, char *verboten)
+void 
+xstrcln(char **str, char *verboten)
 {
 	char *p;
 
@@ -57,7 +59,8 @@ void xstrcln(char **str, char *verboten)
  *   stream (IN)	stream to read from
  *   RETURN		0 = EOF, -1 = error, 1 = connection still open.
  */
-int xfgets(char **str, int *size, FILE *stream)
+int 
+xfgets(char **str, int *size, FILE *stream)
 {
 	int check_err = 0;
 	int rv = 1;
@@ -110,10 +113,67 @@ int xfgets(char **str, int *size, FILE *stream)
 }
 
 /*
+ * Same as above except it uses read() instead of fread().
+ *   str (IN/OUT)	buffer where input is stored (xfgets may resize)
+ *   size (IN/OUT)	current size of buffer
+ *   fd (IN)		file descriptor to read from
+ *   RETURN		0 = EOF, -1 = error, 1 = connection still open.
+ */
+int 
+xfgets2(char **str, int *size, FILE *stream)
+{
+	int check_err = 0;
+	int rv = 1;
+	int nread = 0;
+	int fd = fileno(stream);
+
+	/*
+	 * Initialize buffer space if a pointer-to-null was passed in.
+	 */	
+	if (*str == NULL) {
+		*str = xmalloc(XFGETS_CHUNKSIZE * sizeof(char));
+		*size = XFGETS_CHUNKSIZE;
+	}
+
+	/*
+	 * Read a line's worth of characters, or up to EOF or error.
+	 * Expand buffer if necessary.
+	 */
+	do {
+		/* allocate more buffer space if needed */
+		if (nread == *size - 2) {
+			*size += XFGETS_CHUNKSIZE;
+			xrealloc((void **)str, *size);
+		}
+		/* read a character -- quit loop if we get EOF or error */
+		if ((rv = read(fd, *str + nread, 1)) != 1) {
+			check_err = 1;
+			break;
+		}
+		nread++;
+
+	}  while (*(*str + nread - 1) != '\n');
+
+	*(*str + nread) = '\0'; /* NULL termination */
+
+	/*
+	 * Determine if return value needs to be EOF (0) or error (-1).
+	 */
+	if (check_err) {
+		/* add a terminating \n */
+		if (strlen(*str) > 0)
+			strcat(*str, "\n");
+	}
+
+	return rv;
+}
+
+/*
  * Ensure that a string has enough space to add 'needed' characters.
  * If the string is uninitialized, it should be NULL.
  */
-static void makespace(char **str, int *size, int needed)
+static void 
+makespace(char **str, int *size, int needed)
 {
 	int used;
 
@@ -134,7 +194,8 @@ static void makespace(char **str, int *size, int needed)
  *   size (OUT)		size will be deposited here if non-NULL
  *   RETURN		copy of string
  */
-char *xstrdup(char *str, int *size)
+char *
+xstrdup(char *str, int *size)
 {
 	char *result = NULL;
 	int mysize;
@@ -154,13 +215,15 @@ char *xstrdup(char *str, int *size)
  *   size (IN/OUT)	size of str1 (pointer to in case of expansion)
  *   str2 (IN)		source string
  */
-void xstrcat(char **str1, int *size, char *str2)
+void 
+xstrcat(char **str1, int *size, char *str2)
 {
 	makespace(str1, size, strlen(str2));
 	strcat(*str1, str2);
 }
 
-static void strcatchar(char *str, char c)
+static void 
+strcatchar(char *str, char c)
 {
 	int len = strlen(str);
 
@@ -174,13 +237,15 @@ static void strcatchar(char *str, char c)
  *   size (IN/OUT)	size of str1 (pointer to in case of expansion)
  *   c (IN)		character to add
  */
-void xstrcatchar(char **str, int *size, char c)
+void 
+xstrcatchar(char **str, int *size, char c)
 {
 	makespace(str, size, 1);
 	strcatchar(*str, c);
 }
 
-void xstrerrorcat(char **buf, int *bufsize)
+void 
+xstrerrorcat(char **buf, int *bufsize)
 {
 #if HAVE_STRERROR_R
         char errbuf[64];
@@ -200,10 +265,11 @@ void xstrerrorcat(char **buf, int *bufsize)
  *   path (IN)		path possibly containing '/' characters
  *   RETURN		last component of path
  */
-char *xbasename(char *path)
+char *
+xbasename(char *path)
 {
 	char *p;
 
 	p = strrchr(path , '/');
-	return (p ? p + 1 : path);
+	return (p ? (p + 1) : path);
 }	

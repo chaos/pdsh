@@ -89,13 +89,18 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #include "conf.h"
 #include "xstring.h"
 #include "list.h"
-#if 0
+#if HAVE_ELAN
 #include <elan3/elan3.h>
 #include <elan3/elanvp.h>
-#else
+#endif
+
+#ifndef ELAN_USER_BASE_CONTEXT_NUM
 #define ELAN_USER_BASE_CONTEXT_NUM 0x20
+#endif
+#ifndef ELAN_USER_TOP_CONTEXT_NUM
 #define ELAN_USER_TOP_CONTEXT_NUM 0x7ff
 #endif
+
 #define ELAN_PRG_START	0
 #define ELAN_PRG_END	1024
 
@@ -114,6 +119,23 @@ static uint32_t prgnum;
 static uint32_t ctxt;
 static char *nodelist;
 static int nnodes;
+
+
+/*
+ * Use rcmd backchannel to propagate signals.
+ *      efd (IN)        file descriptor connected socket (-1 if not used)
+ *      signum (IN)     signal number to send
+ */
+void
+qcmd_signal(int efd, int signum)
+{
+        char c;
+
+        if (efd >= 0) {
+                c = (char)signum;
+                write(efd, &c, 1);
+        }
+}
 
 /* 
  * Convert hostname to elan node number.  This version just returns
@@ -224,15 +246,20 @@ env_write(int s, int rank)
 static void
 elan_write(int s)
 {
-	char tmpstr[1024];
+	char tmpstr[128];
 
-	sprintf(tmpstr, "%x.%x.%x.%x", key[0], key[1], key[2], key[3]);
+	/* send capability userkey */
+       	sprintf(tmpstr, "%x.%x.%x.%x", key[0], key[1], key[2], key[3]);
 	(void)write(s, tmpstr, strlen(tmpstr)+1);
 
-	/* XXX would need >1 ctxt if >1 tasks per node */
-	sprintf(tmpstr, "%x.%x", prgnum, ctxt);
+	/* send "program description" */
+	sprintf(tmpstr, "%x", prgnum);
 	(void)write(s, tmpstr, strlen(tmpstr)+1);
 
+	/* XXX need to deal with hi.lo.my values when tasks/cpu > 1 */
+	sprintf(tmpstr, "%x.%x.%x", ctxt, ctxt, ctxt);
+	(void)write(s, tmpstr, strlen(tmpstr)+1);
+							               
 	/* write list of nodes */
 	(void)write(s, nodelist, strlen(nodelist)+1);
 }
@@ -245,12 +272,12 @@ elan_write(int s)
  *	locuser (IN)		local username
  *	remuser (IN)		remote username
  *	cmd (IN)		remote command to execute under shell
- *	fd2p (IN)		if non NULL, return stderr file descriptor here
  *	rank (IN)		MPI rank for this connection
+ *	fd2p (IN)		if non NULL, return stderr file descriptor here
  *	int (RETURN)		-1 on error, socket for I/O on success
  */
 int 
-qcmd(char *ahost, char *locuser, char *remuser, char *cmd, int *fd2p, int rank)
+qcmd(char *ahost, char *locuser, char *remuser, char *cmd, int rank, int *fd2p)
 {
 	struct hostent *hp;
 	struct sockaddr_in sin, from;
@@ -267,7 +294,7 @@ qcmd(char *ahost, char *locuser, char *remuser, char *cmd, int *fd2p, int rank)
 #endif
 	pid = getpid();
 #if HAVE_GETHOSTBYNAME_R
-	bzero(hbuf, HBUF_LEN);
+	memset(hbuf, 0, HBUF_LEN);
 #ifdef __linux
 	pthread_mutex_lock(&mylock); 	/* RH 6.2 - race on /etc/hosts.conf? */
 	/* linux compat args */
@@ -312,7 +339,6 @@ qcmd(char *ahost, char *locuser, char *remuser, char *cmd, int *fd2p, int rank)
 			continue;
 		}
 		if (errno == ECONNREFUSED && timo <= 16) {
-			printf("qcmd: connection refused, retrying\n");
 			(void)sleep(timo);
 			timo *= 2;
 			continue;

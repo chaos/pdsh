@@ -75,16 +75,29 @@ typedef struct thd {
 	int		rc;			/* remote return code (-S) */
 	int		rank;			/* mpi rank */
 	int		nnodes;			/* number of nodes in job */
+	int		fd;			/* stdin/stdout */
+	int		efd;			/* signal/stderr */
 } thd_t;
 
 struct hostent *xgethostbyname(const char *);
 int dsh(opt_t *);
 void set_rcmd_timeout(int);
-int xrcmd(char *, char *, char *, char *, int *);
-int k4cmd (char *, char *, char *, char *, int *);
-int sshcmd (char *, char *, char *, char *, int *);
-int sshcmdrw (char *, char *, char *, char *, int *);
-int qcmd(char *, char *, char *, char *, int *, int);
+
+int xrcmd(char *, char *, char *, char *, int, int *);
+void xrcmd_signal(int, int);
+void xrcmd_init(list_t);
+
+int k4cmd (char *, char *, char *, char *, int, int *);
+void k4cmd_signal(int, int);
+void k4cmd_init(list_t);
+
+int sshcmd (char *, char *, char *, char *, int, int *);
+int sshcmdrw (char *, char *, char *, char *, int, int *);
+void sshcmd_signal(int, int);
+void sshcmd_init(list_t);
+
+int qcmd(char *, char *, char *, char *, int, int *);
 void qcmd_init(list_t);
+void qcmd_signal(int, int);
 
 #endif /* _DSH_INCLUDED */

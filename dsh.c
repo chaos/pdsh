@@ -175,13 +175,43 @@ static void int_block(void)
         pthread_sigmask(SIG_BLOCK, &blockme, NULL);
 }
 
+/*
+ * If the underlying rsh mechanism supports it, forward signals to remote 
+ * process.
+ */
+static void fwd_signal(int signum)
+{
+	int i;
+
+	for (i = 0; t[i].host != NULL; i++) {
+		if (t[i].state == DSH_READING) {
+			switch (t[i].rcmd_type) {
+				case RCMD_BSD:
+					xrcmd_signal(t[i].efd, signum);
+					break;
+				case RCMD_K4:
+#if KRB4
+					k4cmd_signal(t[i].efd, signum);
+#endif
+					break;
+				case RCMD_QSHELL:
+					qcmd_signal(t[i].efd, signum);
+					break;
+				default:
+					break;
+			}
+		}
+	}
+
+}
+
 /* 
  * SIGINT handler.  The program can be terminated by two ^C's within
  * INTR_TIME seconds.  Otherwise, ^C causes a list of connected thread
  * status.  This should only be handled by the "main" thread.  We block
  * SIGINT in other threads.
  */
-static void int_handler(int dummy)
+static void int_handler(int signum)
 {
 	static time_t last_intr = 0;
 
@@ -190,16 +220,19 @@ static void int_handler(int dummy)
 		    INTR_TIME);
 		last_intr = time(NULL);
 		list_slowthreads();
-	} else
+	} else {
+		fwd_signal(signum);
 		errx("%p: interrupt, aborting.\n");
+	}
 }
 
 /*
  * Simpler version of above for -b "batch mode", i.e. pdsh is run by a
  * script, and when the script dies, we should die too.
  */ 
-static void int_handler_justdie(int dummy)
+static void int_handler_justdie(int signum)
 {
+	fwd_signal(signum);
 	errx("%p: batch mode interrupt, aborting.\n");
 }
 
@@ -450,7 +483,8 @@ static void *rcp(void *args)
 	thd_t *a = (thd_t *)args;
 	int result = DSH_DONE; /* the desired outcome */
 	char *cmd = NULL;
-	int cmd_len, fd, i;
+	int cmd_len, i;
+	int *efdp = a->dsh_sopt ? &a->efd : NULL;
 
 	/* construct remote rcp command */
 	xstrcat(&cmd, &cmd_len, _PATH_RCP);
@@ -468,40 +502,40 @@ static void *rcp(void *args)
 	a->start = time(NULL);
 	a->state = DSH_RCMD;
 	switch (a->rcmd_type) {
-#if KRB4
 		case RCMD_K4:
-			fd = k4cmd(a->host, a->luser, a->ruser, cmd, 0);
-			break;
+#if KRB4
+			a->fd = k4cmd(a->host, a->luser, a->ruser, 
+					cmd, a->rank, efdp);
 #endif
+			break;
 		case RCMD_BSD:
-			fd = xrcmd(a->host, a->luser, a->ruser, cmd, 0);
+			a->fd = xrcmd(a->host, a->luser, a->ruser, 
+					cmd, a->rank, efdp);
 			break;
 		case RCMD_QSHELL:
-			fd = qcmd(a->host, a->luser, a->ruser, cmd, 0, 
-					a->rank);
+			a->fd = qcmd(a->host, a->luser, a->ruser, 
+					cmd, a->rank, efdp);
 			break;
 		case RCMD_SSH:
-			fd = sshcmdrw(a->host, a->luser, a->ruser, cmd, 0);
-		default:		/* won't happen */
-			fd = -1;
-			break;
+			a->fd = sshcmdrw(a->host, a->luser, a->ruser, 
+					cmd, a->rank, efdp);
 	}
-	if (fd == -1) 
+	if (a->fd == -1) 
 		result = DSH_FAILED;
 	else {
 		a->state = DSH_READING;	
 		a->connect = time(NULL);
 
 		/* 0: RECV response code */
-		if (rcp_response(fd, a->host) >= 0) {
+		if (rcp_response(a->fd, a->host) >= 0) {
 
 			/* send the files */
 			for (i = 0; i < list_length(a->pcp_infiles); i++)
-				rcp_sendfile(fd, list_nth(a->pcp_infiles, i), 
-				    a->host, a->pcp_popt);
+				rcp_sendfile(a->fd, 
+						list_nth(a->pcp_infiles, i), 
+						a->host, a->pcp_popt);
 		}
-
-		close(fd);
+		close(a->fd);
 	}
 
 	/* update status */
@@ -544,11 +578,12 @@ static int extract_rc(char *buf)
 static void *rsh(void *args)
 {
 	thd_t *a = (thd_t *)args;
-	int rv, fd, efd, maxfd, bufsize = 0;
+	int rv, maxfd, bufsize = 0;
 	FILE *fp, *efp;
 	fd_set readfds, writefds, wantrfds, wantwfds;
 	char *buf = NULL;
 	int result = DSH_DONE; /* the desired outcome */
+	int *efdp = a->dsh_sopt ? &a->efd : NULL;
 
 	int_block();			/* block SIGINT */
 
@@ -557,26 +592,23 @@ static void *rsh(void *args)
 	/* establish the connection */
 	a->state = DSH_RCMD;
 	switch (a->rcmd_type) {
-#if KRB4
 		case RCMD_K4:
-			fd = k4cmd(a->host, a->luser, a->ruser, a->dsh_cmd, 
-			    a->dsh_sopt ? &efd : NULL);
-			break;
+#if KRB4
+			a->fd = k4cmd(a->host, a->luser, a->ruser, 
+					a->dsh_cmd, a->rank, efdp);
 #endif
+			break;
 		case RCMD_BSD:
-			fd = xrcmd(a->host, a->luser, a->ruser, a->dsh_cmd, 
-		    	    a->dsh_sopt ? &efd : NULL);
+			a->fd = xrcmd(a->host, a->luser, a->ruser, 
+					a->dsh_cmd, a->rank, efdp);
 			break;
 		case RCMD_QSHELL:
-			fd = qcmd(a->host, a->luser, a->ruser, a->dsh_cmd, 
-		    	    a->dsh_sopt ? &efd : NULL, a->rank);
+			a->fd = qcmd(a->host, a->luser, a->ruser, 
+					a->dsh_cmd, a->rank, efdp);
 			break;
 		case RCMD_SSH:
-			fd = sshcmd(a->host, a->luser, a->ruser, 
-			    a->dsh_cmd, a->dsh_sopt ? &efd : NULL);
-			break;
-		default:
-			fd = -1;	/* won't happen */
+			a->fd = sshcmd(a->host, a->luser, a->ruser, 
+			    		a->dsh_cmd, a->rank, efdp);
 			break;
 	}
 
@@ -584,7 +616,7 @@ static void *rsh(void *args)
 	 * Copy stdout/stderr to local stdout/stderr, 
 	 * appropriately tagged 
 	 */
-	if (fd == -1) {
+	if (a->fd == -1) {
 		result = DSH_FAILED;	/* connect failed */
 	} else {
 		/* connected: update status for watchdog thread */
@@ -592,26 +624,26 @@ static void *rsh(void *args)
 		a->connect = time(NULL);
 
 		/* use stdio package for buffered I/O */
-		fp = fdopen(fd, "r+");
+		fp = fdopen(a->fd, "r+");
 
 		/* prep for select call */
 		FD_ZERO(&wantrfds);
-		FD_SET(fd, &wantrfds);
+		FD_SET(a->fd, &wantrfds);
 		if (a->dsh_sopt) {	/* separate stderr */
-			efp = fdopen(efd, "r");
-			FD_SET(efd, &wantrfds);
+			efp = fdopen(a->efd, "r");
+			FD_SET(a->efd, &wantrfds);
 		}
 		FD_ZERO(&wantwfds);
 #ifdef DSH_FANOUT_STDIN
 		FD_SET(fd, &wantwfds);
 #endif
-		maxfd = (a->dsh_sopt && efd > fd) ? efd : fd;
+		maxfd = (a->dsh_sopt && a->efd > a->fd) ? a->efd : a->fd;
 
 		/*
 		 * Select / read / report loop.
 		 */
-		while (FD_ISSET(fd, &wantrfds) || FD_ISSET(fd, &wantwfds)
-		    || (a->dsh_sopt && FD_ISSET(efd, &wantrfds))) {
+		while (FD_ISSET(a->fd, &wantrfds) || FD_ISSET(a->fd, &wantwfds)
+		    || (a->dsh_sopt && FD_ISSET(a->efd, &wantrfds))) {
 
 			memcpy(&readfds, &wantrfds, sizeof(fd_set));
 			memcpy(&writefds, &wantwfds, sizeof(fd_set));
@@ -629,11 +661,11 @@ static void *rsh(void *args)
 			}
 
 			/* stdout ready or closed ? */
-			if (FD_ISSET(fd, &readfds)) { 
+			if (FD_ISSET(a->fd, &readfds)) { 
 				rv = xfgets(&buf, &bufsize, fp);
 				if (rv <= 0) { 			/* closed */
-					FD_CLR(fd, &wantrfds);
-					FD_CLR(fd, &wantwfds);
+					FD_CLR(a->fd, &wantrfds);
+					FD_CLR(a->fd, &wantwfds);
 					fclose(fp);
 				}
 				if (rv == -1)  			/* error */
@@ -646,10 +678,10 @@ static void *rsh(void *args)
 			}
 
 			/* stderr ready or closed ? */
-			if (a->dsh_sopt && FD_ISSET(efd, &readfds)) { 
+			if (a->dsh_sopt && FD_ISSET(a->efd, &readfds)) { 
 				rv = xfgets(&buf, &bufsize, efp);
 				if (rv <= 0) {			/* closed */
-					FD_CLR(efd, &wantrfds);
+					FD_CLR(a->efd, &wantrfds);
 					fclose(efp);
 				}
 				if (rv == -1) 			/* error */
@@ -660,8 +692,8 @@ static void *rsh(void *args)
 			}
 
 			/* stdin ready ? */
-			if (FD_ISSET(fd, &writefds)) {
-
+			if (FD_ISSET(a->fd, &writefds)) {
+				/* do something here someday? */
 			}
 		}
 	}
@@ -736,8 +768,15 @@ int dsh(opt_t *opt)
 			qcmd_init(opt->wcoll);
 			break;
 		case RCMD_K4:
+#if KRB4
+			k4cmd_init(opt->wcoll);
+#endif
+			break;
 		case RCMD_SSH:
+			sshcmd_init(opt->wcoll);
+			break;
 		case RCMD_BSD:
+			xrcmd_init(opt->wcoll);
 			break;
 	}
 
@@ -796,6 +835,7 @@ int dsh(opt_t *opt)
 		t[i].pcp_popt = opt->preserve;
 		t[i].pcp_ropt = opt->recursive;
 		t[i].rank = i;
+		t[i].fd = t[i].efd = -1;
 	} 
 	t[i].host = NULL;
 

@@ -58,6 +58,7 @@
 #include "xstring.h"
 #include "dsh.h"
 #include "err.h"
+#include "list.h"
 
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN 64
@@ -65,25 +66,43 @@
 
 #define KCMD_PORT 544
 
-static char krb_realm[REALM_SZ];
-static char krb_name[SNAME_SZ];
-static char krb_instance[INST_SZ];
-
-#if 0
-/* called once before concurrent calls to k4cmd() begin */
-void k4cmd_init(void)
-{
-	/*krb_get_tf_fullname(NULL, krb_name, krb_instance, krb_realm);*/
-
-}
-#endif
-
 extern		errno;
 extern char     *inet_ntoa();
 
-#define	START_PORT	5120	/* arbitrary */
+void 
+k4cmd_init(list_t wcoll)
+{
+	/* not implemented */
+}
 
-int k4cmd(char *ahost, char *locuser, char *remuser, char *cmd, int *fd2p)
+/*
+ * Use rcmd backchannel to propagate signals.
+ *      efd (IN)        file descriptor connected socket (-1 if not used)
+ *      signum (IN)     signal number to send
+ */
+void
+k4cmd_signal(int efd, int signum)
+{
+        char c;
+
+        if (efd >= 0) {
+                c = (char)signum;
+                write(efd, &c, 1);
+        }
+}
+
+/*
+ * The rcmd call itself.
+ *      ahost (IN)      remote hostname
+ *      locuser (IN)    local username
+ *      remuser (IN)    remote username
+ *      cmd (IN)        command to execute
+ *       rank (IN)	MPI rank
+ *      fd2p (IN/OUT)   if non-NULL, open stderr backchannel on this fd
+ *      s (RETURN)      socket for stdout/sdin or -1 on failure
+ */
+int 
+k4cmd(char *ahost, char *locuser, char *remuser, char *cmd, int rank, int *fd2p)
 {
         KTEXT_ST ticket;        /* kerberos IV context */
         CREDENTIALS cred;
