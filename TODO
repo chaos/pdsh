@@ -6,3 +6,4 @@
   hyphens in hostnames are less likely than linux?
 - Optional pdsh.conf file for configurable system wide defaults
 - Improve xpoll() interface??
+- autoconf putenv
