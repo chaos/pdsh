@@ -235,6 +235,8 @@ test "$ac_with_dmalloc"   = "yes" && EXTRA_VERS="${EXTRA_VERS}+dmalloc"
 
 if test -n "$EXTRA_VERS" ; then
    PDSH_VERSION_FULL="$PDSH_VERSION ($EXTRA_VERS)"
+else
+   PDSH_VERSION_FULL="$PDSH_VERSION"
 fi
 
 AC_SUBST(PDSH_VERSION)
