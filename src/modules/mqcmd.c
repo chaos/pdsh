@@ -762,7 +762,7 @@ mqcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
             if (rv < 0)
                 err("%p: %S: mqcmd: Bad read of error from stderr: %m\n", ahost);
             else
-                err("%p: %S: mqcmd: Error: %s\n", ahost, &tmpbuf[0]);
+                err("%p: %S: mqcmd: %s\n", ahost, &tmpbuf[0]);
             close(s3);
             goto bad;
         }
