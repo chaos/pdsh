@@ -14,7 +14,7 @@
 #    This macro must be placed after AC_PROG_CC or equivalent.
 ##*****************************************************************************
 
-# This must be called before checks for any specific modules are done
+# This must be called before checks before any specific modules are done
 AC_DEFUN([AC_STATIC_MODULES_INIT],
 [
   rm -f src/modules/static_modules.h
