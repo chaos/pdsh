@@ -66,6 +66,10 @@ install -s qshd $RPM_BUILD_ROOT/usr/sbin/in.qshd
 /usr/man/man1/pdcp.1.gz
 /usr/man/man1/dshbak.1.gz
 
+%post
+rm -f /var/cache/man/cat1/pdsh.1.*
+rm -f /var/cache/man/cat1/pdcp.1.*
+
 %if %{chaos}
 %files qshd
 %defattr(-,root,root)
