@@ -82,6 +82,15 @@
 /* Define to 1 if `strerror_r' returns a string. */
 #undef HAVE_WORKING_STRERROR_R
 
+/* Define the host CPU type. */
+#undef HOST_CPU
+
+/* Define the host OS type. */
+#undef HOST_OS
+
+/* Define the host vendor type. */
+#undef HOST_VENDOR
+
 /* Define if you are building a production release. */
 #undef NDEBUG
 
@@ -120,6 +129,9 @@
 
 /* Path to ssh */
 #undef _PATH_SSH
+
+/* Define to `int' if <sys/types.h> does not define. */
+#undef socklen_t
 
 #ifdef WITH_DMALLOC
 #  include <stdlib.h>

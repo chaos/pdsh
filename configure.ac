@@ -27,6 +27,15 @@ RELEASE="`perl -ne 'print,exit if s/^\s*RELEASE:\s*(\S*).*/\1/i' $srcdir/META`"
 AC_DEFINE_UNQUOTED(RELEASE, "$RELEASE", [Define the project's release.])
 AC_SUBST(RELEASE)
 
+# Determine the system type.
+AC_CANONICAL_HOST
+AC_SUBST(host_cpu)
+AC_DEFINE_UNQUOTED(HOST_CPU, "$host_cpu", [Define the host CPU type.])
+AC_SUBST(host_os)
+AC_DEFINE_UNQUOTED(HOST_OS, "$host_os", [Define the host OS type.])
+AC_SUBST(host_vendor)
+AC_DEFINE_UNQUOTED(HOST_VENDOR, "$host_vendor", [Define the host vendor type.])
+
 # Check for debug vs. production compilation.
 # This must be done before AC_PROG_CC defines its own defaults.
 AC_MSG_CHECKING(whether debugging is enabled)
@@ -253,6 +262,7 @@ fi
 AC_CHECK_HEADERS([fcntl.h strings.h sys/file.h unistd.h pthread.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
+AC_CHECK_TYPE(socklen_t, int)
 
 # Checks for library functions.
 AC_FUNC_MALLOC
@@ -288,7 +298,7 @@ AH_BOTTOM(
 #endif /* WITH_DMALLOC */]
 )
 
-# XXX write tests for these eventually
+# Should probably be defining tests for these - cheat for now
 AH_BOTTOM(
 [#ifdef _AIX
 #  define HAVE_MTSAFE_GETHOSTBYNAME 1
