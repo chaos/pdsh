@@ -392,7 +392,8 @@ bool opt_verify(opt_t *opt)
 			err("%p: cannot specify fanout with -E\n");
 			verified = false;
 		}
-		opt->fanout = list_length(opt->wcoll);
+		if (verified)
+			opt->fanout = list_length(opt->wcoll);
 
 		/* proper cleanup of qshd is dependent on stderr backchannel */
 		opt->separate_stderr = true;
