@@ -12,9 +12,12 @@ pdsh \- issue commands to groups of hosts in parallel
 .SH DESCRIPTION
 
 .B pdsh
-is a variant of the rsh(1) command.  Unlike rsh(1) which runs commands on
-a single remote host, pdsh(1) can run multiple remote commands in parallel.
-Options are described in TARGET NODE LIST OPTIONS and OTHER OPTIONS below.
+is a variant of the rsh(1) command.  Unlike rsh(1) which runs commands
+on a single remote host, pdsh(1) can run multiple remote commands in
+parallel.  A number of options and features for pdsh are dependent on
+the pdsh modules installed on a system.  See MODULES below for further
+explanation.  Pdsh options are described in TARGET NODE LIST OPTIONS
+and OTHER OPTIONS below.
 .LP
 When pdsh receives SIGINT (ctrl-C), it lists the status of current threads.
 A second SIGINT within one second terminates the program.
@@ -29,6 +32,101 @@ time out on the first command are not contacted for subsequent commands,
 and commands prefaced with an exclamation point will be executed on the local 
 system.
 
+.SH MODULES
+A number of options and features in pdsh exist only if specific pdsh
+modules are installed on the system.  The following is a list of
+modules that can be installed with pdsh and the command line options
+available when that module is installed.  A list of all module types
+installed can be found using the -L option.
+.LP
+Note that the same command line options are offered by several
+different modules.  If two installed modules offer the same command line
+option, pdsh will default to only one of modules.  A list of all
+available command line options can be listed with the -h
+option.
+.LP
+.IP "\fBRCMD MODULES\fR" 0
+.LP
+.B Pdsh 
+originally executed remote commands through rcmd(3) (the library
+routine used by rsh(1)).  Depending on the modules installed, remote
+commands can now be executed through several different methods.  The
+user can select the method using the -R option.  Atleast one of the
+following must be installed on the system in order for pdsh to
+function.  If multiple rcmd modules are installed on the same system,
+the default method selected by pdsh is based on the order listed below.
+A list of all available rcmd modules is output with the -h option.
+.LP
+.B bsd
+.LP
+The bsd module allows users to execute remote commands through rsh(1).  
+.LP
+.B mrsh
+.LP
+The mrsh module allows users to execute remote commands through mrsh(1).
+.LP
+.B ssh
+.LP
+The ssh module allows users to execute remote commands through ssh(1).
+.LP
+.B qshell
+.LP
+The qshell module allows users to execute remote commands through
+Qshell.  Qshell allows users to run MPI jobs over QsNet.  Qshell
+propagates the current working directory, pdsh environment, and Elan
+capabilities to the remote process. The following environment
+variables are also set in the remote process: RMS_RANK, RMS_NODEID,
+RMS_PROCID, RMS_NNODES, and RMS_NPROCS.  The -m and -n options are
+available when this module is installed.
+.LP
+.B mqshell
+.LP
+The mqshell module allows users to execute remote commands through
+Mqshell.  Mqshell is identical to Qshell (explained above), but remote
+executition is first authenticated through the same means as mrsh(1).
+The -m and -n options are available when this module is
+installed.
+.LP
+.IP "\fBFEATURE MODULES\fR" 0
+.LP
+The following modules may be available to pdsh.  They give the
+user a number of other possible options when running pdsh.
+.LP
+.B genders
+.LP
+The genders module allows pdsh to access the genders database through
+the genders(3) library.  The -g, -a, and -i options are available when
+this module is installed.
+.LP
+.B machines
+.LP
+The machines modules loads a list of all cluster nodes from a file
+location specified during compile time.  The -a option is available 
+when this  module is installed.
+.LP
+.B nodeattr
+.LP
+The nodeattr module allows pdsh to access the genders database through
+the nodeattr(1) command.  This module is primarily needed for older
+systems that do not yet have the gender(3) library installed.  The -g,
+-a, and -i options are available when this module is installed.
+.LP
+.B nodeupdown
+.LP
+The nodeupdown module allows pdsh to interact with the nodeupdown(3)
+library.  The -v option is available when this module is
+installed.
+.LP
+.B rms
+.LP
+The rms module allows pdsh to target nodes based on an RMS resource.
+See TARGET NODE LIST OPTIONS below for additional details.
+.LP
+.B SDR
+.LP
+The SDR module supports SDR on IBM SPs.  The -a, -i, -v, and -G
+options are available when this module is installed.
+.LP
 .SH TARGET NODE LIST OPTIONS
 .I "-w host,host,..."
 Target the specified hosts.  No spaces are allowed in the comma-separated
@@ -43,35 +141,40 @@ target node list options such as -a. Hostname ranges may also be specified
 to the -x option (see HOST RANGES section below)
 .LP
 .I "-a"
-Target "all" nodes in the cluster.
-.if @HAVE_SDR@ \{
+Target "all" nodes in the cluster.  Available only if the genders,
+nodeattr, SDR, or machines module is installed.
 .I "-v"
-In combination with -a, eliminate nodes that the SDR thinks are down.
+In combination with -a, eliminate nodes that are down.  Available only
+if the SDR or nodeupdown module is installed.
 .LP
 .I "-G"
-In combination with -a, include all partitions. 
-\}
-.if @HAVE_LIBNODEUPDOWN@ \{
-.I "-v"
-In combination with -a, eliminate nodes that the nodeupdown library thinks are down.
-\} 
-.if @HAVE_GENDERS@ \{
+In combination with -a, include all partitions. Available only 
+the if SDR module is installed.
+.LP
 .I "-g attribute"
-Target nodes that have the specified genders attribute.	
-\}
+Target nodes that have the specified genders attribute.	 Available only
+if the genders or nodeattr module is installed.
 .LP
 .I "-i"
-In conjunction with -a or -g, request canonical hostnames.
-The default is to use reliable hostnames.
+In conjunction with -a or -g, request canonical hostnames.  The
+default is to use reliable hostnames.  Available only if the
+genders or nodeattr module is installed.
 .LP
-.if @HAVE_RMSQUERY@ \{
-If the RMS_RESOURCEID environment variable is set to an allocated RMS
-resource, RMS will be queried for the list of target nodes.
-\}
-If none of the above options are specified, the WCOLL environment variable
-must point to a file that contains a list of nodes, one per line.  
-
+If the rms module is installed, and the RMS_RESOURCEID environment
+variable is set to an allocated RMS resource, RMS will be queried for
+the list of target nodes.  If none of the above options are specified,
+the WCOLL environment variable must point to a file that contains a
+list of nodes, one per line.
 .SH OTHER OPTIONS
+.I "-h" 
+Output usage menu and quit.
+.LP
+.I "-L"
+List info on all loaded modules and exit.
+.LP
+.I "-R name"
+Set rcmd module to name.
+.LP
 .I "-q"
 List option values and the target nodes and exit without action.
 .LP
@@ -94,28 +197,18 @@ be listed in the user\'s .rhosts file (even for root).
 .LP
 .I "-t seconds"
 Set the connect timeout.  Default is @CONNECT_TIMEOUT@ seconds.  
-(This is concurrent with the normal socket-level timeout).
 .LP
 .I "-u seconds"
 Put a limit on the amount of time a remote command is allowed to execute.
 Default is no limit.
 .LP
 .I "-n tasks_per_node"
-Set the number of tasks spawned per node.  The underlying remote shell service
-must support spawning multiple tasks for this to be effective.
-.if @HAVE_ELAN@ \{
-.I "-E"
-Run command using qshell.  Qshell propagates the
-.B pdsh 
-environment and current working directory to remote processes.
-To enable running of MPI jobs on the Quadrics Elan3 interconnect,
-Elan capabilities are propagated and the following environment variables 
-are set: RMS_RANK, RMS_NODEID, RMS_PROCID, RMS_NNODES, and RMS_NPROCS.
+Set the number of tasks spawned per node.  Available only if the
+qshell or mqshell modules is installed.
 .LP
 .I "-m block | cyclic"
-In combination wiht -E, set block versus cyclic allocation of processes 
-to nodes.  Default is block.
-\}
+Set block versus cyclic allocation of processes to nodes.  Default is
+block.  Available only if the qshell or mqshell modules is installed.
 .LP
 .I "-d"
 Include more complete thread status when SIGINT is received, and display
@@ -123,7 +216,6 @@ connect and command time statistics on stderr when done.
 .LP
 .I "-S"
 Return largest of the remote command return values.
-
 .SH "HOST RANGES"
 As noted in sections above, 
 .B pdsh 
@@ -150,43 +242,50 @@ Run command on foo7,foo9,foo10
 Run command on foo0,foo4,foo5
     pdsh -w foo[0-5] -x foo[1-3] command
 
+As a reminder to the reader, some shells will interpret brackets ('['
+and ']') for pattern matching.  Depending on your shell, it may be
+necessary to enclose ranged lists within quotes.  For example, in
+tcsh, the first example above should be executed as:
 
+    pdsh -w "foo[01-05]" command 
 
 .SH "ORIGIN"
 Originally a rewrite of IBM dsh(1) by Jim Garlick <garlick@llnl.gov>
 on LLNL's ASCI Blue-Pacific IBM SP system.  
 It is now also used on Linux clusters at LLNL.
-
 .SH "LIMITATIONS"
 .LP
-.if @HAVE_SSH@ \{
-This copy of pdsh has been configured to use
+When using 
 .B ssh
-which causes the stderr of ssh to be folded in with that of the remote 
+for remote execution, 
+stderr of ssh to be folded in with that of the remote 
 command.  When invoked by pdsh, it is not possible for ssh to prompt for 
 confirmation if a host key changes, prompt for passwords if RSA keys are not 
 configured properly, etc..  Finally, the connect timeout is not adjustable 
 when ssh is used.
-\}
-.if @HAVE_ELAN@ \{
-Qshell assumes Elan3 single rail.
-.LP
-Output from multiple processes per node may be interspersed when using Qshell.
-\}
-.LP
+
+Qshell and Mqshell assumes Elan3 single rail.  Output from multiple
+processes per node may be interspersed when using Qshell or Mqshell.
+
 Host range parsing assumes numerical part of hostname is at the end, e.g.
 specifying foo[0-5]bar will not work.
 
 .SH "FILES"
-.if @HAVE_SSH@ @SSH@
+.if @HAVE_RMSQUERY@ \{
+@RMSQUERY@ 
 .br
-.if @HAVE_RMSQUERY@ @RMSQUERY@
+\}
+.if @HAVE_NODEATTR@ \{
+@NODEATTR@
 .br
-.if @HAVE_GENDERS@ @NODEATTR@
+\}
+.if @HAVE_SDR@ \{
+@SDRGETOBJECTS@
 .br
-.if @HAVE_SDR@ @SDRGETOBJECTS@
+\}
+.if @HAVE_MACHINES@ \{
+@MACHINES@
 .br
-.if @HAVE_MACHINES@ @MACHINES@
-
+\}
 .SH "SEE ALSO"
 rsh(1), ssh(1), dshbak(1), pdcp(1)
