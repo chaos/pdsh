@@ -600,7 +600,7 @@ doit(struct sockaddr_in *fromp)
 #if OLD_ELAN_DRIVER
 #define NUMFDS 2
 #else
-#define NUMFDS 3 /* libelan3 has an fd open */
+#define NUMFDS 5
 #endif
 	for (ifd = getdtablesize()-1; ifd > NUMFDS; ifd--) 
 		close(ifd);
