@@ -1,3 +1,9 @@
+2003-11-19  Albert Chu <chu11@llnl.gov>
+
+	* config/ac_static_modules.m4: Fixed variable names.  Variable
+	names were changed in ac_qshell.m4 and ac_mqshell.m4, but never
+	modified in this particular macro.
+
 2003-11-13  Albert Chu <chu11@llnl.gov>
 
 	* src/qsnet/mqshd.c (getifrlen): Added fix for ia64 portability
