@@ -700,6 +700,12 @@ mqcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
 
   close(s2);
 
+  if (write(s,"",1) < 0) {
+      err("%p: %S: mqcmd: Cannot communicate with daemon to proceed: %m\n", ahost);
+      close(s3);
+      goto bad;
+  }
+
   /*
    * Read from our stderr.  The server should have placed our random number
    * we generated onto this socket.

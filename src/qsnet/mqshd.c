@@ -706,6 +706,7 @@ doit(struct sockaddr_in *fromp)
 
   if (cport != 0) {
     int length;
+    char c;
 
     length = sizeof( struct sockaddr_in );
     sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -722,6 +723,18 @@ doit(struct sockaddr_in *fromp)
       free(mptr);
       exit(1);
     }
+
+    /*
+     * Need to wait for client to accept stderr socket
+     * before proceeding.
+     */
+    m_rv = read(0,&c,1);
+    if (m_rv != 1 || c != '\0') {
+      syslog (LOG_ERR, "%s", "mqshd: Client not ready.");
+      if (errnum != __NONE)
+        goto quit_now;
+    }
+
     if (errnum != __NONE) {
       switch(errnum) {
       case __READ: errorsock(sock, "mqshd: error reading munge blob."  );
@@ -742,7 +755,8 @@ doit(struct sockaddr_in *fromp)
       default:
         break;
       }
-      
+
+    quit_now:      
       if (errnum != __READ && errnum != __MUNGE && errnum != __PAYLOAD)
         goto bad2;
       goto bad;

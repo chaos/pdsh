@@ -10,7 +10,8 @@
 	* "bsd" rcmd renamed to "rsh" rcmd 
 	* Fixed scalability issues with mcmd/mqcmd file descriptors
 	* Fixed scalability issues with select() by using poll()
-	* Fixed race condition in mcmd
+	* Updated rcmd for new mrshd protocol 
+	* Fixed possible race condition in mqcmd/mqshd
 	* Tweaked of configuration, makefiles, manpages, and documents for
 	  readability and portability.
 	
