@@ -145,7 +145,7 @@ bool opt_register(struct pdsh_module_option *opt_table)
         return true;
 
     if (pdsh_options == NULL)
-        _init_pdsh_options(personality);
+        _init_pdsh_options();
     
     /*  Don't register any options if we can't register all the options
      *   in this module 
