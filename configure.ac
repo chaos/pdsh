@@ -184,6 +184,12 @@ AM_CONDITIONAL(WITH_QSW,        [test "$ac_have_qsw"           = "yes"])
 AC_RMSQUERY
 AM_CONDITIONAL([WITH_RMS], [test "$ac_have_rmsquery" = "yes"])
 
+#
+# Determine whether to build SLURM module (support running under SLURM jobid
+#
+AC_SLURM
+AM_CONDITIONAL([WITH_SLURM], [test "$ac_have_slurm" = "yes"])
+
 dnl
 dnl check for whether to include readline support
 dnl

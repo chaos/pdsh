@@ -1,3 +1,11 @@
+2004-02-11  Mark Grondona <mgrondona@llnl.gov>
+
+	* : Added "slurm" module to support running under SLURM allocations.
+
+	* config/ac_slurm.m4, src/modules/slurm.c : Added.
+
+	* src/modules/Makefile.am, configure.ac: Support new slurm module.
+
 2004-02-10  Mark Grondona <mgrondona@llnl.gov>
 
 	* config/ac_rsh.m4 : added file.

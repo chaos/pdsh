@@ -72,6 +72,9 @@ To configure in additional feature modules:
 --with-rms
         Support running pdsh under RMS allocation.
 
+--with-slurm
+	Support running pdsh under SLURM allocation.
+
 --with-fanout=N
 	Specify default fanout (default is 32).
 

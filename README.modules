@@ -79,3 +79,9 @@ Description: Allows list of targets to be built based off RMS_RESOURCEID
 Conflicts:   None
 Requires:    RMS: rmsquery, qsrmslibs
 
+Module:      misc/slurm
+Package:     pdsh-mod-slurm
+Description: Allows list of targets to be built off SLURM_JOBID or `-j jobid'
+Conflictls:  None
+Requires:    slurm
+

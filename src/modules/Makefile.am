@@ -25,13 +25,15 @@ EXTRA_libmods_la_SOURCES = \
 	rms.c \
 	machines.c \
 	sdr.c \
-	k4cmd.c
+	k4cmd.c \
+	slurm.c
 
 libmods_la_LDFLAGS = \
 	$(MRSH_LIBS) \
 	$(NODEUPDOWN_LIBS) \
 	$(KRB_LIBS) \
-	$(GENDERS_LIBS)
+	$(GENDERS_LIBS) \
+	$(SLURM_LIBS)
 
 
 if WITH_SSH
@@ -83,6 +85,10 @@ if WITH_RSH
 RSH_MODULE = xrcmd.la
 endif
 
+if WITH_SLURM
+SLURM_MODULE = slurm.la
+endif
+
 if WITH_STATIC_MODULES
 libmods_la_LIBADD = $(LIBMODS_OBJS)
 libmods_la_DEPENDENCIES = $(LIBMODS_OBJS) 
@@ -99,7 +105,8 @@ pkglib_LTLIBRARIES = \
 	$(RMS_MODULE) \
 	$(MACHINES_MODULE) \
 	$(SDR_MODULE) \
-	$(KRB4_MODULE)
+	$(KRB4_MODULE) \
+	$(SLURM_MODULE)
 endif
 
 xrcmd_la_SOURCES =        xrcmd.c
@@ -129,3 +136,5 @@ rms_la_SOURCES =          rms.c
 rms_la_LDFLAGS =          $(MODULE_FLAGS)
 sdr_la_SOURCES =          sdr.c
 sdr_la_LDFLAGS =          $(MODULE_FLAGS)
+slurm_la_SOURCES =        slurm.c
+slurm_la_LDFLAGS =        $(MODULE_FLAGS) $(SLURM_LIBS)
