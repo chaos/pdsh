@@ -22,6 +22,7 @@
 #include "xstring.h"
 
 static void usage(opt_t *opt);
+static void show_version(void);
 
 #define OPT_USAGE_DSH "\
 Usage: pdsh [-options] command ...\n\
@@ -58,7 +59,7 @@ Usage: dcp [-options] src [src2...] dest\n\
 
 #define DSH_ARGS	"csS"
 #define PCP_ARGS	"pr"
-#define GEN_ARGS	"at:csqf:w:l:u:bI:ide"
+#define GEN_ARGS	"at:csqf:w:l:u:bI:ideV"
 #define KRB4_ARGS	"Rk"
 #define SDR_ARGS	"Gv"
 #define GEND_ARGS	"g:"
@@ -266,6 +267,9 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 			case 'p':
 				opt->preserve = true;
 				break;
+			case 'V':
+				show_version();
+				break;
 			case 'h':	/* display usage message */
 			default:
 				usage(opt);
@@ -417,8 +421,10 @@ void opt_list(opt_t *opt)
 	out("Fanout			%d\n", opt->fanout);
 	out("All nodes       	%s\n", BOOLSTR(opt->allnodes));
 	infile_str = list_join(", ", opt->infile_names);
-	out("Infile(s)		%s\n", infile_str);
-	xfree(&infile_str);
+	if (infile_str) {
+		out("Infile(s)		%s\n", infile_str);
+		xfree(&infile_str);
+	}
 	out("Use alt hostname	%s\n", BOOLSTR(opt->altnames));
 	out("Debugging       	%s\n", BOOLSTR(opt->debug));
 
@@ -427,7 +433,7 @@ void opt_list(opt_t *opt)
 	out("All SDR partitions	%s\n", BOOLSTR(opt->sdr_global));
 
 	out("\n-- Target nodes --\n");
-	wcoll_str = list_join("\n", opt->wcoll);
+	wcoll_str = list_join(",", opt->wcoll);
 	out("%s\n", wcoll_str);
 
 	xfree(&wcoll_str);
@@ -466,4 +472,10 @@ static void usage(opt_t *opt)
 	err(OPT_USAGE_GEND);
 #endif
 	exit(1);
+}
+
+static void show_version(void)
+{
+	printf("pdsh version %s\n", PDSH_VERSION);
+	exit(0);
 }

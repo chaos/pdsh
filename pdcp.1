@@ -2,19 +2,19 @@
 .\"
 .TH PDSH 1 "Release 1.3" "LLNL" "PDSH"
 .SH NAME
-pcp \- copy files to groups of hosts in parallel
+pdcp \- copy files to groups of hosts in parallel
 .SH SYNOPSIS
-.B pcp
+.B pdcp
 .I "[-options] src [src2...] dest"
 .br
 .SH DESCRIPTION
 .B pdsh
 is a variant of the rcp(1) command.  Unlike rcp(1) which copies files to
-a single remote host, pcp(1) can copy files to multiple remote hosts in 
+a single remote host, pdcp(1) can copy files to multiple remote hosts in 
 parallel.  Options are described in TARGET NODE LIST OPTIONS and OTHER OPTIONS 
 below.
 .LP
-When pcp receives SIGINT (ctrl-C), it lists the status of current threads.
+When pdcp receives SIGINT (ctrl-C), it lists the status of current threads.
 A second SIGINT within one second terminates the program.
 
 .SH TARGET NODE LIST OPTIONS
@@ -87,7 +87,7 @@ SDR query command: /usr/lpp/ssp/bin/SDRGetObjects
 Genders query command: /usr/bin/nodeattr
 
 .SH "ORIGIN"
-Pdsh/pcp was originally a rewrite of IBM dsh(1) by Jim Garlick
+Pdsh/pdcp was originally a rewrite of IBM dsh(1) by Jim Garlick
 .br
 <garlick@llnl.gov>
 on LLNL's ASCI Blue-Pacific IBM SP system.  
