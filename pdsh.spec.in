@@ -32,7 +32,7 @@ executables.
 %build
 ./autogen.sh
 %if %chaos
-./configure --prefix=/usr --with-elan
+./configure --prefix=/usr --with-elan --with-readline
 %else
 ./configure --prefix=/usr --with-machines=/usr/local/etc/machines
 %endif
