@@ -78,7 +78,13 @@ tar rpm:
 	rel=`perl -ne 'print,exit if s/^\s*RELEASE:\s*(\S*).*/\1/i' $$meta`; \
 	if test -z "$$rel"; then \
 	  pkg=$$name-$$ver; rel=1; else pkg=$$name-$$ver-$$rel; fi; \
-	mv "$$tmp/$$proj" "$$tmp/$$pkg" || exit 1; \
+        if test -x "$$tmp/$$proj/autogen.sh"; then \
+	  mv "$$tmp/$$proj" "$$tmp/$$proj.bak" || exit 1; \
+	  (cd "$$tmp/$$proj.bak"; ./autogen.sh; ./configure; \
+	   $(MAKE) -s distdir) || exit 1; \
+	  mv "$$tmp/$$proj.bak/$$name-$$ver" "$$tmp/$$pkg" || exit 1; \
+	  rm -rf "$$tmp/$$proj.bak"; \
+	  else mv "$$tmp/$$proj" "$$tmp/$$pkg" || exit 1; fi; \
 	$(MAKE) -s $@-internal mkdir="$$mkdir" tmp="$$tmp" \
 	  proj="$$proj" pkg="$$pkg" ver="$$ver" rel="$$rel" \
 	    && rm -rf $$tmp
