@@ -1,3 +1,7 @@
+2003-08-04 achu
+	* Re-worked mcmd/mqcmd to handle stderr & stdout in one stream
+	* Tagged pdsh-2-0-0-pre3
+	
 2003-07-21 achu
 	* Fixed typos in manpages.
 	* Enabled PAM support in qshell & mqshell daemons
