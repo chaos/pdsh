@@ -142,6 +142,7 @@ AC_DEFUN([AC_MQSH],
        test "$ac_mqsh_munge" = "yes" &&
        test "$ac_mqsh_mrsh" = "yes" ; then
        ac_have_mqsh=yes
+       AC_ADD_STATIC_MODULE("mqcmd")
        AC_DEFINE([HAVE_MQSH], [1], [Define if you have mqsh.])
        PROG_MQSHD=in.mqshd   
        AC_NETTOOLS

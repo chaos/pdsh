@@ -48,9 +48,19 @@ AC_ARG_ENABLE([static-modules],
               ac_static_modules=yes)
 AM_CONDITIONAL(WITH_STATIC_MODULES, test "$ac_static_modules" = "yes")
 
+#
+# SUBDIR ordering different due to dependencies.  A static pdsh
+# executable requires modules to be built first.  Dynamically loaded
+# modules require pdsh convenience libraries to be built first.
+#
 if test "$ac_static_modules" = "yes" ; then
    AC_DEFINE_UNQUOTED(STATIC_MODULES, [1], [Use Static Modules])
+   BASE_SUBDIRS="net-toollib modules . testsuite" 
+   AC_STATIC_MODULES_INIT
+else
+   BASE_SUBDIRS="net-toollib . modules testsuite"
 fi
+AC_SUBST(BASE_SUBDIRS)
 
 # Checks for libraries.
 AC_CHECK_LIB([socket], [socket], LIBS="-lsocket -lnsl $LIBS",, [-lsocket -lnsl])
@@ -65,18 +75,6 @@ AC_DEFINE(WITH_PTHREADS, 1, [Define if you have pthreads])
 LDFLAGS="$LDFLAGS $PTHREAD_CFLAGS"
 CPPFLAGS="$CPPFLAGS $PTHREAD_CFLAGS"
 LIBS="$PTHREAD_LIBS $LIBS"
-
-#
-# Check for kerberos libraries, if they exist, automatically built
-# kerberos module
-#
-AC_CHECK_LIB([krb], [krb_sendauth], [KRB_LIBS="-lkrb -ldes"; withkrb4=yes],
-	[withkrb4=no], [-lkrb -ldes])
-AC_SUBST(KRB_LIBS)
-AM_CONDITIONAL(WITH_KRB4, test $withkrb4 = yes)
-if test "$withkrb4" = "yes" ; then
-    AC_DEFINE([HAVE_KRB4], [1], [Define if you have Kerberos])
-fi
 
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h strings.h sys/file.h unistd.h pthread.h])
@@ -95,7 +93,11 @@ AC_CHECK_FUNCS([strerror pthread_sigmask sigthreadmask])
 AC_FANOUT
 AC_CONNECT_TIMEOUT
 
-# NOTE: support for SDR is automatic if SDRGetObjects is found
+#
+# Test for kerberos
+#
+AC_KRB4
+AM_CONDITIONAL(WITH_KRB4, test  "$withkrb4"     =  "yes")
 
 #
 # Test for support of QSW Elan. If requested and available, build
@@ -116,12 +118,22 @@ AC_MACHINES
 AM_CONDITIONAL(WITH_MACHINES, [test "$ac_with_machines" = "yes"])
 
 #
-# Check for genders and libnodeupdown support
+# Check for nodeattr
+#
+AC_NODEATTR
+AM_CONDITIONAL(WITH_NODEATTR,   [test "$ac_have_nodeattr"      = "yes"])
+
+#
+# Check for genders
 #
 AC_GENDERS
 AM_CONDITIONAL(WITH_LIBGENDERS, [test "$ac_have_libgenders"    = "yes"])
+
+#
+# Check for nodeupdown
+#
+AC_NODEUPDOWN
 AM_CONDITIONAL(WITH_NODEUPDOWN, [test "$ac_have_libnodeupdown" = "yes"])
-AM_CONDITIONAL(WITH_NODEATTR,   [test "$ac_have_nodeattr"      = "yes"])
 
 #
 # Check for libmunge and mrsh
@@ -157,16 +169,9 @@ dnl
 AC_DMALLOC
 
 #
-# Find path to SDRGetObjects.  SDR module is automatically build if found
+# Check for sdr
 #
-AC_PATH_PROG([SDRGETOBJECTS], [SDRGetObjects], [], [/usr/lpp/ssp/bin:$PATH])
-if test -n "$SDRGETOBJECTS"; then
-    AC_DEFINE([HAVE_SDR], [1], [Define if you have SDR])
-    AC_DEFINE_UNQUOTED(_PATH_SDRGETOBJECTS, "$SDRGETOBJECTS", 
-			          [Path to SDRGetObjects])
-fi
-AC_SUBST(HAVE_SDR)
-AC_SUBST(SDRGETOBJECTS)
+AC_SDR
 AM_CONDITIONAL(WITH_SDR, [test -n "$SDRGETOBJECTS"])
 
 #
@@ -176,7 +181,6 @@ AC_PATH_PROG([RCP], [rcp], [], [/usr/bin:$PATH])
 if test -n "$RCP"; then
     AC_DEFINE_UNQUOTED(_PATH_RCP, "$RCP", [Path to rcp])
 fi
-
 
 #
 # Build PDSH_VERSION string

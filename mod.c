@@ -654,11 +654,12 @@ _is_loaded(char *filename)
 static bool
 _dir_ok(struct stat *st)
 {
+#if 0
     if ((st->st_uid != 0) && (st->st_uid != getuid())) 
         return false;
     if ((st->st_mode & S_IWOTH) /* || (st->st_mode & S_IWGRP) */) 
         return false;
-
+#endif
     return true;
 }
 

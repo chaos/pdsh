@@ -33,6 +33,7 @@ AC_DEFUN([AC_MACHINES],
   AC_MSG_RESULT([${ac_with_machines=no}])
   : ${ac_with_machines=no}
   if test "$ac_with_machines" = yes; then
+        AC_ADD_STATIC_MODULE("machines")
         AC_DEFINE([HAVE_MACHINES], [1], [Define if you have machines])
 	AC_DEFINE_UNQUOTED([_PATH_MACHINES], ["$MACHINES"], 
 	        		             [Define to default machines file.])

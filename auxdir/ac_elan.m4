@@ -39,6 +39,7 @@ AC_DEFUN([AC_ELAN],
      if test "$ac_have_elan" = "yes" ; then
         # compile libqsw
         ac_have_qsw=yes
+        AC_ADD_STATIC_MODULE("qcmd")
         ELAN_LIBS="-lrmscall -lelan3"
         AC_DEFINE_UNQUOTED(HAVE_ELAN, [1], [Define for Elan support.])
 	PROG_QSHD=in.qshd

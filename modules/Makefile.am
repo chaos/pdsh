@@ -1,6 +1,6 @@
 # $Id$
 
-CPPFLAGS = -I ..
+INCLUDES =         -I $(top_srcdir)
 
 if WITH_STATIC_MODULES
 
@@ -49,8 +49,8 @@ endif
 libmods_la_SOURCES = \
 	sshcmd.c \
 	xrcmd.c \
-        $(MRSH_FILE) \
-        $(MQSH_FILE) \
+	$(MRSH_FILE) \
+	$(MQSH_FILE) \
 	$(ELAN_FILE) \
 	$(GENDERS_FILE) \
 	$(NODEATTR_FILE) \
@@ -59,7 +59,7 @@ libmods_la_SOURCES = \
 	$(MACHINES_FILE) \
 	$(SDR_FILE) \
 	$(KRB4_FILE)
-
+ 
 libmods_la_LDFLAGS = \
 	$(MRSH_LIBS) \
 	$(NODEUPDOWN_LIBS) \

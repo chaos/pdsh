@@ -47,6 +47,7 @@ AC_DEFUN([AC_MRSH],
       AC_MSG_CHECKING([for mshell in /etc/services])
       if grep "^mshell" /etc/services > /dev/null 2>&1; then
           ac_have_mrsh=yes
+          AC_ADD_STATIC_MODULE("mcmd")
           AC_DEFINE([HAVE_MRSH], [1], [Define if you have mrsh.])
       else
           ac_have_mrsh=no

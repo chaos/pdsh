@@ -2,20 +2,7 @@
 
 AUTOMAKE_OPTIONS =         foreign dist-bzip2
 
-#
-# WITH_STATIC_MODULES, the modules library must be built
-# before pdsh is built, therefore the modules subdirectory
-# is listed before the base directory.
-#
-# !WITH_STATIC_MODULES, some modules require libqsw to be built 
-# from the base directory, therefore the modules subdirectory
-# is listed after the base directory.
-#
-if WITH_STATIC_MODULES
-SUBDIRS =                  net-toollib modules . testsuite 
-else
-SUBDIRS =                  net-toollib . modules testsuite 
-endif
+SUBDIRS =                  @BASE_SUBDIRS@
 
 noinst_PROGRAMS=           pdsh 
 bin_PROGRAMS =		   pdsh.inst
@@ -33,13 +20,6 @@ endif
 libqsw_la_LDFLAGS =        $(ELAN_LIBS)
 EXTRA_libqsw_la_SOURCES =  qswutil.c qswutil.h
 
-#
-# ltdl.* only needed if loading modules dynamically
-#
-if !WITH_STATIC_MODULES
-LTDL_SOURCES = ltdl.h ltdl.c
-endif
-
 pdsh_SOURCES =             $(COMMON_SOURCES) $(LTDL_SOURCES)
 nodist_pdsh_SOURCES =      testconfig.c
 pdsh_inst_SOURCES =        $(COMMON_SOURCES) $(LTDL_SOURCES)
@@ -47,11 +27,11 @@ nodist_pdsh_inst_SOURCES = config.c
 
 if WITH_STATIC_MODULES
 pdsh_LDADD =               $(READLINE_LIBS) 
-# libmods.la must be before libqsw.la, due to linking dependencies
 pdsh_LDFLAGS = 	           modules/libmods.la libqsw.la
 else
 pdsh_LDADD =               $(LIBADD_DL) $(READLINE_LIBS) 
 pdsh_LDFLAGS =             -export-dynamic  
+LTDL_SOURCES =             ltdl.h ltdl.c
 endif
 
 pdsh_inst_LDADD =          $(pdsh_LDADD)
