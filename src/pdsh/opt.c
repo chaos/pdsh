@@ -113,8 +113,10 @@ _init_pdsh_options(pers_t personality)
 }
 
 /*
- *  Check whether option `opt' is available for provisioning
- *    and register the option if so.
+ *  Check whether options in 'opt_table' are available for
+ *    provisioning.  Register the option if the option's personality
+ *    allows it.  'opt_table' points to the first module_option listed
+ *    in the module.
  *
  *  Returns false if option is already used by pdsh or a pdsh module.
  *  Returns true if option was successfully registered.
@@ -123,10 +125,13 @@ bool opt_register(struct pdsh_module_option *opt_table, pers_t personality)
 {
     struct pdsh_module_option *p;
   
+    if (opt_table == NULL)
+        return true;
+
     if (pdsh_options == NULL)
         _init_pdsh_options(personality);
     
-    /* Don't register any options if we can't all the options
+    /* Don't register any options if we can't register all the options
      * in this module 
      */
     for (p = opt_table; p && (p->opt != 0); p++) {
@@ -136,7 +141,7 @@ bool opt_register(struct pdsh_module_option *opt_table, pers_t personality)
     }
 
     for (p = opt_table; p && (p->opt != 0); p++) {
-        /* register only if the personality is correct */
+        /* register only if the personality allows this option */
         if (p->personality & personality) {
             xstrcatchar(&pdsh_options, p->opt);
             if (p->arginfo != NULL)
@@ -169,7 +174,6 @@ void opt_default(opt_t * opt)
     opt->info_only = false;
     opt->test_range_expansion = false;
     opt->wcoll = NULL;
-    opt->progname = NULL;
     opt->connect_timeout = CONNECT_TIMEOUT;
     opt->command_timeout = 0;
     opt->fanout = DFLT_FANOUT;

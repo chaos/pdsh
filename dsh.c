@@ -830,9 +830,9 @@ int dsh(opt_t * opt)
     List pcp_infiles = NULL;
     hostlist_iterator_t itr;
 
-	/*
-	 *   Initialize rcmd modules...
-	 */
+    /*
+     *   Initialize rcmd modules...
+     */
     if (mod_rcmd_init(opt) < 0) {
         err("%p: unable to initialize an rcmd module\n");
 		exit(1);

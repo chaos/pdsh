@@ -256,7 +256,7 @@ _mod_opts_ok(mod_t mod, pers_t personality)
  *  if STATIC_MODULES 
  *     set pdsh_module (pmod) pointer to point to internal structure.
  *     After this is done, rest of the mod.c functions work essentially
- *     the same.
+ *     the same as dynamically loadable modules.
  *
  *  if !STATIC_MODULES
  *     Load a single module from file `fq_path' and append to module_list.

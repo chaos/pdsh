@@ -48,7 +48,7 @@ typedef enum { false, true } bool;
 
 #define RC_FAILED	254     /* -S exit value if any hosts fail to connect */
 
-/* set to 0x1 and 0x2 so we can do bitwise operations */
+/* set to 0x1 and 0x2 so we can do bitwise operations with DSH and PCP */
 typedef enum { DSH = 0x1, PCP = 0x2} pers_t;
 
 typedef struct {
@@ -121,8 +121,9 @@ struct pdsh_module_option {
         char   *arginfo;    /* one word descr of arg if option takes one 
                                If NULL, option takes no arg              */
 	char   *descr;      /* short description of option               */
-        int     personality;    /* personality module is suitable for.  May be set
-                                 * to DSH, PCP, or DSH | PCP 
+        int     personality;    /* personality option is suitable for.
+                                 * May be set to DSH, PCP, or 
+                                 * DSH |PCP
                                  */  
 	optFunc f;          /* callback function for option processing   */
 };

@@ -54,7 +54,7 @@ int mod_exit(void);
  *  Load all modules from specified directory that fit a specified
  *    personality (DSH or PCP). Directory must be owned by the current
  *    user and not writable by any other user.  After successfully
- *    loading each module, the module's "init" routine is called, module
+ *    loading each module, the module's "init" routine is called and module
  *    command line options are registered.  The module is not loaded if init 
  *    returns < 0 or any module option command be registered.
  *
