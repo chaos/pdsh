@@ -9,8 +9,10 @@ include $(top_srcdir)/config/Make-inc.mk
 INCLUDES = \
     -I$(top_srcdir)
 
+if WITH_QSW
 noinst_LTLIBRARIES = \
-    libqsw.la
+	libqsw.la
+endif
 
 EXTRA_PROGRAMS = \
     in.qshd \
@@ -44,17 +46,8 @@ in_mqshd_LDADD = \
 libqsw_la_LDFLAGS = \
     $(ELAN_LIBS)
 
-QSWSOURCES = \
+libqsw_la_SOURCES = \
     qswutil.c \
     qswutil.h \
     elanhosts.c \
     elanhosts.h
-
-if WITH_QSW
-libqsw_la_SOURCES = \
-    $(QSWSOURCES)
-endif
- 
-EXTRA_libqsw_la_SOURCES = \
-    $(QSWSOURCES)
-

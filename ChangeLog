@@ -1,3 +1,9 @@
+2004-02-25  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/modules/Makefile.am : Build libmods convenience lib only as needed.
+
+	* src/qsnet/Makefile.am : Build libqsw convenience lib only as needed.
+
 2004-02-24  Mark Grondona <mgrondona@llnl.gov>
 	
 	* configure.ac : Export WITH_GNU_LD Automake conditional.

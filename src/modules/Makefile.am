@@ -10,43 +10,6 @@ AUTOMAKE_OPTIONS = foreign
 
 INCLUDES =         -I$(top_srcdir)
 
-if WITH_GNU_LD
-VERSION_SCRIPT =   version.map
-OTHER_FLAGS =      -Wl,--version-script=$(VERSION_SCRIPT)
-endif
-
-if WITH_STATIC_MODULES
-MODULE_FLAGS = 
-else
-MODULE_FLAGS =     -module -avoid-version $(OTHER_FLAGS)
-endif
-
-nodist_libmods_la_SOURCES = $(top_builddir)/static_modules.h
-noinst_LTLIBRARIES =        libmods.la
-
-EXTRA_libmods_la_SOURCES = \
-	xrcmd.c \
-	sshcmd.c \
-	mcmd.c  \
-	mqcmd.c \
-	qcmd.c  \
-	genders.c \
-	nodeattr.c \
-	nodeupdown.c \
-	rms.c \
-	machines.c \
-	sdr.c \
-	k4cmd.c \
-	slurm.c
-
-libmods_la_LDFLAGS = \
-	$(top_builddir)/src/qsnet/libqsw.la \
-	$(MRSH_LIBS) \
-	$(NODEUPDOWN_LIBS) \
-	$(KRB_LIBS) \
-	$(GENDERS_LIBS) \
-	$(SLURM_LIBS)
-
 
 if WITH_SSH
 SSH_MODULE = sshcmd.la
@@ -101,9 +64,22 @@ if WITH_SLURM
 SLURM_MODULE = slurm.la
 endif
 
+if WITH_GNU_LD
+VERSION_SCRIPT = \
+	version.map
+OTHER_FLAGS = \
+	-Wl,--version-script=$(VERSION_SCRIPT)
+endif
+
 if WITH_STATIC_MODULES
-libmods_la_LIBADD = $(LIBMODS_OBJS)
-libmods_la_DEPENDENCIES = $(LIBMODS_OBJS) 
+noinst_LTLIBRARIES = \
+	libmods.la
+
+libmods_la_LIBADD = \
+	$(LIBMODS_OBJS)
+
+libmods_la_DEPENDENCIES = \
+	$(LIBMODS_OBJS) 
 else
 pkglib_LTLIBRARIES = \
 	$(RSH_MODULE) \
@@ -123,8 +99,40 @@ pkglib_LTLIBRARIES = \
 BUILT_SOURCES = \
 	$(VERSION_SCRIPT)
 
+MODULE_FLAGS = \
+	-module -avoid-version $(OTHER_FLAGS)
 endif
 
+nodist_libmods_la_SOURCES = \
+	$(top_builddir)/static_modules.h
+
+EXTRA_libmods_la_SOURCES = \
+	xrcmd.c \
+	sshcmd.c \
+	mcmd.c  \
+	mqcmd.c \
+	qcmd.c  \
+	genders.c \
+	nodeattr.c \
+	nodeupdown.c \
+	rms.c \
+	machines.c \
+	sdr.c \
+	k4cmd.c \
+	slurm.c
+
+if WITH_QSW
+QSNET_LIBS = \
+	$(top_builddir)/src/qsnet/libqsw.la 
+endif
+	
+libmods_la_LDFLAGS = \
+	$(QSNET_LIBS) \
+	$(MRSH_LIBS) \
+	$(NODEUPDOWN_LIBS) \
+	$(KRB_LIBS) \
+	$(GENDERS_LIBS) \
+	$(SLURM_LIBS)
 
 xrcmd_la_SOURCES =        xrcmd.c 
 xrcmd_la_LDFLAGS =        $(MODULE_FLAGS)
