@@ -60,6 +60,13 @@ expect  {
 	eof				{ fail "$test" }
 }
 
+set test "pdsh: -x option works with non-numeric suffixes (gnats:120)"
+spawn $pdsh -Qw fooi,fooj,foo\[0-5\] -x fooj,fooi,foo2
+expect  {
+	-re "foo0,foo1,foo3,foo4,foo5"	{ pass "$test" }
+	eof				{ fail "$test" }
+}
+
 set test "pdsh: ranges can be embedded in wcoll files"
 spawn $pdsh -Qw-
 send "foo\[9-11\]\n"

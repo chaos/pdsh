@@ -527,7 +527,10 @@ hostrange_create(char *prefix, unsigned long lo, unsigned long hi, int width)
 static inline unsigned long hostrange_count(hostrange_t hr)
 {
 	assert(hr != NULL);
-	return hr->hi - hr->lo + 1;
+	if (hr->singlehost)
+		return 1;
+	else
+		return hr->hi - hr->lo + 1;
 }
 
 /* Copy a hostrange object
@@ -1570,7 +1573,11 @@ int hostlist_delete(hostlist_t hl, char *hosts)
 {
 	int n = 0;
 	char *hostname;
-	hostlist_t hltmp = hostlist_create(hosts);
+	char *hostsp = hosts;
+	hostlist_t hltmp;
+
+	if (!(hltmp = hostlist_create(hostsp)))
+		seterrno_ret(EINVAL, 0);
 
 	while ((hostname = hostlist_pop(hltmp)) != NULL) {
 		n += hostlist_delete_host(hl, hostname);
@@ -1605,11 +1612,13 @@ int hostlist_delete_nth(hostlist_t hl, int n)
 		int num_in_range = hostrange_count(hl->hr[i]);
 		hostrange_t hr = hl->hr[i];
 
-		if (n <= (num_in_range + count)) {
+		if (n <= (num_in_range - 1 + count)) {
 			unsigned long num = hr->lo + n - count;
-			hostrange_t new = hostrange_delete_host(hr, num);
+			hostrange_t new;
 
-			if (new) {
+			if (hr->singlehost) { /* this wasn't a range */
+				hostlist_delete_range(hl, i);
+			} else if ((new = hostrange_delete_host(hr, num))) {
 				hostlist_insert_range(hl, new, i + 1);
 				hostrange_destroy(new);
 			} else if (hostrange_empty(hr))
@@ -1651,7 +1660,10 @@ int hostlist_find(hostlist_t hl, char *hostname)
 
 	for (i = 0, count = 0; i < hl->nranges; i++) {
 		if (hostrange_hn_within(hl->hr[i], hn)) {
-			ret = count + hn->num - hl->hr[i]->lo;
+			if (hostname_suffix_is_valid(hn))
+				ret = count + hn->num - hl->hr[i]->lo;
+			else
+				ret = count;
 			goto done;
 		} else
 			count += hostrange_count(hl->hr[i]);
@@ -2265,33 +2277,6 @@ size_t hostset_ranged_string(hostset_t set, size_t n, char *buf)
 size_t hostset_deranged_string(hostset_t set, size_t n, char *buf)
 {
 	return hostlist_deranged_string(set->hl, n, buf);
-}
-
-
-/* getnodename - equivalent to gethostname, but return only the first component of the fully 
- *	qualified name (e.g. "linux123.foo.bar" becomes "linux123") */
-int
-getnodename (char *name, size_t len)
-{
-	int error_code, name_len;
-	char *dot_ptr, path_name[1024];
-
-	error_code = gethostname (path_name, sizeof(path_name));
-	if (error_code)
-		return error_code;
-
-	dot_ptr = strchr (path_name, '.');
-	if (dot_ptr == NULL)
-		dot_ptr = path_name + strlen(path_name);
-	else
-		dot_ptr[0] = '\0';
-
-	name_len = (dot_ptr - path_name);
-	if (name_len > len)
-		return ENAMETOOLONG;
-
-	strcpy (name, path_name);
-	return 0;
 }
 
 #if TEST_MAIN 

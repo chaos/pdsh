@@ -42,6 +42,8 @@ pdsh_SOURCES =			\
 	xrcmd.c			\
 	$(SSHCMD_SRC) $(ELAN_SRC) $(K4CMD_SRC)
 
+pdsh_LDADD = $(READLINE_LIBS)
+
 # Extra sources included conditionally above must also be listed here
 EXTRA_pdsh_SOURCES =		\
 	qswutil.c qswutil.h	\

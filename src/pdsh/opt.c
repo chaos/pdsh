@@ -30,7 +30,9 @@
 #include "config.h"
 #endif
 
-/*#include <string.h>*/	/* strcpy */
+#if HAVE_STRING_H
+#include <string.h>	/* strcpy */
+#endif
 #include <stdlib.h>	/* getenv */
 #include <pwd.h>	/* getpwuid */
 
@@ -403,7 +405,11 @@ opt_args(opt_t *opt, int argc, char *argv[])
 
 	/* handle -x option */
 	if (exclude_buf != NULL && opt->wcoll) {
-		hostlist_delete(opt->wcoll, exclude_buf);
+		if (hostlist_delete(opt->wcoll, exclude_buf) == 0) {
+			errx("%p: Invalid argument to -x: `%s'\n", 
+					exclude_buf);
+			exit(1);
+		}
 		Free((void **)&exclude_buf);
 	}
 }
