@@ -1,28 +1,26 @@
 /*****************************************************************************\
- *
  *  $Id$
- *  $Source$
- *
- *  Copyright (C) 1998-2002 The Regents of the University of California.
+ *****************************************************************************
+ *  Copyright (C) 2001-2002 The Regents of the University of California.
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
- *  Written by Jim Garlick (garlick@llnl.gov>
- *  UCRL-CODE-980038
+ *  Written by Jim Garlick <garlick@llnl.gov>.
+ *  UCRL-CODE-2003-005.
  *  
- *  This file is part of PDSH, a parallel remote shell program.
+ *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
  *  
- *  PDSH is free software; you can redistribute it and/or modify it under
+ *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
  *  
- *  PDSH is distributed in the hope that it will be useful, but WITHOUT 
- *  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
- *  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License 
- *  for more details.
+ *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
+ *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ *  details.
  *  
  *  You should have received a copy of the GNU General Public License along
- *  with PDSH; if not, write to the Free Software Foundation, Inc.,
+ *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 \*****************************************************************************/
 
@@ -31,13 +29,13 @@
 #endif
 
 #if	HAVE_UNISTD_H
-#include <unistd.h>	/* for R_OK, access() */
+#include <unistd.h>             /* for R_OK, access() */
 #endif
 
 #include <stdio.h>
-#include <limits.h>	/* ARG_MAX */
-#include <sys/wait.h>   /* waitpid() */
-#include <string.h>     /* strcmp() */
+#include <limits.h>             /* ARG_MAX */
+#include <sys/wait.h>           /* waitpid() */
+#include <string.h>             /* strcmp() */
 #include <stdlib.h>
 #include <errno.h>
 
@@ -54,9 +52,9 @@
 extern int errno;
 
 static struct pid {
-	struct pid *next;
-	FILE *fp;
-	pid_t pid;
+    struct pid *next;
+    FILE *fp;
+    pid_t pid;
 } *pidlist;
 
 /* forward declaration */
@@ -81,81 +79,81 @@ static list_t _parse_command_with_quotes(char *str);
  * mode(IN)	"r" for reading, "w" (or anything else) for writing
  * OUT		FILE * to output/input stream of child process
  */
-FILE *
-xpopen(char *cmd, char *mode)
+FILE *xpopen(char *cmd, char *mode)
 {
-	struct pid *cur;
-	int fds[2], j, read, fd;
-	pid_t pid;
-	char *av[ARG_MAX+1];
-	int maxfd = sysconf(_SC_OPEN_MAX);
-        list_t args = _parse_command_with_quotes(cmd);
+    struct pid *cur;
+    int fds[2], j, read, fd;
+    pid_t pid;
+    char *av[ARG_MAX + 1];
+    int maxfd = sysconf(_SC_OPEN_MAX);
+    list_t args = _parse_command_with_quotes(cmd);
 
-	if ((*mode != 'r' && *mode != 'w') || mode[1] != '\0') {
-		errno = EINVAL;
-		return (NULL);
-	}
+    if ((*mode != 'r' && *mode != 'w') || mode[1] != '\0') {
+        errno = EINVAL;
+        return (NULL);
+    }
 
-	cur = Malloc(sizeof(struct pid));
+    cur = Malloc(sizeof(struct pid));
 
-        read = (*mode == 'r');
+    read = (*mode == 'r');
 
-	/* build up argument vector */
-	j=0;
-	while ((av[j++] = list_shift(args)) != NULL) {;}
-	av[++j] = NULL;
-	
+    /* build up argument vector */
+    j = 0;
+    while ((av[j++] = list_shift(args)) != NULL) {;
+    }
+    av[++j] = NULL;
 
-	if (pipe(fds) < 0) {
-		close(fds[0]);
-		close(fds[1]);
-		Free((void **)&cur);
-		errx("%p: unable to dup stdout\n");
-	}
 
-	switch (pid = fork()) {
-	case -1:			/* Error. */
-		close(fds[0]);
-		close(fds[1]);
-		Free((void **)&cur);
-		return (NULL);
+    if (pipe(fds) < 0) {
+        close(fds[0]);
+        close(fds[1]);
+        Free((void **) &cur);
+        errx("%p: unable to dup stdout\n");
+    }
 
-	case 0:				/* child */
+    switch (pid = fork()) {
+    case -1:                   /* Error. */
+        close(fds[0]);
+        close(fds[1]);
+        Free((void **) &cur);
+        return (NULL);
 
-		close(fds[read ? 0 : 1]);
-		dup2(fds[read ? 1 : 0], read ? STDOUT_FILENO : STDIN_FILENO);
+    case 0:                    /* child */
 
-		for (fd = STDERR_FILENO + 1; fd < maxfd; fd++)
-			close(fd);
+        close(fds[read ? 0 : 1]);
+        dup2(fds[read ? 1 : 0], read ? STDOUT_FILENO : STDIN_FILENO);
 
-		setgid(getgid());
-		setuid(getuid());
+        for (fd = STDERR_FILENO + 1; fd < maxfd; fd++)
+            close(fd);
 
-		do {
-			if (access(av[0], F_OK) != 0 && errno != EINTR) {
-				fprintf(stderr, "%s: not found\n", av[0]); 
-				fflush(stderr);
-			}
-		} while (errno == EINTR);
+        setgid(getgid());
+        setuid(getuid());
 
-		execv(av[0], av);
+        do {
+            if (access(av[0], F_OK) != 0 && errno != EINTR) {
+                fprintf(stderr, "%s: not found\n", av[0]);
+                fflush(stderr);
+            }
+        } while (errno == EINTR);
 
-		exit(errno);
-	} /* switch() */
+        execv(av[0], av);
 
-	/* free av */
-	while( av[j++] != NULL) 
-		Free((void **)&av[j]);
+        exit(errno);
+    }                           /* switch() */
 
-	close(fds[read ? 1 : 0]);
+    /* free av */
+    while (av[j++] != NULL)
+        Free((void **) &av[j]);
 
-	/* insert child pid into pidlist */
-	cur->fp = fdopen(fds[read ? 0 : 1], mode);
-	cur->pid = pid;
-	cur->next = pidlist;
-	pidlist = cur;
+    close(fds[read ? 1 : 0]);
 
-	return (cur->fp); 
+    /* insert child pid into pidlist */
+    cur->fp = fdopen(fds[read ? 0 : 1], mode);
+    cur->pid = pid;
+    cur->next = pidlist;
+    pidlist = cur;
+
+    return (cur->fp);
 
 }
 
@@ -171,36 +169,35 @@ xpopen(char *cmd, char *mode)
  *              This is different from pclose, which returns the 
  *              unmodified status from waitpid.
  */
-int 
-xpclose(FILE *f)
+int xpclose(FILE * f)
 {
-	int status;
-	pid_t pid;
-	struct pid *cur, *last;
+    int status;
+    pid_t pid;
+    struct pid *cur, *last;
 
-	fclose(f);
+    fclose(f);
 
-	for (last = NULL, cur = pidlist; cur; last = cur, cur = cur->next)
-		if (f == cur->fp)
-			break;
+    for (last = NULL, cur = pidlist; cur; last = cur, cur = cur->next)
+        if (f == cur->fp)
+            break;
 
-	if (cur == NULL)
-		return(-1);
+    if (cur == NULL)
+        return (-1);
 
-	do {
-		pid = waitpid(cur->pid, &status, 0);
-	} while (pid == -1 && errno == EINTR);
+    do {
+        pid = waitpid(cur->pid, &status, 0);
+    } while (pid == -1 && errno == EINTR);
 
-	if (last == NULL)
-		pidlist = cur->next;
-	else
-		last->next = cur->next;
+    if (last == NULL)
+        pidlist = cur->next;
+    else
+        last->next = cur->next;
 
-	Free((void **)&cur);
+    Free((void **) &cur);
 
-	return (WIFEXITED(status) != 0) ? WEXITSTATUS(status) : -1;
+    return (WIFEXITED(status) != 0) ? WEXITSTATUS(status) : -1;
 }
-	
+
 /* parse_commaned_with_quotes(): 
  * helper function for xpopen
  *
@@ -212,57 +209,58 @@ xpclose(FILE *f)
  * (OUT)	list of arguments, strings enclosed in "" are treated as
  * 		one arg. 
  */
-static list_t 
-_parse_command_with_quotes(char *str)
+static list_t _parse_command_with_quotes(char *str)
 {
-	list_t args = list_new();
-	char *c, *lc;
+    list_t args = list_new();
+    char *c, *lc;
 
-	c = lc = str;
+    c = lc = str;
 
-	while (*c != '\0') {
-		switch (*c) {
-		case QUOTE:
-			lc = ++c;
-			/* find matching quote */
-			while( *c != '\0' &&  *c != QUOTE)
-				c++;
+    while (*c != '\0') {
+        switch (*c) {
+        case QUOTE:
+            lc = ++c;
+            /* find matching quote */
+            while (*c != '\0' && *c != QUOTE)
+                c++;
 
-			if (*c == '\0') 
-				errx("%P: Unmatched `%c' in xpopen\n", *lc);
+            if (*c == '\0')
+                errx("%P: Unmatched `%c' in xpopen\n", *lc);
 
-			/* nullify quote */
-			*c = '\0';
+            /* nullify quote */
+            *c = '\0';
 
-			/* push token onto list */
-			if (strlen(lc) > 0)
-				list_push(args, lc);
+            /* push token onto list */
+            if (strlen(lc) > 0)
+                list_push(args, lc);
 
-			/* move c past null */
-			lc = ++c;
+            /* move c past null */
+            lc = ++c;
 
-			break;
-		case SPACE:
-		case TAB:
-		case NWLN:
-			/* nullify and push token onto list */
-			*c = '\0';
-			if (lc != NULL && strlen(lc) > 0) 
-				list_push(args, lc);
+            break;
+        case SPACE:
+        case TAB:
+        case NWLN:
+            /* nullify and push token onto list */
+            *c = '\0';
+            if (lc != NULL && strlen(lc) > 0)
+                list_push(args, lc);
 
-			lc = ++c;
-			break;
-		default:
-			c++;
-		}
-	}
+            lc = ++c;
+            break;
+        default:
+            c++;
+        }
+    }
 
-	/* hit a null. push last token onto list, if such a one exists */
-	if (strlen(lc) > 0) 
-		list_push(args, lc);
+    /* hit a null. push last token onto list, if such a one exists */
+    if (strlen(lc) > 0)
+        list_push(args, lc);
 
-	return args;
+    return args;
 
 }
 
-
+/*
+ * vi:tabstop=4 shiftwidth=4 expandtab
+ */

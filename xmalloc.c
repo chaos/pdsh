@@ -1,28 +1,26 @@
 /*****************************************************************************\
- *
  *  $Id$
- *  $Source$
- *
- *  Copyright (C) 1998-2002 The Regents of the University of California.
+ *****************************************************************************
+ *  Copyright (C) 2001-2002 The Regents of the University of California.
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
- *  Written by Jim Garlick (garlick@llnl.gov>
- *  UCRL-CODE-980038
+ *  Written by Jim Garlick <garlick@llnl.gov>.
+ *  UCRL-CODE-2003-005.
  *  
- *  This file is part of PDSH, a parallel remote shell program.
+ *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
  *  
- *  PDSH is free software; you can redistribute it and/or modify it under
+ *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
  *  
- *  PDSH is distributed in the hope that it will be useful, but WITHOUT 
- *  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
- *  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License 
- *  for more details.
+ *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
+ *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ *  details.
  *  
  *  You should have received a copy of the GNU General Public License along
- *  with PDSH; if not, write to the Free Software Foundation, Inc.,
+ *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 \*****************************************************************************/
 
@@ -34,7 +32,7 @@
 #include <errno.h>
 #include <string.h>
 #include <stdio.h>
-#include <limits.h>	/* for INT_MAX */
+#include <limits.h>             /* for INT_MAX */
 #include <assert.h>
 
 #include "xmalloc.h"
@@ -45,8 +43,8 @@ static pthread_mutex_t malloc_lock = PTHREAD_MUTEX_INITIALIZER;
 #define MALLOC_LOCK()	pthread_mutex_lock(&malloc_lock)
 #define MALLOC_UNLOCK()	pthread_mutex_unlock(&malloc_lock)
 #else
-#define MALLOC_LOCK()	
-#define MALLOC_UNLOCK()	
+#define MALLOC_LOCK()
+#define MALLOC_UNLOCK()
 #endif
 
 /*
@@ -54,26 +52,25 @@ static pthread_mutex_t malloc_lock = PTHREAD_MUTEX_INITIALIZER;
  *   size (IN)	number of bytes to malloc
  *   RETURN	pointer to allocate heap space
  */
-void *
-Malloc(size_t size)
-{	
-	void *new;
-	int *p;
-       
-	assert(size > 0 && size <= INT_MAX);
-	MALLOC_LOCK();
-	p = (int *)malloc(size + 2*sizeof(int));
-	MALLOC_UNLOCK();
-	if (!p) {
-		fprintf(stderr, "Malloc(%d) failed\n", size);
-		exit(1);
-	}
-	p[0] = XMALLOC_MAGIC;			/* add "secret" magic cookie */
-	p[1] = size;				/* store size in buffer */
+void *Malloc(size_t size)
+{
+    void *new;
+    int *p;
 
-	new = &p[2];
-	memset(new, 0, size);
-	return new;
+    assert(size > 0 && size <= INT_MAX);
+    MALLOC_LOCK();
+    p = (int *) malloc(size + 2 * sizeof(int));
+    MALLOC_UNLOCK();
+    if (!p) {
+        fprintf(stderr, "Malloc(%d) failed\n", size);
+        exit(1);
+    }
+    p[0] = XMALLOC_MAGIC;       /* add "secret" magic cookie */
+    p[1] = size;                /* store size in buffer */
+
+    new = &p[2];
+    memset(new, 0, size);
+    return new;
 }
 
 /* 
@@ -82,25 +79,24 @@ Malloc(size_t size)
  *   item (IN/OUT)	double-pointer to allocated space
  *   newsize (IN)	requested size
  */
-void 
-Realloc(void **item, size_t newsize)
+void Realloc(void **item, size_t newsize)
 {
-	int *p = (int *)*item - 2;
+    int *p = (int *) *item - 2;
 
-	assert(*item != NULL);
-       	assert(newsize > 0 && newsize <= INT_MAX);
-	assert(p[0] == XMALLOC_MAGIC);		/* magic cookie still there? */
+    assert(*item != NULL);
+    assert(newsize > 0 && newsize <= INT_MAX);
+    assert(p[0] == XMALLOC_MAGIC);      /* magic cookie still there? */
 
-	MALLOC_LOCK();
-	p = (int *)realloc(p, newsize + 2*sizeof(int));
-	MALLOC_UNLOCK();
-	if (!p) {
-		fprintf(stderr, "Realloc(%d) failed\n", newsize);
-		exit(1);
-	}
-	assert(p[0] == XMALLOC_MAGIC);
-	p[1] = newsize;
-	*item = &p[2];
+    MALLOC_LOCK();
+    p = (int *) realloc(p, newsize + 2 * sizeof(int));
+    MALLOC_UNLOCK();
+    if (!p) {
+        fprintf(stderr, "Realloc(%d) failed\n", newsize);
+        exit(1);
+    }
+    assert(p[0] == XMALLOC_MAGIC);
+    p[1] = newsize;
+    *item = &p[2];
 }
 
 /*
@@ -108,26 +104,24 @@ Realloc(void **item, size_t newsize)
  *   str (IN)		string to duplicate
  *   RETURN		copy of string
  */
-char *
-Strdup(char *str)
+char *Strdup(char *str)
 {
-	char *result = Malloc(strlen(str) + 1);
+    char *result = Malloc(strlen(str) + 1);
 
-	return strcpy(result, str);
+    return strcpy(result, str);
 }
 
 /*
  * Return the size of a buffer.
  *   item (IN)		pointer to allocated space
  */
-int 
-Size(void *item)
+int Size(void *item)
 {
-	int *p = (int *)item - 2;
+    int *p = (int *) item - 2;
 
-	assert(item != NULL);	
-	assert(p[0] == XMALLOC_MAGIC);
-	return p[1];
+    assert(item != NULL);
+    assert(p[0] == XMALLOC_MAGIC);
+    return p[1];
 }
 
 /* 
@@ -135,17 +129,20 @@ Size(void *item)
  * object.
  *   item (IN/OUT)	double-pointer to allocated space
  */
-void 
-Free(void **item)
+void Free(void **item)
 {
-	int *p = (int *)*item - 2;
+    int *p = (int *) *item - 2;
 
-	if (*item != NULL) {
-		assert(p[0] == XMALLOC_MAGIC);	/* magic cookie still there? */
-		p[0] = 0;
-		MALLOC_LOCK();
-		free(p);
-		MALLOC_UNLOCK();
-		*item = NULL;
-	}
+    if (*item != NULL) {
+        assert(p[0] == XMALLOC_MAGIC);  /* magic cookie still there? */
+        p[0] = 0;
+        MALLOC_LOCK();
+        free(p);
+        MALLOC_UNLOCK();
+        *item = NULL;
+    }
 }
+
+/*
+ * vi:tabstop=4 shiftwidth=4 expandtab
+ */

@@ -50,4 +50,4 @@ int list_length(list_t);
 char *list_nth(list_t, int);
 void list_del(list_t, int);
 
-#endif /* _LIST_INCLUDED */
+#endif                          /* _LIST_INCLUDED */

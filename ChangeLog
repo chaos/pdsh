@@ -1,3 +1,9 @@
+2002-12-08 garilck
+	* New release code for GPL.  Updated DISCLAIMER, source file headers.
+	* Ran through "indent --no-tabs -kr *.[ch]" and installed standard
+          vi footers (except hostlist.[ch])
+	* Tagged pdsh-1-7-7noelan
+
 2002-10-21 garlick
 	* Bulding version for ILX cluster with genders but no elan
 	* Tagged pdsh-1-7-6noelan

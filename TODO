@@ -1,7 +1,6 @@
 - Improve deja-gnu support
   o resolve problems with dejagnu-1.4.2-3:
     ERROR: Couldn't find config.guess program.
-- Switch to automake?
 - Ganglia support
   o -v option works like SP switch_responds/host_responds
   o borrow code from gstat
