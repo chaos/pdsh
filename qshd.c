@@ -462,7 +462,7 @@ doit(struct sockaddr_in *fromp)
 	for (i = 0; i < qsw_cap_bitmap_count(); i++) {
 		getstr(tmpstr, sizeof(tmpstr), "capability");
 		if (qsw_decode_cap_bitmap(tmpstr, &cap, i) < 0) {
-			errlog("error reading capability: %s", tmpstr);
+			errlog("error reading capability bitmap(%d): %s", tmpstr, i);
 			exit(1);
 		}
 	}

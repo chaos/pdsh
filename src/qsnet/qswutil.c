@@ -210,10 +210,18 @@ qsw_cap_bitmap_count(void)
 int
 qsw_encode_cap(char *s, int len, ELAN_CAPABILITY *cap)
 {
-	assert(sizeof(cap->UserKey.Values[0]) == 4);
-	assert(sizeof(cap->UserKey) / sizeof(cap->UserKey.Values[0]) == 4);
+	int n;
 
-	snprintf(s, len, "%x.%x.%x.%x.%hx.%hx.%x.%x.%x.%x.%x.%x.%x", 
+	if (sizeof(cap->UserKey.Values[0]) != 4) {
+		err("%p: qsw_encode_cap: userkey element size != 4 bytes\n");
+		return -1;
+	}
+	if (sizeof(cap->UserKey) / sizeof(cap->UserKey.Values[0]) != 4) {
+		err("%p: qsw_encode_cap: userkey size != 4 elements\n");
+		return -1;
+	}
+
+	n = snprintf(s, len, "%x.%x.%x.%x.%hx.%hx.%x.%x.%x.%x.%x.%x.%x", 
 				cap->UserKey.Values[0],
 				cap->UserKey.Values[1],
 				cap->UserKey.Values[2],
@@ -228,6 +236,10 @@ qsw_encode_cap(char *s, int len, ELAN_CAPABILITY *cap)
 				cap->Entries,
 				cap->RailMask);
 
+	if (n < 0 || n > strlen(s)) {
+		err("%p: qsw_encode_cap: string overflow\n");
+		return -1;
+	}
 	return 0;
 }
 
@@ -237,9 +249,13 @@ qsw_encode_cap(char *s, int len, ELAN_CAPABILITY *cap)
 int
 qsw_encode_cap_bitmap(char *s, int len, ELAN_CAPABILITY *cap, int i)
 {
-	assert(sizeof(cap->Bitmap[0]) == 4);
+	int n;
 
-	snprintf(s, len, "%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x",
+	if (sizeof(cap->Bitmap[0]) != 4) {
+		err("%p: qsw_encode_cap_bitmap: bitmap element != 4 bytes!\n");
+		return -1;
+	}
+	n = snprintf(s, len, "%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x",
 				cap->Bitmap[i+0], cap->Bitmap[i+1], 
 				cap->Bitmap[i+2], cap->Bitmap[i+3],
 				cap->Bitmap[i+4], cap->Bitmap[i+5], 
@@ -248,6 +264,10 @@ qsw_encode_cap_bitmap(char *s, int len, ELAN_CAPABILITY *cap, int i)
 				cap->Bitmap[i+10], cap->Bitmap[i+11],
 				cap->Bitmap[i+12], cap->Bitmap[i+13],
 				cap->Bitmap[i+14], cap->Bitmap[i+15]);
+	if (n == -1 || n > sizeof(s)) {
+		err("%p: qsw_encode_cap_bitmap: string overflow\n");
+		return -1;
+	}
 	return 0;
 }
 
@@ -257,13 +277,14 @@ qsw_encode_cap_bitmap(char *s, int len, ELAN_CAPABILITY *cap, int i)
 int
 qsw_decode_cap(char *s, ELAN_CAPABILITY *cap)
 {
+	int n;
 	short dummy;
 
 	/* initialize capability - not sure if this is necessary */
 	elan3_nullcap(cap);
 
 	/* fill in values sent from remote */
-	if (sscanf(s, "%x.%x.%x.%x.%hx.%hx.%x.%x.%x.%x.%x.%x.%x", 
+	n = sscanf(s, "%x.%x.%x.%x.%hx.%hx.%x.%x.%x.%x.%x.%x.%x", 
 				&cap->UserKey.Values[0],
 				&cap->UserKey.Values[1],
 				&cap->UserKey.Values[2],
@@ -276,7 +297,9 @@ qsw_decode_cap(char *s, ELAN_CAPABILITY *cap)
 				&cap->LowNode,
 				&cap->HighNode,
 				&cap->Entries,
-				&cap->RailMask) != 13) {
+				&cap->RailMask);
+	if (n != 13) {
+		err("%p: qsw_decode_cap: scan error\n");
 		return -1;
 	}
 	return 0;
@@ -288,7 +311,9 @@ qsw_decode_cap(char *s, ELAN_CAPABILITY *cap)
 int
 qsw_decode_cap_bitmap(char *s, ELAN_CAPABILITY *cap, int i)
 {
-	if (sscanf(s, "%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x",
+	int n;
+
+	n = sscanf(s, "%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x",
 				&cap->Bitmap[i+0], &cap->Bitmap[i+1], 
 				&cap->Bitmap[i+2], &cap->Bitmap[i+3],
 				&cap->Bitmap[i+4], &cap->Bitmap[i+5], 
@@ -296,7 +321,9 @@ qsw_decode_cap_bitmap(char *s, ELAN_CAPABILITY *cap, int i)
 				&cap->Bitmap[i+8], &cap->Bitmap[i+9], 
 				&cap->Bitmap[i+10], &cap->Bitmap[i+11],
 				&cap->Bitmap[i+12], &cap->Bitmap[i+13],
-				&cap->Bitmap[i+14], &cap->Bitmap[i+15]) != 16) {
+				&cap->Bitmap[i+14], &cap->Bitmap[i+15]);
+	if (n != 16) {
+		err("%p: qsw_decode_cap_bitmap(%d): scan error\n", i);
 		return -1;
 	}
 	return 0;
@@ -308,13 +335,17 @@ qsw_decode_cap_bitmap(char *s, ELAN_CAPABILITY *cap, int i)
 int
 qsw_decode_info(char *s, qsw_info_t *qi)
 {
-	if (sscanf(s, "%x.%x.%x.%x.%x.%x", 
+	int n;
+
+	n = sscanf(s, "%x.%x.%x.%x.%x.%x", 
 			&qi->prgnum,
 			&qi->rank,
 			&qi->nodeid,
 			&qi->procid,
 			&qi->nnodes,
-			&qi->nprocs) != 6) {
+			&qi->nprocs);
+	if (n != 6) {
+		err("%p: qsw_decode_info: scan error\n");
 		return -1;
 	}
 	return 0;
@@ -326,13 +357,19 @@ qsw_decode_info(char *s, qsw_info_t *qi)
 int
 qsw_encode_info(char *s, int len, qsw_info_t *qi)
 {
-	snprintf(s, len, "%x.%x.%x.%x.%x.%x",
+	int n;
+
+	n = snprintf(s, len, "%x.%x.%x.%x.%x.%x",
 			qi->prgnum,
 			qi->rank,
 			qi->nodeid,
 			qi->procid,
 			qi->nnodes,
 			qi->nprocs);
+	if (n == -1 || n > strlen(s)) {
+		err("%p: qsw_encode_info: string overflow\n");
+		return -1;
+	}
 	return 0;
 }
 
