@@ -642,8 +642,6 @@ doit(struct sockaddr_in *fromp)
     errnum = __AUTH;
     goto error_out;
   }
-
-  syslog(LOG_ERR | LOG_AUTH, "fffffooooooo\n");
 #endif
 
   /*
