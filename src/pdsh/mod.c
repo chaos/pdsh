@@ -113,9 +113,7 @@ mod_exit(void)
     list_iterator_destroy(module_itr);
     list_destroy(module_list);
     
-	/* return lt_dlexit(); */
-
-    return 0;
+	return lt_dlexit(); 
 }
 
 hostlist_t
