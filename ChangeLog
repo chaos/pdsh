@@ -98,3 +98,7 @@ Release 1.5pre
 	Renamed spec file to pdsh.spec.  Gzip installed man pages on Linux.
 
 	Moved path definitions to conf.h.  Changed nodeattr path to /usr/bin.
+
+	Fixed handling of numerical ranges with multiple root names (dshbak)
+
+	Fix %S handling to avoid truncating dotted quads (err.c)
