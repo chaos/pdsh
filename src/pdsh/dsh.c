@@ -880,10 +880,7 @@ int dsh(opt_t * opt)
         /* expand directories, if any, and verify access for all files */
         pcp_infiles = _expand_dirs(opt->infile_names);
 
-        if (opt->pcppath)
-            xstrcat(&cmd, opt->pcppath);
-
-        xstrcat(&cmd, opt->progname); 
+        xstrcat(&cmd, opt->path_progname); 
         if (opt->recursive)
             xstrcat(&cmd, " -r");
         if (opt->preserve)

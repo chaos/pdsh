@@ -33,6 +33,7 @@
 #endif
 #include <stdlib.h>             /* getenv */
 #include <pwd.h>                /* getpwuid */
+#include <sys/param.h>          /* MAXPATHLEN */
 
 #include <sys/types.h>
 #include <sys/stat.h>           /* stat */
@@ -40,7 +41,7 @@
 #include <unistd.h>             /* getopt */
 #endif
 
-#include "dsh.h"
+#include "dsh.h"                
 #include "hostlist.h"
 #include "opt.h"
 #include "err.h"
@@ -168,6 +169,75 @@ bool opt_register(struct pdsh_module_option *opt_table)
     return true;
 }
 
+/*
+ *  Determine absolute path to the progam name based in as argv0
+ */
+char * _find_path(char *argv0) 
+{
+    char *abspath;
+
+    if (personality == PCP) {
+        if (*argv0 == '/') {
+            /* path absolute */
+            abspath = Strdup(argv0);
+        }
+        else {
+            char cwd[MAXPATHLEN];
+
+            if (getcwd(cwd, MAXPATHLEN) == NULL) 
+                errx("%p: getcwd failed: %m\n"); 
+
+            if (*argv0 == '.' || strchr(argv0, '/') != NULL) {
+                /* path relative */
+                abspath = Strdup(cwd);
+                xstrcat(&abspath, "/");
+                xstrcat(&abspath, argv0);
+            }
+            else {
+                /* argv0 executed in PATH environment var */
+                char        *dir, *path, *cur, *p;
+                List         l = list_create(NULL);
+                ListIterator i;
+          
+                if ((path = Strdup(getenv("PATH"))) == NULL)
+                    errx("%p: getenv failed\n"); 
+          
+                cur = path;
+                while ((p = strchr(cur,':')) != NULL) {
+                    *p = '\0';
+                    if (strlen(cur) > 0)
+                        list_append(l, cur);
+                    cur = ++p;
+                }
+
+                i = list_iterator_create(l);
+                while ((dir = list_next(i))) {
+                    abspath = NULL;
+            
+                    if (*dir != '/') {
+                        abspath = Strdup(cwd);
+                        xstrcat(&abspath, "/");
+                    }
+                    xstrcat(&abspath, dir);
+                    xstrcat(&abspath, "/");
+                    xstrcat(&abspath, argv0);
+            
+                    if (access(abspath, R_OK) == 0)
+                        break;
+
+                    Free((void **) &abspath);
+                }
+                
+                Free((void **) &path);
+                list_destroy(l);
+            }
+        }
+    }
+    else
+        abspath = NULL;
+
+    return abspath;
+}
 
 /*
  * Set defaults for various options.
@@ -187,7 +257,6 @@ void opt_default(opt_t * opt, char *argv0)
         personality = PCP;
     else
         errx("%p: program must be named pdsh/dsh/pdcp/dcp/pcp\n");
-
 
     if (pdsh_options == NULL)
         _init_pdsh_options();
@@ -240,7 +309,7 @@ void opt_default(opt_t * opt, char *argv0)
     opt->preserve = false;
     opt->pcp_server = false;
     opt->target_is_directory = false;
-    opt->pcppath = NULL;
+    opt->path_progname = _find_path(argv0);
 }
 
 /*
@@ -250,7 +319,6 @@ void opt_default(opt_t * opt, char *argv0)
 void opt_env(opt_t * opt)
 {
     char *rhs;
-    char **whichpath; 
 
     if ((rhs = getenv("WCOLL")) != NULL)
         opt->wcoll = read_wcoll(rhs, NULL);
@@ -261,29 +329,23 @@ void opt_env(opt_t * opt)
     if ((rhs = getenv("PDSH_RCMD_TYPE")) != NULL)
         opt->rcmd_name = Strdup(rhs);
 
-    if (personality == DSH) {
-        rhs = getenv("DSHPATH");
-        whichpath = &opt->dshpath;
-    }
-    else {
-        rhs = getenv("PCPPATH");
-        whichpath = &opt->pcppath;
-    }
-
-    if (rhs != NULL) {
+    if ((rhs = getenv("DSHPATH")) != NULL) {
         struct passwd *pw = getpwnam(opt->luser);
         char *shell = "sh";
 
         if (pw && *pw->pw_shell)
             shell = xbasename(pw->pw_shell);
-
         /* c shell syntax */
-        if (!strcmp(shell, "csh") || !strcmp(shell, "tcsh"))
-            *whichpath = Strdup("setenv PATH ");
-        else
-            *whichpath = Strdup("PATH=");  /* bourne syntax */
-        xstrcat(whichpath, rhs);
-        xstrcat(whichpath, ";");
+        if (!strcmp(shell, "csh") || !strcmp(shell, "tcsh")) {
+            opt->dshpath = Strdup("setenv PATH ");
+            xstrcat(&opt->dshpath, rhs);
+            xstrcat(&opt->dshpath, ";");
+
+        } else {                /* bourne shell syntax */
+            opt->dshpath = Strdup("PATH=");
+            xstrcat(&opt->dshpath, rhs);
+            xstrcat(&opt->dshpath, ";");
+        }
     }
 }
 
@@ -574,7 +636,7 @@ void opt_list(opt_t * opt)
             STRORNULL(opt->outfile_name));
         out("Recursive		%s\n", BOOLSTR(opt->recursive));
         out("Preserve mod time/mode	%s\n", BOOLSTR(opt->preserve));
-        out("Optional PCPATH		%s\n", STRORNULL(opt->pcppath));
+        out("Full program pathname	%s\n", STRORNULL(opt->path_progname));
         if (opt->pcp_server) {
             out("pcp server         	%s\n", BOOLSTR(opt->pcp_server));
             out("target is directory	%s\n", BOOLSTR(opt->target_is_directory));
@@ -632,8 +694,8 @@ void opt_free(opt_t * opt)
         Free((void **) &pdsh_options);
     if (opt->dshpath)
         Free((void **) &opt->dshpath);
-    if (opt->pcppath)
-        Free((void **) &opt->pcppath);
+    if (opt->path_progname)
+        Free((void **) &opt->path_progname);
 }
 
 /*
