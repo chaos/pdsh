@@ -1,3 +1,8 @@
+2003-12-01  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/modules/genders.c (_read_genders): Search attribute argument
+	for an attr=value pair and pass value to genders_getnodes() if found.
+
 2003-11-24  Mark Grondona <mgrondona@llnl.gov>
 
 	* configure.ac, config/Make-rpm.mk: Allow date-tagged builds off 
