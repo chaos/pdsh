@@ -24,21 +24,15 @@
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 \*****************************************************************************/
 
-#ifndef _ERR_INCLUDED
-#define _ERR_INCLUDED
+#ifndef _PCP_SERVER_H
+#define _PCP_SERVER_H
 
-#include <stdio.h>
-#include <stdarg.h>
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif 
 
-void err_init(char *);
-void err(char *, ...);
-void out(char *, ...);
-void errx(char *, ...);
-void errf(FILE *, char *, va_list);
-void err_cleanup(void);
+#include "opt.h"
 
-#endif
+int pcp_server(opt_t *pdsh_opts);
 
-/*
- * vi:tabstop=4 shiftwidth=4 expandtab
- */
+#endif /* _PCP_SERVER_H */

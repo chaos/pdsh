@@ -70,6 +70,8 @@ Usage: pdsh [-options] command ...\n\
 Usage: pdcp [-options] src [src2...] dest\n\
 -r                recursively copy files\n\
 -p                preserve modification time and modes\n"
+/* undocumented "-y"  target must be directory option */
+/* undocumented "-z"  run pdcp server option */
 
 #define OPT_USAGE_COMMON "\
 -h                output usage menu and quit\n\
@@ -90,9 +92,9 @@ Usage: pdcp [-options] src [src2...] dest\n\
 #if	HAVE_MAGIC_RSHELL_CLEANUP
 #define DSH_ARGS	"sS"
 #else
-#define DSH_ARGS    "S"
+#define DSH_ARGS        "S"
 #endif
-#define PCP_ARGS	"pr"
+#define PCP_ARGS	"pryz"
 #define GEN_ARGS	"hLR:t:cqf:w:x:l:u:bI:deVT:Q"
 
 /*
@@ -236,6 +238,8 @@ void opt_default(opt_t * opt, char *argv0)
     opt->outfile_name = NULL;
     opt->recursive = false;
     opt->preserve = false;
+    opt->pcp_server = false;
+    opt->target_is_directory = false;
 
 }
 
@@ -360,6 +364,12 @@ void opt_args(opt_t * opt, int argc, char *argv[])
         case 'h':              /* display usage message */
             _usage(opt);
             break;
+        case 'y':
+            opt->target_is_directory = true;  /* is target a dir? */
+            break;
+        case 'z':
+            opt->pcp_server = true;          /* run PDCP server */
+            break;
         default:
             if (mod_process_opt(opt, c, optarg) < 0)
                _usage(opt);
@@ -380,7 +390,7 @@ void opt_args(opt_t * opt, int argc, char *argv[])
             xstrcat(&opt->cmd, argv[optind]);
         }
 
-        /* PCP: build file list */
+    /* PCP: build file list */
     } else {
         for (; optind < argc - 1; optind++)
             list_append(opt->infile_names, argv[optind]);
@@ -388,22 +398,25 @@ void opt_args(opt_t * opt, int argc, char *argv[])
             xstrcat(&opt->outfile_name, argv[optind]);
     }
 
-    /*
-     *  Attempt to grab wcoll from modules stack unless
-     *    wcoll was set from -w.
-     */
-    if (mod_read_wcoll(opt) < 0)
-        exit(1);
+    /* ignore wcoll & -x option if we are running pcp server */
+    if (!opt->pcp_server) {
 
-    /* handle -x option */
-    if (exclude_buf != NULL && opt->wcoll) {
-        if (hostlist_delete(opt->wcoll, exclude_buf) == 0) {
-            errx("%p: Invalid argument to -x: `%s'\n", exclude_buf);
+        /*
+         *  Attempt to grab wcoll from modules stack unless
+         *    wcoll was set from -w.
+         */
+        if (mod_read_wcoll(opt) < 0)
             exit(1);
-        }
-        Free((void **) &exclude_buf);
-    }
 
+        /* handle -x option */
+        if (exclude_buf != NULL && opt->wcoll) {
+            if (hostlist_delete(opt->wcoll, exclude_buf) == 0) {
+                errx("%p: Invalid argument to -x: `%s'\n", exclude_buf);
+                exit(1);
+            }
+            Free((void **) &exclude_buf);
+        }
+    }
 }
 
 /*
@@ -428,26 +441,46 @@ bool opt_verify(opt_t * opt)
         verified = false;
     }
 
-    /* wcoll is required */
-    if (opt->wcoll == NULL || hostlist_count(opt->wcoll) == 0) {
-        err("%p: no remote hosts specified\n");
-        verified = false;
-    }
+    if (!opt->pcp_server) { 
+        /* wcoll is required */
+        if (opt->wcoll == NULL || hostlist_count(opt->wcoll) == 0) {
+            err("%p: no remote hosts specified\n");
+            verified = false;
+        }
 
-    /* connect and command timeouts must be reasonable */
-    if (opt->connect_timeout < 0) {
-        err("%p: connect timeout must be >= 0\n");
-        verified = false;
-    }
-    if (opt->command_timeout < 0) {
-        err("%p: command timeout must be >= 0\n");
-        verified = false;
+        /* connect and command timeouts must be reasonable */
+        if (opt->connect_timeout < 0) {
+            err("%p: connect timeout must be >= 0\n");
+            verified = false;
+        }
+        if (opt->command_timeout < 0) {
+            err("%p: command timeout must be >= 0\n");
+            verified = false;
+        }
     }
 
     /* PCP: must have source and destination filename(s) */
-    if (personality == PCP) {
+    if (personality == PCP && !opt->pcp_server) {
         if (!opt->outfile_name || list_is_empty(opt->infile_names)) {
             err("%p: pcp requires source and dest filenames\n");
+            verified = false;
+        }
+
+        if (opt->target_is_directory) {
+            err("%p: target is directory can only be specified with pcp server\n");
+            verified = false;
+        }
+    }
+
+    /* PCP: verify options when -z option specified */
+    if (personality == PCP  && opt->pcp_server) {
+        if (!list_is_empty(opt->infile_names)) {
+            err("%p: do not list source files with pcp server\n");
+            verified = false;
+        }
+
+        if (!opt->outfile_name) {
+            err("%p: output file must be specified with pcp server\n");
             verified = false;
         }
     }
@@ -534,37 +567,45 @@ void opt_list(opt_t * opt)
             STRORNULL(opt->outfile_name));
         out("Recursive		%s\n", BOOLSTR(opt->recursive));
         out("Preserve mod time/mode	%s\n", BOOLSTR(opt->preserve));
-    }
-    out("\n-- Generic options --\n");
-    out("Local username		%s\n", opt->luser);
-    out("Local uid     		%d\n", opt->luid);
-    out("Remote username		%s\n", opt->ruser);
-    out("Rcmd type		%s\n", opt->rcmd_name);
-    out("one ^C will kill pdsh   %s\n", BOOLSTR(opt->sigint_terminates));
-    out("Connect timeout (secs)	%d\n", opt->connect_timeout);
-    out("Command timeout (secs)	%d\n", opt->command_timeout);
-    out("Fanout			%d\n", opt->fanout);
-    out("Display hostname labels	%s\n", BOOLSTR(opt->labels));
-    infile_str = _list_join(", ", opt->infile_names);
-    if (infile_str) {
-        out("Infile(s)		%s\n", infile_str);
-        Free((void **) &infile_str);
-    }
-    out("Debugging       	%s\n", BOOLSTR(opt->debug));
-
-    out("\n-- Target nodes --\n");
-    if (opt->test_range_expansion) {
-        n = hostlist_deranged_string(opt->wcoll, sizeof(wcoll_str),
-                                     wcoll_str);
-    } else {
-        n = hostlist_ranged_string(opt->wcoll, sizeof(wcoll_str),
-                                   wcoll_str);
+        if (opt->pcp_server) {
+            out("pcp server         	%s\n", BOOLSTR(opt->pcp_server));
+            out("target is directory	%s\n", BOOLSTR(opt->target_is_directory));
+        }
     }
 
-    if (n < 0)
-        out("%s[truncated]\n", wcoll_str);
-    else
-        out("%s\n", wcoll_str);
+    if (!opt->pcp_server) {
+
+        out("\n-- Generic options --\n");
+        out("Local username		%s\n", opt->luser);
+        out("Local uid     		%d\n", opt->luid);
+        out("Remote username		%s\n", opt->ruser);
+        out("Rcmd type		%s\n", opt->rcmd_name);
+        out("one ^C will kill pdsh   %s\n", BOOLSTR(opt->sigint_terminates));
+        out("Connect timeout (secs)	%d\n", opt->connect_timeout);
+        out("Command timeout (secs)	%d\n", opt->command_timeout);
+        out("Fanout			%d\n", opt->fanout);
+        out("Display hostname labels	%s\n", BOOLSTR(opt->labels));
+        infile_str = _list_join(", ", opt->infile_names);
+        if (infile_str) {
+            out("Infile(s)		%s\n", infile_str);
+            Free((void **) &infile_str);
+        }
+        out("Debugging       	%s\n", BOOLSTR(opt->debug));
+
+        out("\n-- Target nodes --\n");
+        if (opt->test_range_expansion) {
+            n = hostlist_deranged_string(opt->wcoll, sizeof(wcoll_str),
+                                         wcoll_str);
+        } else {
+            n = hostlist_ranged_string(opt->wcoll, sizeof(wcoll_str),
+                                       wcoll_str);
+        }
+
+        if (n < 0)
+            out("%s[truncated]\n", wcoll_str);
+        else
+            out("%s\n", wcoll_str);
+    }
 }
 
 /*

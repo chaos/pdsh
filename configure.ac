@@ -171,14 +171,6 @@ dnl Note: this macro defines WITH_DMALLOC for us.
 dnl 
 AC_DMALLOC
 
-#
-# Find path to rcp for pdcp.
-#
-AC_PATH_PROG([RCP], [rcp], [], [/usr/bin:$PATH])
-if test -n "$RCP"; then
-    AC_DEFINE_UNQUOTED(_PATH_RCP, "$RCP", [Path to rcp])
-fi
-
 if test "$ac_static_modules" = "yes" ; then
    AC_STATIC_MODULES_EXIT
 fi

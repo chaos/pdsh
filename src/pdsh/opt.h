@@ -86,8 +86,10 @@ typedef struct {
     /* PCP-specific options */
     bool preserve;              /* -p */
     bool recursive;             /* -r */
-    List infile_names;        /* -I or pcp source spec */
+    List infile_names;          /* -I or pcp source spec */
     char *outfile_name;         /* pcp dest spec */
+    bool pcp_server;            /* undocument pdcp server option */
+    bool target_is_directory;   /* undocumented pdcp is target a directory */
 
 } opt_t;
 

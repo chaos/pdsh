@@ -4,7 +4,7 @@ AUTOMAKE_OPTIONS =         foreign dist-bzip2
 
 SUBDIRS =                  modules . testsuite
 
-noinst_PROGRAMS=           pdsh 
+noinst_PROGRAMS=           pdsh
 bin_PROGRAMS =             pdsh.inst
 sbin_PROGRAMS =            @PROG_QSHD@ @PROG_MQSHD@
 
@@ -53,7 +53,8 @@ COMMON_FILES = \
 	testcase.c \
 	mod_rcmd.c mod_rcmd.h \
 	mod.c mod.h \
-	fd.c fd.h
+	fd.c fd.h \
+	pcp_server.h pcp_server.c
 
 in_qshd_SOURCES = \
 	qshd.c \

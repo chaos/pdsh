@@ -1,3 +1,14 @@
+2003-07-10 achu
+        * Fixed additional issues with command line options and modules
+	  recognized (or not-recognized) between pdsh and pdcp.
+	* Removed dependence of rcp command from pdcp.  All functionality
+	  of the rcp command is now coded internaly within pdcp.  
+	* Eliminated several bugs from original rcp code.
+	* Fixed several pdcp bugs related to -r option.
+	* Updated pdcp manpage to be clearer about pdcp functionality.
+	* Tweaked of configuration, makefiles, manpages, and documents for
+	  readability and portability.
+	
 2003-06-24 achu
 	* added ability to compile modules in statically with
 	  --enable-static-modules option

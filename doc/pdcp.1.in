@@ -9,15 +9,19 @@ pdcp \- copy files to groups of hosts in parallel
 .br
 .SH DESCRIPTION
 .B pdcp
-is a variant of the rcp(1) command.  Unlike rcp(1) which copies files
+is a variant of the rcp(1) command.  Unlike rcp(1), which copies files
 to a single remote host, pdcp(1) can copy files to multiple remote
-hosts in parallel.  A number of options and features for pdcp are
-dependent on how pdcp has been built and installed.  See MODULES below
-for further explanation.  Pdcp options are described in TARGET NODE
-LIST OPTIONS and OTHER OPTIONS below.
+hosts in parallel.  Unlike rcp(1), pdcp(1) does not recognize files in
+the format ``rname@rhost:path''.  Therefore, all sources files must be
+on the local host machine.  Destination nodes must be listed using the
+options listed under TARGET NODE LIST OPTIONS below.  Other pdcp
+options are described under OTHER OPTIONS.  When pdcp receives SIGINT
+(ctrl-C), it lists the status of current threads.  A second SIGINT
+within one second terminates the program.
 .LP
-When pdcp receives SIGINT (ctrl-C), it lists the status of current threads.
-A second SIGINT within one second terminates the program.
+A number of the options and features for pdcp are dependent on how
+pdcp has been built and installed.  See MODULES below for further
+explanation.
 .SH MODULES
 A number of options and features in pdcp depend n the modules
 that have been built or installed with pdcp.  The following is a list of

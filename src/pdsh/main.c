@@ -50,6 +50,7 @@
 #include "dsh.h"
 #include "opt.h"
 #include "mod.h"
+#include "pcp_server.h"
 
 extern const char *pdsh_module_dir;
 
@@ -84,12 +85,13 @@ int main(int argc, char *argv[])
     opt_args(&opt, argc, argv); /* override with command line           */
 
     if (opt_verify(&opt)) {     /* verify options, print errors         */
-
         /*
          * Do the work.
          */
         if (opt.info_only)      /* display info only */
             opt_list(&opt);
+        else if (pdsh_personality() == PCP && opt.pcp_server)
+            retval = pcp_server(&opt);
         else if (pdsh_personality() == PCP || opt.cmd != NULL)
             retval = dsh(&opt); /* single dsh/pcp command */
         else                    /* prompt loop */

@@ -171,6 +171,14 @@ void out(char *format, ...)
     va_end(ap);
 }
 
+void errf(FILE *stream, char *format, va_list ap)
+{
+    if (!stream)
+        return;
+
+    _verr(stream, format, ap);
+}
+
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
  */

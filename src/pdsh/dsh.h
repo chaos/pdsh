@@ -91,10 +91,11 @@ typedef struct thd {
 
     bool kill_on_fail;          /* If true, kill all procs on single failure */
 
-    List pcp_infiles;         /* name of input files/dirs */
+    List pcp_infiles;           /* name of input files/dirs */
     char *pcp_outfile;          /* name of output file/dir */
     bool pcp_popt;              /* preserve mtime/mode */
     bool pcp_ropt;              /* recursive */
+    char *pcp_progname;         /* program name */
     int rc;                     /* remote return code (-S) */
     int nodeid;                 /* node index */
     int nnodes;                 /* number of nodes in job */

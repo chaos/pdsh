@@ -90,6 +90,10 @@
 #define MAXPATHNAMELEN MAXPATHLEN
 #endif
 
+/* define the filename flag as an impossible filename */
+#define EXIT_SUBDIR_FILENAME    "a!b@c#d$"
+#define EXIT_SUBDIR_FLAG        "E\n"
+
 #include "list.h"
 #include "xmalloc.h"
 #include "xstring.h"
@@ -288,6 +292,11 @@ static void *_wdog(void *args)
     return NULL;
 }
 
+static void _strlist_destroy(char *str)
+{
+    free(str);
+}
+
 static void _rexpand_dir(List list, char *name)
 {
     DIR *dir;
@@ -310,11 +319,18 @@ static void _rexpand_dir(List list, char *name)
             errx("%p: access: %s: %m\n", name);
         if (!S_ISDIR(sb.st_mode) && !S_ISREG(sb.st_mode))
             errx("%p: not a regular file or directory: %s\n", file);
-        list_append(list, file);
+        list_append(list, Strdup(file));
         if (S_ISDIR(sb.st_mode))
             _rexpand_dir(list, file);
     }
     closedir(dir);
+
+    /* Since pdcp reads file names and directories only once for
+     * efficiency, we must specify a special flag so we know when
+     * to tell the server to "move up" the directory tree.
+     */
+
+    list_append(list, Strdup(EXIT_SUBDIR_FILENAME));
 }
 
 static List _expand_dirs(List infiles)
@@ -331,9 +347,11 @@ static List _expand_dirs(List infiles)
         if (stat(name, &sb) < 0)
             errx("%p: stat: %s: %m\n", name);
         list_append(new, name);
+        /* -r option checked during command line argument checks */
         if (S_ISDIR(sb.st_mode))
             _rexpand_dir(new, name);
     }
+    
     return new;
 }
 
@@ -559,14 +577,18 @@ static void *_rcp_thread(void *args)
     int *efdp = a->dsh_sopt ? &a->efd : NULL;
 
     /* construct remote rcp command */
-    xstrcat(&cmd, _PATH_RCP);
+#if 0
+    /* DEBUGGING */
+    xstrcat(&cmd, a->pcp_progname); 
+#endif
+    xstrcat(&cmd, "/home/achu/cvscode/pdsh/pdcp");
     if (a->pcp_ropt)
         xstrcat(&cmd, " -r");
     if (a->pcp_popt)
         xstrcat(&cmd, " -p");
-    if (list_count(a->pcp_infiles) > 1)        /* outfile must be directory */
-        xstrcat(&cmd, " -d");
-    xstrcat(&cmd, " -t ");      /* remote will always be "to" */
+    if (list_count(a->pcp_infiles) > 1)   /* outfile must be directory */
+        xstrcat(&cmd, " -y");
+    xstrcat(&cmd, " -z ");                /* invoke pcp server */
     xstrcat(&cmd, a->pcp_outfile);      /* outfile is remote target */
 
     _int_block();               /* block SIGINT */
@@ -578,8 +600,8 @@ static void *_rcp_thread(void *args)
     a->start = time(NULL);
     a->state = DSH_RCMD;
 
-	a->fd = mod_rcmd(a->host, a->addr, a->luser, a->ruser, 
-			         cmd, a->nodeid, efdp);
+    a->fd = mod_rcmd(a->host, a->addr, a->luser, a->ruser, 
+                     cmd, a->nodeid, efdp);
 
     if (a->fd == -1)
         result = DSH_FAILED;
@@ -594,8 +616,16 @@ static void *_rcp_thread(void *args)
 
             /* Send the files */
             i = list_iterator_create(a->pcp_infiles);
-            while ((name = list_next(i)))
+            while ((name = list_next(i))) {
+                if (strcmp(name, EXIT_SUBDIR_FILENAME) == 0) {
+                    if (_rcp_sendstr(a->fd, EXIT_SUBDIR_FLAG, a->host) < 0)
+                        errx("%p: failed to send exit subdir flag\n");
+                    if (_rcp_response(a->fd, a->host) < 0)
+                        errx("%p: failed to exit subdir properly\n");
+                    continue;
+                }
                 _rcp_sendfile(a->fd, name, a->host, a->pcp_popt);
+            }
             list_iterator_destroy(i);
         }
         close(a->fd);
@@ -662,8 +692,8 @@ static void *_rsh_thread(void *args)
     /* establish the connection */
     a->state = DSH_RCMD;
 
-	a->fd = mod_rcmd(a->host, a->addr, a->luser, a->ruser,
-			         a->dsh_cmd, a->nodeid, efdp);
+    a->fd = mod_rcmd(a->host, a->addr, a->luser, a->ruser,
+                     a->dsh_cmd, a->nodeid, efdp);
 
     /* 
      * Copy stdout/stderr to local stdout/stderr, 
@@ -894,6 +924,7 @@ int dsh(opt_t * opt)
         t[i].pcp_outfile = opt->outfile_name;
         t[i].pcp_popt = opt->preserve;
         t[i].pcp_ropt = opt->recursive;
+        t[i].pcp_progname = opt->progname;
 #if	!HAVE_MTSAFE_GETHOSTBYNAME
         /* if MT-safe, do it in parallel in rsh/rcp threads */
         /* gethostbyname_r is not very portable so skip it */

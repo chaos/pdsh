@@ -27,10 +27,14 @@
 #ifndef _ERR_INCLUDED
 #define _ERR_INCLUDED
 
+#include <stdio.h>
+#include <stdarg.h>
+
 void err_init(char *);
 void err(char *, ...);
 void out(char *, ...);
 void errx(char *, ...);
+void errf(FILE *, char *, va_list);
 void err_cleanup(void);
 
 #endif
