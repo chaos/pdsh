@@ -121,7 +121,9 @@ static char sccsid[] = "@(#)mcmd.c      Based from: 8.3 (Berkeley) 3/26/94";
 #include "mod.h"
 #include "xpoll.h"
 
-#define MRSH_PORT       21212
+#define MRSH_PROTOCOL_VERSION    "1.4"
+
+#define MRSH_PORT                21212
 
 #ifdef HAVE_PTHREAD
 #define SET_PTHREAD()           pthread_sigmask(SIG_BLOCK, &blockme, &oldset)
@@ -290,6 +292,7 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
   sigset_t blockme;
   sigset_t oldset;
   struct xpollfd xpfds[2];
+  char *mpvers = MRSH_PROTOCOL_VERSION;
 
   sigemptyset(&blockme);
   sigaddset(&blockme, SIGURG);
@@ -419,14 +422,16 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
    */
 
 
-  mcount = ((strlen(remuser)+1) + (strlen(haddrdot)+1) + (strlen(num)+1) + 
-            (strlen(num_seq)+1) + strlen(cmd)+2);
+  mcount = ((strlen(remuser)+1) + (strlen(mpvers)+1) + (strlen(haddrdot)+1) +
+            (strlen(num)+1) + (strlen(num_seq)+1) + (strlen(cmd)+2));
+
   tmbuf = mbuf = malloc(mcount);
   if (tmbuf == NULL) {
     close(s2);
     err("%p: %S: mcmd: Error from malloc\n", ahost);
     goto bad;
   }
+
   /*
    * The following memset() call takes the extra trailing null as part of its
    * count as well.
@@ -435,6 +440,8 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
 
   mptr = strcpy(mbuf, remuser);
   mptr += strlen(remuser)+1;
+  mptr = strcpy(mptr, mpvers);
+  mptr += strlen(mpvers)+1;
   mptr = strcpy(mptr, haddrdot);
   mptr += strlen(haddrdot)+1;
   mptr = strcpy(mptr, num);
