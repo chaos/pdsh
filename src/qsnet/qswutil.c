@@ -78,6 +78,7 @@
 #include "src/common/xmalloc.h"
 #include "src/common/xstring.h"
 #include "src/common/hostlist.h"
+#include "src/common/list.h"
 #include "src/common/err.h"
 #include "qswutil.h"
 #include "elanhosts.h"
@@ -98,8 +99,10 @@ static elanhost_config_t elanconf = NULL;
 /* 
  *  Static function prototypes:
  */
+#if HAVE_LIBELAN3
 static int _set_elan_ids(elanhost_config_t ec);
 static void *neterr_thr(void *arg);
+#endif 
 
 
 int qsw_init(void)
@@ -160,17 +163,16 @@ int qsw_spawn_neterr_thr(void)
     pthread_mutex_unlock(&mutex);
 
     return args.neterr_rc;
-#else
+#endif /* HAVE_LIBELAN3 */
+
     return 0;
-#endif
 }
 
+#if HAVE_LIBELAN3
 static int
 _set_elan_ids(elanhost_config_t ec)
 {
     int i;
-
-#if HAVE_LIBELAN3
     for (i = 0; i <= elanhost_config_maxid(ec); i++) {
         char *host = elanhost_elanid2host(ec, ELANHOST_EIP, i);
         if (!host)
@@ -179,7 +181,6 @@ _set_elan_ids(elanhost_config_t ec)
 		if (elan3_load_neterr_svc(i, host) < 0)
 			err("%p: elan3_load_neterr_svc(%d, %s): %m", i, host);
 	}
-#endif
 
     return 0;
 }
@@ -189,7 +190,6 @@ static void *neterr_thr(void *arg)
 {	
     struct neterr_args *args = arg;
 
-#if HAVE_LIBELAN3
 	if (!elan3_init_neterr_svc(0)) {
 		syslog(LOG_ERR, "elan3_init_neterr_svc: %m");
 		goto fail;
@@ -231,7 +231,6 @@ static void *neterr_thr(void *arg)
 	 */
 	elan3_run_neterr_svc();
 
-#endif
     return NULL;
 
    fail:
@@ -242,6 +241,86 @@ static void *neterr_thr(void *arg)
 
 	return NULL;
 }
+#endif /* HAVE_ELAN_3 */
+
+static void
+_free_it (void *item)
+{
+    Free((void **) &item);
+}
+
+static List
+_hostlist_to_elanids (hostlist_t nodelist)
+{
+    char *host = NULL;
+    List l = list_create ((ListDelF) _free_it);
+    hostlist_iterator_t i = hostlist_iterator_create (nodelist);
+
+    if (l == NULL)
+        errx ("%p: list_create: %m");
+
+    if (i == NULL)
+        errx ("%p: hostlist_iterator_create: %m");
+
+    while ((host = hostlist_next (i))) {
+        int *id = Malloc (sizeof(int));
+        
+        if ((*id = elanhost_host2elanid (elanconf, host)) < 0) {
+            err ("%p: Unable to get ElanId for \"%s\"\n", host);
+            goto fail;
+        }
+
+        list_append (l, id);
+        free (host);
+    }
+    hostlist_iterator_destroy (i);
+
+    return (l);
+
+  fail: 
+    if (host != NULL)
+        free (host);
+    if (i != NULL)
+        hostlist_iterator_destroy (i);
+    if (l != NULL)
+        list_destroy (l);
+
+    return (NULL);
+}
+
+static int
+_elanid_min (List el)
+{
+    int *id;
+    int  min = -1;
+    ListIterator i = list_iterator_create (el);
+
+    while ((id = list_next (i))) {
+        if ((*id < min) || (min == -1))
+            min = *id;
+    }
+
+    list_iterator_destroy (i);
+
+    return (min);
+}
+
+static int
+_elanid_max (List el)
+{
+    int *id;
+    int  max = -1;
+    ListIterator i = list_iterator_create (el);
+
+    while ((id = list_next (i))) {
+        if ((*id > max) || (max == -1))
+            max = *id;
+    }
+
+    list_iterator_destroy (i);
+
+    return (max);
+}
 
 
 /*
@@ -250,31 +329,25 @@ static void *neterr_thr(void *arg)
  * low node id's.
  */
 static int
-_setbitmap(hostlist_t nodelist, int procs_per_node, ELAN_CAPABILITY * cap)
+_setbitmap(hostlist_t nodelist, int procs_per_node, int cyclic, 
+           ELAN_CAPABILITY * cap)
 {
-    int node;
-    char *host;
-    hostlist_iterator_t itr;
+    int *id;
+    int nodes_in_bitmap;
+    int rc = 0;
+    List el;
+    ListIterator itr;
 
-    /* determine high and low node numbers */
-    cap->HighNode = cap->LowNode = -1;
-    if ((itr = hostlist_iterator_create(nodelist)) == NULL)
-        errx("%p: hostlist_iterator_create failed\n");
-    while ((host = hostlist_next(itr)) != NULL) {
-        if ((node = elanhost_host2elanid(elanconf, host)) < 0) {
-            err("%p: _setbitmap: Unable to get ElanId for \"%s\"\n", host);
-            return -1;
-        }
-        if (node < cap->LowNode || cap->LowNode == -1)
-            cap->LowNode = node;
-        if (node > cap->HighNode || cap->HighNode == -1)
-            cap->HighNode = node;
+    if (!(el = _hostlist_to_elanids (nodelist)))
+        return (-1);
 
-        free(host);
-    }
-    hostlist_iterator_destroy(itr);
+    cap->HighNode = _elanid_max (el);
+    cap->LowNode  = _elanid_min (el);
+
     if (cap->HighNode == -1 || cap->LowNode == -1)
         return -1;
+
+    nodes_in_bitmap = cap->HighNode - cap->LowNode + 1;
 
     /*
      * There are (procs_per_node * nnodes) significant bits in the mask, 
@@ -283,30 +356,52 @@ _setbitmap(hostlist_t nodelist, int procs_per_node, ELAN_CAPABILITY * cap)
      * For example, if nodes 4 and 6 are running two processes per node,
      * bits 0,1 (corresponding to the two processes on node 4) and bits 4,5
      * (corresponding to the two processes running no node 6) are set.
+     *
+     * Note that for QsNet, the bits have a different meaning depending
+     * on whether the capability distribution type is cyclic or block.
+     * For block distribution, the bits are laid out in node-major
+     * format, while for cyclic distribution, a procid (or context) major
+     * format is used. 
+     * 
+     * Example: 2 processes per node on nodes 0,2:
+     *
+     *        block                       cyclic
+     *                                      
+     *    2  |  1  |  0     NodeId     2 1 0 | 2 1 0
+     *       |     |                         |
+     *   1 0 | 1 0 | 1 0   ContextId     1   |   0         
+     *       |     |                         |       
+     *   5 4 | 3 2 | 1 0  Bit Numbers  5 4 3 | 2 1 0
+     *       |     |                         |
+     *  ---- +-----+-----             -------+-------
+     *   1 1 | 0 0 | 1 1   Bit Value   1 0 1 | 1 0 1
      */
-    if ((itr = hostlist_iterator_create(nodelist)) == NULL)
-        errx("%p: hostlist_iterator_create failed\n");
-    while ((host = hostlist_next(itr)) != NULL) {
-        int i, proc0;
 
-        if ((node = elanhost_host2elanid(elanconf, host)) < 0) {
-            err("%p: _setbitmap: Unable to get ElanId for \"%s\"\n", host);
-            return -1;
-        }
+    itr = list_iterator_create (el);
+
+    while ((id = list_next (itr))) {
+        int node = (*id) - cap->LowNode; /* relative id w/in bitmap */
+        int i;
+
         for (i = 0; i < procs_per_node; i++) {
-            proc0 = (node - cap->LowNode) * procs_per_node;
-            if (proc0 + i >= (sizeof(cap->Bitmap) * 8)) {
-                err("%p: _setbitmap: bit %d out of range\n", proc0 + i);
-                return -1;
+            int bit;
+            if (cyclic) 
+                bit = (i * nodes_in_bitmap) + node;
+            else
+                bit = (node * (procs_per_node)) + i;
+
+            if (bit >= (sizeof (cap->Bitmap) * 8)) {
+                err ("%p: _setbitmap: bit %d out of range\n", bit);
+                rc = -1;
+                break;
             }
-            BT_SET(cap->Bitmap, proc0 + i);
+
+            BT_SET(cap->Bitmap, bit);
         }
-
-        free(host);
     }
-    hostlist_iterator_destroy(itr);
+    list_destroy (el);
 
-    return 0;
+    return (rc);
 }
 
 /*
@@ -674,7 +769,7 @@ qsw_init_capability(ELAN_CAPABILITY * cap, int nprocs, hostlist_t nodelist,
      * Describe the mapping of processes to nodes.
      * This sets cap->HighNode, cap->LowNode, and cap->Bitmap.
      */
-    if (_setbitmap(nodelist, procs_per_node, cap) < 0) {
+    if (_setbitmap(nodelist, procs_per_node, cyclic_alloc, cap) < 0) {
         err("%p: do all target nodes have an Elan adapter?\n");
         return -1;
     }
