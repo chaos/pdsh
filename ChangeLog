@@ -1,3 +1,9 @@
+2005-01-07  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/qsnet/qswutil.c (qsw_have_elan3) : Fix bug in m/qshd which
+	  caused pdsh to fail on nodes without an elan3 adapter.
+	  (patch supplied by Daniel Blueman <daniel.blueman@quadrics.com>)
+
 2004-12-08  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/mcmd.c : Update to mrsh protocol version 2.1,
