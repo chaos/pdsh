@@ -26,11 +26,11 @@ AC_DEFUN([AC_MACHINES],
         yes) ac_with_machines=yes
              MACHINES="/etc/machines" ;;
         *)   ac_with_machines=yes
-			 MACHINES=$withval 
+             MACHINES=$withval 
       esac
     ]
   )
-  AC_MSG_RESULT([${MACHINES=none}])
+  AC_MSG_RESULT([${ac_with_machines=no}])
   : ${ac_with_machines=no}
   if test "$ac_with_machines" = yes; then
         AC_DEFINE([HAVE_MACHINES], [1], [Define if you have machines])
