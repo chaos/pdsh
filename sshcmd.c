@@ -118,12 +118,19 @@ pipecmd(char *path, char *args[], const char *ahost, int *fd2p)
 	return 0;
 }
 
+/* pdsh uses this version */
 int 
 sshcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd, 
 		int rank, int *fd2p)
 {
-	char *args[] = { "ssh", "-q", "-a", "-x", "-f", "-l", 0, 0, 0, 0 };
+	char *prog = xbasename(_PATH_SSH);
+	char *args[] = { 0, "-q", "-a", "-x", "-f", "-l", 0, 0, 0, 0 };
 
+	/* -f args changed for ssh2 (-fo didn't do the same thing as ssh1 -f) */
+	if (strcmp(prog, "ssh2") == 0)
+		args[4] = "-oBatchMode yes";
+
+	args[0] = prog;
 	args[6] = ruser;	/* solaris cc doesn't like non constant */
 	args[7] = ahost; 	/*     initializers */
 	args[8] = cmd;
@@ -131,12 +138,15 @@ sshcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
 	return pipecmd(_PATH_SSH, args, ahost, fd2p);
 }
 
+/* pdcp uses this version */
 int 
 sshcmdrw(char *ahost, char *addr, char *luser, char *ruser, char *cmd, 
 		int rank, int *fd2p)
 {
-	char *args[] = { "ssh", "-q", "-a", "-x", "-l", 0, 0, 0, 0 };
+	char *prog = xbasename(_PATH_SSH);
+	char *args[] = { 0, "-q", "-a", "-x", "-l", 0, 0, 0, 0 };
 
+	args[0] = prog;
 	args[5] = ruser;	/* solaris cc doesn't like non constant */
 	args[6] = ahost; 	/*     initializers */
 	args[7] = cmd;

@@ -38,8 +38,6 @@ else
 fi
 AC_MSG_RESULT(${debug=no})
 
-
-
 # Enable features that interact with external software
 # --with-elan
 AC_MSG_CHECKING(whether to support Elan interconnect)
@@ -86,24 +84,30 @@ AC_ARG_WITH(rms,
 AC_MSG_RESULT(${withrms=no})
 
 # --with-ssh
+# or you can say --with-ssh=/ssh/executable
 AC_MSG_CHECKING(whether to use SSH as primary remote shell)
 AC_ARG_WITH(ssh,
     AC_HELP_STRING([--with-ssh], [Use SSH as primary remote shell]),
     [ case "$withval" in
 	yes)
 	    withssh=yes
-            AC_DEFINE(HAVE_SSH, 1, [Define to use SSH as primary remote shell])
 	    ;;
 	no)
 	    withssh=no
 	    ;;
 	*)
-	    AC_MSG_RESULT(doh!)
-	    AC_MSG_ERROR([bad value "$withval" for --with-ssh])
+	    withssh=yes
+	    SSH=$withval
 	    ;;
     esac ]
 )
 AC_MSG_RESULT(${withssh=no})
+if test "$withssh" = yes; then
+    AC_DEFINE(HAVE_SSH, 1, [Define to use SSH as primary remote shell])
+    if test -n "$SSH"; then
+        AC_CHECK_FILE($SSH, [], AC_MSG_ERROR([--with-ssh argument not found]))
+    fi
+fi
 
 # --with-krb4
 # or you can say --with-krb4=/usr/local/krb4
@@ -136,10 +140,38 @@ fi
 # NOTE: support for SDR is automatic if SDRGetObjects is found
 # NOTE: support for Genders is automatic if nodeattr is found
 
-# XXX someday make these configurable
-MACHINES='/usr/local/etc/machines'
-AC_DEFINE_UNQUOTED(_PATH_MACHINES, "$MACHINES", [MPICH machines file])
+# --with-machines=/path/to/machines
+# This overrides nodeattr and SDRGetObjects if configured.
+AC_MSG_CHECKING(whether to use machines file)
+AC_ARG_WITH(machines,
+    AC_HELP_STRING([--with-machines], [Specify a flat file list of all nodes]),
+    [ case "$withval" in
+	no)
+	    withmachines=no
+	    ;;
+	yes)
+	    withmachines=yes
+	    ;;
+	*)
+	    withmachines=yes
+	    MACHINES=$withval
+	    ;;
+    esac ]
+)
+AC_MSG_RESULT(${withmachines=no})
+if test "$withmachines" = yes; then
+    if test -z "$MACHINES"; then
+	AC_MSG_ERROR([--with-machines requires an argument])
+    fi
+    AC_CHECK_FILE($MACHINES, [], 
+	AC_MSG_ERROR([--with-machines argument not found]))
+    AC_DEFINE_UNQUOTED(_PATH_MACHINES, "$MACHINES", 
+	[Define path to flat list of nodes for -a processing])
+    AC_DEFINE(HAVE_MACHINES, 1, 
+ 	[Define to use a flat list of all nodes for -a processing])
+fi
 
+# XXX make this configurable
 RANGE_OP='-'
 AC_DEFINE_UNQUOTED(RANGE_OP, "$RANGE_OP", [Range operator])
 
@@ -148,26 +180,42 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-AC_PROG_RANLIB
-AC_PATH_PROG(SSH, ssh, [], /admin/bin:/usr/bin:/usr/local/bin:$PATH)
+
+if test -z "$SSH"; then
+    AC_PATH_PROG(SSH, ssh, [], /admin/bin:/usr/bin:/usr/local/bin:$PATH)
+fi
 if test -n "$SSH"; then
     AC_DEFINE_UNQUOTED(_PATH_SSH, "$SSH", [Path to ssh])
 fi
+if test "$withssh" = yes && test -z "$SSH"; then
+    AC_MSG_ERROR([--with-ssh specified but ssh program is not found])
+fi
+
 AC_PATH_PROG(NODEATTR, nodeattr, [], /usr/bin:/admin/scripts:$PATH)
 if test -n "$NODEATTR"; then
     AC_DEFINE_UNQUOTED(_PATH_NODEATTR, "$NODEATTR", [Path to nodeattr])
 fi
+
 AC_PATH_PROG(RMSQUERY, rmsquery, [], /usr/bin:$PATH)
 if test -n "$RMSQUERY"; then
     AC_DEFINE_UNQUOTED(_PATH_RMSQUERY, "$RMSQUERY", [Path to rmsquery])
 fi
+if test "$withrms" = yes && test -z "$RMS"; then
+    AC_MSG_ERROR([--with-rms specified but rmsquery program is not found])
+fi
+
 AC_PATH_PROG(SDRGETOBJECTS, SDRGetObjects, "", /usr/lpp/ssp/bin:$PATH)
 if test -n "$SDRGETOBJECTS"; then
     AC_DEFINE_UNQUOTED(_PATH_SDRGETOBJECTS, "$SDRGETOBJECTS", [Path SDRGetObjects])
 fi
+
 AC_PATH_PROG(RCP, rcp, [], /usr/bin:$PATH)
 if test -n "$RCP"; then
     AC_DEFINE_UNQUOTED(_PATH_RCP, "$RCP", [Path to rcp])
+fi
+
+if test -z "$SDRGETOBJECTS" && test -z "$NODEATTR" && test -z "$MACHINES"; then
+    AC_MSG_ERROR([did not find nodeattr, SDRGetObjects, or machines file])
 fi
 
 # Checks for libraries.

@@ -161,4 +161,11 @@ Release 1.6
 	-e, -R, and -k options for selecting these at runtime.  Do not use
 	rsh for non-root users if --with-krb4 specified.
 
+	Support ssh2's different option for batch mode.
+
+	If --with-machines=/path/to/machines is specified, use that for -a
+	processing no matter what.  In the absense of a machines file, if
+	SDRGetObjects exists, use that; if nodeattr exists, use that.
+	None of the above is a configure error.
+
 	Released version 1.6.

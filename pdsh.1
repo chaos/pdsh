@@ -54,8 +54,8 @@ to the desired character.
 .I "-a"
 Target "all" nodes in the cluster.  If running on an SP, this means all
 nodes in your partition.  On a non-SP with genders support, this is all nodes
-listed in your genders file.  Otherwise, it is all nodes in your MPICH
-node list (see FILES below).
+listed in your genders file.  Otherwise, it is a configured flat file
+containing a list of nodes.
 .LP
 .I "-v"
 (SP ONLY) In combination with -a, eliminate nodes that the SDR thinks are down.
@@ -136,17 +136,6 @@ connect and command time statistics on stderr when done.
 .LP
 .I "-S"
 Return largest of the remote command return values.
-
-.SH "FILES"
-/usr/local/etc/machines
-.br
-/usr/lpp/ssp/bin/SDRGetObjects
-.br
-nodeattr
-.br
-ssh
-.br
-rcp
 
 .SH "ORIGIN"
 Originally a rewrite of IBM dsh(1) by Jim Garlick <garlick@llnl.gov>

@@ -16,19 +16,26 @@ As of version 1.6, pdsh uses GNU autoconf for configuration.  To configure:
 
 The following features are not enabled by default:
 
---with-ssh
+--with-ssh[=/path/to/ssh/program]
 	Use SSH as the primary remote shell type.  This is not recommended
 	unless you cannot enable rsh root equivalence between nodes.
 	SSH has not been tested extensively.  There will be no configurable
 	connect timeout.  SSH will be run with no controlling tty, so if it
 	needs to prompt for a password or a "man in the middle" message, it
-	will fail.
+	will fail.  By default, configure will search for a program named
+	"ssh".  If you prefer ssh2, specify its full path as the argument
+	to --with-ssh, e.g. --with-ssh=/usr/local/bin/ssh2.
 
 --with-krb4[=/path/to/krb4/root]
 	Use Kerberos IV as the primary remote shell type.  This is not 
 	recommended unless you are running on an SP and cannot enable rsh 
 	root equivalence between nodes.  Kerberos IV has not been extensively
 	tested.  The action of refreshing TGT's is very slow under pdsh.
+
+--with-machines=/path/to/machines
+	Use a flat file list of machine names for -a instead of nodeattr
+	or SDRGetObjects.  You must specify this option if you do not have
+	nodeattr or SDRGetObjects (see below).
 
 --with-elan
 	Enable support for running parallel jobs on the Quadrics Elan 
@@ -54,9 +61,9 @@ configure will find the nodeattr command and use that to generate the list
 of "all" nodes for -a ("all" attribute), transform to alternate hostnames 
 with -i (altname=name), etc.. 
 
-If neither of the above are found, a flat list of hostnames can be used.
-Currently this is hard coded to /usr/local/etc/machines for compatibility
-with MPICH.
+If neither of the above are found, a flat list of hostnames can be used for
+the list of "all" nodes.  Specify the location of this file using the 
+--with-machines configure option.
 
 +------------+
 | INSTALLING |

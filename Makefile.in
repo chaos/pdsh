@@ -12,7 +12,6 @@ DEFS=           @DEFS@
 CFLAGS=         @CFLAGS@
 LDFLAGS=        @LDFLAGS@
 LIBS=           @LIBS@
-RANLIB=         @RANLIB@
 INSTALL=        @INSTALL@
 LN_S=		@LN_S@
 CPPFLAGS=	@CPPFLAGS@

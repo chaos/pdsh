@@ -39,8 +39,8 @@ Use character 'c' as a range operator when expanding hostname ranges.
 .I "-a"
 Target "all" nodes in the cluster.  If running on an SP, this means all
 nodes in your partition.  On a non-SP with genders support, this is all nodes
-listed in your genders file.  Otherwise, it is all nodes in your MPICH
-node list (see FILES below).
+listed in your genders file.  
+Otherwise, it is a configured flat file containing a list of nodes.
 .LP
 .I "-v"
 (SP ONLY) In combination with -a, eliminate nodes that the SDR thinks are down.
@@ -85,13 +85,6 @@ the socket-level timeout which may cause connect(2) to fail sooner)
 .I "-d"
 Include more complete thread status when SIGINT is received, and display
 connect and command time statistics on stderr when done.
-
-.SH "FILES"
-MPICH Machines file:  /usr/local/etc/machines
-.br
-SDR query command: /usr/lpp/ssp/bin/SDRGetObjects
-.br
-Genders query command: /usr/bin/nodeattr
 
 .SH "ORIGIN"
 Pdsh/pdcp was originally a rewrite of IBM dsh(1) by Jim Garlick

@@ -289,8 +289,11 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 				break;
 			case 'i':	/* use alternate hostnames */
 				opt->altnames = true;
+#if	HAVE_MACHINES
+				err("%p: warning: -i will have no effect\n");
+#endif
 				break;
-			case 'c':	/* continue to use hosts which have */
+			case 'c':	/* pdsh> continue to try failed hosts */
 				opt->delete_nextpass = false;
 				break;
 			case 't':	/* set connect timeout */
@@ -349,13 +352,15 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 
 	/* get wcoll, SDR, genders file, or MPICH machines file */
 	if (opt->allnodes) {
-#ifdef _PATH_SDRGETOBJECTS
+#if	HAVE_MACHINES
+		opt->wcoll = read_wcoll(_PATH_MACHINES, NULL);
+#elif 	defined(_PATH_SDRGETOBJECTS)
 		opt->wcoll = sdr_wcoll(opt->sdr_global, 
 		    opt->altnames, opt->sdr_verify);
-#elif defined(_PATH_NODEATTR)
+#elif 	defined(_PATH_NODEATTR)
 		opt->wcoll = read_genders("all", opt->altnames);
-#elif defined(_PATH_MACHINES)
-		opt->wcoll = read_wcoll(_PATH_MACHINES, NULL);
+#else
+#error bogus configuration
 #endif
 	} 
 #ifdef _PATH_NODEATTR
@@ -613,10 +618,8 @@ static void show_version(void)
 #ifdef	_PATH_NODEATTR
 	printf("+genders");
 #endif
-#ifdef _PATH_MACHINES
-#if	!defined(_PATH_NODEATTR) && !defined(_PATH_SDRGETOBJECTS)
-	printf("+mpichmachinesfile");
-#endif
+#ifdef 	HAVE_MACHINES
+	printf("+machines");
 #endif
 #if	HAVE_ELAN3
 	printf("+elan");

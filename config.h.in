@@ -25,6 +25,9 @@
 /* Define if you have the `rmscall' library (-lrmscall). */
 #undef HAVE_LIBRMSCALL
 
+/* Define to use a flat list of all nodes for -a processing */
+#undef HAVE_MACHINES
+
 /* Define if your system has a working `malloc' function. */
 #undef HAVE_MALLOC
 
@@ -97,7 +100,7 @@
 /* Define if using the debug malloc library. */
 #undef WITH_DMALLOC
 
-/* MPICH machines file */
+/* Define path to flat list of nodes for -a processing */
 #undef _PATH_MACHINES
 
 /* Path to nodeattr */
