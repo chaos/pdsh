@@ -496,8 +496,7 @@ void gethost(char *name, char *addr)
 	struct hostent *hp;
 
 	if (!(hp = gethostbyname(name)))
-		errx("%p: gethostbyname %S failed: %s\n", 
-				name, hstrerror(h_errno));
+		errx("%p: gethostbyname %S failed\n", name);
 	assert(hp->h_addrtype == AF_INET);
 	assert(IP_ADDR_LEN == hp->h_length);
 	memcpy(addr, hp->h_addr_list[0], IP_ADDR_LEN);
