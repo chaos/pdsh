@@ -31,7 +31,7 @@ executables.
 
 %build
 %if %chaos
-./configure --prefix=/usr --with-elan --with-rms
+./configure --prefix=/usr --with-elan #--with-rms
 %else
 ./configure --prefix=/usr --with-machines=/usr/local/etc/machines
 %endif
