@@ -29,7 +29,7 @@
 /*
  *  Get the default rcmd module name (e.g. "bsd" "ssh" etc.)
  */
-char * mod_rcmd_get_default_module(opt_t *pdsh_opts);
+char * mod_rcmd_get_default_module(void);
 
 /*
  *  Load the chosen or default rcmd module

@@ -185,9 +185,9 @@ struct pdsh_rcmd_operations mqcmd_rcmd_ops = {
  */
 struct pdsh_module_option mqcmd_module_options[] =
   { { 'm', "block|cyclic", "(mqshell) control assignment of procs to nodes",
-      (optFunc) mqcmd_opt_m },
+      DSH, (optFunc) mqcmd_opt_m },
     { 'n', "n",            "(mqshell) set number of tasks per node",
-      (optFunc) mqcmd_opt_n },
+      DSH, (optFunc) mqcmd_opt_n },
     PDSH_OPT_TABLE_END
   };
 
@@ -209,9 +209,6 @@ struct pdsh_module pdsh_module_info = {
 static int
 mqcmd_opt_m(opt_t *pdsh_opts, int opt, char *arg)
 {
-    if (pdsh_opts->personality != DSH)
-        errx("%p: illegal option -- %c\n", (char)opt); 
-
     if (strcmp(arg, "block") == 0)
         cyclic = false;
     else if (strcmp(arg, "cyclic") == 0)
@@ -227,9 +224,6 @@ mqcmd_opt_m(opt_t *pdsh_opts, int opt, char *arg)
 static int
 mqcmd_opt_n(opt_t *pdsh_opts, int opt, char *arg)
 {
-    if (pdsh_opts->personality != DSH)
-        errx("%p: illegal option -- %c\n", (char)opt); 
-
     nprocs = atoi(arg);
     return 0;
 }

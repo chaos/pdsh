@@ -103,10 +103,12 @@ Usage: pdcp [-options] src [src2...] dest\n\
 static char *pdsh_options = NULL;
 
 static void
-_init_pdsh_options(void)
+_init_pdsh_options(pers_t personality)
 {
-	pdsh_options = Strdup(GEN_ARGS);
+    pdsh_options = Strdup(GEN_ARGS);
+    if (personality == DSH) {
 	xstrcat(&pdsh_options, DSH_ARGS);
+    } else
 	xstrcat(&pdsh_options, PCP_ARGS);
 }
 
@@ -117,19 +119,32 @@ _init_pdsh_options(void)
  *  Returns false if option is already used by pdsh or a pdsh module.
  *  Returns true if option was successfully registered.
  */
-bool opt_register(struct pdsh_module_option *p)
+bool opt_register(struct pdsh_module_option *opt_table, pers_t personality)
 {
-	if (pdsh_options == NULL)
-		_init_pdsh_options();
+    struct pdsh_module_option *p;
+  
+    if (pdsh_options == NULL)
+        _init_pdsh_options(personality);
+    
+    /* Don't register any options if we can't all the options
+     * in this module 
+     */
+    for (p = opt_table; p && (p->opt != 0); p++) {
+        if ((personality & p->personality) && 
+            strchr(pdsh_options, p->opt) != NULL)
+            return false;
+    }
 
-	if (!strchr(pdsh_options, p->opt)) {
-		xstrcatchar(&pdsh_options, p->opt);
-		if (p->arginfo != NULL)
-			xstrcatchar(&pdsh_options, ':');
-		return true;
-	}
+    for (p = opt_table; p && (p->opt != 0); p++) {
+        /* register only if the personality is correct */
+        if (p->personality & personality) {
+            xstrcatchar(&pdsh_options, p->opt);
+            if (p->arginfo != NULL)
+                xstrcatchar(&pdsh_options, ':');
+        }
+    }
 
-	return false;
+    return true;
 }
 
 
@@ -142,7 +157,7 @@ void opt_default(opt_t * opt)
     struct passwd *pw;
 
     if (pdsh_options == NULL)
-	    _init_pdsh_options();
+        _init_pdsh_options(opt->personality);
 
     if ((pw = getpwuid(getuid())) != NULL) {
         strncpy(opt->luser, pw->pw_name, MAX_USERNAME);
@@ -236,29 +251,10 @@ void opt_env(opt_t * opt)
  */
 void opt_args(opt_t * opt, int argc, char *argv[])
 {
-    char *validargs = NULL;
     int c;
     extern int optind;
     extern char *optarg;
     char *exclude_buf = NULL;
-    char *pname = xbasename(argv[0]);
-
-    /* deal with program name */
-    opt->progname = pname;
-    if (!strcmp(pname, "pdsh") || !strcmp(pname, "dsh"))
-        opt->personality = DSH;
-    else if (!strcmp(pname, "pdcp") || !strcmp(pname, "dcp")
-             || !strcmp(pname, "pcp"))
-        opt->personality = PCP;
-    else
-        errx("%p: program must be named pdsh/dsh/pdcp/dcp/pcp\n");
-
-    /* construct valid arg list */
-    if (opt->personality == DSH) {
-        xstrcpy(&validargs, DSH_ARGS);
-    } else
-        xstrcpy(&validargs, PCP_ARGS);
-    xstrcat(&validargs, GEN_ARGS);
 
 #ifdef __linux
     /* Tell glibc getopt to stop eating after the first non-option arg */
@@ -267,7 +263,7 @@ void opt_args(opt_t * opt, int argc, char *argv[])
     while ((c = getopt(argc, argv, pdsh_options)) != EOF) {
         switch (c) {
         case 'L':
-            mod_list_module_info(opt);
+            mod_list_module_info();
             exit(0);
             break;
         case 'R': 
@@ -336,8 +332,6 @@ void opt_args(opt_t * opt, int argc, char *argv[])
                _usage(opt);
         }
     }
-
-    Free((void **) &validargs);
 
     /*
      *  Load requested (or default) rcmd module 
@@ -569,13 +563,13 @@ static void _usage(opt_t * opt)
     char *def   = NULL;
 
     /* first, make sure atleast some rcmd modules are loaded */
-    l = mod_get_module_names(opt, "rcmd");
+    l = mod_get_module_names("rcmd");
     if (list_count(l) == 0)
       errx("%p: no rcmd modules are loaded\n");
     names = _list_join(",", l);
     list_destroy(l);
 
-    if (!(def = mod_rcmd_get_default_module(opt)))
+    if (!(def = mod_rcmd_get_default_module()))
         def = "(none)";
 
     if (opt->personality == DSH) {
@@ -588,7 +582,7 @@ static void _usage(opt_t * opt)
 
     err(OPT_USAGE_COMMON);
 
-    mod_print_all_options(opt, 18);
+    mod_print_all_options(18);
 
     err("available rcmd modules: %s (default: %s)\n", names, def);
     Free((void **) &names);

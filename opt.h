@@ -121,15 +121,16 @@ struct pdsh_module_option {
         char   *arginfo;    /* one word descr of arg if option takes one 
                                If NULL, option takes no arg              */
 	char   *descr;      /* short description of option               */
-        int     personality;    /* DSH and/or PCP, must be int b/c we
-                                   may or values */
+        int     personality;    /* personality module is suitable for.  May be set
+                                 * to DSH, PCP, or DSH | PCP 
+                                 */  
 	optFunc f;          /* callback function for option processing   */
 };
 
-#define PDSH_OPT_TABLE_END { 0, NULL, NULL, NULL }
+#define PDSH_OPT_TABLE_END { 0, NULL, NULL, 0, NULL }
 
 
-bool opt_register(struct pdsh_module_option *popt);
+bool opt_register(struct pdsh_module_option *popt, pers_t personality);
 
 #endif                          /* OPT_INCLUDED */
 

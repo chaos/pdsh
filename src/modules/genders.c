@@ -85,14 +85,14 @@ struct pdsh_rcmd_operations genders_rcmd_ops = {
 struct pdsh_module_option genders_module_options[] = 
  { 
    { 'g', "attribute", "target nodes with specified genders attribute",
-     (optFunc) genders_process_opt 
+     DSH | PCP, (optFunc) genders_process_opt 
    },
 #if !GENDERS_G_ONLY
    { 'i', NULL,        "request canonical hostnames if applicable",
-     (optFunc) genders_process_opt
+     DSH | PCP, (optFunc) genders_process_opt
    },
    { 'a', NULL,        "target all nodes", 
-     (optFunc) genders_process_opt 
+     DSH | PCP, (optFunc) genders_process_opt 
    },
 #endif /* !GENDERS_G_ONLY */
    PDSH_OPT_TABLE_END

@@ -63,7 +63,7 @@ struct pdsh_rcmd_operations machines_rcmd_ops = {
  * Export module options
  */
 struct pdsh_module_option machines_module_options[] = 
- { { 'a', NULL, "target all nodes", (optFunc) machines_opt_a },
+ { { 'a', NULL, "target all nodes", DSH | PCP, (optFunc) machines_opt_a },
    PDSH_OPT_TABLE_END
  };
 

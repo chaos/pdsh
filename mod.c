@@ -65,30 +65,21 @@ struct module_components {
     struct pdsh_module *pmod;
 };
 
-/*
- * Struct to pass two variables as 1 variable in list operations
- */
-struct list_vars {
-  opt_t *opt;
-  int col;
-};
-
-
 /* 
  *  Static function prototypes:
  */
 #if STATIC_MODULES
-static int  _mod_load(int);
+static int  _mod_load(int, pers_t);
 #else
-static int  _mod_load(const char *);
+static int  _mod_load(const char *, pers_t);
 static int  _cmp_filenames(mod_t, char *);
 static int  _is_loaded(char *filename); 
 static bool _dir_ok(struct stat *);
 static bool _path_permissions_ok(const char *dir);
 #endif
 static void _mod_destroy(mod_t mod);
-static bool _mod_opts_ok(mod_t mod);
-static int  _mod_print_info(mod_t mod, opt_t *opt);
+static bool _mod_opts_ok(mod_t mod, pers_t personality);
+static int  _mod_print_info(mod_t mod);
 static void _print_option_help(struct pdsh_module_option *p, int col);
 static struct pdsh_module_option * _mod_find_opt(mod_t mod, int opt);
 
@@ -253,14 +244,10 @@ _mod_destroy(mod_t mod)
 }
 
 static bool
-_mod_opts_ok(mod_t mod)
+_mod_opts_ok(mod_t mod, pers_t personality)
 {
-    struct pdsh_module_option *p;
-    
-    for (p = mod->pmod->opt_table; p && (p->opt != 0); p++) {
-        if (!opt_register(p)) 
-            return false;
-    }
+    if (!opt_register(mod->pmod->opt_table, personality))
+        return false;
 
     return true;
 }
@@ -276,9 +263,9 @@ _mod_opts_ok(mod_t mod)
  */
 static int
 #if STATIC_MODULES
-_mod_load(int index)
+_mod_load(int index, pers_t personality)
 #else
-_mod_load(const char *fq_path)
+_mod_load(const char *fq_path, pers_t personality)
 #endif
 {
     mod_t mod = NULL;
@@ -319,14 +306,19 @@ _mod_load(const char *fq_path)
     if (!mod->pmod->type || !mod->pmod->name) {
         err("%p:[%s] type or name not specified in module\n", 
 #if STATIC_MODULES
-            static_mod_names[index]);
+            static_mod_names[index]
 #else
-            mod->filename);
+            mod->filename
 #endif
+            );
         goto fail;
     }
 
-    if (!_mod_opts_ok(mod)) {
+    /* Continue with module loading only if personality acceptable */
+    if (!(mod->pmod->personality & personality))
+        goto fail;
+
+    if (!_mod_opts_ok(mod, personality)) {
         err("failed to install module options for \"%s/%s\"\n", 
             mod->pmod->type, mod->pmod->name);
         goto fail;
@@ -357,7 +349,7 @@ _mod_load(const char *fq_path)
 
 
 int 
-mod_load_modules(const char *dir)
+mod_load_modules(const char *dir, pers_t personality)
 {
 #if STATIC_MODULES
     int i = 0;
@@ -377,7 +369,7 @@ mod_load_modules(const char *dir)
 
 #if STATIC_MODULES
     while (static_mods[i] != NULL) {
-        if (_mod_load(i++) < 0)
+        if (_mod_load(i++, personality) < 0)
             continue;
     }
 #else
@@ -408,7 +400,7 @@ mod_load_modules(const char *dir)
         if (!S_ISREG(st.st_mode))
             continue;
 
-        if (_mod_load(path) < 0) 
+        if (_mod_load(path, personality) < 0) 
             continue;
 
         count++;
@@ -443,16 +435,12 @@ _print_option_help(struct pdsh_module_option *p, int col)
 }
 
 void
-mod_print_options(opt_t *opt, mod_t mod, int col)
+mod_print_options(mod_t mod, int col)
 {
     struct pdsh_module_option *p;
 
     assert(mod != NULL);
     assert(mod->pmod != NULL);
-
-    /* output options only if personality acceptable */
-    if (!(opt->personality & mod->pmod->personality))
-      return;
 
     p = mod->pmod->opt_table;
     if (!p || !p->opt)
@@ -469,14 +457,10 @@ mod_print_options(opt_t *opt, mod_t mod, int col)
  *  Print to stdout information stanza for module "mod"
  */
 static int 
-_mod_print_info(mod_t mod, opt_t *opt)
+_mod_print_info(mod_t mod)
 {
     if (mod == NULL) 
         return 0;
-
-    /* output info only if personality acceptable */
-    if (!(opt->personality & mod->pmod->personality))
-      return 0;
 
     out("Module: %s/%s\n",    mod->pmod->type, mod->pmod->name); 
     out("Author: %s\n",       mod->pmod->author ? mod->pmod->author : "???");
@@ -484,7 +468,7 @@ _mod_print_info(mod_t mod, opt_t *opt)
 
     if (mod->pmod->opt_table && mod->pmod->opt_table->opt) {
         out("Options:\n");
-        mod_print_options(opt, mod, 18);
+        mod_print_options(mod, 18);
     }
 
     out("\n");
@@ -492,22 +476,16 @@ _mod_print_info(mod_t mod, opt_t *opt)
     return 0;
 }
 
-static int _opt_print(mod_t mod, struct list_vars *lv)
+static int _opt_print(mod_t mod, int *col)
 {
-    mod_print_options(lv->opt, mod, lv->col);
+    mod_print_options(mod, *col);
     return 0;
 }
 
 
-void mod_print_all_options(opt_t *opt, int col) 
+void mod_print_all_options(int col) 
 {
-
-    struct list_vars lv;
-    assert(opt != NULL);
-
-    lv.opt = opt;
-    lv.col = col;
-    list_for_each(module_list, (ListForF) _opt_print, &lv);
+    list_for_each(module_list, (ListForF) _opt_print, &col);
 }
 
 
@@ -518,7 +496,7 @@ _cmp_type(mod_t mod, char *type)
 }
 
 List
-mod_get_module_names(opt_t *opt, char *type)
+mod_get_module_names(char *type)
 {
     List l;
     mod_t mod;
@@ -531,27 +509,27 @@ mod_get_module_names(opt_t *opt, char *type)
 
     list_iterator_reset(module_itr);
     while ((mod = list_find(module_itr, (ListFindF) _cmp_type, type))) {
-        /* add to list only if personality acceptable */
-        if (opt->personality & mod->pmod->personality)
-            list_push(l, mod->pmod->name);
+        list_push(l, mod->pmod->name);
     }
 
     return l;
 }
 
 void
-mod_list_module_info(opt_t *opt)
+mod_list_module_info(void)
 {
     int nmodules = list_count(module_list);
+    out("%d module%s loaded:\n\n", nmodules, (nmodules > 1 ? "s" : ""));
+
     if (nmodules == 0)
         return;
 
-    list_for_each(module_list, (ListForF) _mod_print_info, opt);
+    list_for_each(module_list, (ListForF) _mod_print_info, NULL);
 }
 
 
 mod_t
-mod_get_module(opt_t *opt, const char *type, const char *name)
+mod_get_module(const char *type, const char *name)
 {
     mod_t mod;
 
@@ -561,8 +539,7 @@ mod_get_module(opt_t *opt, const char *type, const char *name)
     list_iterator_reset(module_itr);
     while ((mod = list_next(module_itr))) {
         if ( (strncmp(mod->pmod->type, type, strlen(type)) == 0)
-             && (strncmp(mod->pmod->name, name, strlen(name)) == 0) 
-             && (opt->personality & mod->pmod->personality) )
+             && (strncmp(mod->pmod->name, name, strlen(name)) == 0) ) 
           return mod;
     }
     return NULL;

@@ -80,16 +80,16 @@ struct pdsh_rcmd_operations sdr_rcmd_ops = {
  */
 struct pdsh_module_option sdr_module_options[] = 
  { { 'a', NULL, "target all nodes", 
-     (optFunc) sdr_process_opt
+     DSH | PCP, (optFunc) sdr_process_opt
    },
    { 'v', NULL, "with -a, verify nodes are up using host/switch_responds",
-     (optFunc) sdr_process_opt
+     DSH | PCP, (optFunc) sdr_process_opt
    },
    { 'i', NULL, "use alternate hostnames from SDR",
-     (optFunc) sdr_process_opt
+     DSH | PCP, (optFunc) sdr_process_opt
    },
    { 'G', NULL, "with -a, run on all SP partitions",
-     (optFunc) sdr_process_opt
+     DSH | PCP, (optFunc) sdr_process_opt
    },
    PDSH_OPT_TABLE_END
  };

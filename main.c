@@ -59,20 +59,32 @@ int main(int argc, char *argv[])
 {
     opt_t opt;
     int retval = 0;
+    char *pname = xbasename(argv[0]);
 
     /*
      * Initialize.
      */
-    err_init(xbasename(argv[0]));       /* init err package */
+    err_init(pname);       /* init err package */
 
     mod_init();
+
+    /* 
+     * Determine program name.
+     */
+    opt.progname = pname;
+    if (!strcmp(pname, "pdsh") || !strcmp(pname, "dsh"))
+      opt.personality = DSH;
+    else if (!strcmp(pname, "pdcp") || !strcmp(pname, "dcp")
+             || !strcmp(pname, "pcp"))
+      opt.personality = PCP;
+    else
+      errx("%p: program must be named pdsh/dsh/pdcp/dcp/pcp\n");
 
     /*
      *  XXX: Need a better way to do this.
      */
-    if (mod_load_modules(pdsh_module_dir) < 0)
+    if (mod_load_modules(pdsh_module_dir, opt.personality) < 0)
         errx("%p: Couldn't load any pdsh modules\n");
-
 
     /*
      * Handle options.

@@ -51,22 +51,24 @@ int mod_init(void);
 int mod_exit(void);
 
 /*
- *  Load all modules from specified directory. Directory must
- *    be owned by the current user  and not writable by any other user.
- *    After successfully loading each module, the module's "init"
- *    routine is called, and the module is unloaded if init returns < 0.
+ *  Load all modules from specified directory that fit a specified
+ *    personality (DSH or PCP). Directory must be owned by the current
+ *    user and not writable by any other user.  After successfully
+ *    loading each module, the module's "init" routine is called, module
+ *    command line options are registered.  The module is not loaded if init 
+ *    returns < 0 or any module option command be registered.
  *
  *  If modules are being compiled statically, The directory argument
  *    is ignored.
  *
  *  Returns 0 for Success and -1 for Failure.
  */
-int mod_load_modules(const char *dir);
+int mod_load_modules(const char *dir, pers_t personality);
 
 /*
  *  List information about all loaded modules to stdout.
  */
-void mod_list_module_info(opt_t *pdsh_opts);
+void mod_list_module_info(void);
 
 /*
  *  Traverse through loaded modules and attempt to process 
@@ -101,23 +103,23 @@ int mod_postop(opt_t *pdsh_opts);
  *  Search list of loaded modules for a module with given type and name.
  *    Returns the module if found, NULL if no match.
  */
-mod_t mod_get_module(opt_t *pdsh_opts, const char *type, const char *name);
+mod_t mod_get_module(const char *type, const char *name);
 
 /*
  *  Build list of module names of type "type"
  */
-List mod_get_module_names(opt_t *pdsh_opts, char *type);
+List mod_get_module_names(char *type);
 
 /*
  * Print all options provided by modules
  *   Justify option description starting on given column.
  */
-void mod_print_all_options(opt_t *pdsh_opts, int column);
+void mod_print_all_options(int column);
 
 /* 
  *  Print options for module "mod"
  */
-void mod_print_options(opt_t *pdsh_opts, mod_t mod, int descr_column);
+void mod_print_options(mod_t mod, int descr_column);
 
 /*
  *  Module accessor functions. Return module name, type, and
@@ -183,8 +185,9 @@ struct pdsh_module {
     char *name;        /* module name, i.e. Yoda */ 
     char *author;      /* module author, i.e. George Lucas */
     char *descr;       /* module description, i.e. "Run pdsh with the force */
-    int personality;   /* DSH and/or PCP, must be int b/c we may or values */
-
+    int personality;   /* personality module is suitable for.  May be set
+                        * to DSH, PCP, or DSH | PCP 
+                        */  
     struct pdsh_module_operations *mod_ops;
     struct pdsh_rcmd_operations   *rcmd_ops;
     struct pdsh_module_option     *opt_table;

@@ -74,7 +74,7 @@ struct pdsh_rcmd_operations nodeupdown_rcmd_ops = {
  */
 struct pdsh_module_option nodeupdown_module_options[] = 
  { { 'v', NULL, "exclude targets if they are down", 
-     (optFunc) nodeupdown_opt_v
+     DSH | PCP, (optFunc) nodeupdown_opt_v
    },
    PDSH_OPT_TABLE_END
  };
