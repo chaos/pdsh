@@ -1,7 +1,8 @@
 #
 # $Id$ 
 #
-PROJECT=	pdsh
+PROJECT=	@PROJECT@
+VERSION=	@VERSION@
 
 SHELL=          @SHELL@
 CC=             @CC@

@@ -108,7 +108,10 @@ fi
 # NOTE: support for SDR is automatic if SDRGetObjects is found
 # NOTE: support for Genders is automatic if nodeattr is found
 
-# Not yet configurable features
+# XXX someday make these configurable
+MACHINES='/usr/local/etc/machines'
+AC_DEFINE_UNQUOTED(_PATH_MACHINES, "$MACHINES", [MPICH machines file])
+
 RANGE_OP='-'
 AC_DEFINE_UNQUOTED(RANGE_OP, "$RANGE_OP", [Range operator])
 

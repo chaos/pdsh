@@ -640,7 +640,7 @@ static void show_version(void)
 #ifdef	_PATH_MACHINES
 	printf("+mpich");
 #endif
-#ifdef	_PATH_SDRGETATTRIBUTES
+#ifdef	_PATH_SDRGETOBJECTS
 	printf("+sdr");
 #endif
 	printf("\n");
