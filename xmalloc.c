@@ -9,7 +9,11 @@
 #include "config.h"
 #endif
 
+#if	WITH_DMALLOC
+#include <dmalloc.h>
+#else
 #include <stdlib.h>
+#endif
 #include <errno.h>
 #include <string.h>
 #include <stdio.h>
@@ -17,6 +21,7 @@
 #include <assert.h>
 
 #include "xmalloc.h"
+
 
 /*
  * "Safe" version of malloc().
@@ -52,7 +57,7 @@ void xrealloc(void **item, size_t newsize)
 	assert(*item != NULL && newsize != 0);
 	assert(p[0] == XMALLOC_MAGIC);		/* magic cookie still there? */
 
-	p = (int *)realloc(p, newsize + 1);
+	p = (int *)realloc(p, newsize + sizeof(int));
 	if (!p) {
 		perror("realloc failed");
 		exit(1);

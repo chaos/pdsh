@@ -260,8 +260,3 @@
 
 /* Define as `fork' if `vfork' does not work. */
 #undef vfork
-
-#ifdef WITH_DMALLOC
-#include <dmalloc.h>
-#endif /* WITH_DMALLOC */
-

@@ -210,11 +210,6 @@ if test "$dmalloc" = yes; then
     ], [dmalloc=no]
   )
 fi
-AH_BOTTOM(
-[#ifdef WITH_DMALLOC
-#include <dmalloc.h>
-#endif /* WITH_DMALLOC */]
-)
 
 AC_OUTPUT_COMMANDS(echo "creating dependencies"; make depend >/dev/null)
 AC_OUTPUT([Makefile pdsh.spec])
