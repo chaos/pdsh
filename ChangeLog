@@ -3,6 +3,8 @@
 	* src/modules/mcmd.c : Update to mrsh protocol version 2.1,
 	  which allows mrsh over "localhost."
 
+	* : tag pdsh-2-4-1
+
 2004-11-22  Mark Grondona <mgrondona@llnl.gov>
 
 	* README.QsNet : Update location of libelanhosts. Describe 
