@@ -785,19 +785,19 @@ int dsh(opt_t *opt)
 	switch (opt->rcmd_type) {
 #if HAVE_ELAN3
 		case RCMD_QSHELL:
-			qcmd_init(opt->wcoll, opt->tasks_per_node);
+			qcmd_init(opt);
 			break;
 #endif
 #if KRB4
 		case RCMD_K4:
-			k4cmd_init(opt->wcoll);
+			k4cmd_init(opt);
 			break;
 #endif
 		case RCMD_SSH:
-			sshcmd_init(opt->wcoll);
+			sshcmd_init(opt);
 			break;
 		case RCMD_BSD:
-			xrcmd_init(opt->wcoll);
+			xrcmd_init(opt);
 			break;
 		default:
 			errx("%p: unknown rcmd type\n");

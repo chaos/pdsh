@@ -105,8 +105,12 @@ To enable running of MPI jobs on the Quadrics Elan3 interconnect,
 Elan capabilities are propagated and the following environment variables 
 are set: RMS_RANK, RMS_NODEID, RMS_PROCID, RMS_NNODES, and RMS_NPROCS.
 .LP
-.I "-n"
-(Elan3 ONLY) Set the number of tasks per node for qshell.
+.I "-n number"
+(Elan3 ONLY) Set the number of processes per node for qshell.
+.LP
+.I "-m block | cyclic"
+(Elan3 ONLY) Set block versus cyclic allocation of processes to nodes.
+Default is block.
 .LP
 .I "-e"
 Use ssh to connect.
@@ -144,8 +148,8 @@ properly, etc..
 .LP
 The connect timeout is not adjustable when ssh is used.
 .LP
-Output from multiple tasks per node (Elan3 only) may be interspersed.
+Output from multiple processes per node (Elan3 only) may be interspersed.
 .LP
-Qshell assumes Elan3 single rail and block task distribution.
+Qshell assumes Elan3 single rail.
 .SH "SEE ALSO"
 rsh(1), ssh(1), dshbak(1), pdcp(1)

@@ -28,6 +28,7 @@ typedef enum {false, true} bool;
 
 typedef enum { DSH, PCP } pers_t;
 typedef enum { RCMD_BSD, RCMD_K4, RCMD_SSH, RCMD_QSHELL } rcmd_t;
+typedef enum { ALLOC_UNSPEC, ALLOC_BLOCK, ALLOC_CYCLIC } alloc_t;
  
 typedef struct {
 
@@ -50,7 +51,6 @@ typedef struct {
 	int fanout;		/* (-f, FANOUT, or default) */
 	int connect_timeout;
 	int command_timeout;
-	int tasks_per_node;	/* -n */
 
 	/* DSH-specific options */
 	bool separate_stderr;	/* -s */
@@ -59,6 +59,8 @@ typedef struct {
 	char *cmd;
 	char *dshpath;		/* optional PATH command prepended to cmd */
 	char *getstat;		/* optional echo $? appended to cmd */
+	int procs_per_node;	/* -n */
+	alloc_t allocation;	/* -m block */
 
 	/* PCP-specific options */
 	bool preserve;		/* -p */

@@ -8,8 +8,6 @@
  *
  * XXX for some reason it takes a really long time (several seconds per node)
  * to acquire service tickets!  Why?
- *
- * Call k4cmd_init() before parallel calls to k4cmd().
  */
 
 /*
@@ -70,7 +68,7 @@ extern		errno;
 extern char     *inet_ntoa();
 
 void 
-k4cmd_init(list_t wcoll)
+k4cmd_init(opt_t *opt)
 {
 	/* not implemented */
 }

@@ -71,7 +71,8 @@ Usage: pdcp [-options] src [src2...] dest\n\
 
 #define OPT_USAGE_ELAN "\
 -E                run Quadrics Elan job using qshell\n\
--n n              specify number of tasks per node for qshell\n"
+-m block|cyclic   set qshell allocation of processes to nodes (dflt block)\n\
+-n n              set qshell number of processes per node\n"
 
 #define DSH_ARGS	"csS"
 #define PCP_ARGS	"pr"
@@ -79,7 +80,7 @@ Usage: pdcp [-options] src [src2...] dest\n\
 #define KRB4_ARGS	"Rk"
 #define SDR_ARGS	"Gv"
 #define GEND_ARGS	"g:"
-#define ELAN_ARGS	"En:"
+#define ELAN_ARGS	"En:m:"
 
 /*
  * Set defaults for various options.
@@ -130,7 +131,8 @@ void opt_default(opt_t *opt)
 	opt->delete_nextpass = true;
 	opt->separate_stderr = DFLT_SEPARATE_STDERR; 
 	*(opt->gend_attr) = '\0';
-	opt->tasks_per_node = 1;
+	opt->procs_per_node = 1;
+	opt->allocation = ALLOC_UNSPEC;
 
 	/* PCP specific */
 	opt->outfile_name = NULL;
@@ -198,9 +200,12 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 		errx("%p: program must be named pdsh/dsh/pdcp/dcp/pcp\n");
 
 	/* construct valid arg list */
-	if (opt->personality == DSH)
+	if (opt->personality == DSH) {
 		strcpy(validargs, DSH_ARGS);
-	else
+#if HAVE_ELAN3
+		strcat(validargs, ELAN_ARGS);
+#endif
+	} else
 		strcpy(validargs, PCP_ARGS);
 	strcat(validargs, GEN_ARGS);
 #if KRB4
@@ -211,9 +216,6 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 #endif
 #if HAVE_GENDERS
 	strcat(validargs, GEND_ARGS);
-#endif
-#if HAVE_ELAN3
-	strcat(validargs, ELAN_ARGS);
 #endif
 #ifdef __linux
 	/* Tell glibc getopt to stop eating after the first non-option arg */
@@ -257,8 +259,16 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 			case 'E':	/* use qshell */
 				opt->rcmd_type = RCMD_QSHELL;
 				break;
-			case 'n':	/* set number of tasks per node */
-				opt->tasks_per_node = atoi(optarg);
+			case 'n':	/* set number of procs per node */
+				opt->procs_per_node = atoi(optarg);
+				break;
+			case 'm':	/* set block or cyclic allocation */
+				if (strcmp(optarg, "block") == 0)
+					opt->allocation = ALLOC_BLOCK;
+				else if (strcmp(optarg, "cyclic") == 0)
+					opt->allocation = ALLOC_CYCLIC;
+				else
+					usage(opt);
 				break;
 			case 'a':	/* indicates all nodes */
 				opt->allnodes = true;
@@ -334,6 +344,15 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 		opt->wcoll = read_genders(opt->gend_attr, opt->altnames);
 	}
 #endif
+
+#if HAVE_ELAN3
+	if (opt->rcmd_type == RCMD_QSHELL) {
+		if (opt->fanout == DFLT_FANOUT && opt->wcoll != NULL)
+			opt->fanout = list_length(opt->wcoll);
+		if (opt->allocation == ALLOC_UNSPEC)
+			opt->allocation = ALLOC_BLOCK;
+	}
+#endif
 }
 
 /*
@@ -407,21 +426,25 @@ bool opt_verify(opt_t *opt)
 
 	/* Constraints when running Elan jobs */
 	if (opt->rcmd_type == RCMD_QSHELL) {
-		/* all processes have to start in parallel */
-		if (opt->fanout != DFLT_FANOUT) {
-			err("%p: cannot specify fanout with -E\n");
+		if (opt->wcoll != NULL) {
+			if (opt->fanout != list_length(opt->wcoll)) {
+				err("%p: fanout must = wcoll length with -E\n");
+				verified = false;
+			}
+		}
+		if (opt->procs_per_node <= 0) {
+			err("%p: -n option should be >= 1\n");
 			verified = false;
 		}
-		if (verified)
-			opt->fanout = list_length(opt->wcoll);
-	}
-	if (opt->tasks_per_node > 1 && opt->rcmd_type != RCMD_QSHELL) {
-		err("%p: only one task per node for this remote shell type\n");
-		verified = false;
-	}
-	if (opt->tasks_per_node <= 0) {
-		err("%p: -n option should be >= 1\n");
-		verified = false;
+	} else {
+		if (opt->procs_per_node != 1) {
+			err("%p: -n can only be specified with -E\n");
+			verified = false;
+		}
+		if (opt->allocation != ALLOC_UNSPEC) {
+			err("%p: -m can only be specified with -E\n");
+			verified = false;
+		}
 	}
 
 	return verified;

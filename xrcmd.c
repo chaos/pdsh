@@ -85,7 +85,7 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #endif
 
 void
-xrcmd_init(list_t wcoll)
+xrcmd_init(opt_t *opt)
 {
 	/* not implemented */
 }

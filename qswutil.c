@@ -301,7 +301,8 @@ qsw_get_prgnum(void)
  * Function returns a 0 on success, -1 = fail.
  */
 int
-qsw_init_capability(ELAN_CAPABILITY *cap, int procs_per_node, list_t nodelist)
+qsw_init_capability(ELAN_CAPABILITY *cap, int procs_per_node, list_t nodelist,
+		int cyclic_alloc)
 {
 	int i;
 
@@ -312,8 +313,10 @@ qsw_init_capability(ELAN_CAPABILITY *cap, int procs_per_node, list_t nodelist)
 	 * single rail.
 	 */
 	elan3_nullcap(cap);
-	cap->Type = ELAN_CAP_TYPE_BLOCK;
-	cap->Type |= ELAN_CAP_TYPE_BROADCASTABLE;	/* XXX ever not? */
+	if (cyclic_alloc)
+		cap->Type = ELAN_CAP_TYPE_CYCLIC;
+	else
+		cap->Type = ELAN_CAP_TYPE_BLOCK;
 	cap->Type |= ELAN_CAP_TYPE_MULTI_RAIL;
 	cap->RailMask = 1;
 
@@ -350,6 +353,10 @@ qsw_init_capability(ELAN_CAPABILITY *cap, int procs_per_node, list_t nodelist)
 				ELAN_MAX_VPS);
 		return -1;
 	}
+
+	/* set the broadcast bit if we have a contiguous set of nodes */
+	if (abs(cap->HighNode - cap->LowNode) == cap->Entries)
+		cap->Type |= ELAN_CAP_TYPE_BROADCASTABLE;
 
 	return 0;
 }
@@ -485,7 +492,11 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 		errx("%p: rms_setcap (%d): %m\n", proc_index);
 
 	/* set RMS_ environment vars */
-	qi->procid = qi->rank = (qi->nodeid * procs_per_node) + proc_index;
+	if ((cap->Type & ELAN_CAP_TYPE_BLOCK))
+		qi->procid = (qi->nodeid * procs_per_node) + proc_index;
+	else  /* ELAN_CAP_TYPE_CYCLIC */
+		qi->procid = qi->nodeid + (proc_index * qi->nnodes);
+	qi->rank = qi->procid;
 	if (qsw_rms_setenv(qi) < 0)
 		errx("%p: failed to set environment variables: %m\n");
 
@@ -617,7 +628,7 @@ main(int argc, char *argv[])
 	list_push(wcoll, hostname);
 
 	/* initialize capability for this "program" */
-	if (qsw_init_capability(&cap, qinfo.nprocs / qinfo.nnodes, wcoll) < 0)
+	if (qsw_init_capability(&cap, qinfo.nprocs/qinfo.nnodes, wcoll, 0) < 0)
 		errx("%p: failed to initialize Elan capability\n");
 
 	/* assert encode/decode routines work (we don't use them here) */

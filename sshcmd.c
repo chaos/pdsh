@@ -163,7 +163,7 @@ sshcmdrw(char *ahost, char *luser, char *ruser, char *cmd, int rank, int *fd2p)
 }
 
 void
-sshcmd_init(list_t wcoll)
+sshcmd_init(opt_t *opt)
 {
 	/* not implemented */
 }

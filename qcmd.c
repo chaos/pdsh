@@ -119,20 +119,21 @@ qcmd_signal(int efd, int signum)
  * 	wcoll (IN)	list of nodes
  */
 void
-qcmd_init(list_t wcoll, int tasks_per_node)
+qcmd_init(opt_t *opt)
 {
 	if (getcwd(cwd, sizeof(cwd)) == NULL)	/* cache working directory */
 		errx("%p: getcwd failed\n");
 
 	/* initialize Elan capability structure. */
-	if (qsw_init_capability(&cap, tasks_per_node, wcoll) < 0)
+	if (qsw_init_capability(&cap, opt->procs_per_node, opt->wcoll, 
+				(opt->allocation == ALLOC_CYCLIC)) < 0)
 		errx("%p: failed to initialize Elan capability\n");
 
 	/* initialize elan info structure */
 	qinfo.prgnum = qsw_get_prgnum();
-	qinfo.nnodes = list_length(wcoll);
-	qinfo.nprocs = qinfo.nnodes * tasks_per_node;
-	qinfo.nodeid = qinfo.procid = qinfo.rank = 0; /* override per tasks */
+	qinfo.nnodes = list_length(opt->wcoll);
+	qinfo.nprocs = qinfo.nnodes * opt->procs_per_node;
+	qinfo.nodeid = qinfo.procid = qinfo.rank = 0;
 }
 
 /*
