@@ -40,9 +40,9 @@
 #include "dsh.h"
 #include "err.h"
 #include "list.h"
-#include "xmalloc.h"	/* Free/Strdup */
+#include "xmalloc.h"
 #include "xstring.h"
-#include "xpopen.h"	/* for xpopen/close */
+#include "xpopen.h"
 #include "wcoll.h"
 #include "hostlist.h"
 
@@ -106,7 +106,7 @@ read_genders(char *attr, int iopt)
 		errx("%p: error running %s\n", _PATH_NODEATTR);
 	while (fgets(buf, LINEBUFSIZE, f) != NULL) {
 		xstrcln(buf, NULL);
-		if (hostlist_push(new, buf) == 0)
+		if (hostlist_push_host(new, buf) == 0)
 			err("%p: warning: target '%s' not parsed\n", buf);
 	}
 	if (xpclose(f) != 0) 
@@ -261,7 +261,7 @@ sdr_getnames(bool Gopt, char *nameType, char *nodes[])
 hostlist_t 
 sdr_wcoll(bool Gopt, bool iopt, bool vopt)
 {
-	list_t new;
+	hostlist_t new;
 	char *inodes[MAX_SP_NODE_NUMBER + 1], *rnodes[MAX_SP_NODE_NUMBER + 1];
 	bool sresp[MAX_SP_NODE_NUMBER + 1], hresp[MAX_SP_NODE_NUMBER + 1];
 	int nn;
@@ -294,19 +294,19 @@ sdr_wcoll(bool Gopt, bool iopt, bool vopt)
 	 * not responding, substitute the alternate name; if that is not 
 	 * responding, skip the node.
 	 */
-	new = list_new();
+	new = hostlist_create("");
 	for (nn = 0; nn <= MAX_SP_NODE_NUMBER; nn++) {
 		if (inodes[nn] != NULL || rnodes[nn] != NULL) {
 			if (vopt) { 			    /* initial_host */
 				if (iopt && sresp[nn] && hresp[nn]) 
-					list_push(new, inodes[nn]);
+					hostlist_push_host(new, inodes[nn]);
 				else if (!iopt && hresp[nn])/* reliable_host */
-					list_push(new, rnodes[nn]);
+					hostlist_push_host(new, rnodes[nn]);
 			} else {
 				if (iopt)		    /* initial_host */
-					list_push(new, inodes[nn]);
+					hostlist_push_host(new, inodes[nn]);
 				else			    /* reliable_host */
-					list_push(new, rnodes[nn]);
+					hostlist_push_host(new, rnodes[nn]);
 			}
 			if (inodes[nn] != NULL)		    /* free heap cpys */
 				Free((void **)&inodes[nn]);

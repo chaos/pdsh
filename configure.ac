@@ -302,9 +302,9 @@ if test -n "$RCP"; then
 fi
 AC_SUBST(RSH)
 
-if test -z "$SDRGETOBJECTS" && test -z "$NODEATTR" && test -z "$MACHINES"; then
-    AC_MSG_ERROR([did not find nodeattr, SDRGetObjects, or machines file])
-fi
+#if test -z "$SDRGETOBJECTS" && test -z "$NODEATTR" && test -z "$MACHINES"; then
+#    AC_MSG_ERROR([did not find nodeattr, SDRGetObjects, or machines file])
+#fi
 
 # Checks for libraries.
 AC_CHECK_LIB([socket], [socket], LIBS="-lsocket -lnsl $LIBS",, [-lsocket -lnsl])

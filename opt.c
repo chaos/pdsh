@@ -370,7 +370,7 @@ opt_args(opt_t *opt, int argc, char *argv[])
 #elif 	HAVE_GENDERS
 		opt->wcoll = read_genders("all", opt->altnames);
 #else
-#error configure erorr
+		errx("%p: this pdsh configuration does not support -a\n");
 #endif
 	}
 
