@@ -185,7 +185,7 @@ static hostlist_t _slurm_wcoll(int32_t jobid)
     if ((jobid < 0) && (jobid = _slurm_jobid()) < 0)
         return (NULL);
     
-    if (slurm_load_jobs((time_t) NULL, &msg) < 0) 
+    if (slurm_load_jobs((time_t) NULL, &msg, 1) < 0) 
         errx ("Unable to contact slurm controller: %s\n", 
               slurm_strerror (errno));
 
