@@ -40,6 +40,11 @@
 #include <string.h>	/* strcmp */
 #include <stdlib.h>	/* exit */
 
+#if	HAVE_READLINE
+#include <readline/readline.h>
+#include <readline/history.h>
+#endif
+
 #include "err.h"
 #include "xmalloc.h"
 #include "xstring.h"
@@ -90,6 +95,56 @@ main(int argc, char *argv[])
 
 	return retval;
 }
+
+#if	HAVE_READLINE
+
+/* Warning: Running setuid root! */
+static void 
+_interactive_dsh(opt_t *opt)
+{
+	pid_t pid;
+	char prompt[64];
+	char *cmd = NULL;
+
+	snprintf(prompt, sizeof(prompt), "%s> ", opt->progname);
+
+	/*rl_bind_key('\t', rl_insert); */ /* disable tab filename expansion */
+
+	while ((cmd = readline(prompt)) != NULL) {
+		if (strlen(cmd) == 0) {			/* empty line */
+			free(cmd);
+			continue;
+		}
+		if (!strcmp(cmd, "quit") || !strcmp(cmd, "exit")) {
+			free(cmd);			/* quit or exit */
+			break;
+		}
+		add_history(cmd);
+
+		/* 
+		 * fork dsh so we can ignore SIGINT in prompt loop 
+		 */
+		switch (pid = fork()) {
+			case -1: 			/* error */
+				errx("%p: fork: %m\n");
+			case 0:				/* child - run cmd */
+				opt->cmd = Strdup(cmd);
+				dsh(opt);
+				Free((void **)&opt->cmd);
+				exit(0);
+			default:			/* parent - wait */
+				while (waitpid(pid, NULL, 0) < 0) {
+				       if (errno != EINTR)
+					       break;
+				}
+				break;
+		}
+
+		free(cmd);
+	}
+}
+
+#else
 
 /*
  * Prompt for dsh commands, then execute them, prompt again, ...
@@ -177,3 +232,4 @@ _getcmd(char *prompt)
 	return cmd;
 }
 
+#endif /* WITH_READLINE */

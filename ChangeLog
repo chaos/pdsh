@@ -1,3 +1,8 @@
+2002-09-27 garlick
+	* Added support for readline in interactive mode if HAVE_READLINE
+	  is defined.  Still need autoconf to find -lreadline -lhistory
+	  and modify LIBS and set HAVE_READLINE if found.
+
 2002-09-27 grondo
 	* Make-rpm.mk: Updated rpm target for compatibility with automake
 	* pdsh.1.in, pdcp.1.in: Improve documentation of 

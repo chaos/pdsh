@@ -4,11 +4,7 @@
 # Copyright (C) 2000-2002 Regents of the University of California
 # See ./DISCLAIMER
 #
-# Process this file with autoconf to produce a configure script.
-# NOTE: We distribute ./configure and do not expect people building pdsh
-# to have to regenerate from configure.ac.  However, if this is necessary,
-# the ./mkconfig script is provided.  You may need autoconf 2.52 or greater
-# (It does blow up with 2.13 on AIX).
+# This file is to be processed with autoconf to generate a configure script.
 
 AC_INIT
 AC_CONFIG_SRCDIR([dsh.h])
@@ -359,9 +355,35 @@ if test "$withkrb4" = yes; then
 	AC_MSG_ERROR([No libkrb!]), [-lkrb -ldes])
 fi
 
+dnl check for whether to include readline support
+dnl
+AC_MSG_CHECKING([whether to include readline support])
+readline=no
+AC_ARG_WITH(readline,
+  AC_HELP_STRING([--with-readline],[compile with readline support]),
+  [ readline=yes
+    READLINE_LIBS="-lreadline -lhistory"
+    AC_DEFINE(HAVE_READLINE, 1, [Define if you are compiling with readline])
+  ]
+)
+AC_MSG_RESULT(${readline=no})
+if test x$readline = xyes; then
+   savedLIBS="$LIBS"
+   savedCFLAGS="$CFLAGS"
+   LIBS="$READLINE_LIBS $LIBS"
+   AC_CHECK_LIB([readline], [readline], [], 
+      AC_MSG_ERROR([Cannot find libreadline!]))
+dnl   AC_CHECK_LIB([history], [add_history], [], 
+dnl      AC_MSG_ERROR([Cannot find libhistory!]))
+   AC_DEFINE(HAVE_READLINE, 1, [Define if you are compiling with readline])
+   LIBS="$savedLIBS"
+   CFLAGS="$savedCFLAGS"
+   AC_SUBST(READLINE_LIBS)
+fi
+AM_CONDITIONAL(WITH_READLINE, test "x$with_readline" = "xyes")
+
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h strings.h sys/file.h unistd.h pthread.h])
-
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_CHECK_TYPE(socklen_t, int)

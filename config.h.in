@@ -28,6 +28,9 @@
 /* Define to 1 if you have the `elan3' library (-lelan3). */
 #undef HAVE_LIBELAN3
 
+/* Define to 1 if you have the `readline' library (-lreadline). */
+#undef HAVE_LIBREADLINE
+
 /* Define to 1 if you have the `rmscall' library (-lrmscall). */
 #undef HAVE_LIBRMSCALL
 
@@ -48,6 +51,9 @@
 
 /* Define to 1 if you have the `pthread_sigmask' function. */
 #undef HAVE_PTHREAD_SIGMASK
+
+/* Define if you are compiling with readline */
+#undef HAVE_READLINE
 
 /* Define if RMS is available */
 #undef HAVE_RMSQUERY
