@@ -56,6 +56,8 @@ Usage: pdcp [-options] src [src2...] dest\n\
 -u seconds        set command timeout (no default)\n\
 -f n              use fanout of n nodes\n\
 -w host,host,...  set target node list on command line\n\
+-x                do not expand hostname ranges from -w\n\
+-X c              set hostname range expansion operator (default '-')\n\
 -e                use ssh to connect\n"
 
 #define OPT_USAGE_SDR "\
@@ -76,7 +78,7 @@ Usage: pdcp [-options] src [src2...] dest\n\
 
 #define DSH_ARGS	"csS"
 #define PCP_ARGS	"pr"
-#define GEN_ARGS	"at:csqf:w:l:u:bI:ideV"
+#define GEN_ARGS	"at:csqf:w:xX:l:u:bI:ideV"
 #define KRB4_ARGS	"Rk"
 #define SDR_ARGS	"Gv"
 #define GEND_ARGS	"g:"
@@ -109,6 +111,7 @@ void opt_default(opt_t *opt)
 
 	opt->info_only = false;
 	opt->wcoll = NULL;
+	opt->range_op = RANGE_OP;
 	opt->progname = NULL;
 	opt->connect_timeout = CONNECT_TIMEOUT;
 	opt->command_timeout = 0;
@@ -156,6 +159,9 @@ void opt_env(opt_t *opt)
         if ((rhs = getenv("FANOUT")) != NULL)
                 opt->fanout = atoi(rhs);
 
+	if ((rhs = getenv("PDSH_RANGE_OPERATOR")) != NULL)
+		opt->range_op = (strlen(rhs) > 0) ? strdup(rhs) : NULL;
+
         if ((rhs = getenv("DSHPATH")) != NULL) {
 		struct passwd *pw = getpwnam(opt->luser);
 		char *shell = "sh";
@@ -188,7 +194,10 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 	int c, cmd_size;
 	extern int optind;
 	extern char *optarg;
+	char *wcoll_buf;
 	char *pname = xbasename(argv[0]);
+
+	wcoll_buf = NULL;
 
 	/* deal with program name */
 	opt->progname = pname;
@@ -237,7 +246,16 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 				if (strcmp(optarg, "-") == 0)
 					opt->wcoll = read_wcoll(NULL, stdin);
 				else 
-					opt->wcoll = list_split(",", optarg);
+				        wcoll_buf = strdup(optarg);
+				break;
+			case 'x':       /* no ranges */
+				opt->range_op = NULL;
+				break;
+			case 'X':
+				if (strlen(optarg) == 1)
+					opt->range_op = strdup(optarg);
+				else
+					usage(opt);
 				break;
 			case 'g':	/* genders attribute */
 				strncpy(opt->gend_attr, optarg, MAX_GENDATTR);
@@ -311,6 +329,14 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 			default:
 				usage(opt);
 		}
+	}
+
+	/* expand wcoll if needed */
+	if (wcoll_buf != NULL) {
+		opt->wcoll = (opt->range_op == NULL) ? 
+			list_split(",", wcoll_buf) :
+			list_split_range(",", opt->range_op, wcoll_buf);
+		free(wcoll_buf);
 	}
 
 	/* DSH: build command */
@@ -512,6 +538,8 @@ void opt_list(opt_t *opt)
 		xfree((void **)&infile_str);
 	}
 	out("Use alt hostname	%s\n", BOOLSTR(opt->altnames));
+	out("Range operator		`%s'\n", 
+			opt->range_op ? opt->range_op : "NULL");
 	out("Debugging       	%s\n", BOOLSTR(opt->debug));
 
 	out("\n-- SDR options --\n");

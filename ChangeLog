@@ -129,3 +129,9 @@ Release 1.5+
 	Stderr socket now opened by default to enable proper remote cleanup
 	after SIGINT.  The meaning of the -s option is reversed.
 	(everywhere but AIX where cleanup seems to work without the extra sock)
+
+	Added support for expansion of hostname ranges passed through -w
+	(e.g. -w host1-5 means run on host1,host2,...,host5)
+
+	Added new options -x and -X for disabling hostname range expansion
+	and defining new expansion operator, respectively.

@@ -18,6 +18,7 @@ void list_push(list_t, char *);
 char *list_pop(list_t);
 char *list_shift(list_t);
 list_t list_split(char *, char *);
+list_t list_split_range(char *, char *, char *);
 void list_dump(list_t);
 char *list_join(char *, list_t);
 void list_pushl(list_t, list_t);

@@ -35,6 +35,8 @@
 #define HAVE_GETHOSTBYNAME_R	1
 #endif
 
+#define RANGE_OP		"-"
+
 /*
  * Path definitions
  */

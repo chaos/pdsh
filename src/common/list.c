@@ -9,6 +9,8 @@
 
 #include <string.h>
 #include <assert.h>
+#include <ctype.h>
+#include <stdlib.h>
 
 #include "list.h"
 #include "xmalloc.h"
@@ -22,6 +24,12 @@
 #define LIST_CHUNK      16
 
 #define SPACES          "\n\t "
+
+/*
+ * max size of hostname range in list_split_range()
+ * (8k hosts enough?)
+ */
+#define MAX_RANGE	8192
 
 /* 
  * this completes the list_t type in list.h and prevents users of this
@@ -188,6 +196,125 @@ list_t list_split(char *sep, char *str)
 			
 	return new;
 }
+
+
+/* 
+ * Given a list of seperators, a range operator, and a string, generate a list
+ * 
+ * sep(IN)  string containing seperator characters
+ * r_op(IN) range operator character
+ * RETURN   new list containing all tokens with ranges expanded
+ */
+list_t list_split_range(char *sep, char *r_op, char *str)
+{
+	char *tok, *prefix, buf[256], *cur;
+	int fmt, pos;
+	int high, low;
+	int error = 0;
+	char range_op = r_op[0]; /* XXX support > 1 char range ops in future? */
+
+	list_t new = list_new();
+
+	while ((tok = next_tok(sep, &str)) != NULL) {
+
+		while (strstr(tok, r_op) == '\0') { /* no range in this field */
+			if (strlen(tok) > 0)
+				list_push(new, tok);
+
+			if ((tok = next_tok(sep, &str)) == NULL) 
+				return(new);
+		}
+
+		/* save the current string for error messages */
+		cur = tok;
+
+		high = low = 0;
+
+		/* find end of alpha part */
+		/* do this by finding last occurence of range_op in str */
+		pos = strlen(tok) - 1;
+		while((char)tok[--pos] != range_op) {;}
+
+		/* now back up past any digits */
+		while(isdigit((char)tok[--pos])) {;}
+
+		pos++;
+
+		/* create prefix string */
+		prefix = (char *) xmalloc((pos+1)*sizeof(char));
+		memcpy(prefix, tok, (size_t) pos*sizeof(char));
+		prefix[pos] = '\0';
+
+		/* push pointer past prefix */
+		tok += pos;
+
+		/* count number of digits for ouput fmt */
+		for (fmt=0; isdigit(tok[fmt]); ++fmt) {;}
+
+		/* get lower bound */
+		low = strtoul(tok, (char**)&tok, 10);
+
+		if (*tok == range_op) { /* now get range upper bound */
+			/* push pointer past range op */
+			++tok;
+
+			/* find length of alpha part */
+			for (pos=0; tok[pos] && !isdigit(tok[pos]); ++pos) {;}
+
+			/* alpha part must match prefix or error
+			 * this could mean we've got something like "rtr1-a2"
+			 * so just record an error
+			 */
+			if (pos > 0) {
+				if(pos != strlen(prefix) || strncmp(prefix, tok, pos) != 0)
+					error = 1;
+			}
+
+			tok+=pos;
+
+			/* make sure we have digits to the end */
+			for(pos=0; tok[pos] && isdigit((char)tok[pos]); ++pos);
+
+			if (pos > 0) { /* we have digits to process */
+				high = strtoul(tok, (char**)&tok, 10);
+			} else { /* bad boy, no digits */
+				error = 1;
+			}
+
+			if ((low > high) || (high - low > MAX_RANGE))
+				error = 1;
+
+		} else {
+			error = 1;
+		}
+
+		/* error if: 
+		 * 1. we are not at end of string
+		 * 2. upper bound equals lower bound
+		 */
+		if (*tok != '\0' || high == low) 
+			error = 1;
+
+		if (error) { /* assume this is not a range on any error */
+			list_push(new, cur);
+		} else {
+
+			/* generate range and push elements onto list */
+			for (; low<=high; low++) {
+				snprintf(buf, 256, "%s%0*d", prefix, fmt, low);
+				list_push(new, buf);
+			}
+
+		}
+
+		xfree((void **)&prefix);
+		error = 0;
+
+	}
+
+	return new;
+}
+
 
 /* 
  * Opposite of split (caller responsible for freeing result).  

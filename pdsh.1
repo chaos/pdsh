@@ -32,7 +32,24 @@ system.
 .I "-w host,host,..."
 Target the specified nodes.  No spaces are allowed in the comma-separated
 list.  Substituting the "-" character for the list causes the target nodes
-to be read from stdin, one per line.
+to be read from stdin, one per line. 
+.LP
+The node list may also contain hostname
+ranges of the form "host1-5" in place of single hostnames. By default, 
+.B pdsh
+will attempt to expand these ranges based upon a range operator of '-'. The
+environment var PDSH_RANGE_OPERATOR may be set to an arbitrary character 
+which will be used in place of '-'. (Setting this variable to "" will
+effectively disable range expansion) Also see the -x and -X options 
+for similar functionality on the command line.
+.LP
+.I "-x"
+Do not attempt to expand hostname ranges passed via -w. 
+.LP 
+.I "-X c"
+Use character 'c' as a range operator when expanding hostname ranges. 
+Additionally, the evironment variable PDSH_RANGE_OPERATOR can be set
+to the desired character. 
 .LP
 .I "-a"
 Target "all" nodes in the cluster.  If running on an SP, this means all

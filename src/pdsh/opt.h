@@ -45,6 +45,7 @@ typedef struct {
 	bool sigint_terminates;	/* -b */
 	rcmd_t rcmd_type;
 	list_t wcoll;		/* target node list (-w, WCOLL, or stdin) */
+	char *range_op;		/* range expansion operator (-X or default) */
 	char luser[MAX_USERNAME];/* local username */	
 	uid_t luid;		/* uid for above */
 	char ruser[MAX_USERNAME];/* remote username (-l or default) */
