@@ -25,7 +25,7 @@
 \*****************************************************************************/
 
 /*
- * Started with BSD mcmd.c which is:
+ * Started with BSD rcmd.c which is:
  * 
  * Copyright (c) 1983, 1993, 1994, 2003
  *      The Regents of the University of California.  All rights reserved.
@@ -154,6 +154,11 @@ MODULE_DESCRIPTION(   "Run MPI jobs over QsNet with mrsh authentication"     );
 MODULE_AUTHOR(        "Mike Haskell and Jim Garlick"                         );
 
 static int mqcmd_postop(opt_t *opt);
+int opt_M(opt_t *, int, char *);
+int opt_N(opt_t *, int, char *);
+int mqcmd_init(opt_t *);
+int mqcmd_signal(int, int);
+int mqcmd(char *, char *, char *, char *, int, int *);
 
 struct pdsh_module_operations pdsh_module_ops = {
   NULL,
@@ -162,12 +167,6 @@ struct pdsh_module_operations pdsh_module_ops = {
   (ModPostOpF) mqcmd_postop
 };
 
-int mqcmd_init(opt_t *);
-int mqcmd_signal(int, int);
-int mqcmd(char *, char *, char *, char *, int, int *);
-
-int opt_M(opt_t *, int, char *);
-int opt_N(opt_t *, int, char *);
 
 struct pdsh_module_option pdsh_module_options[] =
   { { 'M', "block|cyclic", "(mqsh) control assignment of procs to nodes",
@@ -206,7 +205,7 @@ static int mqcmd_postop(opt_t *opt)
   if (strcmp(opt->rcmd_name, "mqsh") == 0) {
     if (opt->fanout != DFLT_FANOUT && opt->wcoll != NULL) {
       if  (opt->fanout != hostlist_count(opt->wcoll)) {
-        err("%p: mqcmd: fanout must = target node list length with mqsh\n");
+        err("%p: mqcmd: fanout must = target node list length with -R mqsh\n");
         errors++;
       }
     }
@@ -216,12 +215,12 @@ static int mqcmd_postop(opt_t *opt)
     }
   } else {
     if (nprocs != 1) {
-      err("%p: mqcmd: -N can only be specified with mqsh\n");
+      err("%p: mqcmd: -N can only be specified with -R mqsh\n");
       errors++;
     }
 
     if (dist_set) {
-      err("%p: mqcmd: -M may only be specified with mqsh\n");
+      err("%p: mqcmd: -M may only be specified with -R mqsh\n");
       errors++;
     }
   }
@@ -312,29 +311,45 @@ static int _mqcmd_send_extra_args(int s, int nodeid)
   int i;
 
   /* send current working dir */
-  (void) fd_write_n(s, cwd, strlen(cwd) + 1);
+  if (fd_write_n(s, cwd, strlen(cwd) + 1) < 0) {
+    err("%p: %S: error writing cwd: %m\n", ahost);
+    return -1;
+  }
 
   /* send environment (count followed by variables, each \0-term) */
   for (ep = environ; *ep != NULL; ep++)
     count++;
 
   snprintf(tmpstr, sizeof(tmpstr), "%d", count);
-  (void) fd_write_n(s, tmpstr, strlen(tmpstr) + 1);
+  if (fd_write_n(s, tmpstr, strlen(tmpstr) + 1) < 0) {
+    err("%p: %S: error writing envcount: %m\n", ahost);
+    return -1;
+  }
 
-  for (ep = environ; *ep != NULL; ep++)
-    (void) fd_write_n(s, *ep, strlen(*ep) + 1);
+  for (ep = environ; *ep != NULL; ep++) {
+    if (fd_write_n(s, *ep, strlen(*ep) + 1) < 0) {
+      err("%p: %S: error writing environemtn: %m\n", ahost);
+      return -1;
+    }
+  }
 
   /* send elan capability */
   if (qsw_encode_cap(tmpstr, sizeof(tmpstr), &cap) < 0)
     return -1;
 
-  (void) fd_write_n(s, tmpstr, strlen(tmpstr) + 1);
+  if (fd_write_n(s, tmpstr, strlen(tmpstr) + 1) < 0) {
+    err("%p: %S: error writing elan capability: %m\n", ahost);
+    return -1;
+  }
 
   for (i = 0; i < qsw_cap_bitmap_count(); i += 16) {
     if (qsw_encode_cap_bitmap(tmpstr, sizeof(tmpstr), &cap, i) < 0)
       return -1;
     
-    (void) fd_write_n(s, tmpstr, strlen(tmpstr) + 1);
+    if (fd_write_n(s, tmpstr, strlen(tmpstr) + 1) < 0) {
+      err("%p: %S: error writing bitmap: %m\n", ahost);
+      return -1;
+    }
   }
 
   /* send elan info */
@@ -342,7 +357,10 @@ static int _mqcmd_send_extra_args(int s, int nodeid)
   if (qsw_encode_info(tmpstr, sizeof(tmpstr), &qinfo) < 0)
     return -1;
 
-  (void) fd_write_n(s, tmpstr, strlen(tmpstr) + 1);
+  if (fd_write_n(s, tmpstr, strlen(tmpstr) + 1) < 0) {
+    err("%p: %S: error writing qinfo: %m\n", ahost);
+    return -1;
+  }
 
   return 0;
 }
@@ -359,9 +377,8 @@ static int _mqcmd_send_extra_args(int s, int nodeid)
  *      int nodeid (IN)         node index for this connection
  *      int (RETURN)            -1 on error, socket for I/O on success
  *
- * Combination of code derived from mcmd by Mike Haskell and qcmd by
- * Jim Garlick.  There are a variety of minor tweaks and modifications
- * so the module can be used more effectively with pdsh.
+ * Combination of code derived from mcmd by Mike Haskell, qcmd by
+ * Jim Garlick, and a variety of minor modifications.
  */
 int 
 mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
@@ -600,14 +617,12 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
     close(s2);
     free(m);
     free(tmbuf);
-    if (m_rv == -1) {
-      if (errno == SIGPIPE) {
-        err("%p: %S: mqcmd: Lost connection (SIGPIPE).", ahost);
-        EXIT_PTHREAD();
-      } else {
-        err("%p: %S: mqcmd: Write of stderr port num to socket failed: %m\n", ahost);
-        EXIT_PTHREAD();
-      }
+    if (errno == SIGPIPE) {
+      err("%p: %S: mqcmd: Lost connection (SIGPIPE).", ahost);
+      EXIT_PTHREAD();
+    } else {
+      err("%p: %S: mqcmd: Write of stderr port num to socket failed: %m\n", ahost);
+      EXIT_PTHREAD();
     }
   }
 
@@ -620,14 +635,12 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
     close(s2);
     free(m);
     free(tmbuf);
-    if (m_rv == -1) {
-      if (errno == SIGPIPE) {
-        err("%p: %S: mqcmd: Lost connection (SIGPIPE): %m\n", ahost);
-        EXIT_PTHREAD();
-      } else {
-        err("%p: %S: mqcmd: Write to socket failed: %m\n", ahost);
-        EXIT_PTHREAD();
-      }
+    if (errno == SIGPIPE) {
+      err("%p: %S: mqcmd: Lost connection (SIGPIPE): %m\n", ahost);
+      EXIT_PTHREAD();
+    } else {
+      err("%p: %S: mqcmd: Write to socket failed: %m\n", ahost);
+      EXIT_PTHREAD();
     }
   }
 
@@ -639,7 +652,6 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
 
   s3 = accept(s2, (struct sockaddr *)&from, &len);
   if (s3 < 0) {
-    lport = 0;
     close(s2);
     close(s);
     err("%p: %S: mqcmd: accept (stderr) failed: %m\n", ahost);
@@ -655,7 +667,7 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
   m_rv = fd_read_n(s3, &rand, sizeof(rand));
   if (m_rv != (ssize_t) (sizeof(rand))) {
     close(s);
-    close(s3);
+    close(*fd2p);
     err("%p: %S: mqcmd: Bad read of expected verification "
         "number off of stderr socket: %m\n", ahost);
     EXIT_PTHREAD();
@@ -669,16 +681,12 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
     memcpy(tptr,(char *) &rand,sizeof(rand));
     tptr += sizeof(rand);
     m_rv = fd_read_line (s3, tptr, LINEBUFSIZE);
-    if (m_rv < 0) {
-      if (lport)
-        close(*fd2p);
-      close(s);
+    if (m_rv < 0)
       err("%p: %S: mqcmd: Bad read of error from stderr: %m\n", ahost);
-      EXIT_PTHREAD();
-    }
-    err("%p: %S: mqcmd: Error: %s\n", ahost, &tmpbuf[0]);
+    else
+      err("%p: %S: mqcmd: Error: %s\n", ahost, &tmpbuf[0]);
     close(s);
-    close(s3);
+    close(*fd2p);
     EXIT_PTHREAD();
   }
 
@@ -688,9 +696,8 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
   *fd2p = s3;
   from.sin_port = ntohs((u_short)from.sin_port);
   if (from.sin_family != AF_INET) {
-    if (lport)
-      close(*fd2p);
     close(s);
+    close(*fd2p);
     err("%p: %S: mqcmd: socket: protocol failure in circuit setup\n", ahost);
     EXIT_PTHREAD();
   }
@@ -698,25 +705,22 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
   /* send extra information */
   if (_mqcmd_send_extra_args(s, nodeid) < 0) {
     close(s);
-    if (lport)
-      close(*fd2p);
+    close(*fd2p);
     err("%p: %S: mqcmd: error sending extra args\n", ahost);
     EXIT_PTHREAD();
   }
 
   m_rv = read(s, &c, 1);
   if (m_rv < 0) {
-    if (lport)
-      close(*fd2p);
     close(s);
+    close(*fd2p);
     err("%p: %S: mqcmd: read: protocol failure: %m\n", ahost);
     EXIT_PTHREAD(); 
   }
 
   if (m_rv != 1) {
-    if (lport)
-      close(*fd2p);
     close(s);
+    close(*fd2p);
     err("%p: %S: mqcmd: read: protocol failure: invalid response\n", ahost);
     EXIT_PTHREAD();
   }
@@ -727,9 +731,8 @@ mqcmd(char *ahost, char *addr, char *remuser, char *cmd, int nodeid, int *fd2p)
         
     m_rv = fd_read_line (s, &tmpbuf[0], LINEBUFSIZE);
     if (m_rv < 0) {
-      if (lport)
-        close(*fd2p);
       close(s);
+      close(*fd2p);
       err("%p: %S: mqcmd: Error from remote host\n", ahost);
       EXIT_PTHREAD();
     }
