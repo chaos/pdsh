@@ -33,6 +33,7 @@ libmods_la_LDFLAGS = \
 	$(KRB_LIBS) \
 	$(GENDERS_LIBS)
 
+
 if WITH_SSH
 SSH_MODULE = sshcmd.la
 endif
@@ -42,19 +43,11 @@ QSHELL_MODULE = qcmd.la
 endif
 
 if WITH_LIBGENDERS
-if WITH_SDR
-GENDERS_MODULE = genders-g.la
-else
 GENDERS_MODULE = genders.la
-endif
 endif
 
 if WITH_NODEATTR
-if WITH_SDR
-NODEATTR_MODULE = nodeattr-g.la
-else 
 NODEATTR_MODULE = nodeattr.la
-endif
 endif
 
 if WITH_NODEUPDOWN
@@ -71,6 +64,7 @@ endif
 
 if WITH_SDR
 SDR_MODULE = sdr.la
+AM_CPPFLAGS = -DGENDERS_G_ONLY
 endif
 
 if WITH_MRSH
@@ -123,14 +117,8 @@ machines_la_SOURCES =     machines.c
 machines_la_LDFLAGS =     $(MODULE_FLAGS)
 genders_la_SOURCES =      genders.c
 genders_la_LDFLAGS =      $(MODULE_FLAGS) $(GENDERS_LIBS)
-genders_g_la_SOURCES =    genders.c
-genders_g_la_CFLAGS =     -DGENDERS_G_ONLY
-genders_g_la_LDFLAGS =    $(MODULE_FLAGS)
 nodeattr_la_SOURCES =     nodeattr.c
 nodeattr_la_LDFLAGS =     $(MODULE_FLAGS)
-nodeattr_g_la_SOURCES =   nodeattr.c
-nodeattr_g_la_CFLAGS =    -DGENDERS_G_ONLY
-nodeattr_g_la_LDFLAGS =   $(MODULE_FLAGS)
 nodeupdown_la_SOURCES =   nodeupdown.c
 nodeupdown_la_LDFLAGS =   $(MODULE_FLAGS) $(NODEUPDOWN_LIBS)
 rms_la_SOURCES =          rms.c
