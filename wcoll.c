@@ -106,7 +106,7 @@ hostlist_t read_genders(char *attr, int iopt)
   }
   
   /* assumes genders file in default location */
-  if (genders_open(handle, NULL) == -1) {
+  if (genders_load_data(handle, NULL) == -1) {
     errx("%p: error opening genders file, %s\n", 
 	 genders_strerror(genders_errnum(handle)));
   }
@@ -477,12 +477,12 @@ hostlist_t get_verified_nodes(int iopt) {
   hostlist_t hl;
   nodeupdown_t handle;
 
-  if ((handle = nodeupdown_create()) == NULL) {
+  if ((handle = nodeupdown_handle_create()) == NULL) {
     errx("%p: error creating nodeupdown handle, %s\n", 
 	 nodeupdown_strerror(nodeupdown_errnum(handle)));
   }
 
-  if (nodeupdown_load_data(handle, NULL, NULL, NULL, 0) == -1) {
+  if (nodeupdown_load_data(handle, NULL, NULL, NULL, 0, 0) == -1) {
     if (nodeupdown_errnum(handle) == NODEUPDOWN_ERR_CONNECT) {
       errx("%p: pdsh does not support -v on this machine\n");
     }
@@ -518,7 +518,7 @@ hostlist_t get_verified_nodes(int iopt) {
     errx("%p: error creating hostlist\n");
   }
   
-  if (nodeupdown_destroy(handle) == -1) {
+  if (nodeupdown_handle_destroy(handle) == -1) {
     errx("%p: error destroying nodeupdown handle, %s\n", 
 	 nodeupdown_strerror(nodeupdown_errnum(handle)));
   }
