@@ -505,7 +505,7 @@ hostlist_t get_verified_nodes(int iopt) {
   }
 
   /* convert to alternate names if necessary */ 
-  if (iopt) {
+  if (!iopt) {
     if ((altnames = hostlist_create(NULL)) == NULL) {
       errx("%p: error creating hostlist\n");
     }
