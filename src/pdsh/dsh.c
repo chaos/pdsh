@@ -130,6 +130,13 @@ static thd_t *t;
 static int connect_timeout, command_timeout;
 
 /*
+ *  Buffered output prototypes:
+ */
+typedef void (* out_f) (const char *, ...);
+static int _do_output (int fd, cbuf_t cb, out_f outf, bool read_rc, thd_t *t);
+static void _flush_output (cbuf_t cb, out_f outf, thd_t *t);
+
+/*
  * Emulate signal() but with BSD semantics (i.e. don't restore signal to
  * SIGDFL prior to executing handler).
  */
@@ -573,7 +580,6 @@ static void _gethost(char *name, char *addr)
     memcpy(addr, hp->h_addr_list[0], IP_ADDR_LEN);
 }
 
-
 /*
  * Rcp thread.  One per remote connection.
  * Arguments are pointer to thd_t entry defined above.
@@ -619,12 +625,21 @@ static void *_rcp_thread(void *args)
                 _rcp_sendfile(a->fd, name, a->host, a->pcp_popt);
             }
             list_iterator_destroy(i);
+        } else {
+            err("%p: %S: Failed to initiate RCP protocol.\n", a->host);
+            /* 
+             *  Copy any pending stderr to user 
+             *   (ignore errors) 
+             */
+            while (_do_output (a->efd, a->errbuf, (out_f) err, false, a) > 0)
+                ;
+            _flush_output (a->errbuf, (out_f) err, a);
         }
+
         close(a->fd);
         if (a->dsh_sopt)
             close(a->efd);
-    }
-
+    } 
     /* update status */
     a->state = result;
     a->finish = time(NULL);
@@ -657,7 +672,6 @@ static int _extract_rc(char *buf)
     return ret;
 }
 
-typedef void (* out_f) (const char *, ...);
 
 static int _do_output (int fd, cbuf_t cb, out_f outf, bool read_rc, thd_t *t)
 {
