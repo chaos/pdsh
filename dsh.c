@@ -486,10 +486,10 @@ static int _rcp_sendfile(int fd, char *file, char *host, bool popt)
     if (popt) {
         /* 
          * 1: SEND stat time: "T%ld %ld %ld %ld\n" 
-         *    (st_atime, st_atime_usec, st_mtime, st_mtime_usec)
+         *    (st_mtime, st_mtime_usec, st_atime, st_atime_usec)
          */
         snprintf(tmpstr, sizeof(tmpstr), "T%ld %ld %ld %ld\n",
-                 (long) sb.st_atime, 0L, sb.st_mtime, 0L);
+                 (long) sb.st_mtime, 0L, sb.st_atime, 0L);
         if (_rcp_sendstr(fd, tmpstr, host) < 0)
             goto fail;
 
