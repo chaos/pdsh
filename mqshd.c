@@ -168,6 +168,7 @@ static int check_interfaces(void *munge_addr, int h_length) {
   int len = sizeof(struct ifreq) * 100;
   void *buf = NULL, *ptr = NULL;
   struct sockaddr_in *sin;
+  char *addr;
 
   /* Significant amounts of this code are from Unix Network
    * Programming, by R. Stevens, Chapter 16
@@ -232,6 +233,12 @@ static int check_interfaces(void *munge_addr, int h_length) {
     }
 
     sin = (struct sockaddr_in *)&ifr->ifr_addr;
+
+    /* Skip 127.0.0.1 */
+    addr = inet_ntoa(sin->sin_addr);
+    if (strcmp(addr,"127.0.0.1") == 0)
+      continue;
+
     if (memcmp(munge_addr, (void *)&sin->sin_addr.s_addr, h_length) == 0) {
       found++;
       break;
@@ -266,6 +273,7 @@ static void doit(struct sockaddr_in *fromp) {
   int rv, m_rv = -1;
   int buf_length, found;
   unsigned short port = 0;
+  unsigned int randnum;
   int cport = 0;
   char *rhostname = NULL;
   char *mptr = NULL;
@@ -421,15 +429,15 @@ static void doit(struct sockaddr_in *fromp) {
     goto error_out;
 
   errno = 0;
-  rand = strtol(m_head,(char **)NULL,10);
-  if (rand == 0 && errno != 0) {
+  randnum = strtol(m_head,(char **)NULL,10);
+  if (randnum == 0 && errno != 0) {
     syslog(LOG_ERR, "%s: %m", "mqshd: Bad random number from client.");
     errmsg = "internal system error";
     goto error_out;
   }
 
   /* Double check to make sure protocol is ok */
-  if (cport == 0 && rand != 0) {
+  if (cport == 0 && randnum != 0) {
     syslog(LOG_ERR,"protocol error");
     errmsg = "port number mismatch";
     goto error_out;
@@ -471,8 +479,8 @@ static void doit(struct sockaddr_in *fromp) {
 
   /* Write random number to stderr */
   if (cport != 0) {
-    rand = htonl(rand);
-    if ((rv = fd_write_n(sock,&rand,sizeof(rand))) == -1) {
+    randnum = htonl(randnum);
+    if ((rv = fd_write_n(sock,&randnum,sizeof(randnum))) == -1) {
       syslog(LOG_ERR,"%s: %m","couldn't write to stderr port: ");
       error("mqshd: internal system error.");
       goto bad;

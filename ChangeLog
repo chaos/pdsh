@@ -1,3 +1,7 @@
+2003-08-19  Albert Chu  <chu11@llnl.gov>
+
+	* mqshd.c (check_interfaces): Skip localhost IP address (127.0.0.1).
+
 2003-08-12  Albert Chu  <chu11@llnl.gov> 
 
 	* qshd_common.h, qshd_common.c: New Files.
