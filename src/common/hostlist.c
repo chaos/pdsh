@@ -1,6 +1,8 @@
 /*****************************************************************************\
  *  $Id$
  *****************************************************************************
+ *  $LSDId: hostlist.c,v 1.8 2003/06/30 23:39:01 grondo Exp $
+ *****************************************************************************
  *  Copyright (C) 2002 The Regents of the University of California.
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Mark Grondona <mgrondona@llnl.gov>
@@ -204,15 +206,15 @@ static char * _next_tok(char *, char **);
 static int    _zero_padded(unsigned long, int);
 static int    _width_equiv(unsigned long, int *, unsigned long, int *);
 
-static size_t host_prefix_end(const char *);
+static size_t        host_prefix_end(const char *);
 static hostname_t    hostname_create(const char *);
 static void          hostname_destroy(hostname_t);
 static int           hostname_suffix_is_valid(hostname_t);
 static int           hostname_suffix_width(hostname_t);
 
-static hostrange_t hostrange_new(void);
-static hostrange_t hostrange_create_single(const char *);
-static hostrange_t hostrange_create(char *, unsigned long, unsigned long, int);
+static hostrange_t   hostrange_new(void);
+static hostrange_t   hostrange_create_single(const char *);
+static hostrange_t   hostrange_create(char *, unsigned long, unsigned long, int);
 static unsigned long hostrange_count(hostrange_t);
 static hostrange_t   hostrange_copy(hostrange_t);
 static void          hostrange_destroy(hostrange_t);
@@ -236,7 +238,7 @@ static int         hostlist_resize(hostlist_t, size_t);
 static int         hostlist_expand(hostlist_t);
 static int         hostlist_push_range(hostlist_t, hostrange_t);
 static int         hostlist_push_hr(hostlist_t, char *, unsigned long,
-                        unsigned long, int);
+                                    unsigned long, int);
 static int         hostlist_insert_range(hostlist_t, hostrange_t, int);
 static void        hostlist_delete_range(hostlist_t, int n);
 static void        hostlist_coalesce(hostlist_t hl);
@@ -1532,8 +1534,15 @@ int hostlist_push_list(hostlist_t h1, hostlist_t h2)
 {
     int i, n = 0;
 
+    if (h2 == NULL)
+        return 0;
+
+    LOCK_HOSTLIST(h2);
+
     for (i = 0; i < h2->nranges; i++)
         n += hostlist_push_range(h1, h2->hr[i]);
+
+    UNLOCK_HOSTLIST(h2);
 
     return n;
 }
@@ -1738,7 +1747,6 @@ int hostlist_delete_nth(hostlist_t hl, int n)
 
     }
 
-
   done:
     UNLOCK_HOSTLIST(hl);
     hl->nhosts--;
@@ -1912,7 +1920,7 @@ static int _attempt_range_join(hostlist_t hl, int loc)
 
 void hostlist_uniq(hostlist_t hl)
 {
-    int i;
+    int i = 1;
     hostlist_iterator_t hli;
     LOCK_HOSTLIST(hl);
     if (hl->nranges <= 1) {
@@ -1920,8 +1928,11 @@ void hostlist_uniq(hostlist_t hl)
         return;
     }
     qsort(hl->hr, hl->nranges, sizeof(hostrange_t), &_cmp);
-    for (i = hl->nranges - 1; i > 0; i--)
-        _attempt_range_join(hl, i);
+
+    while (i < hl->nranges) {
+        if (_attempt_range_join(hl, i) < 0) /* No range join occurred */
+            i++;
+    }
 
     /* reset all iterators */
     for (hli = hl->ilist; hli; hli = hli->next)
@@ -1984,7 +1995,7 @@ _get_bracketed_list(hostlist_t hl, int *start, const size_t n, char *buf)
 
     len = snprintf(buf, n, "%s", hr[i]->prefix);
 
-    if (bracket_needed && len < n && len > 0)
+    if (bracket_needed && len < n && len >= 0)
         buf[len++] = '[';
 
     do {
