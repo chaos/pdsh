@@ -86,8 +86,8 @@ qsw_setbitmap(list_t nodelist, int procs_per_node, ELAN_CAPABILITY *cap)
 		return -1;
 
 	/*
-	 * There are (nprocs * nnodes) significant bits in the mask, each 
-	 * representing a process slot.  Bits are off where for holes 
+	 * There are (procs_per_node * nnodes) significant bits in the mask, 
+	 * each representing a process slot.  Bits are off where for holes 
 	 * corresponding to process slots for unallocated nodes.
 	 * For example, if nodes 4 and 6 are running two processes per node,
 	 * bits 0,1 (corresponding to the two processes on node 4) and bits 4,5
