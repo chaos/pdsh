@@ -4,29 +4,17 @@
 # This makefile works for aix 4.3, linux (RedHat5.2/sparc), and 
 # Digital Unix 4.0.
 #
-PACKAGE=pdsh
-VERSION=1.5
+PACKAGE=	pdsh
+VERSION=	1.5
 
-OBJS= 	list.o xmalloc.o xstring.o dsh.o main.o opt.o wcoll.o \
-	rcmd.o err.o pipecmd.o $(KRB_OBJS)
-HDRS=	list.h xmalloc.h xstring.h dsh.h opt.h wcoll.h conf.h err.h
-PROG=	pdsh
-MODE=	4555
-OWN=	root:root
-LINKS=	pdcp
-MAN1=	pdsh.1 dshbak.1 pdcp.1
-MAN1DEST=/usr/local/man/man1
-DEST=	/usr/local/bin
-OTHER=	dshbak
+OBJS= 		list.o xmalloc.o xstring.o dsh.o main.o opt.o wcoll.o \
+		rcmd.o err.o pipecmd.o $(KRB_OBJS)
+HDRS=		list.h xmalloc.h xstring.h dsh.h opt.h wcoll.h conf.h err.h
 
-mkinstalldirs=  $(SHELL) $(top_srcdir)/auxdir/mkinstalldirs
+prefix=		/usr/local
+
 top_srcdir=     .
-prefix=         /usr
-exec_prefix=    ${prefix}
-bindir=         ${exec_prefix}/bin
-sbindir=        ${exec_prefix}/sbin
-libdir=         ${exec_prefix}/lib
-
+mkinstalldirs=  $(SHELL) $(top_srcdir)/auxdir/mkinstalldirs
 
 #
 # if you wish to build with kerberos IV, uncomment these
@@ -43,40 +31,30 @@ libdir=         ${exec_prefix}/lib
 # Linux RH 6.2, AIX 4.3.x, OSF
 LIBS = $(KRB_LIB) -lpthread
 
-CC=	cc
-CFLAGS=	-I. -g $(KRB_INC)
+CC=		cc
+CFLAGS=		-I. -g $(KRB_INC)
 LDFLAGS=
 
-all: $(PROG) $(MAN1)
+all: pdsh
 
-$(PROG): $(OBJS) $(LIBOBJS)
+pdsh: $(OBJS) $(LIBOBJS)
 	$(CC) -o $@ $(OBJS) $(LDFLAGS) $(LIBS) $(LIBOBJS)
 
-clean:
-	rm -f $(OBJS) $(LIBOBJS) core a.out $(PROG)
+install:
+	install -m 4755 -o root -g root pdsh 	$prefix/bin/pdsh
+	install -m 4755 -o root -g root pdsh 	$prefix/bin/pdcp
+	install -m 555  -o root -g root dshbak 	$prefix/bin/dshbak
+	install -m 444  -o root -g root pdsh.1 	$prefix/man/man1/pdsh.1
+	install -m 444  -o root -g root pdcp.1 	$prefix/man/man1/pdcp.1
+	install -m 444  -o root -g root dshbak.1 $prefix/man/man1/dshbak.1
 
-install: $(PROG) $(MAN1) $(OTHER)
-	cp $(PROG) $(DEST)/$(PROG)
-	chmod $(MODE) $(DEST)/$(PROG)
-	chown $(OWN) $(DEST)/$(PROG)
-	for link in $(LINKS); do \
-		ln -fs $(PROG) $(DEST)/$$link; \
-	done
-	for man in $(MAN1); do \
-		cp $$man $(MAN1DEST)/$$man; \
-		chmod 0444 $(MAN1DEST)/$$man; \
-		chown $(OWN) $(MAN1DEST)/$$man; \
-	done
-	for file in $(OTHER); do \
-		cp $$file $(DEST)/$$file; \
-		chmod 555 $(DEST)/$$file; \
-		chown $(OWN) $(DEST)/$$file; \
-	done
+clean:
+	rm -f $(OBJS) $(LIBOBJS) core a.out pdsh
 
 $(OBJS): $(HDRS)
 
 
-# DEVELOPER TARGETS
+# DEVELOPER TARGETS - Borrowed from conman 0.1.3 (cdunlap@llnl.gov)
 
 tar \
 $(PACKAGE)-$(VERSION).tgz: VERSION
