@@ -17,7 +17,7 @@
 AC_DEFUN([AC_MRSH],
 [
   #
-  # Check for whether to include libmunge module
+  # Check for whether to include mrsh module
   #
   AC_MSG_CHECKING([for whether to build mrsh module])
   AC_ARG_WITH([mrsh],
