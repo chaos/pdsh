@@ -229,6 +229,50 @@ errlog(const char *fmt, ...) {
   write(2, buf, strlen(buf));
 }
 
+static const char *findhostname(struct sockaddr_in *fromp)
+{
+  struct hostent *hp;
+  const char *hostname;
+
+  hp = gethostbyaddr((char *) &fromp->sin_addr, sizeof(struct in_addr),
+                     fromp->sin_family);
+
+  errno = ENOMEM;             /* malloc (thus strdup) may not set it */
+  if (hp)
+    hostname = strdup(hp->h_name);
+  else
+    hostname = strdup(inet_ntoa(fromp->sin_addr));
+
+  if (hostname == NULL) {
+    errnum = __INTERNAL;
+    return NULL;
+  }
+
+  /*
+   * Attempt to confirm the DNS.
+   */
+#ifdef  RES_DNSRCH
+  _res.options &= ~RES_DNSRCH;
+#endif
+  hp = gethostbyname(hostname);
+  if (hp == NULL) {
+    syslog(LOG_INFO, "Couldn't look up address for %s", hostname);
+    errnum = __AUTH;
+    return NULL;
+  }
+  while (hp->h_addr_list[0] != NULL) {
+    if (!memcmp(hp->h_addr_list[0], &fromp->sin_addr,
+                sizeof(fromp->sin_addr))) {
+      return hostname;
+    }
+    hp->h_addr_list++;
+  }
+  syslog(LOG_NOTICE, "Host addr %s not listed for host %s",
+         inet_ntoa(fromp->sin_addr), hp->h_name);
+  errnum = __AUTH;
+  return NULL;
+}
+
 static int getstr(char *buf, int cnt, const char *err)
 {
   int rv;
@@ -494,6 +538,7 @@ doit(struct sockaddr_in *fromp)
   char dec_addr[16] = {0};
   char clear_port[6] = {0};
   struct if_ipaddr_list *list_node;
+  const char *rhostname;
 
   int envcount;
   char envstr[1024];
@@ -596,6 +641,11 @@ doit(struct sockaddr_in *fromp)
     }
   }
 
+  if ((rhostname = findhostname(fromp)) == NULL) {
+      errnum = __SYSTEM;
+      goto error_out;
+  }
+
 #ifdef USE_PAM
   retcode = pam_start("mqshell", pwd->pw_name, &conv, &pamh);
   if (retcode != PAM_SUCCESS) {
@@ -605,12 +655,7 @@ doit(struct sockaddr_in *fromp)
   }
 
   pam_set_item (pamh, PAM_RUSER, pwd->pw_name);
-  if (gethostname(&m_hostname[0], HOSTNAME_MAX_LEN) < 0) {
-    syslog(LOG_ERR, "failed gethostname: %m");
-    errnum = __SYSTEM;
-    goto error_out;
-  }
-  pam_set_item (pamh, PAM_RHOST, hostname);
+  pam_set_item (pamh, PAM_RHOST, rhostname);
   pam_set_item (pamh, PAM_TTY, "mqshell");
 
   retcode = pam_authenticate(pamh, 0);
@@ -653,15 +698,13 @@ doit(struct sockaddr_in *fromp)
     errnum = __INTERNAL;
     goto error_out;
   }
-
   m_arg_char_ctr = strlen(m_parser);
-#ifndef USE_PAM
+
   if (gethostname(&m_hostname[0], HOSTNAME_MAX_LEN) < 0) {
     syslog(LOG_ERR, "failed gethostname: %m");
     errnum = __SYSTEM;
     goto error_out;
   }
-#endif
 
   chrptr = strchr(&m_hostname[0],'.');
   if (chrptr == NULL) {
@@ -1048,7 +1091,7 @@ doit(struct sockaddr_in *fromp)
   if (paranoid) {
     syslog(LOG_INFO|LOG_AUTH, 
            "%s@%s as %s: cmd='%s' cwd='%s'",
-           remuser, hostname, locuser, cmdbuf, cwd);
+           remuser, rhostname, locuser, cmdbuf, cwd);
   }
 
   /* override USER, HOME, SHELL environment vars */
