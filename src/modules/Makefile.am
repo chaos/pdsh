@@ -1,4 +1,10 @@
-# $Id$
+##*****************************************************************************
+## $Id$
+##*****************************************************************************
+## Process this file with automake to produce Makefile.in.
+##*****************************************************************************
+
+include $(top_srcdir)/config/Make-inc.mk
 
 AUTOMAKE_OPTIONS = foreign
 
@@ -29,6 +35,7 @@ EXTRA_libmods_la_SOURCES = \
 	slurm.c
 
 libmods_la_LDFLAGS = \
+	$(top_builddir)/src/qsnet/libqsw.la \
 	$(MRSH_LIBS) \
 	$(NODEUPDOWN_LIBS) \
 	$(KRB_LIBS) \
