@@ -275,6 +275,10 @@ static void *_wdog(void *args)
     _int_block();               /* block SIGINT */
 
     for (;;) {
+
+        if (t == NULL) /* We're done */
+            return NULL;
+
         for (i = 0; t[i].host != NULL; i++) {
             switch (t[i].state) {
             case DSH_RCMD:
