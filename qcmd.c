@@ -112,6 +112,9 @@ qcmd_signal(int efd, int signum)
         char c;
 
         if (efd >= 0) {
+		/* set non-blocking mode for write - just take our best shot */
+		if (fcntl(efd, F_SETFL, O_NONBLOCK) < 0)
+			err("%p: fcntl: %m\n");
                 c = (char)signum;
                 write(efd, &c, 1);
         }

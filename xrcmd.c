@@ -100,7 +100,7 @@ xrcmd_signal(int efd, int signum)
 
 	if (efd >= 0) {
 		/* set non-blocking mode for write - just take our best shot */
-		if (fcntl(efd, F_SETFD, O_NONBLOCK) < 0) 
+		if (fcntl(efd, F_SETFL, O_NONBLOCK) < 0) 
 			err("%p: fcntl: %m\n");
 		c = (char)signum;
 		write(efd, &c, 1);

@@ -12,6 +12,7 @@ DEFS=           @DEFS@
 CFLAGS=         @CFLAGS@
 LDFLAGS=        @LDFLAGS@
 LIBS=           @LIBS@
+LIBSPAM=	@LIBSPAM@
 INSTALL=        @INSTALL@
 LN_S=		@LN_S@
 CPPFLAGS=	@CPPFLAGS@
@@ -46,7 +47,7 @@ pdsh: $(PDSH_OBJS)
 	$(CC) -o $@ $(PDSH_OBJS) $(LDFLAGS) $(LIBS)
 
 qshd: $(QSHD_OBJS)
-	$(CC) -o $@ $(QSHD_OBJS) $(LIBS)
+	$(CC) -o $@ $(QSHD_OBJS) $(LIBS) $(LIBSPAM)
 
 install: $(PROGS)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)

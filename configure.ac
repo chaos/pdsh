@@ -63,6 +63,7 @@ AC_ARG_WITH(elan,
 	    withelan=yes
 	    HAVE_ELAN=1
 	    AC_DEFINE_UNQUOTED(HAVE_ELAN, 1, [define for Elan support])
+	    AC_DEFINE_UNQUOTED(USE_PAM, 1, [define for PAM support in qshd])
 	    PROG_QSHD=qshd
 	    ;;
 	no)
@@ -316,7 +317,10 @@ fi
 if test "$withrms" = yes; then
     AC_CHECK_LIB([rmsapi], [rms_numNodes], LIBS="-lrmsapi -lrms $LIBS",
 	AC_MSG_ERROR([No librmsapi!]), [-lrmsapi -lrms])
+    AC_CHECK_LIB([pam], [pam_start], LIBSPAM="-lpam -lpam_misc",
+	AC_MSG_ERROR([No libpam!]), [-lpam -lpam_misc])
 fi
+AC_SUBST(LIBSPAM)
 if test "$withkrb4" = yes; then
     AC_CHECK_LIB([krb], [krb_sendauth], LIBS="-lkrb -ldes $LIBS",
 	AC_MSG_ERROR([No libkrb!]), [-lkrb -ldes])

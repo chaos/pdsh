@@ -213,3 +213,10 @@ Fri May 24 15:06:47 PDT 2002
 
 	Released version 1.6-2 to web site: http://www.llnl.gov/icc/lc/pdsh.html
 	Released version 1.6-2chaos internally.
+
+Wed May 29 16:03:12 PDT 2002
+	Pdsh would sometimes block when cleaning up after a Ctrl-C.
+	Change fcntl(efd, F_SETFD, O_NONBLOCK) to F_SETFL (xrcmd.c)
+	Add fcntl call to k4cmd.c and qcmd.c.
+
+	Turn on USE_PAM for qshd and link qshd with -lpam -lpam_misc.

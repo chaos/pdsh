@@ -25,6 +25,7 @@
 #include "wcoll.h"
 
 #if	HAVE_RMS
+#include <qsw/types.h>
 #include <rms/rmsapi.h>
 #endif
 
