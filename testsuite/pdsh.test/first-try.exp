@@ -5,7 +5,7 @@ set dshbak "$objdir/dshbak"
 set test "version"
 spawn $pdsh -V
 expect {
-	-re "pdsh-1.5.*"		{ pass "$test" }
+	-re "pdsh-1.6.*"		{ pass "$test" }
 	eof				{ fail "$test" }
 }
 
