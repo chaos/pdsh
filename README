@@ -97,7 +97,7 @@ If your hosts.allow includes "user@", e.g.  "in.rshd : ALL@ALL : ALLOW"
 and TCP wrappers is configured to support IDENT, each simultaneous remote shell
 connection will result in an IDENT query back to the source.  For large fanouts
 this can quickly overwhelm the source.  Similarly, if TCP wrappers is
-configured to query the DNS on every connection, pdsh may overwhelmi the 
+configured to query the DNS on every connection, pdsh may overwhelm the 
 DNS server.  Finally, if every remote shell connection results in a remote 
 syslog entry, syslogd on your loghost may be overwhelmed and logs may grow
 excessively long.
