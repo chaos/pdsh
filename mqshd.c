@@ -567,7 +567,7 @@ doit(struct sockaddr_in *fromp)
 
   if (pwd->pw_uid != cred.pw_uid) {
     if (cred.pw_uid != 0) {
-      syslog(LOG_ERR, "failed credential check: %m");
+      syslog(LOG_ERR, "Permission denied.");
       errnum = __CRED;
       goto error_out;
     }
@@ -1083,13 +1083,21 @@ main(int argc, char *argv[])
   argc -= optind;
   argv += optind;
 
-  qsw_init();
+  network_init(0, &from);
+ 
+  if (qsw_init() < 0) {
+      syslog(LOG_ERR, "qsw_init failed. Exiting...");
+      exit(1);
+  }
   qsw_spawn_neterr_thr();
 
-  network_init(0, &from);
-  doit(&from);
+ doit(&from);
 
   qsw_fini();
 
   return 0;
 }
+
+/*
+ * vi:tabstop=4 shiftwidth=4 expandtab
+ */
