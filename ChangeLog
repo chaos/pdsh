@@ -198,3 +198,11 @@
 	  As this has not worked for a long time, probably won't be missed.
 	* Handle arbitrarily large cap->Bitmap in qcmd/qshd protocol.
 	* Taggged pdsh-1-7-1chaos
+
+2002-08-11 garlick
+	* If no genders, mpich machines, or SDR, allow configuration, but 
+	  pdsh -a generates an error.
+	* Fix SDR wcoll generation to use hostlist package.
+	* Fixed --enable-debug option in configure.ac.
+	* Removed range operator configurability altogether.
+	* Enable "reckless hostrange expansion" (foo1-4 style ranges) for AIX

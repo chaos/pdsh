@@ -40,7 +40,7 @@
 typedef enum {false, true} bool;
 #endif
 
-hostlist_t read_wcoll(char *, FILE *, char *);
+hostlist_t read_wcoll(char *, FILE *);
 
 #if	HAVE_SDR
 hostlist_t sdr_wcoll(bool, bool, bool);

@@ -35,10 +35,7 @@ system.
 Target the specified hosts.  No spaces are allowed in the comma-separated
 list.  A list consisting of a single "-" character causes the target 
 hosts to be read from stdin, one per line.  The host list may contain 
-hostname ranges of the form ``host1@RANGE_OP@5'' or ``host[1@RANGE_OP@5]''.
-The PDSH_RANGE_OPERATOR environment variable will override the default 
-range operator character of '@RANGE_OP@', or disable hostname range 
-expansion if set to the empty string.
+hostname ranges of the form ``host[1-5]''.
 .LP
 .I "-x host,host,..."
 Exclude the specified hosts.  May be specified in conjunction with other

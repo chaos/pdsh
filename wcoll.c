@@ -56,13 +56,12 @@
  * (one of the arguments must be NULL).  
  *	file (IN)	name of wcoll file (or NULL)
  *	f (IN)		FILE pointer to wcoll file (or NULL)	
- *	range_op (IN)	string containing single-char range delimiter
  *	RETURN		new list containing hostnames
  */
 hostlist_t 
-read_wcoll(char *file, FILE *f, char *range_op)
+read_wcoll(char *file, FILE *f)
 {
-	char buf[LINEBUFSIZE], *p, *word;
+	char buf[LINEBUFSIZE], *p;
 	hostlist_t new = hostlist_create("");
 	FILE *fp;
 

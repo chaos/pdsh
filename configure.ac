@@ -229,25 +229,6 @@ AC_MSG_RESULT(${CONNECT_TIMEOUT=10})
 AC_DEFINE_UNQUOTED(CONNECT_TIMEOUT, $CONNECT_TIMEOUT, [Default connect timeout])
 AC_SUBST(CONNECT_TIMEOUT)
 
-# --with-rangeop=c
-AC_MSG_CHECKING(for range operator)
-AC_ARG_WITH(rangeop,
-    AC_HELP_STRING([--with-rangeop=c], [Set range operator character]),
-    [ case "$withval" in
-	no)
-	    RANGE_OP=""
-	    ;;
-	yes)
-	    ;;
-	*)
-	    RANGE_OP="$withval"
-	    ;;
-    esac ]
-)
-AC_MSG_RESULT(${RANGE_OP=-})
-AC_DEFINE_UNQUOTED(RANGE_OP, "$RANGE_OP", [Range operator])
-AC_SUBST(RANGE_OP)
-
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
@@ -343,7 +324,7 @@ fi
 AC_CHECK_HEADERS([fcntl.h strings.h sys/file.h unistd.h pthread.h])
 
 # Now to check if pthread.h is really available with OSF cc
-CFLAGS=-pthread
+CFLAGS="$CFLAGS -pthread"
 AC_CHECK_HEADERS([pthread.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
@@ -388,9 +369,11 @@ AH_BOTTOM(
 [#ifdef _AIX
 #  define HAVE_MTSAFE_GETHOSTBYNAME 1
 #  define HAVE_MAGIC_RSHELL_CLEANUP 1
+#  define WANT_RECKLESS_HOSTRANGE_EXPANSION 1
 #else
 #  define HAVE_MTSAFE_GETHOSTBYNAME 0
 #  define HAVE_MAGIC_RSHELL_CLEANUP 0
+#  define WANT_RECKLESS_HOSTRANGE_EXPANSION 0
 #endif /* _AIX */]
 )
 

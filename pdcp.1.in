@@ -23,9 +23,6 @@ A second SIGINT within one second terminates the program.
 Target the specified hosts.  No spaces are allowed in the comma-separated
 list.  A list consisting of a single "-" character causes the target 
 hosts to be read from stdin, one per line.  
-The PDSH_RANGE_OPERATOR environment variable will override the default
-range operator character of '@RANGE_OP@', or disable hostname range 
-expansion if set to the empty string.
 .LP
 .I "-x host,host,..."
 Exclude the specified hosts.  May be specified in conjunction with other

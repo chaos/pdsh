@@ -129,7 +129,6 @@ opt_default(opt_t *opt)
 
 	opt->info_only = false;
 	opt->wcoll = NULL;
-	opt->range_op = RANGE_OP;
 	opt->progname = NULL;
 	opt->connect_timeout = CONNECT_TIMEOUT;
 	opt->command_timeout = 0;
@@ -175,13 +174,10 @@ opt_env(opt_t *opt)
 	char *rhs;
 
 	if ((rhs = getenv("WCOLL")) != NULL)
-		opt->wcoll = read_wcoll(rhs, NULL, opt->range_op);
+		opt->wcoll = read_wcoll(rhs, NULL);
 
         if ((rhs = getenv("FANOUT")) != NULL)
                 opt->fanout = atoi(rhs);
-
-	if ((rhs = getenv("PDSH_RANGE_OPERATOR")) != NULL)
-		opt->range_op = (strlen(rhs) > 0) ? Strdup(rhs) : NULL;
 
         if ((rhs = getenv("DSHPATH")) != NULL) {
 		struct passwd *pw = getpwnam(opt->luser);
@@ -262,8 +258,7 @@ opt_args(opt_t *opt, int argc, char *argv[])
 				break;
 			case 'w':	/* target node list */
 				if (strcmp(optarg, "-") == 0)
-					opt->wcoll = read_wcoll(NULL, stdin, 
-							opt->range_op);
+					opt->wcoll = read_wcoll(NULL, stdin);
 				else 
 				        wcoll_buf = Strdup(optarg);
 				break;
@@ -363,7 +358,7 @@ opt_args(opt_t *opt, int argc, char *argv[])
 	/* get wcoll, SDR, genders file, or MPICH machines file */
 	if (opt->allnodes) {
 #if	HAVE_MACHINES
-		opt->wcoll = read_wcoll(_PATH_MACHINES, NULL, opt->range_op);
+		opt->wcoll = read_wcoll(_PATH_MACHINES, NULL);
 #elif 	HAVE_SDR
 		opt->wcoll = sdr_wcoll(opt->sdr_global, 
 		    opt->altnames, opt->sdr_verify);
@@ -552,8 +547,6 @@ opt_list(opt_t *opt)
 		Free((void **)&infile_str);
 	}
 	out("Use alt hostname	%s\n", BOOLSTR(opt->altnames));
-	out("Range operator		`%s'\n", 
-			opt->range_op ? opt->range_op : "NULL");
 	out("Debugging       	%s\n", BOOLSTR(opt->debug));
 
 	out("\n-- SDR options --\n");

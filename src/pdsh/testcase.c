@@ -40,6 +40,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <stdlib.h>
 
 #include "err.h"
 #include "dsh.h"

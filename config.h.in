@@ -1,0 +1,151 @@
+/* config.h.in.  Generated automatically from configure.ac by autoheader.  */
+
+/* Default connect timeout */
+#undef CONNECT_TIMEOUT
+
+/* Default fanout */
+#undef DFLT_FANOUT
+
+/* Define to 1 if you have the declaration of `strerror_r', and to 0 if you
+   don't. */
+#undef HAVE_DECL_STRERROR_R
+
+/* define for Elan support */
+#undef HAVE_ELAN
+
+/* Define if you have the <fcntl.h> header file. */
+#undef HAVE_FCNTL_H
+
+/* Define if Genders is available */
+#undef HAVE_GENDERS
+
+/* Define if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* define for Kerberos IV support */
+#undef HAVE_KRB4
+
+/* Define if you have the `elan3' library (-lelan3). */
+#undef HAVE_LIBELAN3
+
+/* Define if you have the `pthread' library (-lpthread). */
+#undef HAVE_LIBPTHREAD
+
+/* Define if you have the `rmscall' library (-lrmscall). */
+#undef HAVE_LIBRMSCALL
+
+/* Using machines file */
+#undef HAVE_MACHINES
+
+/* Define if your system has a working `malloc' function. */
+#undef HAVE_MALLOC
+
+/* Define if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define if you have the <pthread.h> header file. */
+#undef HAVE_PTHREAD_H
+
+/* Define if you have the `pthread_sigmask' function. */
+#undef HAVE_PTHREAD_SIGMASK
+
+/* define for RMS support */
+#undef HAVE_RMS
+
+/* Define if SDR is available */
+#undef HAVE_SDR
+
+/* Define if you have the `sigthreadmask' function. */
+#undef HAVE_SIGTHREADMASK
+
+/* Define to use SSH as primary remote shell */
+#undef HAVE_SSH
+
+/* Define if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define if you have the `strerror' function. */
+#undef HAVE_STRERROR
+
+/* Define if you have the `strerror_r' function. */
+#undef HAVE_STRERROR_R
+
+/* Define if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define if you have the <sys/file.h> header file. */
+#undef HAVE_SYS_FILE_H
+
+/* Define if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define to 1 if `strerror_r' returns a string. */
+#undef HAVE_WORKING_STRERROR_R
+
+/* Define if you are building a production release. */
+#undef NDEBUG
+
+/* Define the project's name. */
+#undef PROJECT
+
+/* Define the project's release. */
+#undef RELEASE
+
+/* Define if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Define the project's version. */
+#undef VERSION
+
+/* Define if using the debug malloc library. */
+#undef WITH_DMALLOC
+
+/* Define path to flat list of nodes for -a processing */
+#undef _PATH_MACHINES
+
+/* Path to nodeattr */
+#undef _PATH_NODEATTR
+
+/* Path to rcp */
+#undef _PATH_RCP
+
+/* Path to rmsquery */
+#undef _PATH_RMSQUERY
+
+/* Path SDRGetObjects */
+#undef _PATH_SDRGETOBJECTS
+
+/* Path to ssh */
+#undef _PATH_SSH
+
+/* Define to `int' if <sys/types.h> does not define. */
+#undef socklen_t
+
+#ifdef WITH_DMALLOC
+#  include <stdlib.h>
+#  include <dmalloc.h>
+#endif /* WITH_DMALLOC */
+
+
+#ifdef _AIX
+#  define HAVE_MTSAFE_GETHOSTBYNAME 1
+#  define HAVE_MAGIC_RSHELL_CLEANUP 1
+#  define WANT_RECKLESS_HOSTRANGE_EXPANSION 1
+#else
+#  define HAVE_MTSAFE_GETHOSTBYNAME 0
+#  define HAVE_MAGIC_RSHELL_CLEANUP 0
+#  define WANT_RECKLESS_HOSTRANGE_EXPANSION 0
+#endif /* _AIX */
+
