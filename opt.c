@@ -401,7 +401,7 @@ opt_args(opt_t *opt, int argc, char *argv[])
 
 	/* handle -x option */
 	if (exclude_buf != NULL && opt->wcoll) {
-		hostlist_delete_host(opt->wcoll, exclude_buf);
+		hostlist_delete(opt->wcoll, exclude_buf);
 		Free((void **)&exclude_buf);
 	}
 }

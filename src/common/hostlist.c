@@ -1438,7 +1438,7 @@ char *hostlist_pop(hostlist_t hl)
 		hl->nhosts--;
 		if (hostrange_empty(hr)) {
 			hostrange_destroy(hl->hr[--hl->nranges]);
-			hl->hr[hl->nranges - 1] = NULL;
+			hl->hr[hl->nranges] = NULL;
 		}
 	}
 	UNLOCK_HOSTLIST(hl);
@@ -1454,8 +1454,7 @@ hostlist_shift_iterators(hostlist_t hl, int idx, int depth, int n)
 	for (i = hl->ilist; i; i = i->next) {
 		if (n == 0) {
 			if (i->idx == idx && i->depth >= depth)
-				i->depth =
-				    i->depth > -1 ? i->depth - 1 : -1;
+				i->depth = i->depth > -1 ? i->depth - 1 : -1;
 		} else {
 			if (i->idx >= idx) {
 				if ((i->idx -= n) >= 0)
@@ -1564,6 +1563,22 @@ char *hostlist_shift_range(hostlist_t hl)
 	hostlist_destroy(hltmp);
 
 	return strdup(buf);
+}
+
+/* XXX: Note: efficiency improvements needed */
+int hostlist_delete(hostlist_t hl, char *hosts)
+{
+	int n = 0;
+	char *hostname;
+	hostlist_t hltmp = hostlist_create(hosts);
+
+	while ((hostname = hostlist_pop(hltmp)) != NULL) {
+		n += hostlist_delete_host(hl, hostname);
+		free(hostname);
+	}
+	hostlist_destroy(hltmp);
+
+	return n;
 }
 
 
@@ -2350,6 +2365,12 @@ int main(int ac, char **av)
 		perror("hostlist_create");
 	if (!(set = hostset_create(ac > 1 ? av[1] : NULL)))
 		perror("hostlist_create");
+
+	hl3 = hostlist_create("f[0-5]");
+	hostlist_delete(hl3, "f[1-3]");
+	hostlist_ranged_string(hl3, 102400, buf);
+	printf("after delete = `%s'\n", buf);
+	hostlist_destroy(hl3);
 
 	for (i = 2; i < ac; i++) {
 		hostlist_push(hl1, av[i]);
