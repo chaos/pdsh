@@ -25,8 +25,8 @@ rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/usr/bin
 mkdir -p $RPM_BUILD_ROOT/usr/man/man1
-cp pdsh $RPM_BUILD_ROOT/usr/bin/pdsh
-cp pdsh $RPM_BUILD_ROOT/usr/bin/
+install -s pdsh $RPM_BUILD_ROOT/usr/bin/pdcp
+install -s pdsh $RPM_BUILD_ROOT/usr/bin/pdsh
 cp dshbak $RPM_BUILD_ROOT/usr/bin/
 gzip pdsh.1 pdcp.1 dshbak.1
 cp pdsh.1.gz $RPM_BUILD_ROOT/usr/man/man1
