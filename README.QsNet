@@ -28,3 +28,8 @@ the Elan network error resolver thread. Parsing of the /etc/elanhosts
 file is accomplished by using the libelanhosts(3) library, upon which
 pdsh depends (when building for QsNet). See the elanhosts(5)
 man page for a description of the /etc/elanhosts file format.
+
+The libelanhosts package may be obtained from
+
+  ftp://ftp.llnl.gov/pub/libelanhosts
+
