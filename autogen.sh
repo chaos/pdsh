@@ -39,8 +39,8 @@ AUXDIR=auxdir
 
 versiontest="
 if (/(\d+)\.(\d+)((-p|\.)(\d+))*/) { 
-	exit 1 if (\$1 < $AMMAJOR || \$2 < $AMMINOR); 
-	exit 0 if (\$2 > $AMMINOR); 
+	exit 1 if (\$1 < $AMMAJOR); 
+	exit 1 if (\$2 < $AMMINOR);
 	exit 1 if (\$5 < $AMPATCH); 
 }"
 
@@ -63,6 +63,13 @@ test -n "$NO_AUTOMAKE" || (aclocal --version) < /dev/null > /dev/null 2>&1 || {
    NO_ACLOCAL=yes
    DIE=1
 }
+
+versiontest="
+if ( / (\d+)\.(\d+)\.(\d+) /) { 
+	exit 1 if (\$1 < $LTLMAJOR); 
+	exit 1 if (\$2 < $LTLMINOR);
+	exit 1 if (\$3 < $LTLPATCH);
+}"
 
 (libtoolize --version 2>&1 | perl -n0e "$versiontest") || {
    echo
