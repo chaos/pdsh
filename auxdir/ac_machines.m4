@@ -22,17 +22,17 @@ AC_DEFUN([AC_MACHINES],
   AC_ARG_WITH([machines],
     AC_HELP_STRING([--with-machines(=PATH)], [Specify a flat file list of all nodes]),
     [ case "$withval" in
-        no)  ac_with_machines=no ;;
-        yes) ac_with_machines=yes
+        no)  ac_have_machines=no ;;
+        yes) ac_have_machines=yes
              MACHINES="/etc/machines" ;;
-        *)   ac_with_machines=yes
+        *)   ac_have_machines=yes
              MACHINES=$withval 
       esac
     ]
   )
-  AC_MSG_RESULT([${ac_with_machines=no}])
-  : ${ac_with_machines=no}
-  if test "$ac_with_machines" = yes; then
+  AC_MSG_RESULT([${ac_have_machines=no}])
+  : ${ac_have_machines=no}
+  if test "$ac_have_machines" = yes; then
         AC_ADD_STATIC_MODULE("machines")
         AC_DEFINE([HAVE_MACHINES], [1], [Define if you have machines])
 	AC_DEFINE_UNQUOTED([_PATH_MACHINES], ["$MACHINES"], 

@@ -6,6 +6,10 @@ if WITH_STATIC_MODULES
 
 noinst_LTLIBRARIES = libmods.la
 
+if WITH_SSH
+SSH_FILE = sshcmd.c
+endif
+
 if WITH_ELAN
 ELAN_FILE = qcmd.c
 endif
@@ -47,8 +51,8 @@ KRB4_FILE = k4cmd.c
 endif
 
 libmods_la_SOURCES = \
-	sshcmd.c \
 	xrcmd.c \
+	$(SSH_FILE) \
 	$(MRSH_FILE) \
 	$(MQSH_FILE) \
 	$(ELAN_FILE) \
@@ -70,6 +74,10 @@ else
 
 AUTOMAKE_OPTIONS = foreign
 MODULE_FLAGS =     -module -avoid-version
+
+if WITH_SSH
+SSH_MODULE = sshcmd.la
+endif
 
 if WITH_ELAN
 ELAN_MODULE = qcmd.la
@@ -120,8 +128,8 @@ KRB4_MODULE = k4cmd.la
 endif
 
 pkglib_LTLIBRARIES = \
-	sshcmd.la \
 	xrcmd.la \
+	$(SSH_MODULE) \
         $(MRSH_MODULE) \
         $(MQSH_MODULE) \
 	$(ELAN_MODULE) \

@@ -8,68 +8,25 @@
 #    AC_MQSH
 #
 #  DESCRIPTION:
-#    Checks for mqsh option, and sets up nettools definitions
+#    Checks for mqsh option and checks for things mqshd requires
 #
 #  WARNINGS:
+#    This macro must be called after AC_ELAN and AC_MRSH
 #    This macro must be placed after AC_PROG_CC or equivalent.
 ##*****************************************************************************
 
-AC_DEFUN([AC_CHECK_AF_DECL],
+# Found online, original author not known
+AC_DEFUN([AC_STRUCT_SA_LEN],
 [
-  # IEEE standard says AF_X definitions should be in sys/socket.h
-  AC_CHECK_DECL($1, AC_DEFINE($2,1,[have $1]),,[#include <sys/socket.h>])
-])
+  AC_CACHE_CHECK([for sa_len in struct sockaddr], ac_cv_struct_sa_len,
+        AC_TRY_COMPILE([#include <sys/types.h> #include <sys/socket.h>], 
+                        [struct sockaddr s; s.sa_len;],
+                        ac_cv_struct_sa_len=yes, 
+                        ac_cv_struct_sa_len=no))
 
-AC_DEFUN([AC_NETTOOLS],
-[
-  # The net-tools library was originally not autoconf/automake
-  # configured and configuration #defines were set through manual
-  # configuration.
-  #
-  # Luckily, the net-tools library does use "#include "config.h""
-  # for its configuration.  So we can autoconf configure net-tools by 
-  # having the source files use our config.h instead.
-  #
-  # However, we must create #defines that match the ones the library
-  # specifically uses.  We can't use the standard ones created from
-  # autoconf macros.
-  #
-
-  # check for domain types 
-  AC_CHECK_AF_DECL([AF_UNIX],   [HAVE_AFUNIX])
-  AC_CHECK_AF_DECL([AF_INET],   [HAVE_AFINET])
-  AC_CHECK_AF_DECL([AF_INET6],  [HAVE_AFINET6])
-  AC_CHECK_AF_DECL([AF_IPX],    [HAVE_AFIPX])
-  AC_CHECK_AF_DECL([AF_ATALK],  [HAVE_AFATALK])
-  AC_CHECK_AF_DECL([AF_AX25],   [HAVE_AFAX25])
-  AC_CHECK_AF_DECL([AF_NETROM], [HAVE_AFNETROM])
-  AC_CHECK_AF_DECL([AF_ROSE],   [HAVE_AFROSE])
-  AC_CHECK_AF_DECL([AF_X25],    [HAVE_AFX25])
-  AC_CHECK_AF_DECL([AF_ECONET], [HAVE_AFECONET])
-  AC_CHECK_AF_DECL([AF_DECnet], [HAVE_AFDECnet])
-  AC_CHECK_AF_DECL([AF_ASH],    [HAVE_AFASH])
-
-  # define all hardware.  All HW headers should exist even if kernel
-  # modules are not loaded or installed
-  AC_DEFINE(HAVE_HWETHER,1,[have ethernet])
-  AC_DEFINE(HAVE_HWARC,1,[have ARCnet])
-  AC_DEFINE(HAVE_HWSLIP,1,[have SLIP])
-  AC_DEFINE(HAVE_HWPPP,1,[have PPP])
-  AC_DEFINE(HAVE_HWTUNNEL,1,[have IPIP])
-  AC_DEFINE(HAVE_HWSTRIP,1,[have STRIP])
-  AC_DEFINE(HAVE_HWTR,1,[have Token Ring])
-  AC_DEFINE(HAVE_HWAX25,1,[have AX25])
-  AC_DEFINE(HAVE_HWROSE,1,[have Rose])
-  AC_DEFINE(HAVE_HWNETROM,1,[have NET/ROM])
-  AC_DEFINE(HAVE_HWX25,1,[have X.25])
-  AC_DEFINE(HAVE_HWFR,1,[have DLCI/FRAD])
-  AC_DEFINE(HAVE_HWSIT,1,[have SOT])
-  AC_DEFINE(HAVE_HWFDDI,1,[have FDDI])
-  AC_DEFINE(HAVE_HWHIPPI,1,[have HIPPI])
-  AC_DEFINE(HAVE_HWASH,1,[have ASH])
-  AC_DEFINE(HAVE_HWHDLCLAPB,1,[have HDLC/LAPB])
-  AC_DEFINE(HAVE_HWIRDA,1,[have IrDA])
-  AC_DEFINE(HAVE_HWEC,1,[have Econet])
+  if test $ac_cv_struct_sa_len = yes; then
+     AC_DEFINE(HAVE_SA_LEN, [1], [do we have sa_len in struct sockaddr])  
+  fi
 ])
 
 AC_DEFUN([AC_MQSH],
@@ -145,10 +102,16 @@ AC_DEFUN([AC_MQSH],
        AC_ADD_STATIC_MODULE("mqcmd")
        AC_DEFINE([HAVE_MQSH], [1], [Define if you have mqsh.])
        PROG_MQSHD=in.mqshd   
-       AC_NETTOOLS
+       AC_STRUCT_SA_LEN
+
+       # check for IPv6, IEEE standard says it should be in sys/socket.h 
+       AC_CHECK_DECL([AF_INET6], 
+                     AC_DEFINE(HAVE_IPV6,1,[have IPv6]),,
+                     [#include <sys/socket.h>])  
 
        # compile libqsw
        ac_have_qsw=yes
+         
     fi
   else
     ac_have_mqsh=no

@@ -122,13 +122,6 @@ char rcsid[] = "$Id$";
 #include <assert.h>
 #include <net/if.h>
 
-#include "net-toollib/lib/net-support.h"
-#include "net-toollib/lib/pathnames.h"
-#include "net-toollib/lib/proc.h"
-#include "net-toollib/include/interface.h"
-#include "net-toollib/include/sockets.h"
-#include "net-toollib/lib/util.h"
-
 #include <elan3/elan3.h>
 #include <elan3/elanvp.h>
 #include <rms/rmscall.h>
@@ -143,6 +136,8 @@ char rcsid[] = "$Id$";
 /* error codes */
 enum stderr_err {__NONE = 0, __READ, __MUNGE, __PAYLOAD, __PORT,  
                  __CRED, __SYSTEM, __INTERNAL};
+
+enum stderr_err errnum = __NONE;
 
 #define HOSTNAME_MAX_LEN 80
 #define MAX_MBUF_SIZE 4096
@@ -159,6 +154,12 @@ static int paranoid = 0;
 static int sent_null;
 static int allow_root_rhosts = 1;
 
+struct if_ipaddr_list {
+  unsigned int ipaddr;
+  struct if_ipaddr_list *next;
+};
+
+struct if_ipaddr_list *list_head;
 
 #ifdef DEBUG
 static int mdebug = 1;
@@ -171,21 +172,7 @@ char path[100] = "PATH=";
 char *envinit[] = {homedir, shell, path, username, 0};
 extern  char **environ;
 
-struct if_ipaddr_list {
-  struct if_ipaddr_list *next;
-  struct if_ipaddr_list *prev;
-  unsigned int ipaddr;
-};
-
-extern int for_all_interfaces(int (*doit) (struct interface *, void *), void *cookie);
-extern struct aftype *get_afntype(int af);
-extern struct hwtype *get_hwntype(int type);
-extern int hw_null_address(struct hwtype *hw, void *ap);
-static void ife_addr_list(struct interface *ptr, struct if_ipaddr_list *cookie);
-static int grab_ip_addrs(struct interface *ife, void *cookie);
 static void free_list(struct if_ipaddr_list *list);
-static struct if_ipaddr_list *list;
-static int not_first = 0;
 
 static void error(const char *fmt, ...);
 static void doit(struct sockaddr_in *fromp);
@@ -264,88 +251,142 @@ static int getstr(char *buf, int cnt, const char *err)
   return cnt;
 }
 
-void
-ife_addr_list(struct interface *ptr, struct if_ipaddr_list *cookie)
+int get_interface_addresses()
 {
-  struct if_ipaddr_list *prev;
-  struct aftype *ap;
-  struct hwtype *hw;
-  int hf;
-  int if_rv;
+  struct ifconf ifc;
+  struct ifreq *ifr;
+  struct ifreq ifaddr;
+  int s, lastlen = -1;
+  int len = sizeof(struct ifreq) * 100;
+  void *buf = NULL, *ptr = NULL;
+  struct if_ipaddr_list *list_node = NULL, *list_tail = NULL;
+  struct sockaddr_in * sin;
 
+  list_head = NULL;
 
-  ap = get_afntype(ptr->addr.sa_family);
-  if (ap == NULL)
-    ap = get_afntype(0);
-
-  hf = ptr->type;
-
-  hw = get_hwntype(hf);
-  if (hw == NULL)
-    hw = get_hwntype(-1);
-
-  hw_null_address(hw,ptr->hwaddr);
-
-  /*
-   * We don't want the localhost IP in this list...
+  /* A lot of this ioctl code is from Unix Network Programming, by
+   * R. Stevens, Chapter 16
    */
-  if (strcmp("127.0.0.1",ap->sprint(&ptr->addr,1)) == 0)
-    return;
-  prev = cookie;
-  while (cookie->next != 0) {
-    prev = cookie;
-    cookie = cookie->next;
+
+  if ((s = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    syslog(LOG_ERR, "socket call failed: %m");
+    errnum = __SYSTEM;
+    goto bad;
   }
-  if (not_first) {
-    cookie->next = calloc(1,sizeof(struct if_ipaddr_list));
-  } else {
-    not_first++;
-    if_rv = inet_pton(AF_INET, ap->sprint(&ptr->addr,1), &cookie->ipaddr);
-    if (if_rv <= 0) {
-      syslog(LOG_ERR, "failed inet_pton: %m");
-      exit(1);
+
+  while(1) {
+    if ((buf = (char *)malloc(len)) == NULL) {
+      syslog(LOG_ERR, "malloc failed: %m");
+      errnum = __SYSTEM;
+      goto bad;
     }
-    return;
-  }
-  if (cookie->next != NULL) {
-    if_rv = inet_pton(AF_INET, ap->sprint(&ptr->addr,1), &cookie->next->ipaddr);
-    if (if_rv <= 0) {
-      syslog(LOG_ERR, "failed inet_pton: %m");
-      exit(1);
+    
+    ifc.ifc_len = len;
+    ifc.ifc_buf = buf;
+    
+    if (ioctl(s, SIOCGIFCONF, &ifc) < 0) {
+      syslog(LOG_ERR, "ioctl SIOCGIFCONF failed: %m");
+      errnum = __SYSTEM;
+      goto bad;
     }
-    if (cookie->next->prev == 0)
-      cookie->next->prev = cookie;
-  } else {
-    syslog(LOG_ERR, "ife_addr_list: no memory left");
-    exit(1);
+    else {
+      if (ifc.ifc_len == lastlen)
+        break;
+
+      lastlen = ifc.ifc_len;
+    }
+    
+    /* It looks dumb to run ioctl() twice, but is necessary for
+     * portability.  See Unix Network Programming, section 16.6
+     */
+
+    len += 10 * sizeof(struct ifreq);
+    free(buf);
   }
-}
 
+  for (ptr = buf; ptr < buf + ifc.ifc_len; ) {
 
-int
-grab_ip_addrs(struct interface *ife, void *cookie)
-{
-  struct if_ipaddr_list *ips = (struct if_ipaddr_list *) cookie;
-  int rv;
+    ifr = (struct ifreq *)ptr;
 
-  rv = do_if_fetch(ife);
-  if (rv >= 0) {
-    if ((ife->flags & IFF_UP) && ife->has_ip)
-      ife_addr_list(ife, ips);
+    /* Calculate address of next ifreq structure.  Calculations below
+     * are necessary b/c socket addresses can have variable length
+     */
+    
+#if HAVE_SA_LEN
+    if (sizeof(struct sockaddr) > ifr->ifr_addr.sa_len)
+      len = sizeof(struct sockaddr);
+    else
+      len = ifr->ifr_addr.sa_len;
+#else
+    /* For now we only assume AF_INET and AF_INET6, we'll 
+     * add others as necessary
+     */
+    switch(ifr->ifr_addr.sa_family) {
+#ifdef HAVE_IPV6
+    case AF_INET6:
+      len = sizeof(struct sockaddr_in6);
+      break;
+#endif
+    case AF_INET:
+    default:
+      len = sizeof(struct sockaddr_in);
+      break;
+    }
+#endif
+
+    ptr += sizeof(ifr->ifr_name) + len;
+
+    /* Pdsh currently based on IPv4, so we only care about
+     * AF_INET network interfaces
+     */
+    if (ifr->ifr_addr.sa_family != AF_INET)
+      continue;
+
+    strcpy(ifaddr.ifr_name, ifr->ifr_name);
+    ifaddr.ifr_addr.sa_family = AF_INET;
+    if (ioctl(s, SIOCGIFADDR, &ifaddr) < 0) {
+      syslog(LOG_ERR, "ioctl SIOCGIFCONF failed: %m");
+      errnum = __SYSTEM;
+      goto bad;
+    }
+
+    if ((list_node = malloc(sizeof(struct if_ipaddr_list))) < 0) {
+      syslog(LOG_ERR, "malloc failed: %m");
+      errnum = __SYSTEM;
+      goto bad;
+    }
+
+    if (!list_head) {
+      list_head = list_node;
+      list_tail = list_node;
+    }
+    else {
+      list_tail->next = list_node;
+      list_tail = list_node;
+    }
+
+    sin = (struct sockaddr_in *)&ifr->ifr_addr;
+    list_node->ipaddr = sin->sin_addr.s_addr;
+    list_node->next = NULL;
   }
-  return rv;
+   
+  return 0;
+
+ bad:
+  free(buf);
+  free_list(list_head);
+  return -1;
 }
 
 void free_list(struct if_ipaddr_list *list)
 {
-  while (list->next != NULL)
-    list = list->next;
-
-  while (list->prev != (struct if_ipaddr_list *) 0xcafebabe) {
-    list = list->prev;
-    free(list->next);
+  struct if_ipaddr_list *temp;
+  
+  while (list != NULL) {
+    temp = list->next;
+    free(list);
+    list = temp;
   }
-  free(list);
 }
 
 static void stderr_parent(int sock, int pype, int pid) {
@@ -408,9 +449,7 @@ doit(struct sockaddr_in *fromp)
   int m_arg_char_ctr = 0;
   int buf_length;
   int found;
-  int last, last_ipaddr;
   int i;
-  enum stderr_err errnum = __NONE;
   unsigned int chrnum = 0;
   unsigned int rand;
   unsigned short port = 0;
@@ -430,6 +469,7 @@ doit(struct sockaddr_in *fromp)
   char *chrptr = NULL;
   char dec_addr[16] = {0};
   char clear_port[6] = {0};
+  struct if_ipaddr_list *list_node;
 
   int envcount;
   char envstr[1024];
@@ -587,40 +627,20 @@ doit(struct sockaddr_in *fromp)
   }
 
   if (!found) {
-    list = calloc(1,sizeof(struct if_ipaddr_list));
-    if (list == NULL) {
-      syslog(LOG_ERR, "failed calloc: %m");
-      errnum = __SYSTEM;
+    if (get_interface_addresses() < 0)
       goto error_out;
-    }
-    list->prev = (struct if_ipaddr_list *)(0xcafebabe);
 
-    if ((skfd = sockets_open(0)) < 0) {
-      syslog(LOG_ERR, "sockets_open error");
-      errnum = __INTERNAL;
-      goto error_out;
-    }
+    list_node = list_head;
+    while (list_node != NULL && memcmp(&list_node->ipaddr,          
+                                       &sin.sin_addr.s_addr, 
+                                       m_hostent->h_length) != 0)
+      list_node = list_node->next;
+    
+    if (list_node != NULL)
+      found++;
 
-    rv = for_all_interfaces(grab_ip_addrs, (void *)list);
-    last = 0;
-    last_ipaddr = 0;
-    if (rv == 0) {
-      do {
-        if (last)
-          last_ipaddr++;
+    free_list(list_head);
 
-        if (memcmp(&list->ipaddr, &sin.sin_addr.s_addr, m_hostent->h_length) == 0) 
-          found++;
-
-        if (!last) {
-          list = list->next;
-          if (list->next == NULL)
-            last++;
-        } else {
-          free_list(list);
-        }
-      } while (!last_ipaddr);
-    }
     if (found == 0) {
       /*
        * Just a bad address...

@@ -71,7 +71,7 @@ in_mqshd_SOURCES = \
 	err.c err.h \
 	hostlist.c hostlist.h 
 
-in_mqshd_LDADD = libqsw.la net-toollib/lib/libnettools.la
+in_mqshd_LDADD = libqsw.la
 
 in_mqshd_LDFLAGS = $(MRSH_LIBS)
 

@@ -55,10 +55,10 @@ AM_CONDITIONAL(WITH_STATIC_MODULES, test "$ac_static_modules" = "yes")
 #
 if test "$ac_static_modules" = "yes" ; then
    AC_DEFINE_UNQUOTED(STATIC_MODULES, [1], [Use Static Modules])
-   BASE_SUBDIRS="net-toollib modules . testsuite" 
+   BASE_SUBDIRS="modules . testsuite" 
    AC_STATIC_MODULES_INIT
 else
-   BASE_SUBDIRS="net-toollib . modules testsuite"
+   BASE_SUBDIRS=". modules testsuite"
 fi
 AC_SUBST(BASE_SUBDIRS)
 
@@ -94,10 +94,16 @@ AC_FANOUT
 AC_CONNECT_TIMEOUT
 
 #
+# Test for ssh
+#
+AC_SSH
+AM_CONDITIONAL(WITH_SSH, test  "$ac_have_ssh"   =  "yes")
+
+#
 # Test for kerberos
 #
 AC_KRB4
-AM_CONDITIONAL(WITH_KRB4, test  "$withkrb4"     =  "yes")
+AM_CONDITIONAL(WITH_KRB4, test  "$ac_have_krb4" =  "yes")
 
 #
 # Test for support of QSW Elan. If requested and available, build
@@ -115,7 +121,7 @@ AM_CONDITIONAL(WITH_QSW,  [test "$ac_have_qsw"  = "yes"])
 # Test for whether to build "machines" module.
 #
 AC_MACHINES
-AM_CONDITIONAL(WITH_MACHINES, [test "$ac_with_machines" = "yes"])
+AM_CONDITIONAL(WITH_MACHINES, [test "$ac_have_machines" = "yes"])
 
 #
 # Check for nodeattr
@@ -182,6 +188,10 @@ if test -n "$RCP"; then
     AC_DEFINE_UNQUOTED(_PATH_RCP, "$RCP", [Path to rcp])
 fi
 
+if test "$ac_static_modules" = "yes" ; then
+   AC_STATIC_MODULES_EXIT
+fi
+
 #
 # Build PDSH_VERSION string
 #
@@ -224,9 +234,6 @@ AC_CONFIG_FILES([
   testsuite/Makefile 
   modules/Makefile
   testsuite/pdsh.test/Makefile 
-  net-toollib/Makefile
-  net-toollib/include/Makefile
-  net-toollib/lib/Makefile
   pdsh.spec 
   pdcp.1 pdsh.1
  ]

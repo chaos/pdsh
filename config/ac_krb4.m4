@@ -24,11 +24,11 @@ AC_DEFUN([AC_KRB4],
 #
 
 AC_CHECK_LIB([krb], [krb_sendauth], 
-             [withkrb4=yes],
-             [withkrb4=no], [-lkrb -ldes])
+             [ac_have_krb4=yes],
+             [ac_have_krb4=no], [-lkrb -ldes])
 
-AM_CONDITIONAL(WITH_KRB4, test $withkrb4 = yes)
-if test "$withkrb4" = "yes" ; then
+AM_CONDITIONAL(WITH_KRB4, test $ac_have_krb4 = yes)
+if test "$ac_have_krb4" = "yes" ; then
     AC_ADD_STATIC_MODULE("k4cmd")
     KRB_LIBS="-lkrb -ldes"
     AC_DEFINE([HAVE_KRB4], [1], [Define if you have Kerberos])
