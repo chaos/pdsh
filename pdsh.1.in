@@ -69,6 +69,11 @@ The mrsh module allows users to execute remote commands through mrsh(1).
 .LP
 The ssh module allows users to execute remote commands through ssh(1).
 .LP
+The krb4
+.LP
+The k4b4 module allows users to execute remote commands after
+authenticating with kerberos.
+.LP
 .B qshell
 .LP
 The qshell module allows users to execute remote commands through
