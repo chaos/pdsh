@@ -352,7 +352,6 @@ static int mqcmd_init(opt_t * opt)
    */
   snprintf(num_seq, sizeof(num_seq),"%d",randy);
 
-  printf("%s\n", num_seq);
   return 0;
 }
 
