@@ -129,8 +129,12 @@ Release 1.6
 	with -E option and qshd server (added qshd subpackage to RPM target).
 
 	Stderr socket now opened by default to enable proper remote cleanup
-	after SIGINT.  The meaning of the -s option is reversed.
-	(everywhere but AIX where cleanup seems to work without the extra sock)
+	after SIGINT, except on AIX where cleanup seems to work without the
+	extra socket.  Everywhere but AIX, the meaning of the -s option is now
+	reversed.
+
+	Default fanout is 64 on systems where we don't open stderr by default,
+	e.g. AIX, and 32 everywhere else.
 
 	Added support for expansion of hostname ranges passed through -w
 	(e.g. -w host1-5 means run on host1,host2,...,host5) (Mark Grondona)

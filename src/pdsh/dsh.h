@@ -19,12 +19,13 @@
 #include "list.h"
 #include "opt.h"
 
-#define DFLT_FANOUT 		64
 
-#if	NEED_STDERR
-#define DFLT_SEPARATE_STDERR	true
-#else
+#ifdef	_AIX
 #define DFLT_SEPARATE_STDERR	false
+#define DFLT_FANOUT 		64
+#else
+#define DFLT_SEPARATE_STDERR	true	/* needed for cleanup */
+#define DFLT_FANOUT 		32	/* extra sock so reduce fanout */
 #endif
 
 #define LINEBUFSIZE     	2048
@@ -33,11 +34,11 @@
 #define INTR_TIME		1 	/* secs */
 #define WDOG_POLL 		2	/* secs */
 
-#ifdef _PATH_SDRGETOBJECTS
+/* some handy SP constants */
+/* NOTE: degenerate case of one node per frame, nodes would be 1, 17, 33,... */
 #define MAX_SP_NODES 		512
 #define MAX_SP_NODES_PER_FRAME	16
 #define MAX_SP_NODE_NUMBER (MAX_SP_NODES * MAX_SP_NODES_PER_FRAME - 1)
-#endif
 
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN 64

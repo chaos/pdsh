@@ -34,7 +34,7 @@ static void show_version(void);
 Usage: pdsh [-options] command ...\n\
 -S                return largest of remote command return values\n"
 
-#if NEED_STDERR
+#if 	WITH_STDERR_SOCKET
 #define OPT_USAGE_STDERR "\
 -s                combine stderr with stdout to conserve sockets\n"
 #else
