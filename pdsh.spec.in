@@ -6,12 +6,12 @@ Copyright: none
 Group: System Environment/Base
 Source: %{name}-%{version}.tgz
 BuildRoot: %{_tmppath}/%{name}-%{version}
-Prereq: /usr/bin/nodeattr
+# Prereq: 
 
-%define withelan 1
-%define withrms 1
+%define withelan 0
+%define withrms 0
 %define withssh 0
-%define enabledebug 1
+%define enabledebug 0
 
 %description
 Pdsh is a multithreaded remote shell client which executes commands
