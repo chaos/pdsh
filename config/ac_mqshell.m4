@@ -35,7 +35,7 @@ AC_DEFUN([AC_MQSHELL],
   # Check for whether to include mqshell module
   # Assumes this is AFTER --with-elan and --with-mrsh checks
   #
-  AC_MSG_CHECKING([for whether to build mqshell module])
+  AC_MSG_CHECKING([for whether to build mqshell module and mqshd daemon])
   AC_ARG_WITH([mqshell],
     AC_HELP_STRING([--with-mqshell], [Build mqshell module and mqshd daemon]),
     [ case "$withval" in
