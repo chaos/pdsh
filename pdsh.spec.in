@@ -55,7 +55,7 @@ gzip pdsh.1 pdcp.1 dshbak.1
 cp pdsh.1.gz $RPM_BUILD_ROOT/usr/man/man1
 cp pdcp.1.gz $RPM_BUILD_ROOT/usr/man/man1
 cp dshbak.1.gz $RPM_BUILD_ROOT/usr/man/man1
-%if %{buildqshell}
+%if %{withelan}
 mkdir -p $RPM_BUILD_ROOT/etc/xinetd.d
 mkdir -p $RPM_BUILD_ROOT/usr/sbin
 cp qshell.xinetd $RPM_BUILD_ROOT/etc/xinetd.d/qshell
