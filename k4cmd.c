@@ -266,7 +266,7 @@ k4cmd(char *ahost, char *locuser, char *remuser, char *cmd, int rank, int *fd2p)
 
 		if ((status == KFAILURE) && (*old_data == 1)) {
 			strncpy(tmpbuf, old_data + 1, 3);
-			tmpbuf[3] = NULL;
+			tmpbuf[3] = '\0';
 			err("%p: %S: %s", ahost, tmpbuf);
 			*old_data = (-1);
 		}
@@ -277,7 +277,7 @@ k4cmd(char *ahost, char *locuser, char *remuser, char *cmd, int rank, int *fd2p)
 				if (c == '\n')
 					break;
 			}
-			*p++ = NULL;
+			*p++ = '\0';
 			err("%p: %S: %s", ahost, tmpbuf);
 			status = -1;
 		}
@@ -323,7 +323,7 @@ reread:
                 }
                 if (c != '\n')
                         *p++ = '\n';
-                *p++ = NULL;
+                *p++ = '\0';
                 err("%S: %s", ahost, tmpbuf);
 		goto bad2;
 	}
