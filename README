@@ -13,7 +13,7 @@ See the man page in this directory for usage information.
 +---------------+
 | Configuration |
 +---------------+
-As of version 1.6, pdsh has been "autoconfiscated".  To configure, run:
+As of version 1.6, pdsh uses GNU autoconf for configuration.  To configure:
 
 ./configure
 
@@ -25,16 +25,18 @@ The following features are not enabled by default:
 
 --with-elan
 	Enable support for running parallel jobs on the Quadrics Elan 
-	interconnect.  This has only been tested on Linux.
+	interconnect via the -E option and qshell daemon.
 
 --with-rms
-	Enable support for getting a list of nodes from the RMS pmanager
-	(Quadrics resource management system).
+	Enable support for the RMS partition manager (Quadrics resource 
+	management system).  Instead of the usual pdsh methods of specifying 
+	target nodes, specify -N cpus and/or -n nodes and have the nodes be 
+	allocated via RMS.
 
 --enable-debug
 	Turns on assertion checking and compiles with -Wall.
 
-A word about generating target node lists:
+A word about generating targetting "all" nodes in a cluster:
 
 On an SP, configure will find SDRGetObjects and use that to generate the
 list of "all" nodes for -a, transform to alternate hostnames with -i, 
@@ -42,8 +44,9 @@ etc..
 
 On Linux and other platforms, -a, -i, etc.. are handled differently.
 If the LLNL Genders system is available, the "nodeattr" command will
-be used.  If that is not found, an MPICH machines file can be used
-(it is currently hard coded to /usr/local/etc/machines).
+be used, with the special "altname" attribute for alternate hostnames.  
+If that is not found, an MPICH machines file can be used (it is currently 
+hard coded to /usr/local/etc/machines).
 
 +------------+
 | INSTALLING |
