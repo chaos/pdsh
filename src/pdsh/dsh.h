@@ -19,17 +19,8 @@
 #include "list.h"
 #include "opt.h"
 
-#if	HAVE_MAGIC_RSHELL_CLEANUP && !HAVE_SSH && !HAVE_KRB4
-#define DFLT_SEPARATE_STDERR	false
-#define DFLT_FANOUT 		64
-#else
-#define DFLT_SEPARATE_STDERR	true	/* needed for cleanup */
-#define DFLT_FANOUT 		32	/* extra sock so reduce fanout */
-#endif
-
 #define LINEBUFSIZE     	2048
 
-#define CONNECT_TIMEOUT 	10	/* secs */
 #define INTR_TIME		1 	/* secs */
 #define WDOG_POLL 		2	/* secs */
 

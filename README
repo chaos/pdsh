@@ -14,8 +14,6 @@ As of version 1.6, pdsh uses GNU autoconf for configuration.  To configure:
 
 ./configure
 
-The following features are not enabled by default:
-
 --with-ssh[=/path/to/ssh/program]
 	Use SSH as the primary remote shell type.  This is not recommended
 	unless you cannot enable rsh root equivalence between nodes.

@@ -99,9 +99,9 @@ opt_default(opt_t *opt)
                 errx("%p: who are you?\n");
 
 	/* set the default connect method */
-#if HAVE_SSH
+#if 	HAVE_SSH
 	opt->rcmd_type = RCMD_SSH;
-#elif HAVE_KRB4
+#elif 	HAVE_KRB4
 	opt->rcmd_type = RCMD_K4;
 #else
 	opt->rcmd_type = RCMD_BSD;
@@ -131,7 +131,11 @@ opt_default(opt_t *opt)
 	opt->cmd = NULL;
 	opt->stdin_unavailable = false;
 	opt->delete_nextpass = true;
-	opt->separate_stderr = DFLT_SEPARATE_STDERR; 
+#if	HAVE_MAGIC_RSHELL_CLEANUP
+	opt->separate_stderr = false; /* save a socket per connection on aix */
+#else
+	opt->separate_stderr = true;
+#endif
 	*(opt->gend_attr) = '\0';
 	opt->q_nprocs = -1;
 	opt->q_allocation = ALLOC_UNSPEC;
@@ -213,16 +217,16 @@ opt_args(opt_t *opt, int argc, char *argv[])
 	/* construct valid arg list */
 	if (opt->personality == DSH) {
 		strcpy(validargs, DSH_ARGS);
-#if HAVE_ELAN3
+#if 	HAVE_ELAN3
 		strcat(validargs, ELAN_ARGS);
 #endif
 	} else
 		strcpy(validargs, PCP_ARGS);
 	strcat(validargs, GEN_ARGS);
-#ifdef _PATH_SDRGETOBJECTS
+#if	HAVE_SDR
  	strcat(validargs, SDR_ARGS);
 #endif
-#ifdef _PATH_NODEATTR
+#if	HAVE_GENDERS
 	strcat(validargs, GEND_ARGS);
 #endif
 #ifdef __linux
@@ -357,22 +361,22 @@ opt_args(opt_t *opt, int argc, char *argv[])
 	if (opt->allnodes) {
 #if	HAVE_MACHINES
 		opt->wcoll = read_wcoll(_PATH_MACHINES, NULL);
-#elif 	defined(_PATH_SDRGETOBJECTS)
+#elif 	HAVE_SDR
 		opt->wcoll = sdr_wcoll(opt->sdr_global, 
 		    opt->altnames, opt->sdr_verify);
-#elif 	defined(_PATH_NODEATTR)
+#elif 	HAVE_GENDERS
 		opt->wcoll = read_genders("all", opt->altnames);
 #else
 #error bogus configuration
 #endif
 	} 
-#ifdef _PATH_NODEATTR
+#ifdef	HAVE_GENDERS
 	/* get wcoll from genders - all nodes with a particular attribute */
 	if (*(opt->gend_attr)) {
 		opt->wcoll = read_genders(opt->gend_attr, opt->altnames);
 	}
 #endif
-#if HAVE_RMS_PMANAGER
+#if 	HAVE_RMS_PMANAGER
 	/* get wcoll from RMS partition manager */
 	if (opt->rms_partition || opt->wcoll == NULL) { 
 		/* catch couple of errors early */
@@ -392,7 +396,7 @@ opt_args(opt_t *opt, int argc, char *argv[])
 					opt->q_nprocs);
 	}
 #endif /* HAVE_RMS_PMANAGER */
-#if HAVE_ELAN3
+#if 	HAVE_ELAN3
 	if (opt->rcmd_type == RCMD_QSHELL) {
 		if (opt->fanout == DFLT_FANOUT && opt->wcoll != NULL)
 			opt->fanout = list_length(opt->wcoll);
@@ -431,11 +435,11 @@ opt_verify(opt_t *opt)
 
 	/* connect and command timeouts must be reasonable */
 	if (opt->connect_timeout < 0) {
-		err("%p: connect timeout must be > 0\n");
+		err("%p: connect timeout must be >= 0\n");
 		verified = false;
 	}
 	if (opt->command_timeout < 0) {
-		err("%p: command timeout must be > 0\n");
+		err("%p: command timeout must be >= 0\n");
 		verified = false;
 	}
 
@@ -598,19 +602,19 @@ usage(opt_t *opt)
 	if (opt->personality == DSH) {
 		err(OPT_USAGE_DSH);
 		err(OPT_USAGE_STDERR);
-#if HAVE_ELAN3
+#if 	HAVE_ELAN3
 		err(OPT_USAGE_ELAN);
 #endif
 	} else /* PCP */
 		err(OPT_USAGE_PCP);
 	err(OPT_USAGE_COMMON);
-#if HAVE_KRB4
+#if 	HAVE_KRB4
 	err(OPT_USAGE_KRB4);
 #endif
-#ifdef _PATH_SDRGETOBJECTS
+#if	HAVE_SDR
 	err(OPT_USAGE_SDR);
 #endif
-#ifdef _PATH_NODEATTR
+#if	HAVE_GENDERS
 	err(OPT_USAGE_GEND);
 #endif
 	exit(1);
@@ -619,10 +623,10 @@ usage(opt_t *opt)
 static void show_version(void)
 {
 	printf("%s-%s (", PROJECT, VERSION);
-#ifdef	_PATH_SDRGETOBJECTS
+#ifdef	HAVE_SDR
 	printf("+sdr");
 #endif
-#ifdef	_PATH_NODEATTR
+#ifdef	HAVE_GENDERS
 	printf("+genders");
 #endif
 #ifdef 	HAVE_MACHINES

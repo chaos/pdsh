@@ -183,13 +183,57 @@ if test "$withmachines" = yes; then
     if test -z "$MACHINES"; then
 	AC_MSG_ERROR([--with-machines requires an argument])
     fi
-    AC_CHECK_FILE($MACHINES, [], 
-	AC_MSG_ERROR([--with-machines argument not found]))
     AC_DEFINE_UNQUOTED(_PATH_MACHINES, "$MACHINES", 
 	[Define path to flat list of nodes for -a processing])
     AC_DEFINE(HAVE_MACHINES, 1, 
  	[Define to use a flat list of all nodes for -a processing])
 fi
+
+# --with-fanout=N
+AC_MSG_CHECKING(for default fanout)
+AC_ARG_WITH(fanout,
+    AC_HELP_STRING([--with-fanout=N], [Specify default fanout]),
+    [ case "$withval" in
+	no)
+	    FANOUT=1
+	    ;;
+	yes)
+	    ;;
+	*)
+	    FANOUT=$withval
+	    ;;
+    esac ]
+)
+if test -z "$FANOUT"; then
+    FANOUT=32
+fi
+AC_MSG_RESULT($FANOUT)
+AC_SUBST(FANOUT)
+AC_DEFINE_UNQUOTED(DFLT_FANOUT, $FANOUT, [Default fanout])
+
+# --with-connect-timeout=N
+AC_MSG_CHECKING(for connect timeout)
+AC_ARG_WITH(connect-timeout,
+    AC_HELP_STRING([--with-connect-timeout=N], 
+	[Set default connect timeout (secs)]),
+    [ case "$withval" in
+	no)
+	    CONNECT_TIMEOUT=0
+	    ;;
+	yes)
+	    ;;
+	*)
+	    CONNECT_TIMEOUT=$withval
+	    ;;
+    esac ]
+)
+if test -z "$CONNECT_TIMEOUT"; then
+    CONNECT_TIMEOUT=10
+fi
+AC_MSG_RESULT($CONNECT_TIMEOUT)
+AC_SUBST(CONNECT_TIMEOUT)
+AC_DEFINE_UNQUOTED(CONNECT_TIMEOUT, $CONNECT_TIMEOUT, 
+    [Default connect timeout (secs)])
 
 # XXX make this configurable
 RANGE_OP='-'
@@ -215,7 +259,12 @@ fi
 AC_PATH_PROG(NODEATTR, nodeattr, [], /usr/bin:/admin/scripts:$PATH)
 if test -n "$NODEATTR"; then
     AC_DEFINE_UNQUOTED(_PATH_NODEATTR, "$NODEATTR", [Path to nodeattr])
+    AC_DEFINE(HAVE_GENDERS, 1, [Define if Genders is available])
+    GENDERS=1
+else
+    GENDERS=0
 fi
+AC_SUBST(GENDERS)
 
 if test "$withrms" = yes; then
     AC_PATH_PROG(RMSQUERY, rmsquery, [], /usr/bin:$PATH)
@@ -229,7 +278,12 @@ fi
 AC_PATH_PROG(SDRGETOBJECTS, SDRGetObjects, "", /usr/lpp/ssp/bin:$PATH)
 if test -n "$SDRGETOBJECTS"; then
     AC_DEFINE_UNQUOTED(_PATH_SDRGETOBJECTS, "$SDRGETOBJECTS", [Path SDRGetObjects])
+    AC_DEFINE(HAVE_SDR, 1, [Define if SDR is available]) 
+    SDR=1
+else
+    SDR=0
 fi
+AC_SUBST(SDR)
 
 AC_PATH_PROG(RCP, rcp, [], /usr/bin:$PATH)
 if test -n "$RCP"; then

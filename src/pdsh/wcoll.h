@@ -22,13 +22,13 @@ typedef enum {false, true} bool;
 list_t read_wcoll(char *, FILE *);
 void del_wcoll(list_t, char *);
 
-#ifdef _PATH_SDRGETOBJECTS
+#if	HAVE_SDR
 list_t sdr_wcoll(bool, bool, bool);
 #endif
-#ifdef _PATH_NODEATTR
+#if 	HAVE_GENDERS
 list_t read_genders(char *attr, int ropt);
 #endif
-#if HAVE_RMS_PMANAGER
+#if 	HAVE_RMS_PMANAGER
 list_t rms_wcoll(char *part, int nnodes, int nprocs);
 #endif
 

@@ -92,7 +92,7 @@ read_wcoll(char *file, FILE *f)
 	return new;
 }
 
-#ifdef	_PATH_NODEATTR
+#if	HAVE_GENDERS
 list_t 
 read_genders(char *attr, int iopt)
 {
@@ -102,7 +102,7 @@ read_genders(char *attr, int iopt)
 	char buf[LINEBUFSIZE];
 	char *p;
 
-#ifdef _PATH_SDRGETOBJECTS
+#if	HAVE_SDR
 	/* On SP's at LLNL, the genders names are the alternates */ 
 	iopt = !iopt;
 #endif
@@ -121,9 +121,9 @@ read_genders(char *attr, int iopt)
 
 	return new;
 }
-#endif /* _PATH_NODEATTR */
+#endif /* HAVE_GENDERS */
 
-#ifdef _PATH_SDRGETOBJECTS
+#if	HAVE_SDR
 static int 
 sdr_numswitchplanes(void)
 {
@@ -324,7 +324,7 @@ sdr_wcoll(bool Gopt, bool iopt, bool vopt)
 
 	return new;
 }
-#endif /* _PATH_SDRGETOBJECTS */
+#endif /* HAVE_SDR */
 
 #if HAVE_RMS_PMANAGER
 /* 

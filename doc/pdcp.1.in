@@ -1,6 +1,6 @@
 \." $Id$
 .\"
-.TH "@PROJECT@" "@VERSION@" "LLNL" "@PROJECT@"
+.TH "@PROJECT@" "1" "@host_os@" "Version @VERSION@-@RELEASE@"
 .SH NAME
 pdcp \- copy files to groups of hosts in parallel
 .SH SYNOPSIS
@@ -19,41 +19,45 @@ A second SIGINT within one second terminates the program.
 
 .SH TARGET NODE LIST OPTIONS
 .I "-w host,host,..."
-Target the specified nodes.  No spaces are allowed in the comma-separated
-list.  Substituting the "-" character for the list causes the target nodes
-to be read from stdin, one per line. The node list may also contain hostname
-ranges of the form "host1-5" in place of single hostnames. By default, 
-.B pdsh
-will attempt to expand these ranges based upon a range operator of '-'. The
-environment var PDSH_RANGE_OPERATOR may be set to an arbitrary character 
-which will be used in place of '-'. (Setting this variable to "" will
-effectively disable range expansion.) See also the -x and -X options 
-for similar functionality on the command line.
+Target the specified hosts.  No spaces are allowed in the comma-separated
+list.  A list consisting of a single "-" character causes the target hosts
+to be read from stdin, one per line.  The host list may contain comma-separated
+hostname ranges of the form ``host1-5'' or ``host[1-5]''.
 .LP
 .I "-x"
-Do not attempt to expand hostname ranges passed via -w.
+In combiation with -w, do not attempt to expand hostname ranges.  Setting the 
+PDSH_RANGE_OPERATOR environment variable to the empty string has the 
+same effect.
 .LP 
 .I "-X c"
-Use character 'c' as a range operator when expanding hostname ranges.
+In combination with -w, use character 'c' as a range operator when expanding 
+hostname ranges.  Alternatively, the PDSH_RANGE_OPERATOR enviornment variable 
+can be used to set this value.
 .LP
 .I "-a"
-Target "all" nodes in the cluster.  
-.LP
+Target "all" nodes in the cluster.
+.if @SDR@ \{
+.\" .LP
 .I "-v"
-(SP ONLY) In combination with -a, eliminate nodes that the SDR thinks are down.
-.LP
-.I "-i"
-(SP or genders ONLY) In combination with -a or -g, use alternate node names.
-On the SP, this means use SDR initial_hostname instead of the default 
-reliable_hostname.  On non-SP's with genders, you must have 
-.I "altname" 
-attributes defined for each node.
+In combination with -a, eliminate nodes that the SDR thinks are down.
 .LP
 .I "-G"
-(SP ONLY) In combination with -a, include all partitions.
+In combination with -a, include all partitions. 
 .LP
+.I "-i"
+In combination with -a, use SDR initial_hostname instead of reliable_hostname.
+\}
+.if @GENDERS@ \{
+.\" .LP
 .I "-g attribute"
-(Genders ONLY) Target nodes that have the specified attribute.
+Target nodes that have the specified genders attribute.	
+.if !@SDR@ \{
+.\" .LP
+.I "-i"
+In combination with -a or -g, use a hostname specified as the value of the
+``altname'' genders attribute instead of the normal one.
+\}
+\}
 .LP
 If none of the above options are specified, the WCOLL environment variable
 must point to a file that contains a list of nodes, one per line.  
@@ -65,10 +69,11 @@ Copy recursively.
 Preserve modification time and modes.
 .LP
 .I "-q"
-List option values and the target nodes and exit without action.
+List option values and the target host list and exit without action.
 .LP
 .I "-f number"
-Set the maximum number of simultaneous remote copies.  The default is 64.
+Set the maximum number of simultaneous remote copies.  The default is 
+@FANOUT@.
 .LP
 .I "-l user"
 This option may be used to copy files as another user, subject to
@@ -76,8 +81,8 @@ authorization.  For BSD rcmd, this means the invoking user and system must
 be listed in the user\'s .rhosts file (even for root).
 .LP
 .I "-t seconds"
-Set the connect timeout.  Default is 5 seconds.  (This is in addition to
-the socket-level timeout which may cause connect(2) to fail sooner)
+Set the connect timeout.  Default is @CONNECT_TIMEOUT@ seconds.  
+(This is in concurrent with the normal socket-level timeout).
 .LP
 .I "-d"
 Include more complete thread status when SIGINT is received, and display

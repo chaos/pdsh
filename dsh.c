@@ -278,8 +278,10 @@ wdog(void *args)
 	    for (i = 0; t[i].host != NULL; i++) {
 		switch (t[i].state) {
 		    case DSH_RCMD:
-			if (t[i].start + connect_timeout < time(NULL))
-			    pthread_kill(t[i].thread, SIGALRM);
+			if (connect_timeout > 0) {
+			    if (t[i].start + connect_timeout < time(NULL))
+			        pthread_kill(t[i].thread, SIGALRM);
+			}
 		    	break;
 		    case DSH_READING:
 			if (command_timeout > 0
@@ -425,9 +427,6 @@ rcp_send_file_data(int outfd, char *filename, char *host)
 static int 
 rcp_sendstr(int fd, char *str, char *host)
 {
-	int outbytes, towrite;
-	char *bufp;
-
 	assert(strlen(str) > 0);
 	assert(str[strlen(str) - 1] == '\n');
 

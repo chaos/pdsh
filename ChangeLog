@@ -173,19 +173,25 @@ Release 1.6
 
 Release 1.6+
 	
-	Run man pages through autoconf and put correct version in header.
+	Run man pages through autoconf and put version/os in header.
+	Substitute default fanout and connect timeout.
 
-	Test HAVE_WORKING_STRERROR_R; strerror_r is broken on AIX.
+	Test HAVE_WORKING_STRERROR_R before using strerror_r.
 
 	Added "Gotchas" in README.
 
-	Remove all _AIX ifdefs from code and added a single ifdef to
-	config.h bottom which define HAVE_MTSAFE_GETHOSTBYNAME and 
-	HAVE_MAGIC_RSHELL_CLEANUP.  Use socklen_t for 3rd are to accept.
+	Added HAVE_MTSAFE_GETHOSTBYNAME and HAVE_MAGIC_RSHELL_CLEANUP.
 
-	Rcp code to handle short writes just in case.
+	Use socklen_t for accept() length argument and add a check in
+	autoconf to default it to int if undefined.
+
+	Rcp code now handles short writes on socket.  A short write would
+	have corrupted the copied file, though this has never been reported.
 
 	Updated copyright notice and normalized function defs.
 
-	If using ssh/kerberos, use conservative fanout and open stderr socket.
+	Add configuration option for --with-fanout=N and remove logic in
+	code for determining default fanout.
 
+	Added configuration option for --with-connect-timeout=N.  Deal
+	properly with a zero connect-timeout (e.g. --with-connect-timeout=no).
