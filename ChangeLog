@@ -214,4 +214,5 @@
 	* Automake-ified
 	* Have `dshbak -c' generate bracketed ranges compatible with pdsh -w
 	* Updated testsuite for compatibility with bracketed host ranges
-	  
+	* Repair a file descriptor leak in rcp_thread (wasn't closing efd).
+	* Taggged pdsh-1-7-2chaos

@@ -665,6 +665,8 @@ _rcp_thread(void *args)
 						a->host, a->pcp_popt);
 		}
 		close(a->fd);
+		if (a->dsh_sopt) 
+			close(a->efd);
 	}
 
 	/* update status */
