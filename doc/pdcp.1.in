@@ -255,7 +255,5 @@ e.g.  specifying foo[0-5]bar will not work.
 .br
 \}
 .br
-@RCP@
-.br
 .SH "SEE ALSO"
 rcp(1), pdsh(1)
