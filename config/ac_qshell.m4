@@ -33,15 +33,35 @@ AC_DEFUN([AC_QSHELL],
 
   if test "$ac_with_qshell" = yes; then
 
-     AC_CHECK_LIB([rmscall], [rms_prgcreate], [ac_have_rms=yes])
-     AC_CHECK_LIB([elan3],   [elan3_create],  [ac_have_elan=yes])
+     AC_CHECK_LIB([rmscall],  [rms_prgcreate], [ac_have_rms=yes])
 
      if test "$ac_have_rms" != "yes" ; then
         AC_MSG_NOTICE([Cannot support qshell without librmscall])
      fi
 
+       AC_CHECK_LIB([elan3], [elan3_create],  
+                    [ac_mqshell_have_elan3=yes],
+                    [ac_mqshell_noelan3=1])
+
+       AC_CHECK_LIB([elanctrl], [elanctrl_open], 
+                    [ac_mqshell_have_elanctrl=yes], 
+                    [ac_mqshell_noelanctrl=1])
+
+       if test "$ac_mqshell_have_elan3" = "yes"; then
+          AC_DEFINE(HAVE_LIBELAN3, 1, [define if you have libelan3.])
+          QSHELL_LIBS="$QSHELL_LIBS -lelan3"
+          ac_mqshell_have_elan="yes"
+       elif test "$ac_mqshell_have_elanctrl" = "yes"; then
+          AC_DEFINE(HAVE_LIBELANCTRL, 1, [define if you have libelanctrl.])
+          QSHELL_LIBS="$QSHELL_LIBS -lelanctrl"
+          ac_mqshell_have_elan="yes"
+       else
+          AC_MSG_NOTICE([Cannot build mqshell without libelan3 or libelanctrl!])
+       fi
+
+
      if test "$ac_have_elan" != "yes" ; then
-        AC_MSG_NOTICE([Cannot support qshell without libelan3])
+        AC_MSG_NOTICE([Cannot support qshell without libelan3 or libelanctrl!])
      fi
 
      if test "$ac_with_pam" = "yes" ; then
@@ -60,7 +80,6 @@ AC_DEFUN([AC_QSHELL],
         ac_have_qshell=yes
         ac_have_qsw=yes
         AC_ADD_STATIC_MODULE("qcmd")
-        QSHELL_LIBS="-lrmscall -lelan3"
         AC_DEFINE_UNQUOTED(HAVE_QSHELL, [1], [Define for Qshell support.])
         PROG_QSHD=in.qshd
         if test "$ac_with_pam" = "yes" ; then
