@@ -13,7 +13,7 @@ bin_PROGRAMS =             pdsh.inst
 if WITH_STATIC_MODULES
 MODULE_LIBS =              $(top_builddir)/src/modules/libmods.la 
 else
-MODULE_FLAGS =             -export-dynamic
+MODULE_FLAGS =             -export-dynamic $(AIX_PDSH_LDFLAGS)
 LTDL_FILES =               ltdl.h ltdl.c
 LTDL_LDADD =               $(LIBADD_DL)
 endif

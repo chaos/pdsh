@@ -4,6 +4,11 @@
 
 	* src/qsnet/Makefile.am : Build libqsw convenience lib only as needed.
 
+	* configure.ac, src/pdsh/Makefile.am : Add -Wl,-bgcbypass=1000 when 
+	building pdsh with dynamic modules on AIX. This is hack to ensure to
+	that symbols in libcommon not used by pdsh but possibly needed by
+	dlopen'd modules are not garbage-collected by the AIX linker.
+
 2004-02-24  Mark Grondona <mgrondona@llnl.gov>
 	
 	* configure.ac : Export WITH_GNU_LD Automake conditional.

@@ -58,9 +58,11 @@ else
    case "$host" in
    *-*-aix*)
      LDFLAGS="$LDFLAGS -Wl,-brtl -Wl,-bexpall" 
+	 AIX_PDSH_LDFLAGS="-Wl,-bgcbypass:1000" # hack to ensure no gc in libcommon
    ;;
    esac
 fi
+AC_SUBST(AIX_PDSH_LDFLAGS)
 
 
 # Checks for libraries.
