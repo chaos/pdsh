@@ -1,69 +1,73 @@
 +-------------+
 | Description |
 +-------------+
-Pdsh is a multithreaded remote shell client which executes commands
-on multiple remote hosts in parallel.  Pdsh can use several different remote
-shell services, including standard "rsh", Kerberos IV, and ssh.
+Pdsh is a multithreaded remote shell client which executes commands on
+multiple remote hosts in parallel.  Pdsh can use several different
+remote shell services, including standard "rsh", Kerberos IV, and ssh.
 
 See the man page in this directory for usage information.
 
 +---------------+
 | Configuration |
 +---------------+
-As of version 1.6, pdsh uses GNU autoconf for configuration.  To configure:
 
-./configure
+Pdsh uses GNU autoconf for configuration.  Dynamically loadable
+modules of each shell services (as well as other features) will be
+compiled based on configuration.  By default, rsh, Kerberos IV, ssh,
+and SDR (for IBM SPs) will be compiled if they exist on the system.
 
---with-ssh[=/path/to/ssh/program]
-	Use SSH as the primary remote shell type.  This is not recommended
-	unless you cannot enable rsh root equivalence between nodes.
-	SSH has not been tested extensively.  There will be no configurable
-	connect timeout.  SSH will be run with no controlling tty, so if it
-	needs to prompt for a password or a "man in the middle" message, it
-	will fail.  By default, configure will search for a program named
-	"ssh".  If you prefer ssh2, specify its full path as the argument
-	to --with-ssh, e.g. --with-ssh=/usr/local/bin/ssh2.
+To configure in additional feature modules:
 
---with-krb4[=/path/to/krb4/root]
-	Use Kerberos IV as the primary remote shell type.  This is not 
-	recommended unless you are running on an SP and cannot enable rsh 
-	root equivalence between nodes.  Kerberos IV has not been extensively
-	tested.  The action of refreshing TGT's is very slow under pdsh.
+./configure [options]
 
 --with-machines=/path/to/machines
-	Use a flat file list of machine names for -a instead of nodeattr
-	or SDRGetObjects.  You must specify this option if you do not have
-	nodeattr or SDRGetObjects (see below).
+	Use a flat file list of machine names for -a instead of
+        genders, nodeattr, or SDRGetObjects.  
 
 --with-elan
-	Enable support for running parallel jobs on the Quadrics Elan 
-	interconnect via the -E option and qshell daemon.
+	Enable support for running parallel jobs on the Quadrics Elan
+	interconnect via the qshell service option (-R qsh) and qshell daemon.
 
---enable-debug
-	Turns on assertion checking and compiles with -Wall.
+--with-genders
+        Enable support of a genders database through the genders(3)
+        library.
+
+--with-nodeattr=/path/to/nodeattr
+        Enable support of a genders database through the nodeattr(1)
+        command. This is primarily for older systems that do not yet
+        have genders(3) library support.
+
+--with-nodeupdown
+        Enable support of dynamic elimination of down nodes through
+        the nodeupdown(3) library. 
+
+--with-mrsh
+        Enable support of the mrsh(1) shell service.
+   
+--with-mqsh
+        Enable support for runnig parallel jobs on the Quadrics Elan
+        interconnect via the mqshell service option (-R mqsh) and
+        mqshell dameon.  Mqshell is identical to qshell but adds munge
+        authentication (authentication used by mrsh). 
+
+--with-rms
+        Support running pdsh under RMS allocation.
 
 --with-fanout=N
-	Specify default fanout (default is 32)
+	Specify default fanout (default is 32).
 
---with-connect-timeout=N
-	Set default connect timeout (default is 10 seconds)
+--with-timeout=N
+	Set default connect timeout (default is 10 seconds).
 
 --with-readline
 	Use the GNU readline library to parse input in interactive mode.
 
-A word about -a (target "all" nodes) and -i (use alternate hostnames) option:
-
-On an SP, configure will find SDRGetObjects and use that to generate the
-list of "all" nodes for -a (reliable_hostname), transform to alternate 
-hostnames with -i (initial_hostname), etc..
-
-If SDRGetObjects is not found and if the LLNL Genders software is available, 
-configure will find the nodeattr command and use that to generate the list 
-of "all" nodes for -a ("all" attribute).
-
-If neither of the above are found, a flat list of hostnames can be used for
-the list of "all" nodes.  Specify the location of this file using the 
---with-machines configure option.
+Note that a number of the above configuration "conflict" with each
+other, in that they perform identical operations.  For example,
+genders and nodeattr both support the -g option.  In the event several
+modules are built that support identical options, the options will
+default to one particular module.  See the man page in this directory
+for details on "conflicting" modules.
 
 +------------+
 | INSTALLING |
@@ -77,47 +81,53 @@ make install
 
 Watch out for the following gotchas:
 
-1) Pdsh uses one reserved socket for each active connection, two if it is 
-maintaining a separate connection for stderr.  It obtains these sockets
-by calling rresvport(), which normally draws from a pool of 256 sockets.
-You may exhaust these if multiple pdsh's are running simultanously on
-a machine, or if the fanout is set too high.
+1) When executing remote commands via rsh, krb4, qsh, or ssh, pdsh
+uses one reserved socket for each active connection, two if it is
+maintaining a separate connection for stderr.  It obtains these
+sockets by calling rresvport(), which normally draws from a pool of
+256 sockets.  You may exhaust these if multiple pdsh's are running
+simultanously on a machine, or if the fanout is set too high.  Mrsh 
+and mqsh do not use reserved ports, and therefore are not affected
+this problem as severely. 
 
-2) When pdsh is using a remote shell service that is wrapped with TCP wrappers,
-there are three areas where bottlenecks can be created: IDENT, DNS, and SYSLOG.
-If your hosts.allow includes "user@", e.g.  "in.rshd : ALL@ALL : ALLOW"
-and TCP wrappers is configured to support IDENT, each simultaneous remote shell
-connection will result in an IDENT query back to the source.  For large fanouts
-this can quickly overwhelm the source.  Similarly, if TCP wrappers is
-configured to query the DNS on every connection, pdsh may overwhelm the 
-DNS server.  Finally, if every remote shell connection results in a remote 
-syslog entry, syslogd on your loghost may be overwhelmed and logs may grow
+2) When pdsh is using a remote shell service that is wrapped with TCP
+wrappers, there are three areas where bottlenecks can be created:
+IDENT, DNS, and SYSLOG.  If your hosts.allow includes "user@", e.g.
+"in.rshd : ALL@ALL : ALLOW" and TCP wrappers is configured to support
+IDENT, each simultaneous remote shell connection will result in an
+IDENT query back to the source.  For large fanouts this can quickly
+overwhelm the source.  Similarly, if TCP wrappers is configured to
+query the DNS on every connection, pdsh may overwhelm the DNS server.
+Finally, if every remote shell connection results in a remote syslog
+entry, syslogd on your loghost may be overwhelmed and logs may grow
 excessively long.
 
-If local security policy permits, consider configuring TCP wrappers to avoid 
-calling IDENT, DNS, or SYSLOG on every remote shell connection.  Configuring
-without the "PARANOID" option (which requires all connections to be 
-registered in the DNS), permitting a simple list of IP addresses or a 
-subnet (no names, and no user@ prefix), and setting the SYSLOG severity for 
-the remote shell service to a level that is not remotely logged will avoid 
-these pitfalls.  If these actions are not possible, you may wish to 
-reduce pdsh's default fanout (configure --with-fanout=N).
+If local security policy permits, consider configuring TCP wrappers to
+avoid calling IDENT, DNS, or SYSLOG on every remote shell connection.
+Configuring without the "PARANOID" option (which requires all
+connections to be registered in the DNS), permitting a simple list of
+IP addresses or a subnet (no names, and no user@ prefix), and setting
+the SYSLOG severity for the remote shell service to a level that is
+not remotely logged will avoid these pitfalls.  If these actions are
+not possible, you may wish to reduce pdsh's default fanout (configure
+--with-fanout=N).
 
 +---------------------+
 | THEORY OF OPERATION |
 +---------------------+
-A thread is created for each rsh connection to a node.  Each thread opens 
-a connection using an MT-safe rcmd-like function, then copies stdin/stderr 
-and terminates.
+A thread is created for each rsh connection to a node.  Each thread
+opens a connection using an MT-safe rcmd-like function, then copies
+stdin/stderr and terminates.
 
-The mainline starts fanout number of rsh threads and waits on a condition
-variable that is signalled by the rsh threads as they terminate.  When 
-the condition variable is signalled, the main thread starts a new rsh thread
-to maintain the fanout, until all remote commands have been executed.
+The mainline starts fanout number of rsh threads and waits on a
+condition variable that is signalled by the rsh threads as they
+terminate.  When the condition variable is signalled, the main thread
+starts a new rsh thread to maintain the fanout, until all remote
+commands have been executed.
 
 A timeout thread is created that monitors the state of the threads and
-terminates any that take too much time connecting or, if requested on the
-command line, take too long to complete.
+terminates any that take too much time connecting or, if requested on
+the command line, take too long to complete.
 
 Typing ^C causes pdsh to list threads that are in the connected state.
 Another ^C immediately following the first one terminates the program.
@@ -127,16 +137,16 @@ Another ^C immediately following the first one terminates the program.
 +--------+
 Jim Garlick <garlick@llnl.gov>
 
-Please send suggestions, bug reports, or just a note letting me know that you
-are using pdsh (it would be interesting to hear how many nodes are in your 
-cluster).
+Please send suggestions, bug reports, or just a note letting me know
+that you are using pdsh (it would be interesting to hear how many
+nodes are in your cluster).
 
 +------+
 | NOTE |
 +------+
-This product includes software developed by the University of California, 
-Berkeley and its contributors (xrcmd.c, k4cmd.c, qcmd.c).  Modifications 
-have been made and bugs are probably mine.
+This product includes software developed by the University of
+California, Berkeley and its contributors (xrcmd.c, k4cmd.c, qcmd.c).
+Modifications have been made and bugs are probably mine.
 
-The PDSH software package has no affiliation with the Democratic Party of 
-Albania (www.pdsh.org).
+The PDSH software package has no affiliation with the Democratic Party
+of Albania (www.pdsh.org).
