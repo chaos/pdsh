@@ -198,7 +198,7 @@ opt_n(opt_t *pdsh_opts, int opt, char *arg)
  *      efd (IN)        file descriptor connected socket (-1 if not used)
  *      signum (IN)     signal number to send
  */
-void qcmd_signal(int efd, int signum)
+int qcmd_signal(int efd, int signum)
 {
     char c;
 
@@ -209,6 +209,8 @@ void qcmd_signal(int efd, int signum)
         c = (char) signum;
         write(efd, &c, 1);
     }
+
+    return 0;
 }
 
 
@@ -266,7 +268,7 @@ _qcmd_opt_init(opt_t *opt)
  * running the job.
  * 	wcoll (IN)	list of nodes
  */
-void qcmd_init(opt_t * opt)
+int qcmd_init(opt_t * opt)
 {
     int totprocs = nprocs * hostlist_count(opt->wcoll);
 
@@ -288,6 +290,8 @@ void qcmd_init(opt_t * opt)
     qinfo.nnodes = hostlist_count(opt->wcoll);
     qinfo.nprocs = totprocs;
     qinfo.nodeid = qinfo.procid = qinfo.rank = 0;
+    
+    return 0;
 }
 
 /*
