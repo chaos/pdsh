@@ -727,6 +727,33 @@ static char * _module_list_string(char *type)
     return names;
 }
 
+static char *_rcmd_module_list(char *buf, int maxlen)
+{
+    int len, len2;
+    char *rcmd_list = _module_list_string("rcmd");
+
+    len = snprintf(buf, maxlen, "%s", rcmd_list ? rcmd_list : "(none)");
+    if ((len < 0) || (len >= maxlen)) 
+        goto done;
+
+    if (mod_count("rcmd") > 1) {
+        char *def = mod_rcmd_get_default_module();
+        len2 = snprintf ( buf+len, maxlen-len, " (default: %s)",
+                          def ? def : "none" );
+        if (len2 < 0)
+            len = -1;
+        else
+            len += len2;
+    }
+
+   done:
+    if ((len < 0) || (len > maxlen)) 
+        snprintf(buf + maxlen - 12, 12, "[truncated]"); 
+
+    Free ((void **) &rcmd_list);
+    buf[maxlen - 1] = '\0';
+    return buf;
+}
 
 /*
  * Spit out all the options and their one-line synopsis for the user, 
@@ -734,14 +761,7 @@ static char * _module_list_string(char *type)
  */
 static void _usage(opt_t * opt)
 {
-    char *names = _module_list_string("rcmd");
-    char *def   = NULL;
-
-    if (names == NULL)
-      errx("%p: no rcmd modules are loaded\n");
-
-    if (!(def = mod_rcmd_get_default_module()))
-        def = "none";
+    char buf[1024];
 
     if (personality == DSH) {
         err(OPT_USAGE_DSH);
@@ -755,8 +775,7 @@ static void _usage(opt_t * opt)
 
     mod_print_all_options(18);
 
-    err("available rcmd modules: %s (default: %s)\n", names, def);
-    Free((void **) &names);
+    err("available rcmd modules: %s\n", _rcmd_module_list(buf, 1024));
 
     exit(1);
 }
@@ -764,21 +783,14 @@ static void _usage(opt_t * opt)
 
 static void _show_version(void)
 {
+    char buf[1024];
     extern char *pdsh_version;
-    char *rcmd_list = _module_list_string("rcmd");
     char *misc_list = _module_list_string("misc");
-    char *def       = mod_rcmd_get_default_module();
 
     printf("%s\n", pdsh_version);
-
-    printf("rcmd modules: %s", rcmd_list ? rcmd_list : "(none)");
-    if (mod_count("rcmd") > 1)
-        printf(" (default: %s)", def ? def : "none");
-    printf("\n");
-
+    printf("rcmd modules: %s\n", _rcmd_module_list(buf, 1024));
     printf("misc modules: %s\n", misc_list ? misc_list : "(none)");
 
-    Free((void **) &rcmd_list);
     Free((void **) &misc_list);
 
     exit(0);
