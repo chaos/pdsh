@@ -205,9 +205,9 @@ hostlist_t read_genders(char *attr, int iopt)
         errx("%p: error running %s\n", _PATH_NODEATTR);
 
     return new;
-#endif
+#endif /* HAVE_LIBGENDERS */
 }
-#endif                          /* HAVE_GENDERS */
+#endif /* HAVE_GENDERS */
 
 #if	HAVE_SDR
 static int _sdr_numswitchplanes(void)
@@ -504,6 +504,7 @@ hostlist_t get_verified_nodes(int iopt) {
 	 nodeupdown_strerror(nodeupdown_errnum(handle)));
   }
 
+  /* convert to alternate names if necessary */ 
   if (iopt) {
     if ((altnames = hostlist_create(NULL)) == NULL) {
       errx("%p: error creating hostlist\n");
