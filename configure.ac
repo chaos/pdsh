@@ -63,7 +63,9 @@ AC_CHECK_LIB([krb], [krb_sendauth], [KRB_LIBS="-lkrb -ldes"; withkrb4=yes],
 	[withkrb4=no], [-lkrb -ldes])
 AC_SUBST(KRB_LIBS)
 AM_CONDITIONAL(WITH_KRB4, test $withkrb4 = yes)
-
+if test "$withkrb4" = "yes" ; then
+    AC_DEFINE([HAVE_KRB4], [1], [Define if you have Kerberos])
+fi
 
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h strings.h sys/file.h unistd.h pthread.h])
