@@ -1,3 +1,12 @@
+2003-11-12  Mark Grondona <mgrondona@llnl.gov>
+
+	* pdsh.spec.in: Only build ssh and rsh modules by default. All
+	other modules must be enabled via --with <pkg> on rpmbuild 
+	command line.
+
+	* config/Make-rpm.mk: Pass options to rpmbuild via WITH_OPTIONS and
+	WITHOUT_OPTIONS environment variable (instead of ``rpmargs'').
+
 2003-11-06  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/ltdl.c, config/libtool.m4 : Update to libtool 1.4.3.
