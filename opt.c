@@ -90,7 +90,7 @@ Usage: pdcp [-options] src [src2...] dest\n\
 #if	HAVE_MAGIC_RSHELL_CLEANUP
 #define DSH_ARGS	"sS"
 #else
-#define DSH_ARGS        "S"
+#define DSH_ARGS    "S"
 #endif
 #define PCP_ARGS	"pr"
 #define GEN_ARGS	"hLR:t:cqf:w:x:l:u:bI:deVT:Q"
@@ -102,14 +102,28 @@ Usage: pdcp [-options] src [src2...] dest\n\
  */    
 static char *pdsh_options = NULL;
 
+/*
+ *  Pdsh personality
+ */
+static pers_t personality = DSH;
+
+/*
+ *  Return the current pdsh "personality"
+ */
+pers_t pdsh_personality(void)
+{
+    return personality;
+}
+
+
 static void
-_init_pdsh_options(pers_t personality)
+_init_pdsh_options()
 {
     pdsh_options = Strdup(GEN_ARGS);
     if (personality == DSH) {
-	xstrcat(&pdsh_options, DSH_ARGS);
+        xstrcat(&pdsh_options, DSH_ARGS);
     } else
-	xstrcat(&pdsh_options, PCP_ARGS);
+        xstrcat(&pdsh_options, PCP_ARGS);
 }
 
 /*
@@ -121,7 +135,7 @@ _init_pdsh_options(pers_t personality)
  *  Returns false if option is already used by pdsh or a pdsh module.
  *  Returns true if option was successfully registered.
  */
-bool opt_register(struct pdsh_module_option *opt_table, pers_t personality)
+bool opt_register(struct pdsh_module_option *opt_table)
 {
     struct pdsh_module_option *p;
   
@@ -131,12 +145,12 @@ bool opt_register(struct pdsh_module_option *opt_table, pers_t personality)
     if (pdsh_options == NULL)
         _init_pdsh_options(personality);
     
-    /* Don't register any options if we can't register all the options
-     * in this module 
+    /*  Don't register any options if we can't register all the options
+     *   in this module 
      */
     for (p = opt_table; p && (p->opt != 0); p++) {
-        if ((personality & p->personality) && 
-            strchr(pdsh_options, p->opt) != NULL)
+        if (  (personality & p->personality) 
+           && (strchr(pdsh_options, p->opt) != NULL))
             return false;
     }
 
@@ -157,12 +171,24 @@ bool opt_register(struct pdsh_module_option *opt_table, pers_t personality)
  * Set defaults for various options.
  *	opt (IN/OUT)	option struct
  */
-void opt_default(opt_t * opt)
+void opt_default(opt_t * opt, char *argv0)
 {
     struct passwd *pw;
 
+    opt->progname = xbasename(argv0);
+
+    if (!strcmp(opt->progname, "pdsh") || !strcmp(opt->progname, "dsh"))
+        personality = DSH;
+    else if (!strcmp(opt->progname, "pdcp") 
+            || !strcmp(opt->progname, "dcp")
+            || !strcmp(opt->progname, "pcp") )
+        personality = PCP;
+    else
+        errx("%p: program must be named pdsh/dsh/pdcp/dcp/pcp\n");
+
+
     if (pdsh_options == NULL)
-        _init_pdsh_options(opt->personality);
+        _init_pdsh_options();
 
     if ((pw = getpwuid(getuid())) != NULL) {
         strncpy(opt->luser, pw->pw_name, MAX_USERNAME);
@@ -201,7 +227,7 @@ void opt_default(opt_t * opt)
     opt->cmd = NULL;
     opt->stdin_unavailable = false;
 #if	HAVE_MAGIC_RSHELL_CLEANUP
-    opt->separate_stderr = false;       /* save a socket per connection on aix */
+    opt->separate_stderr = false;    /* save a socket per connection on aix */
 #else
     opt->separate_stderr = true;
 #endif
@@ -226,6 +252,9 @@ void opt_env(opt_t * opt)
 
     if ((rhs = getenv("FANOUT")) != NULL)
         opt->fanout = atoi(rhs);
+
+    if ((rhs = getenv("PDSH_RCMD_TYPE")) != NULL)
+        opt->rcmd_name = Strdup(rhs);
 
     if ((rhs = getenv("DSHPATH")) != NULL) {
         struct passwd *pw = getpwnam(opt->luser);
@@ -344,7 +373,7 @@ void opt_args(opt_t * opt, int argc, char *argv[])
         exit(1);
 
     /* DSH: build command */
-    if (opt->personality == DSH) {
+    if (personality == DSH) {
         for (; optind < argc; optind++) {
             if (opt->cmd != NULL)
                 xstrcat(&opt->cmd, " ");
@@ -394,7 +423,7 @@ bool opt_verify(opt_t * opt)
         verified = false;
 
     /* can't prompt for command if stdin was used for wcoll */
-    if (opt->personality == DSH && opt->stdin_unavailable && !opt->cmd) {
+    if (personality == DSH && opt->stdin_unavailable && !opt->cmd) {
         _usage(opt);
         verified = false;
     }
@@ -416,7 +445,7 @@ bool opt_verify(opt_t * opt)
     }
 
     /* PCP: must have source and destination filename(s) */
-    if (opt->personality == PCP) {
+    if (personality == PCP) {
         if (!opt->outfile_name || list_is_empty(opt->infile_names)) {
             err("%p: pcp requires source and dest filenames\n");
             verified = false;
@@ -492,7 +521,7 @@ void opt_list(opt_t * opt)
     char wcoll_str[1024];
     int n;
 
-    if (opt->personality == DSH) {
+    if (personality == DSH) {
         out("-- DSH-specific options --\n");
         out("Separate stderr/stdout	%s\n",
             BOOLSTR(opt->separate_stderr));
@@ -576,7 +605,7 @@ static void _usage(opt_t * opt)
     if (!(def = mod_rcmd_get_default_module()))
         def = "(none)";
 
-    if (opt->personality == DSH) {
+    if (personality == DSH) {
         err(OPT_USAGE_DSH);
 #if	HAVE_MAGIC_RSHELL_CLEANUP
         err(OPT_USAGE_STDERR);

@@ -848,11 +848,11 @@ int dsh(opt_t * opt)
     rshcount = hostlist_count(opt->wcoll);
 
     /* expand directories, if any, and verify access for all files */
-    if (opt->personality == PCP)
+    if (pdsh_personality() == PCP)
         pcp_infiles = _expand_dirs(opt->infile_names);
 
     /* prepend DSHPATH setting to command */
-    if (opt->personality == DSH && opt->dshpath) {
+    if (pdsh_personality() == DSH && opt->dshpath) {
         char *cmd = Strdup(opt->dshpath);
 
         xstrcat(&cmd, opt->cmd);
@@ -861,7 +861,7 @@ int dsh(opt_t * opt)
     }
 
     /* append echo $? to command */
-    if (opt->personality == DSH && opt->getstat) {
+    if (pdsh_personality() == DSH && opt->getstat) {
         char *cmd = Strdup(opt->cmd);
 
         xstrcat(&cmd, opt->getstat);
@@ -931,7 +931,7 @@ int dsh(opt_t * opt)
         pthread_attr_setscope(&t[i].attr, PTHREAD_SCOPE_SYSTEM);
 #endif
         rv = pthread_create(&t[i].thread, &t[i].attr,
-                            opt->personality == DSH
+                            pdsh_personality() == DSH
                             ? _rsh_thread : _rcp_thread, (void *) &t[i]);
         if (rv != 0)
             errx("%p: pthread_create %S: %m\n", t[i].host);

@@ -41,7 +41,8 @@
  * Ordered preference for determining default rcmd method
  *   Warning: If none of these are loaded, there will be no default.
  */
-static char * rcmd_rank[] = { "bsd", "mrsh", "ssh", "krb4", "qsh", "mqsh", NULL };
+static char * rcmd_rank[] = 
+    { "bsd", "mrsh", "ssh", "krb4", "qsh", "mqsh", NULL };
 
 /* 
  *  Container for information specific to rcmd modules.

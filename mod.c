@@ -65,20 +65,23 @@ struct module_components {
     struct pdsh_module *pmod;
 };
 
+
 /* 
  *  Static function prototypes:
  */
 #if STATIC_MODULES
-static int  _mod_load(int, pers_t);
+static int  _mod_load_static_modules(void);
+static int  _mod_load_static(int);
 #else
-static int  _mod_load(const char *, pers_t);
+static int  _mod_load_dynamic_modules(const char *);
+static int  _mod_load_dynamic(const char *);
 static int  _cmp_filenames(mod_t, char *);
 static int  _is_loaded(char *filename); 
 static bool _dir_ok(struct stat *);
 static bool _path_permissions_ok(const char *dir);
 #endif
 static void _mod_destroy(mod_t mod);
-static bool _mod_opts_ok(mod_t mod, pers_t personality);
+static bool _mod_opts_ok(mod_t mod);
 static int  _mod_print_info(mod_t mod);
 static void _print_option_help(struct pdsh_module_option *p, int col);
 static struct pdsh_module_option * _mod_find_opt(mod_t mod, int opt);
@@ -179,7 +182,6 @@ mod_read_wcoll(opt_t *opt)
             hostlist_destroy(hl);
         } else
             opt->wcoll = hl;
-
     }
 
     return 0;
@@ -244,176 +246,23 @@ _mod_destroy(mod_t mod)
 }
 
 static bool
-_mod_opts_ok(mod_t mod, pers_t personality)
+_mod_opts_ok(mod_t mod)
 {
-    if (!opt_register(mod->pmod->opt_table, personality))
+    if (!opt_register(mod->pmod->opt_table))
         return false;
 
     return true;
 }
 
-/*
- *  if STATIC_MODULES 
- *     set pdsh_module (pmod) pointer to point to internal structure.
- *     After this is done, rest of the mod.c functions work essentially
- *     the same as dynamically loadable modules.
- *
- *  if !STATIC_MODULES
- *     Load a single module from file `fq_path' and append to module_list.
- */
-static int
-#if STATIC_MODULES
-_mod_load(int index, pers_t personality)
-#else
-_mod_load(const char *fq_path, pers_t personality)
-#endif
-{
-    mod_t mod = NULL;
-#if !STATIC_MODULES
-    const lt_dlinfo *info;
-    assert(fq_path != NULL);
-#endif
-
-    mod = mod_create();
-
-#if STATIC_MODULES
-    mod->pmod = static_mods[index];
-#else
-    if (!(mod->handle = lt_dlopen(fq_path)))
-        goto fail;
-
-    if (!(info = lt_dlgetinfo(mod->handle))) 
-        goto fail_libtool_broken;
-
-    if (info->filename == NULL) 
-        goto fail_libtool_broken;
-
-    mod->filename = Strdup(info->filename);
-
-    if (_is_loaded(mod->filename)) {
-        err("%p: [%s] module already loaded\n", mod->filename);
-        goto fail;
-    }
-  
-    /* load all module info from the pdsh_module structure */
-    if (!(mod->pmod = lt_dlsym(mod->handle, "pdsh_module_info"))) {
-        err("%p:[%s] can't resolve pdsh module\n", mod->filename);
-        goto fail;
-    }
-#endif /* STATIC_MODULES */
-
-    /* Must have atleast a name and type */
-    if (!mod->pmod->type || !mod->pmod->name) {
-        err("%p:[%s] type or name not specified in module\n", 
-#if STATIC_MODULES
-            static_mod_names[index]
-#else
-            mod->filename
-#endif
-            );
-        goto fail;
-    }
-
-    /* Continue with module loading only if personality acceptable */
-    if (!(mod->pmod->personality & personality))
-        goto fail;
-
-    if (!_mod_opts_ok(mod, personality)) {
-        err("failed to install module options for \"%s/%s\"\n", 
-            mod->pmod->type, mod->pmod->name);
-        goto fail;
-    }
-
-    if (mod->pmod->mod_ops && 
-        mod->pmod->mod_ops->init && 
-        ((*mod->pmod->mod_ops->init)() < 0)) {
-        err("%p: %s/%s module_init() failed\n", mod->pmod->type, mod->pmod->name);
-        goto fail;
-    }
-
-    list_append(module_list, mod);
-
-    return 0;
-
-#if !STATIC_MODULES
- fail_libtool_broken:
-    /*
-     * Avoid dlclose() of invalid handle
-     */
-    mod->handle = NULL;
-#endif
- fail:
-    _mod_destroy(mod);
-    return -1;
-}
-
 
 int 
-mod_load_modules(const char *dir, pers_t personality)
+mod_load_modules(const char *dir)
 {
 #if STATIC_MODULES
-    int i = 0;
+    return _mod_load_static_modules();
 #else
-    DIR           *dirp   = NULL;
-    struct dirent *entry  = NULL;
-    char           path[MAXPATHLEN + 1];
-    char           *p;
-    int            count = 0;
-
-    assert(dir != NULL);
-    assert(*dir != '\0');
+    return _mod_load_dynamic_modules(dir);
 #endif
-
-    if (!initialized) 
-        mod_init();
-
-#if STATIC_MODULES
-    while (static_mods[i] != NULL) {
-        if (_mod_load(i++, personality) < 0)
-            continue;
-    }
-#else
-    if (!_path_permissions_ok(dir)) 
-        return -1;
-
-    if (!(dirp = opendir(dir)))
-        return -1;
-
-    strncpy(path, dir, MAXPATHLEN);
-    p = path + strlen(dir);
-    *(p++) = '/';
-
-    while ((entry = readdir(dirp))) {
-        struct stat st;
-
-        strcpy(p, entry->d_name);
-
-        /*
-         *  As an efficiency enhancement, only attempt to open 
-         *    libtool ".la" files.
-         */
-        if (strcmp(&p[strlen(p) - 3], ".la") != 0)
-            continue;
-
-        if (stat(path, &st) < 0)
-            continue; 
-        if (!S_ISREG(st.st_mode))
-            continue;
-
-        if (_mod_load(path, personality) < 0) 
-            continue;
-
-        count++;
-    }
-
-    if (closedir(dirp) < 0)
-        err("%p: error closing %s: %m", dir);
-
-    if (count == 0)
-        errx("%p: no modules found\n"); 
-#endif
-
-    return 0;
 }
 
 
@@ -629,7 +478,190 @@ _mod_find_opt(mod_t mod, int opt)
 }
 
 
-#if !STATIC_MODULES
+static int 
+_mod_install(mod_t mod, const char *name)
+{
+    /* 
+     *  Must have atleast a name and type 
+     */
+    if (!mod->pmod->type || !mod->pmod->name) {
+        err("%p:[%s] type or name not specified in module\n", name);
+        return -1;
+    }
+
+    /* 
+     * Continue with module loading only if personality acceptable 
+     */
+    if (!(mod->pmod->personality & pdsh_personality()))
+        return -1;
+
+    if (!_mod_opts_ok(mod)) {
+        err("failed to install module options for \"%s/%s\"\n", 
+            mod->pmod->type, mod->pmod->name);
+        return -1;
+    }
+
+    if (mod->pmod->mod_ops && 
+        mod->pmod->mod_ops->init && 
+        ((*mod->pmod->mod_ops->init)() < 0)) {
+        err("%p: error: %s/%s failed to initialize.\n", 
+            mod->pmod->type, mod->pmod->name);
+        return -1;
+    }
+
+    list_append(module_list, mod);
+
+    return 0;
+}
+
+
+#if STATIC_MODULES
+/*
+ *   Set pdsh module pointer (pmod) to point to address from
+ *    statically defined external static_mods array.
+ */
+static int
+_mod_load_static(int idx)
+{
+    mod_t mod = mod_create();
+
+    mod->pmod = static_mods[idx];
+
+    if (_mod_install(mod, static_mod_names[idx]) < 0) {
+        _mod_destroy(mod);
+        return -1;
+    }
+
+    return 0;
+}
+
+/*
+ *  Load all statically defined modules from internal static_mods array
+ */
+static int 
+_mod_load_static_modules(void)
+{
+    int i = 0;
+
+    while (static_mods[i] != NULL) {
+        if (_mod_load_static(i++) < 0)
+            continue;
+    }
+
+    return 0;
+}
+
+
+#else /* !STATIC_MODULES */
+
+/*
+ *  Load a single module from file `fq_path' and append to module_list.
+ */
+static int
+_mod_load_dynamic(const char *fq_path)
+{
+    mod_t mod = NULL;
+    const lt_dlinfo *info;
+    assert(fq_path != NULL);
+
+    mod = mod_create();
+
+    if (!(mod->handle = lt_dlopen(fq_path)))
+        goto fail;
+
+    if (!(info = lt_dlgetinfo(mod->handle))) 
+        goto fail_libtool_broken;
+
+    if (info->filename == NULL) 
+        goto fail_libtool_broken;
+
+    mod->filename = Strdup(info->filename);
+
+    if (_is_loaded(mod->filename)) {
+        err("%p: [%s] module already loaded\n", mod->filename);
+        goto fail;
+    }
+  
+    /* load all module info from the pdsh_module structure */
+    if (!(mod->pmod = lt_dlsym(mod->handle, "pdsh_module_info"))) {
+        err("%p:[%s] can't resolve pdsh module\n", mod->filename);
+        goto fail;
+    }
+
+    if (_mod_install(mod, mod->filename) < 0)
+        goto fail;
+
+    return 0;
+
+ fail_libtool_broken:
+    /*
+     * Avoid dlclose() of invalid handle
+     */
+    mod->handle = NULL;
+
+ fail:
+    _mod_destroy(mod);
+    return -1;
+}
+
+static int
+_mod_load_dynamic_modules(const char *dir)
+{
+    DIR           *dirp   = NULL;
+    struct dirent *entry  = NULL;
+    char           path[MAXPATHLEN + 1];
+    char           *p;
+    int            count = 0;
+
+    assert(dir != NULL);
+    assert(*dir != '\0');
+
+    if (!initialized) 
+        mod_init();
+
+    if (!_path_permissions_ok(dir)) 
+        return -1;
+
+    if (!(dirp = opendir(dir)))
+        return -1;
+
+    strncpy(path, dir, MAXPATHLEN);
+    p = path + strlen(dir);
+    *(p++) = '/';
+
+    while ((entry = readdir(dirp))) {
+        struct stat st;
+
+        strcpy(p, entry->d_name);
+
+        /*
+         *  As an efficiency enhancement, only attempt to open 
+         *    libtool ".la" files.
+         */
+        if (strcmp(&p[strlen(p) - 3], ".la") != 0)
+            continue;
+
+        if (stat(path, &st) < 0)
+            continue; 
+        if (!S_ISREG(st.st_mode))
+            continue;
+
+        if (_mod_load_dynamic(path) < 0) 
+            continue;
+
+        count++;
+    }
+
+    if (closedir(dirp) < 0)
+        err("%p: error closing %s: %m", dir);
+
+    if (count == 0)
+        errx("%p: no modules found\n"); 
+
+    return 0;
+
+}
+
 
 static int _cmp_filenames(mod_t mod, char *filename)
 {

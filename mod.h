@@ -51,11 +51,11 @@ int mod_init(void);
 int mod_exit(void);
 
 /*
- *  Load all modules from specified directory that fit a specified
- *    personality (DSH or PCP). Directory must be owned by the current
- *    user and not writable by any other user.  After successfully
- *    loading each module, the module's "init" routine is called and module
- *    command line options are registered.  The module is not loaded if init 
+ *  Load all modules from specified directory. 
+ *    Directory must be owned by the current user and not writable 
+ *    by any other user.  After successfully loading each module, 
+ *    the module's "init" routine is called and module command line 
+ *    options are registered.  The module is not loaded if init 
  *    returns < 0 or any module option command be registered.
  *
  *  If modules are being compiled statically, The directory argument
@@ -63,7 +63,7 @@ int mod_exit(void);
  *
  *  Returns 0 for Success and -1 for Failure.
  */
-int mod_load_modules(const char *dir, pers_t personality);
+int mod_load_modules(const char *dir);
 
 /*
  *  List information about all loaded modules to stdout.
@@ -134,7 +134,6 @@ void * mod_get_rcmd_init(mod_t mod);
 void * mod_get_rcmd_signal(mod_t mod);
 void * mod_get_rcmd(mod_t mod);
 
-#endif /* !_MOD_H */
 
 /*
  * Functions that may be exported by any pdsh module
@@ -185,13 +184,14 @@ struct pdsh_module {
     char *name;        /* module name, i.e. Yoda */ 
     char *author;      /* module author, i.e. George Lucas */
     char *descr;       /* module description, i.e. "Run pdsh with the force */
-    int personality;   /* personality module is suitable for.  May be set
-                        * to DSH, PCP, or DSH | PCP 
-                        */  
+    int personality;   /* personality mask for module (DSH, PCP, or DSH|PCP */
+
     struct pdsh_module_operations *mod_ops;
     struct pdsh_rcmd_operations   *rcmd_ops;
     struct pdsh_module_option     *opt_table;
 };
+
+#endif /* !_MOD_H */
 
 /* 
  * vi: tabstop=4 shiftwidth=4 expandtab

@@ -55,7 +55,6 @@ typedef struct {
 
     /* common options */
     char *progname;             /* argv[0] */
-    pers_t personality;
     bool debug;                 /* -d */
     bool info_only;             /* -q */
     bool test_range_expansion;  /* -Q (implies -q) */
@@ -70,7 +69,6 @@ typedef struct {
     int fanout;                 /* (-f, FANOUT, or default) */
     int connect_timeout;
     int command_timeout;
-    int nprocs;                 /* -n nprocs */
 
     char *rcmd_name;            /* -R name   */
     bool resolve_hosts;         /* Set optionally by rcmd modules */
@@ -93,12 +91,18 @@ typedef struct {
 
 } opt_t;
 
-void opt_default(opt_t *);
+
+void opt_default(opt_t *, char *argv0);
 void opt_env(opt_t *);
 void opt_args(opt_t *, int, char **);
 bool opt_verify(opt_t *);
 void opt_list(opt_t *);
 void opt_free(opt_t *);
+
+/* 
+ *  Return the current pdsh "personality"
+ */
+pers_t pdsh_personality(void);
 
 
 /*
@@ -117,21 +121,19 @@ void opt_free(opt_t *);
 typedef int (*optFunc)(opt_t *opt, int optopt, char *optarg);
 
 struct pdsh_module_option {
-	char    opt;        /* option character                          */
-        char   *arginfo;    /* one word descr of arg if option takes one 
-                               If NULL, option takes no arg              */
-	char   *descr;      /* short description of option               */
-        int     personality;    /* personality option is suitable for.
-                                 * May be set to DSH, PCP, or 
-                                 * DSH |PCP
-                                 */  
-	optFunc f;          /* callback function for option processing   */
+    char    opt;          /* option character                               */
+    char   *arginfo;      /* one word descr of arg if option takes one      */
+    char   *descr;        /* short description of option                    */
+    int     personality;  /* Personality for which this option is suitable. *
+                           * May be set to DSH, PCP, or DSH |PCP            */  
+
+    optFunc f;            /* callback function for option processing        */
 };
 
 #define PDSH_OPT_TABLE_END { 0, NULL, NULL, 0, NULL }
 
 
-bool opt_register(struct pdsh_module_option *popt, pers_t personality);
+bool opt_register(struct pdsh_module_option *popt);
 
 #endif                          /* OPT_INCLUDED */
 
