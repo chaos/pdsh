@@ -1,6 +1,12 @@
+2004-12-08  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/modules/mcmd.c : Update to mrsh protocol version 2.1,
+	  which allows mrsh over "localhost."
+
 2004-11-22  Mark Grondona <mgrondona@llnl.gov>
 
-	* README.QsNet : Update location of libelanhosts. Describe "slurm" module.
+	* README.QsNet : Update location of libelanhosts. Describe 
+	  "slurm" module.
 
 	* src/pdsh/dsh.c (dsh) : Increase max number of open files to hard
 	  limit for large fanout.

@@ -121,9 +121,16 @@ static char sccsid[] = "@(#)mcmd.c      Based from: 8.3 (Berkeley) 3/26/94";
 #include "src/common/xpoll.h"
 #include "src/pdsh/mod.h"
 
-#define MRSH_PROTOCOL_VERSION    "2.0"
+#define MRSH_PROTOCOL_VERSION    "2.1"
 
 #define MRSH_PORT                21212
+
+#ifndef MAXHOSTNAMELEN
+#define MAXHOSTNAMELEN          64
+#endif
+
+#define MRSH_LOCALHOST_KEY      "LHOST"
+#define MRSH_LOCALHOST_KEYLEN   5
 
 #ifdef HAVE_PTHREAD
 #define SET_PTHREAD()           pthread_sigmask(SIG_BLOCK, &blockme, &oldset)
@@ -249,6 +256,33 @@ mcmd_signal(int fd, int signum)
 }
 
 /*
+ * If `host' corresponds to a standard "locahost" target, then
+ *  encode mrsh localhost key and hostname into str, returning
+ *  number of bytes written into str. Otherwise do nothing and return 0.
+ */
+static int
+encode_localhost_string (const char *host, char *str, int maxlen)
+{
+    char hostname[MAXHOSTNAMELEN+1];
+
+    if (strcmp (host, "localhost") && strcmp (host, "127.0.0.1"))
+        return (0);
+
+    if (maxlen < MRSH_LOCALHOST_KEYLEN)
+        return (-1);
+
+    memset (hostname, '\0', MAXHOSTNAMELEN + 1);
+
+    if (gethostname (hostname, MAXHOSTNAMELEN) < 0)
+        errx ("mcmd: gethostname: %m\n");
+
+    strncpy (str, MRSH_LOCALHOST_KEY, MRSH_LOCALHOST_KEYLEN);
+    strncat (str, hostname, maxlen - MRSH_LOCALHOST_KEYLEN - 1);
+
+    return (strlen (str));
+}
+
+/*
  * Derived from the mcmd() libc call, with modified interface.
  * This version is MT-safe.  Errors are displayed in pdsh-compat format.
  * Connection can time out.
@@ -291,7 +325,7 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     socklen_t len;
     sigset_t blockme;
     sigset_t oldset;
-    char haddrdot[16] = {0};
+    char haddrdot[MAXHOSTNAMELEN + MRSH_LOCALHOST_KEYLEN + 1] = {0};
     munge_ctx_t ctx;
     struct xpollfd xpfds[2];
 
@@ -299,12 +333,6 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     sigaddset(&blockme, SIGURG);
     sigaddset(&blockme, SIGPIPE);
     SET_PTHREAD();
-
-    if (( rv = strcmp(ahost,"localhost")) == 0 ) {
-        errno = EACCES;
-        err("%p: %S: mcmd: Can't use localhost\n", ahost);
-        EXIT_PTHREAD();
-    }
 
     /* Convert randy to decimal string, 0 if we dont' want stderr */
     if (fd2p != NULL)
@@ -391,12 +419,18 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     /* put port in buffer. will be 0 if user didn't want stderr */
     snprintf(num,sizeof(num),"%d",lport);
 
-    /* inet_ntoa is not thread safe, so we use the following, 
-     * which is more or less ripped from glibc
+    /* 
+     * Use special keyed string if target is localhost, otherwise,
+     *  encode the IP addr string.
      */
-    memcpy(&m_in.s_addr, addr, IP_ADDR_LEN);
-    hptr = (unsigned char *)&m_in;
-    sprintf(haddrdot, "%u.%u.%u.%u", hptr[0], hptr[1], hptr[2], hptr[3]);
+    if (!encode_localhost_string (ahost, haddrdot, sizeof (haddrdot))) {
+        /* inet_ntoa is not thread safe, so we use the following, 
+         * which is more or less ripped from glibc
+         */
+        memcpy(&m_in.s_addr, addr, IP_ADDR_LEN);
+        hptr = (unsigned char *)&m_in;
+        sprintf(haddrdot, "%u.%u.%u.%u", hptr[0], hptr[1], hptr[2], hptr[3]);
+    }
 
     /*
      * We call munge_encode which will take what we write in and return a
