@@ -309,8 +309,8 @@ qsw_init_capability(ELAN_CAPABILITY *cap, int procs_per_node, list_t nodelist,
 	srand48(getpid());
 
 	/*
-	 * Assuming block as opposed to cyclic process allocation, and
-	 * single rail.
+	 * Initialize for single rail and either block or cyclic allocation.  
+	 * Set ELAN_CAP_TYPE_BROADCASTABLE later if appropriate.
 	 */
 	elan3_nullcap(cap);
 	if (cyclic_alloc)
@@ -346,15 +346,17 @@ qsw_init_capability(ELAN_CAPABILITY *cap, int procs_per_node, list_t nodelist,
 		err("%p: do all target nodes have an Elan adapter?\n");
 		return -1;
 	}
-	cap->Entries = list_length(nodelist) * procs_per_node;
 
+	/* 
+	 * Set cap->Entries and add broadcast bit to cap->type based on 
+	 * cap->HighNode and cap->LowNode values set above.
+	 */
+	cap->Entries = list_length(nodelist) * procs_per_node;
 	if (cap->Entries > ELAN_MAX_VPS) {
-		err("%p: too many processes requested (max %d)\n", 
+		err("%p: program would have too many processes (max %d)\n", 
 				ELAN_MAX_VPS);
 		return -1;
 	}
-
-	/* set the broadcast bit if we have a contiguous set of nodes */
 	if (abs(cap->HighNode - cap->LowNode) == cap->Entries)
 		cap->Type |= ELAN_CAP_TYPE_BROADCASTABLE;
 
@@ -479,6 +481,7 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 		exit(0);
 	}
 	/* child falls through here */
+	/* proc_index will be set to the child's index */
 
 	/*
 	 * Assign elan hardware context to current process.
@@ -492,10 +495,16 @@ qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
 		errx("%p: rms_setcap (%d): %m\n", proc_index);
 
 	/* set RMS_ environment vars */
-	if ((cap->Type & ELAN_CAP_TYPE_BLOCK))
-		qi->procid = (qi->nodeid * procs_per_node) + proc_index;
-	else  /* ELAN_CAP_TYPE_CYCLIC */
-		qi->procid = qi->nodeid + (proc_index * qi->nnodes);
+	switch (cap->Type & ELAN_CAP_TYPE_MASK) {
+		case ELAN_CAP_TYPE_BLOCK:
+			qi->procid = (qi->nodeid * procs_per_node) + proc_index;
+			break;
+		case ELAN_CAP_TYPE_CYCLIC:
+			qi->procid = qi->nodeid + (proc_index * qi->nnodes);
+			break;
+		default:
+			errx("%p: unsupported Elan capability type\n");
+	}
 	qi->rank = qi->procid;
 	if (qsw_rms_setenv(qi) < 0)
 		errx("%p: failed to set environment variables: %m\n");

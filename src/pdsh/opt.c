@@ -528,6 +528,9 @@ static void usage(opt_t *opt)
 	if (opt->personality == DSH) {
 		err(OPT_USAGE_DSH);
 		err(OPT_USAGE_STDERR);
+#if HAVE_ELAN3
+		err(OPT_USAGE_ELAN);
+#endif
 	} else /* PCP */
 		err(OPT_USAGE_PCP);
 	err(OPT_USAGE_COMMON);
@@ -539,9 +542,6 @@ static void usage(opt_t *opt)
 #endif
 #if HAVE_GENDERS
 	err(OPT_USAGE_GEND);
-#endif
-#if HAVE_ELAN3
-	err(OPT_USAGE_ELAN);
 #endif
 	exit(1);
 }
