@@ -154,7 +154,7 @@ _drop_privileges()
 
 static int sshcmd_init(opt_t * opt)
 {
-    if (opt->personality == PCP)
+    if (pdsh_personality() == PCP)
         use_rw = true;
 
     /*
