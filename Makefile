@@ -35,7 +35,7 @@ ELAN_INC=
 # Linux RH 6.2, AIX 4.3.x, OSF
 LIBS = $(KRB_LIB)  -lpthread $(ELAN_LIB)
 
-CC=		cc
+CC=		gcc
 CFLAGS=		-Wall -I. -g $(KRB_INC) $(ELAN_INC)
 LDFLAGS=
 

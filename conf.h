@@ -91,5 +91,8 @@
 #ifndef HAVE_GENDERS
 #define HAVE_GENDERS		0
 #endif
+#ifndef HAVE_ELAN3
+#define HAVE_ELAN3		0
+#endif
 
 #endif

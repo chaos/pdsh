@@ -28,7 +28,7 @@ static void show_version(void);
 
 #define OPT_USAGE_DSH "\
 Usage: pdsh [-options] command ...\n\
--s                separate stderr and stdout\n\
+-s                combine stderr with stdout to conserve sockets\n\
 -S                return largest of remote command return values\n"
 
 #define OPT_USAGE_PCP "\
@@ -118,7 +118,7 @@ void opt_default(opt_t *opt)
 	opt->cmd = NULL;
 	opt->stdin_unavailable = false;
 	opt->delete_nextpass = true;
-	opt->separate_stderr = false; 
+	opt->separate_stderr = DFLT_SEPARATE_STDERR; 
 	*(opt->gend_attr) = '\0';
 	opt->tasks_per_node = 1;
 
@@ -404,11 +404,15 @@ bool opt_verify(opt_t *opt)
 		}
 		if (verified)
 			opt->fanout = list_length(opt->wcoll);
-
-		/* proper cleanup of qshd is dependent on stderr backchannel */
-		opt->separate_stderr = true;
 	}
-
+	if (opt->tasks_per_node > 1 && opt->rcmd_type != RCMD_QSHELL) {
+		err("%p: only one task per node for this remote shell type\n");
+		verified = false;
+	}
+	if (opt->tasks_per_node <= 0) {
+		err("%p: -n option should be >= 1\n");
+		verified = false;
+	}
 
 	return verified;
 }
@@ -501,6 +505,9 @@ static void usage(opt_t *opt)
 #endif
 #if HAVE_GENDERS
 	err(OPT_USAGE_GEND);
+#endif
+#if HAVE_ELAN3
+	err(OPT_USAGE_ELAN);
 #endif
 	exit(1);
 }

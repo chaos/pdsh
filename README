@@ -6,8 +6,7 @@ product that uses POSIX threads within a single process, and achieves better
 performance while using fewer system resources (in particular, privileged 
 sockets and process slots).
 
-This version of pdsh has been tested on RH Linux 6.2 (sparc/intel/alpha) and 
-AIX 4.3.3.
+This version of pdsh has been tested on RedHat Linux and AIX 4.3.3.
 
 See the man page in this directory for usage information.
 
@@ -75,7 +74,8 @@ option.
 | PERFORMANCE PDSH VS DSH |
 +-------------------------+
 This implementation results in a pretty big performance increase over IBM dsh;
-for example, I just ran a little test on our 256-node SP [old 1997 numbers!]:
+for example, I just ran a little test on our 256-node SP [old 1997 numbers,
+and reverse meaning of -s command!]:
 
    Command                Real time (sec)
    pdsh -av date          6            # stdin/stderr combined

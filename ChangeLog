@@ -126,12 +126,5 @@ Release 1.5+
 	Added qshell support for running Quadrics Elan3 jobs on Linux
 	with -E option and qshd server (added qshd subpackage to RPM target).
 
-Todo
-
-	Consider making -s the default for proper cleanup on ctrl-C.
-	
-	Add option to close stdin on remote side.
-
-	Autoconf!
-
-	Regression tests on AIX, Tru64, Linux/Alpha, Linux/ia32, Linux/Sparc.
+	Stderr socket now opened by default to enable proper remote cleanup
+	after SIGINT.  The meaning of the -s option is reversed.

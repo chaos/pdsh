@@ -5,6 +5,9 @@
  * See ./DISCLAIMER
  */
 
+#ifndef _DSH_INCLUDED
+#define _DSH_INCLUDED
+
 typedef struct {
 	int prgnum;
 	int rank;
@@ -22,3 +25,5 @@ int 	qsw_init_capability(ELAN_CAPABILITY *cap, int tasks_per_node,
 		list_t nodelist);
 int	qsw_get_prgnum(void);
 void 	qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid);
+
+#endif /* _DSH_INCLUDED */

@@ -326,13 +326,13 @@ qsw_init_capability(ELAN_CAPABILITY *cap, int tasks_per_node, list_t nodelist)
 	 * This sets cap->HighNode, cap->LowNode, and cap->Bitmap.
 	 */
 	if (qsw_setbitmap(nodelist, tasks_per_node, cap) < 0) {
-		err("%p: do all target nodes have an Elan adapter?");
+		err("%p: do all target nodes have an Elan adapter?\n");
 		return -1;
 	}
 	cap->Entries = list_length(nodelist) * tasks_per_node;
 
 	if (cap->Entries > ELAN_MAX_VPS) {
-		err("%p: too many tasks requested (max %d)", ELAN_MAX_VPS);
+		err("%p: too many tasks requested (max %d)\n", ELAN_MAX_VPS);
 		return -1;
 	}
 
