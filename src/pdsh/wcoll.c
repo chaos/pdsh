@@ -90,6 +90,7 @@ read_wcoll(char *file, FILE *f)
 	return new;
 }
 
+#if HAVE_GENDERS
 hostlist_t 
 read_genders(char *attr, int iopt)
 {
@@ -112,6 +113,7 @@ read_genders(char *attr, int iopt)
 
 	return new;
 }
+#endif /* HAVE_GENDERS */
 
 #if	HAVE_SDR
 static int 

@@ -127,7 +127,7 @@ _setbitmap(hostlist_t nodelist, int procs_per_node, ELAN_CAPABILITY *cap)
 	while ((host = hostlist_next(itr)) != NULL) {
 		int i, proc0;
 		
-		node = qsw_host2elanid(host);
+		node = _host2elanid(host);
 		for (i = 0; i < procs_per_node; i++) {
 			proc0 = (node - cap->LowNode) * procs_per_node;
 			if (proc0 + i >= (sizeof(cap->Bitmap) * 8))  {

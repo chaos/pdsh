@@ -11,8 +11,12 @@
 # (It does blow up with 2.13 on AIX).
 
 AC_INIT(dsh.h)
-AC_CONFIG_HEADER([config.h])
-AC_CONFIG_AUX_DIR([auxdir])
+AC_CONFIG_AUX_DIR(auxdir)
+AC_CONFIG_SRCDIR([configure.ac])
+
+# determine the system type
+AC_CANONICAL_TARGET
+AC_SUBST(host_cpu)
 
 #
 # Determine project/version from META file.
@@ -22,6 +26,9 @@ PROJECT="`perl -ne 'print,exit if s/^\s*NAME:\s*(\S*).*/\1/i' $srcdir/META`"
 AC_DEFINE_UNQUOTED(PROJECT, "$PROJECT", [Define the project's name.])
 AC_SUBST(PROJECT)
 
+# Automake desires "PACKAGE" variable instead of PROJECT
+PACKAGE=$PROJECT
+
 VERSION="`perl -ne 'print,exit if s/^\s*VERSION:\s*(\S*).*/\1/i' $srcdir/META`"
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Define the project's version.])
 AC_SUBST(VERSION)
@@ -30,9 +37,10 @@ RELEASE="`perl -ne 'print,exit if s/^\s*RELEASE:\s*(\S*).*/\1/i' $srcdir/META`"
 AC_DEFINE_UNQUOTED(RELEASE, "$RELEASE", [Define the project's release.])
 AC_SUBST(RELEASE)
 
-# determine the system type
-AC_CANONICAL_HOST
-AC_SUBST(host_cpu)
+dnl Initialize Automake
+dnl
+AM_INIT_AUTOMAKE($PROJECT, $VERSION)
+AM_CONFIG_HEADER(config.h)
 
 #
 # Configure arg: --enable-debug
@@ -91,6 +99,7 @@ AC_MSG_RESULT(${withelan=no})
 AC_SUBST(PROG_QSHD)
 : ${HAVE_ELAN=0}
 AC_SUBST(HAVE_ELAN)
+AM_CONDITIONAL(WITH_ELAN, test $withelan = yes)
 
 #
 # Configure arg: --with-ssh=[/path/to/ssh]  
@@ -127,6 +136,7 @@ if test "$withssh" = yes; then
 fi
 : ${HAVE_SSH=0}
 AC_SUBST(HAVE_SSH)
+AM_CONDITIONAL(WITH_SSH, test $withssh = yes)
 
 #
 # Configure arg: --with-krb4=[/krb4/root/dir]
@@ -160,6 +170,7 @@ if test "$withkrb4" = yes; then
 fi
 : ${HAVE_KRB4=0}
 AC_SUBST(HAVE_KRB4)
+AM_CONDITIONAL(WITH_KRB4, test $withkrb4 = yes)
 
 # Detect attempt to configure --with-krb4 and --with-ssh (pick one!)
 if test "$withkrb4" = yes && test "$withssh" = yes; then
@@ -268,6 +279,7 @@ fi
 : ${HAVE_GENDERS=0}
 AC_SUBST(HAVE_GENDERS)
 AC_SUBST(NODEATTR)
+AM_CONDITIONAL(WITH_GENDERS, test $HAVE_GENDERS = 1)
 
 #
 # Find path to rmsquery.  Support for RMS (allocate) is automatic if found.
@@ -282,6 +294,7 @@ AC_SUBST(RMSQUERY)
 : ${HAVE_RMSQUERY=0}
 AC_SUBST(HAVE_RMSQUERY)
 AC_SUBST(RMSQUERY)
+AM_CONDITIONAL(WITH_RMS, test $HAVE_RMSQUERY = 1)
 
 #
 # Find path to SDRGetObjects.  Support for SDR (-av) is automatic if found.
@@ -295,6 +308,7 @@ fi
 : ${HAVE_SDR=0}
 AC_SUBST(HAVE_SDR)
 AC_SUBST(SDRGETOBJECTS)
+AM_CONDITIONAL(WITH_SDR, test $HAVE_SDR = 1)
 
 #
 # Find path to rcp for pdcp.
@@ -389,5 +403,5 @@ AH_BOTTOM(
 #endif /* _AIX */]
 )
 
-AC_OUTPUT_COMMANDS(echo "creating dependencies"; make depend >/dev/null)
-AC_OUTPUT([Makefile pdsh.spec pdcp.1 pdsh.1])
+# AC_OUTPUT_COMMANDS(echo "creating dependencies"; make depend >/dev/null)
+AC_OUTPUT([Makefile testsuite/Makefile testsuite/pdsh.test/Makefile pdsh.spec pdcp.1 pdsh.1])
