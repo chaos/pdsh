@@ -107,7 +107,7 @@ Release 1.5
 
 	Updated RPM rules for chaos release.
 
-Release 1.5+
+Release 1.6
 
 	Call htons on hard-coded port numbers before using (rcmd.c, k4cmd.c)
 
@@ -137,3 +137,5 @@ Release 1.5+
 	and defining new expansion operator, respectively.
 
 	Added support for allocating the wcoll from an RMS partition.
+
+	Released version 1.5.

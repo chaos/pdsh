@@ -2,15 +2,13 @@
 # $Id$ 
 #
 PROJECT=	pdsh
-VERSION=	1.5
+VERSION=	1.6
 
 PDSH_OBJS=	list.o xmalloc.o xstring.o err.o xpopen.o \
 		dsh.o main.o opt.o wcoll.o xrcmd.o sshcmd.o \
 		$(ELAN_OBJS) $(KRB_OBJS)
 
 QSHD_OBJS=	list.o xmalloc.o xstring.o err.o qswutil.o qshd.o 
-QRUN_OBJS=	list.o xmalloc.o xstring.o err.o qswutil_main.o
-RMSTEST_OBJS=	list.o xmalloc.o xstring.o err.o qswutil_main2.o
 
 PREFIX=		/usr/local
 
@@ -25,10 +23,10 @@ PREFIX=		/usr/local
 #
 # Uncomment and set HAVE_ELAN3 to 1 in conf.h for Quadrics Elan support
 #
-ELAN_TARGS=	qshd #qrun
-ELAN_OBJS=	qswutil.o qcmd.o
-ELAN_LIB=	-lelan3 -lrmscall -lrmsapi -lrms
-ELAN_INC=
+#ELAN_TARGS=	qshd
+#ELAN_OBJS=	qswutil.o qcmd.o
+#ELAN_LIB=	-lelan3 -lrmscall -lrmsapi -lrms
+#ELAN_INC=
 
 # Solaris
 #LIBS =	-lpthread -lgen -lnsl -lsocket
@@ -48,12 +46,6 @@ pdsh: $(PDSH_OBJS)
 
 qshd: $(QSHD_OBJS)
 	$(CC) -o $@ $(QSHD_OBJS) $(LIBS)
-
-qrun: $(QRUN_OBJS)
-	$(CC) -o $@ $(QRUN_OBJS) $(LIBS)
-
-rmstest: $(RMSTEST_OBJS)
-	$(CC) -o $@ $(RMSTEST_OBJS) $(LIBS)
 
 qswutil_main.o: qswutil.c
 	$(CC) -o $@ -c $(CFLAGS) -DTEST_MAIN qswutil.c

@@ -11,7 +11,7 @@
 #ifndef _CONF_INCLUDED
 #define _CONF_INCLUDED
 
-#define PDSH_VERSION		"1.5pre"
+#define PDSH_VERSION		"1.6"
 
 /* These two are user-settable - see README */
 #define HAVE_KRB4		0
@@ -21,8 +21,8 @@
 #define HAVE_PTHREAD_SIGMASK	1
 #define HAVE_GETHOSTBYNAME_R	1
 #define HAVE_STRERROR_R		1
-#define HAVE_ELAN3		1
-#define HAVE_RMS_PMANAGER	1
+#define HAVE_ELAN3		0
+#define HAVE_RMS_PMANAGER	0
 #ifdef sparc
 #endif
 
@@ -31,6 +31,7 @@
 #define HAVE_SIGTHREADMASK	1
 #define HAVE_STRERROR		0
 #define NEED_STDERR		0
+#define _PATH_NODEATTR		"/admin/scripts/nodeattr"
 
 #elif defined(sparc) && !defined(__linux)	/* sunos 5.7 */
 #define HAVE_GETHOSTBYNAME_R	1
@@ -41,12 +42,29 @@
 /*
  * Path definitions
  */
+#ifndef _PATH_SDRGETOBJECTS
 #define _PATH_SDRGETOBJECTS 	"/usr/lpp/ssp/bin/SDRGetObjects"
+#endif
+
+#ifndef _PATH_RCP
 #define _PATH_RCP		"/usr/bin/rcp" /* path to remote rcp command */
+#endif
+
+#ifndef _PATH_NODEATTR
 #define _PATH_NODEATTR		"/usr/bin/nodeattr"
+#endif
+
+#ifndef _PATH_MACHINES
 #define _PATH_MACHINES		"/usr/local/etc/machines"
+#endif
+
+#ifndef _PATH_SSH
 #define _PATH_SSH		"/usr/local/bin/ssh"
+#endif
+
+#ifndef _PATH_RMSQUERY
 #define _PATH_RMSQUERY		"/usr/bin/rmsquery"
+#endif
 
 /*
  * Default values.
