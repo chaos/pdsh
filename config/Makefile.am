@@ -5,6 +5,8 @@
 ##****************************************************************************
 
 EXTRA_DIST = \
+    Make-rpm.mk \
+    Make-inc.mk \
     ac_connect_timeout.m4 \
     ac_debug.m4 \
     ac_dmalloc.m4 \
