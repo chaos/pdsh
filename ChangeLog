@@ -2,11 +2,11 @@
 	* Reordered ChangeLog in reverse chronological order.
 
 2002-09-12 garlick
-	* Repair a file descriptor leak in rcp_thread (wasn't closing efd).
+	* Repair a file descriptor leak in rcp_thread  (gnat pdsh/113)
 	* More error reporting in qswutil.c, qcmd.c, qshd.c
 	* Fixed bug in sending of long bitmaps.
 	* Taggged pdsh-1-7-2chaos (sent to LNXI for MCR)
- 
+
 2002-09-03 grondo
 	* Automake-ified
 	* Have `dshbak -c' generate bracketed ranges compatible with pdsh -w
