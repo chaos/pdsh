@@ -61,6 +61,13 @@ In combination with -a, include all partitions.
 .I "-g attribute"
 Target nodes that have the specified genders attribute.	
 \}
+.if @HAVE_RMS@ \{
+.I "-N nodecount"
+Request that nodes be allocated from RMS.
+.LP
+.I "-P partition"
+Select non-default RMS partition.
+\}
 .LP
 .I "-i"
 In conjunction with -a or -g, request alternate hostnames.
@@ -109,8 +116,8 @@ Elan capabilities are propagated and the following environment variables
 are set: RMS_RANK, RMS_NODEID, RMS_PROCID, RMS_NNODES, and RMS_NPROCS.
 .LP
 .I "-n number"
-In combination with -E, set the number of processes.  This should be set 
-to a multiple of the number of hosts in the target host list.
+In combination with -E, set the number of total processes, which should
+be a multiple of the number of hosts in the target host list.
 .LP
 .I "-m block | cyclic"
 In combination wiht -E, set block versus cyclic allocation of processes 
