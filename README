@@ -48,6 +48,16 @@ As of version 1.6, pdsh uses GNU autoconf for configuration.  To configure:
 --enable-debug
 	Turns on assertion checking and compiles with -Wall.
 
+--with-fanout=N
+	Specify default fanout (default is 32)
+
+--with-connect-timeout=N
+	Set default connect timeout (default is 10 seconds)
+
+--with-rangeop=c
+	Set range operator character (default is "-")
+
+
 A word about -a (target "all" nodes) and -i (use alternate hostnames) option:
 
 On an SP, configure will find SDRGetObjects and use that to generate the

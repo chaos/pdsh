@@ -173,14 +173,14 @@ Release 1.6
 
 Release 1.6+
 	
-	Run man pages through autoconf and put version/os in header.
-	Substitute default fanout and connect timeout.
+	Misc cleanup of headers, function defs, README, and man pages.
+	Run man pages through autoconf.
 
-	Test HAVE_WORKING_STRERROR_R before using strerror_r.
+	Test HAVE_WORKING_STRERROR_R before using strerror_r (pdsh-1.6 %m 
+	fails on AIX).
 
-	Added "Gotchas" in README.
-
-	Added HAVE_MTSAFE_GETHOSTBYNAME and HAVE_MAGIC_RSHELL_CLEANUP.
+	Added HAVE_MTSAFE_GETHOSTBYNAME and HAVE_MAGIC_RSHELL_CLEANUP in
+	place of #ifdef _AIX.
 
 	Use socklen_t for accept() length argument and add a check in
 	autoconf to default it to int if undefined.
@@ -188,10 +188,5 @@ Release 1.6+
 	Rcp code now handles short writes on socket.  A short write would
 	have corrupted the copied file, though this has never been reported.
 
-	Updated copyright notice and normalized function defs.
-
-	Add configuration option for --with-fanout=N and remove logic in
-	code for determining default fanout.
-
-	Added configuration option for --with-connect-timeout=N.  Deal
-	properly with a zero connect-timeout (e.g. --with-connect-timeout=no).
+	Additional configure options: --with-fanout=N, --with-timeout=N, 
+	--with-rangeop=c.

@@ -8,7 +8,7 @@ pdcp \- copy files to groups of hosts in parallel
 .I "[-options] src [src2...] dest"
 .br
 .SH DESCRIPTION
-.B pdsh
+.B pdcp
 is a variant of the rcp(1) command.  Unlike rcp(1) which copies files to
 a single remote host, pdcp(1) can copy files to multiple remote hosts in 
 parallel.  Options are described in TARGET NODE LIST OPTIONS and OTHER OPTIONS 
