@@ -18,7 +18,7 @@
 
 AC_DEFUN([AC_QSHELL],
 [
-  AC_MSG_CHECKING([whether to qshell rcmd and qshell daemon])
+  AC_MSG_CHECKING([for whether to build qshell module])
   AC_ARG_WITH([qshell],
     AC_HELP_STRING([--with-qshell], [Built qsh module and qshd daemon]),
     [ case "$withval" in
