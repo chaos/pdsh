@@ -49,6 +49,10 @@
 #include <rms/rmsapi.h>
 #endif
 
+#ifndef MAXHOSTNAMELEN
+#define MAXHOSTNAMELEN  64
+#endif
+
 /* 
  * Read wcoll from specified file or from the specified FILE pointer.
  * (one of the arguments must be NULL).  
@@ -97,13 +101,11 @@ hostlist_t read_genders(char *attr, int iopt)
   char *altname;
   int maxvallen, nodelist_len, num_nodes_found, ret, i;
 
-  if ((new = hostlist_create(NULL)) == NULL) {
+  if ((new = hostlist_create(NULL)) == NULL)
     errx("%p: error creating hostlist\n");
-  }
 
-  if ((handle = genders_handle_create()) == NULL) {
+  if ((handle = genders_handle_create()) == NULL)
     errx("%p: error creating genders handle\n");
-  }
   
   /* assumes genders file in default location */
   if (genders_load_data(handle, NULL) == -1) {
@@ -129,43 +131,36 @@ hostlist_t read_genders(char *attr, int iopt)
   if (!iopt) {
     if ((maxvallen = genders_getmaxvallen(handle)) == -1) {
       errx("%p: error getting max value length, %s\n",
-         genders_strerror(genders_errnum(handle)));
+           genders_strerror(genders_errnum(handle)));
     }
-    if ((altname = (char *)malloc(maxvallen + 1)) == NULL) {
+
+    maxvallen = (MAXHOSTNAMELEN > maxvallen) ? MAXHOSTNAMELEN : maxvallen;
+    
+    if ((altname = (char *)malloc(maxvallen + 1)) == NULL)
       errx("%p: Out of memory\n");
-    }
 
     /* get each alternate name.  If no alternate name exists, use default */
     for (i = 0; i < num_nodes_found; i++) {
       memset(altname, '\0', maxvallen + 1);
-      ret = genders_testattr(handle, 
-                             nodelist[i], 
-                             GENDERS_ALTNAME_ATTRIBUTE, 
-                             altname,
-                             maxvallen + 1);
-      if (ret == 1) {
-        if (hostlist_push_host(new, altname) == 0) {
-          err("%p: warning: target '%s' not parsed\n", altname);
-        }
+
+      if (genders_to_altname_preserve(handle,
+                                      nodelist[i],
+                                      altname,
+                                      maxvallen + 1) == -1) {
+        errx("%p: genders_to_altname_preserve(), %s\n",
+             genders_errormsg(handle));
       }
-      else if (ret == 0) {
-        if (hostlist_push_host(new, nodelist[i]) == 0) {
-          err("%p: warning: target '%s' not parsed\n", nodelist[i]);
-        }
-      }
-      else {
-        errx("%p: error testing genders attribute, %s\n",
-             genders_strerror(genders_errnum(handle)));
-      }
+
+      if (hostlist_push_host(new, altname) == 0)
+        err("%p: warning: target '%s' not parsed\n", altname);
     }
 
     free(altname);
   }
   else {
     for (i = 0; i < num_nodes_found; i++) {
-      if (hostlist_push_host(new, nodelist[i]) == 0) {
+      if (hostlist_push_host(new, nodelist[i]) == 0)
         err("%p: warning: target '%s' not parsed\n", nodelist[i]);
-      }
     }
   }
            
@@ -485,9 +480,8 @@ hostlist_t get_verified_nodes(int iopt) {
   }
 
   if (nodeupdown_load_data(handle, NULL, NULL, NULL, 0, 0) == -1) {
-    if (nodeupdown_errnum(handle) == NODEUPDOWN_ERR_CONNECT) {
+    if (nodeupdown_errnum(handle) == NODEUPDOWN_ERR_CONNECT)
       errx("%p: pdsh does not support -v on this machine\n");
-    }
     else {
       errx("%p: error loading nodeupdown data, %s\n", 
            nodeupdown_strerror(nodeupdown_errnum(handle)));
@@ -526,32 +520,27 @@ hostlist_t get_verified_nodes(int iopt) {
       errx("%p: error getting max value length, %s\n",
          genders_strerror(genders_errnum(genders_handle)));
     }
-    if ((altname = (char *)malloc(maxvallen + 1)) == NULL) {
+
+    maxvallen = (MAXHOSTNAMELEN > maxvallen) ? MAXHOSTNAMELEN : maxvallen;
+
+    if ((altname = (char *)malloc(maxvallen + 1)) == NULL)
       errx("%p: Out of memory\n");
-    }
 
     /* get each alternate name.  If no alternate name exists, use default */
     for (i = 0; i < num_nodes_up; i++) {
       memset(altname, '\0', maxvallen + 1);
-      ret = genders_testattr(genders_handle, 
-                             nodelist[i], 
-                             GENDERS_ALTNAME_ATTRIBUTE, 
-                             altname,
-                             maxvallen + 1);
-      if (ret == 1) {
-        if (hostlist_push_host(new, altname) == 0) {
-          err("%p: warning: target '%s' not parsed\n", altname);
-        }
+
+      if (genders_to_altname_preserve(handle,
+                                      nodelist[i],
+                                      altname,
+                                      maxvallen + 1) == -1) {
+        errx("%p: genders_to_altname_preserve(), %s\n",
+             genders_errormsg(handle));
       }
-      else if (ret == 0) {
-        if (hostlist_push_host(new, nodelist[i]) == 0) {
-          err("%p: warning: target '%s' not parsed\n", nodelist[i]);
-        }
-      }
-      else {
-        errx("%p: error testing genders attribute, %s\n",
-             genders_strerror(genders_errnum(genders_handle)));
-      }
+
+      if (hostlist_push_host(new, altname) == 0)
+        err("%p: warning: target '%s' not parsed\n", altname);
+
     }
 
     free(altname);
