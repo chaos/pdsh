@@ -597,7 +597,12 @@ doit(struct sockaddr_in *fromp)
 	 * Close all fds, in case libc has left fun stuff like 
 	 * /etc/shadow open.
 	 */
-	for (ifd = getdtablesize()-1; ifd > 2; ifd--) 
+#if OLD_ELAN_DRIVER
+#define NUMFDS 2
+#else
+#define NUMFDS 3 /* libelan3 has an fd open */
+#endif
+	for (ifd = getdtablesize()-1; ifd > NUMFDS; ifd--) 
 		close(ifd);
 
 	execl(theshell, shellname, "-c", cmdbuf, 0);
