@@ -467,9 +467,9 @@ hostlist_t rms_wcoll(void)
 #ifdef HAVE_LIBNODEUPDOWN
 /* get a list of up nodes by using the nodeupdown library */
 hostlist_t get_verified_nodes(int iopt) {
-  int i, ret, len, num_nodes_up, maxvallen;
-  char *altname;
-  char **nodelist;
+  int ret, str_len = 0, buf_len = 0;
+  char *str = NULL;
+  char *buf = NULL;
   hostlist_t new;
   nodeupdown_t handle;
   genders_t genders_handle;
@@ -488,20 +488,19 @@ hostlist_t get_verified_nodes(int iopt) {
     }
   }
 
-  if ((len = nodeupdown_nodelist_create(handle, &nodelist)) == -1) {
-    errx("%p: error creating nodelist, %s\n",
-         nodeupdown_strerror(nodeupdown_errnum(handle)));
-  }
+  do {
+    free(str);
+    str_len += PDSH_BUFFERLEN;
+    if ((str = (char *)malloc(str_len)) == NULL)
+      errx("%p: out of memory\n"); 
+    memset(str, '\0', str_len);
 
-  if ((num_nodes_up = nodeupdown_get_up_nodes_list(handle, 
-                                                   nodelist, 
-                                                   len)) == -1) {
-    errx("%p: error getting up nodes strings, %s\n",
-         nodeupdown_strerror(nodeupdown_errnum(handle)));
-  }
+    ret = nodeupdown_get_up_nodes_string(handle, str, str_len);
+  } while (ret == -1 && nodeupdown_errnum(handle) == NODEUPDOWN_ERR_OVERFLOW);
 
-  if ((new = hostlist_create(NULL)) == NULL) {
-    errx("%p: error creating hostlist\n");
+  if (ret == -1) {
+    errx("%p: error getting up nodes string, %s\n",
+         nodeupdown_strerror(nodeupdown_errnum(handle)));
   }
 
   /* does user want alternate names? */
@@ -516,52 +515,33 @@ hostlist_t get_verified_nodes(int iopt) {
            genders_strerror(genders_errnum(genders_handle)));
     }
 
-    if ((maxvallen = genders_getmaxvallen(genders_handle)) == -1) {
-      errx("%p: error getting max value length, %s\n",
-         genders_strerror(genders_errnum(genders_handle)));
+    do {
+      free(buf);
+      buf_len += PDSH_BUFFERLEN;
+      if ((buf = (char *)malloc(buf_len)) == NULL)
+        errx("%p: out of memory\n"); 
+      memset(buf, '\0', buf_len);
+
+      ret = genders_string_to_altnames(genders_handle, str, buf, buf_len);
+    } while (ret == -1 && genders_errnum(genders_handle) == GENDERS_ERR_OVERFLOW);
+    
+    if (ret == -1) {
+      errx("%p: error getting alternate node names, %s\n",
+           genders_strerror(genders_errnum(genders_handle)));
     }
 
-    maxvallen = (MAXHOSTNAMELEN > maxvallen) ? MAXHOSTNAMELEN : maxvallen;
-
-    if ((altname = (char *)malloc(maxvallen + 1)) == NULL)
-      errx("%p: Out of memory\n");
-
-    /* get each alternate name.  If no alternate name exists, use default */
-    for (i = 0; i < num_nodes_up; i++) {
-      memset(altname, '\0', maxvallen + 1);
-
-      if (genders_to_altname_preserve(handle,
-                                      nodelist[i],
-                                      altname,
-                                      maxvallen + 1) == -1) {
-        errx("%p: genders_to_altname_preserve(), %s\n",
-             genders_errormsg(handle));
-      }
-
-      if (hostlist_push_host(new, altname) == 0)
-        err("%p: warning: target '%s' not parsed\n", altname);
-
-    }
-
-    free(altname);
+    free(str);
+    str = buf;
+    buf = NULL;
 
     if (genders_handle_destroy(genders_handle) == -1) {
       errx("%p: error destroying genders handle, %s\n",
            genders_strerror(genders_errnum(genders_handle)));
     }
-
-  }
-  else {
-    for (i = 0; i < num_nodes_up; i++) {
-      if (hostlist_push_host(new, nodelist[i]) == 0) {
-        err("%p: warning: target '%s' not parsed\n", nodelist[i]);
-      }
-    }
   }
 
-  if (nodeupdown_nodelist_destroy(handle, nodelist) == -1) {
-    errx("%p: error destroying nodelist, %s\n", 
-         nodeupdown_strerror(nodeupdown_errnum(handle)));
+  if ((new = hostlist_create(str)) == NULL) {
+    errx("%p: error creating hostlist\n");
   }
 
   if (nodeupdown_handle_destroy(handle) == -1) {
