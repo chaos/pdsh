@@ -6,7 +6,7 @@
 #
 PACKAGE=	pdsh
 VERSION=	1.5
-RELEASE=	1chaos
+RELEASE=	2
 
 OBJS= 		list.o xmalloc.o xstring.o dsh.o main.o opt.o wcoll.o \
 		rcmd.o err.o pipecmd.o $(KRB_OBJS)
