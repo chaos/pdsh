@@ -100,9 +100,18 @@ AC_DEFUN([AC_GENDERS],
     fi
   fi
 
+  #
+  # Do we have genders? (i.e. either nodeattr or libgenders)
+  #
+  if test "$ac_have_nodeattr" = "yes" ||
+     test "$ac_have_genders"  = "yes" ; then
+     AC_DEFINE([HAVE_GENDERS], [1], [Define if you have genders])
+  fi
+        
   AC_SUBST(HAVE_LIBGENDERS)
   AC_SUBST(GENDERS_LIBS)
   AC_SUBST(HAVE_LIBNODEUPDOWN)
   AC_SUBST(NODEUPDOWN_LIBS)
+  AC_SUBST(HAVE_GENDERS)
 
 ])
