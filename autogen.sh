@@ -17,8 +17,9 @@ ACMINOR=52
 
 AMMAJOR=1
 AMMINOR=4
+AMPATCH=4
 
-(autoconf --version | 2>&1 \
+(autoconf --version 2>&1 | \
  perl -n0e "(/(\d+)\.(\d+)/ && \$1>=$ACMAJOR && \$2>=$ACMINOR) || exit 1") || {
    echo
    echo "Error: You must have \`autoconf' version $ACMAJOR.$ACMINOR or greater"
@@ -29,10 +30,16 @@ AMMINOR=4
    DIE=1
 }
 
-(automake --version | 2>&1 \
- perl -n0e "(/(\d+)\.(\d+)/ && \$1>=$AMMAJOR && \$2>=$AMMINOR) || exit 1") || {
+amtest="
+if (/(\d+)\.(\d+)((-p|\.)(\d+))*/) { 
+	exit 1 if (\$1 < $AMMAJOR || \$2 < $AMMINOR); 
+	exit 0 if (\$2 > $AMMINOR); 
+	exit 1 if (\$5 < $AMPATCH); 
+}"
+
+(automake --version 2>&1 | perl -n0e "$amtest" ) || {
    echo
-   echo "Error: You must have \`automake' version $ACMAJOR.$ACMINOR or greater"
+   echo "Error: You must have \`automake' version $AMMAJOR.$AMMINOR-p$AMPATCH or greater"
    echo "installed to run $0. Get the latest version from"
    echo "ftp://ftp.gnu.org/pub/gnu/automake/"
    echo
@@ -59,7 +66,7 @@ aclocal $ACLOCAL_FLAGS
 echo "running autoheader ... "
 autoheader
 echo "running automake --add-missing ... "
-automake --copy --add-missing
+automake --copy --add-missing 
 echo "running autoconf ... "
 autoconf
 if [ -e config.status ]; then
@@ -71,4 +78,3 @@ if [ -e config.log    ]; then
 rm -f config.log
 fi
 echo "now run ./configure to configure pdsh for your environment."
-
