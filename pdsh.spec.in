@@ -1,88 +1,205 @@
-Name: @PROJECT@
+# $Id$
+
+Name:    @PACKAGE@
 Version: @VERSION@
 Release: @RELEASE@
+
 Summary: Parallel remote shell program.
-Copyright: none
+
+License: GPL
 Group: System Environment/Base
 Source: %{name}-%{version}-%{release}.tgz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}
-Requires: gendersllnl
-# Prereq: 
-
-%define withmachines 0
-%define withelan 1
+Requires: pdsh-rcmd
 
 %description
 Pdsh is a multithreaded remote shell client which executes commands
-on multiple remote hosts in parallel.  Pdsh can use several different remote
-shell services, including standard "rsh", Kerberos IV, and ssh.
+on multiple remote hosts in parallel.  Pdsh can use several different
+remote shell services, including standard "rsh", Kerberos IV, and ssh.
+
+
+#
+# If "--with debug" is set compile with --enable-debug
+#   and try not to strip binaries.
+#
+# (See /usr/share/doc/rpm-*/conditionalbuilds)
+#
+%if %{?_with_debug:1}%{!?_with_debug:0}
+  %define _enable_debug --enable-debug
+  %define __os_install_post /usr/lib/rpm/brp-compress
+%endif
+
+#
+# Defaults are --with-elan --with-readline 
+# (Use --without [elan|totalview] to disable)
+#
+%{!?_with_elan: %{!?_without_elan: %define _with_elan --with-elan}}
+%{!?_with_readline: %{!?_without_readline: %define _with_readline --with-readline}}
+
+%{?_with_elan:BuildRequires: qsnetlibs}
+%{?_with_readline:BuildRequires: readline-devel}
+
+%define _module_dir %{buildroot}/%{_libdir}/pdsh
+
+##############################################################################
 
 %package qshd
 Summary: Remote shell daemon for pdsh/Elan3
-Group: System Environment/Base
-Prereq: xinetd
+Group:   System Environment/Base
+Prereq:  xinetd
 %description qshd
 Remote shell service for running Quadrics Elan3 jobs under pdsh.
-Sets up Elan capabilities and environment variables needed by Quadrics MPICH
-executables.
+Sets up Elan capabilities and environment variables needed by Quadrics
+MPICH executables.
+##############################################################################
+
+#
+# Module packages:
+#
+%package  rcmd-bsd
+Summary:  Provides bsd rcmd capability to pdsh.
+Group:    System Environment/Base
+Provides: pdsh-rcmd
+%description rcmd-bsd
+Pdsh module for bsd rcmd functionality.
+
+%package  rcmd-ssh
+Summary:  Provides ssh rcmd capability to pdsh.
+Group:    System Environment/Base
+Provides: pdsh-rcmd
+%description rcmd-ssh
+Pdsh module for ssh rcmd functionality.
+
+%package  rcmd-qshell
+Summary:  Provides qshell rcmd capability to pdsh.
+Group:    System Environment/Base
+Provides: pdsh-rcmd
+%description rcmd-qshell
+Pdsh module for running QsNet MPI jobs.
+
+%package  mod-genders
+Summary:  Provides libgenders support for pdsh.
+Group:    System Environment/Base
+%description mod-genders
+Pdsh module for libgenders functionality.
+
+%package  mod-nodeattr
+Summary:  Provides genders support for pdsh using the nodeattr program.
+Group:    System Environment/Base
+%description mod-nodeattr
+Pdsh module for genders functionality using the nodeattr program.
+
+%package  mod-nodeupdown
+Summary:  Provides libnodeupdown support for pdsh.
+Group:    System Environment/Base
+%description mod-nodeupdown
+Pdsh module providing -v functionality using libnodeupdown.
+
+
+##############################################################################
 
 %prep
 %setup -n %{name}-%{version}-%{release}
+##############################################################################
 
 %build
-
-%if %{withelan}
-WITHELAN=--with-elan
-%endif
-%if %{withmachines}
-WITHMACHINES=--with-machines=/usr/local/etc/machines
-%endif
-
-./configure --prefix=/usr --with-readline $WITHELAN $WITHMACHINES
-make
+%configure --program-prefix=%{?_program_prefix:%{_program_prefix}} \
+    %{?_enable_debug}     \
+    %{?_with_elan}        \
+    %{?_without_elan}     \
+    %{?_with_readline}    \
+    %{?_without_readline} \
+    %{?_with_machines}    \
+    %{?_without_machines}
+           
+if [ "$SMP" != "" ] ; then
+  (make "MAKE=make -k -j $SMP"; exit 0)
+  make
+else
+  make
+fi
+##############################################################################
 
 %install
 rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT
-mkdir -p $RPM_BUILD_ROOT/usr/bin
-mkdir -p $RPM_BUILD_ROOT/usr/man/man1
-install -s pdsh $RPM_BUILD_ROOT/usr/bin/pdcp
-install -s pdsh $RPM_BUILD_ROOT/usr/bin/pdsh
-cp dshbak $RPM_BUILD_ROOT/usr/bin/
-gzip pdsh.1 pdcp.1 dshbak.1
-cp pdsh.1.gz $RPM_BUILD_ROOT/usr/man/man1
-cp pdcp.1.gz $RPM_BUILD_ROOT/usr/man/man1
-cp dshbak.1.gz $RPM_BUILD_ROOT/usr/man/man1
-%if %{withelan}
-mkdir -p $RPM_BUILD_ROOT/etc/xinetd.d
-mkdir -p $RPM_BUILD_ROOT/usr/sbin
-cp qshell.xinetd $RPM_BUILD_ROOT/etc/xinetd.d/qshell
-install -s in.qshd $RPM_BUILD_ROOT/usr/sbin/
-%endif
+DESTDIR="$RPM_BUILD_ROOT" make install
+if [ -x %{_sbindir}/in.qshd ]; then
+   install -D -m644 qshell.xinetd $RPM_BUILD_ROOT/etc/xinetd.d/qshell
+fi
+
+##############################################################################
+
+%clean
+rm -rf "$RPM_BUILD_ROOT"
+##############################################################################
 
 %files
 %defattr(-,root,root)
 %doc README ChangeLog DISCLAIMER README.KRB4
-%attr(4755, root, root) /usr/bin/pdsh
-%attr(4755, root, root) /usr/bin/pdcp 
-/usr/bin/dshbak
-/usr/man/man1/pdsh.1.gz
-/usr/man/man1/pdcp.1.gz
-/usr/man/man1/dshbak.1.gz
+%attr(4755, root, root) %{_bindir}/pdsh
+%attr(4755, root, root) %{_bindir}/pdcp
+%{_bindir}/dshbak
+%{_mandir}/man1/*
+##############################################################################
 
-%post
-rm -f /var/cache/man/cat1/pdsh.1.*
-rm -f /var/cache/man/cat1/pdcp.1.*
+%if %(test -f %{_module_dir}/xrcmd.so && echo 1 || echo 0)
+%files rcmd-bsd
+%defattr(-,root,root)
+%{_libdir}/pdsh/xrcmd.*
+%endif
+##############################################################################
 
-%if %{withelan}
+%if %(test -f %{_module_dir}/sshcmd.so && echo 1 || echo 0)
+%files rcmd-ssh
+%defattr(-,root,root)
+%{_libdir}/pdsh/sshcmd.*
+%endif
+##############################################################################
+
+%if %(test -f %{_module_dir}/qcmd.so && echo 1 || echo 0)
+%files rcmd-qshell
+%defattr(-,root,root)
+%{_libdir}/pdsh/qcmd.*
+%endif
+##############################################################################
+
+%if %(test -f %{_module_dir}/genders.so && echo 1 || echo 0)
+%files mod-genders
+%defattr(-,root,root)
+%{_libdir}/pdsh/genders.*
+%endif
+##############################################################################
+
+%if %(test -f %{_module_dir}/nodeattr.so && echo 1 || echo 0)
+%files mod-nodeattr
+%defattr(-,root,root)
+%{_libdir}/pdsh/nodeattr.*
+%endif
+##############################################################################
+
+%if %(test -f %{_module_dir}/nodeupdown.so && echo 1 || echo 0)
+%files mod-nodeupdown
+%defattr(-,root,root)
+%{_libdir}/pdsh/nodeupdown.*
+%endif
+##############################################################################
+
+%if %(test -f %{buildroot}/%{_sbindir}/in.qshd && echo 1 || echo 0)
 %files qshd
 %defattr(-,root,root)
-/usr/sbin/in.qshd
+%{_sbindir}/in.qshd
 /etc/xinetd.d/qshell
 
 %post qshd
 if ! grep "^qshell" /etc/services >/dev/null; then
-        echo "qshell   523/tcp  # pdsh/elan3" >>/etc/services
+  echo "qshell   523/tcp  # pdsh/elan3" >>/etc/services
 fi
 /etc/rc.d/init.d/xinetd reload
+
 %endif
+##############################################################################
+
+%post
+rm -f /var/cache/man/cat1/pdsh.1.*
+rm -f /var/cache/man/cat1/pdcp.1.*

@@ -18,6 +18,10 @@ endif
 libqsw_la_LDFLAGS =       $(ELAN_LIBS)
 EXTRA_libqsw_la_SOURCES = qswutil.c qswutil.h
 
+BUILT_SOURCES = \
+    config.c \
+    testconfig.c
+
 
 COMMON_SOURCES = \
     main.c \

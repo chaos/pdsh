@@ -6,9 +6,9 @@
 ##
 # REQUIREMENTS:
 # - requires project to be under CVS version control
-# - requires "PROJECT" macro definition set to the CVS project name
+# - requires "PACKAGE" macro definition set to the CVS project name
 # - requires "META" file to reside in the top-level directory of the project
-# - requires RPM spec file named "$(PROJECT).spec.in" or "$(PROJECT).spec"
+# - requires RPM spec file named "$(PACKAGE).spec.in" or "$(PACKAGE).spec"
 #     to reside in the top-level directory of the project
 ##
 # META FILE FORMAT:
@@ -17,7 +17,7 @@
 # - lines are of the form "TAG:VALUE"
 # - TAGs and VALUEs cannot contain whitespace
 # - supported tags: NAME, VERSION, RELEASE
-# - NAME tag must be set the same as the PROJECT macro definition
+# - NAME tag must be set the same as the PACKAGE macro definition
 ##
 # CVS TAG FORMAT:
 # - if RELEASE is not defined, tags are of the form "NAME-VERSION";
@@ -34,10 +34,7 @@
 # - CVS "HEAD" tag can be used to build the most recent version in CVS
 #     w/o requiring it to be tagged within CVS (eg, make rpm tag=HEAD);
 #     this is intended for pre-release testing purposes only
-# - CVS "HEAD" releases will have a "+" appended to the version to denote
-#     an augmented release; the contents of such a release can be resurrected
-#     from CVS by using a CVS date spec "-D" based on the RPM's "Build Date"
-#     (eg, rpm -qp --queryformat="%{BUILDTIME:date}\n" foo-1.2.3-1.i386.rpm)
+# - CVS "HEAD" releases will have a release number of the form "YYMMDDHHMM"
 # - RPM will be signed with a PGP/GPG key if one is specified in ~/.rpmmacros
 ##
 # USAGE:
@@ -47,8 +44,8 @@
 ##
 
 tar rpm:
-	@proj=$(PROJECT); if test -z "$$proj"; then \
-	  echo "ERROR: PROJECT macro def is not defined." 1>&2; exit 1; fi; \
+	@proj=$(PACKAGE); if test -z "$$proj"; then \
+	  echo "ERROR: PACKAGE macro def is not defined." 1>&2; exit 1; fi; \
 	if test -z "$$tag"; then \
 	  if ! test -f META; then \
 	    echo "ERROR: Cannot find $$proj metadata in \"`pwd`/META\"." 1>&2; \
@@ -72,11 +69,11 @@ tar rpm:
 	  echo "ERROR: Cannot find $$proj metadata in CVS." 1>&2; exit 1; fi; \
 	name=`perl -ne 'print,exit if s/^\s*NAME:\s*(\S*).*/\1/i' $$meta`; \
 	if test "$$proj" != "$$name"; then \
-	  echo "ERROR: PROJECT does not match metadata." 1>&2; exit 1; fi; \
+	  echo "ERROR: PACKAGE does not match metadata." 1>&2; exit 1; fi; \
 	ver=`perl -ne 'print,exit if s/^\s*VERSION:\s*(\S*).*/\1/i' $$meta`; \
 	rver="$$ver"; \
-	test "$$tag" = "HEAD" -o "$$tag" = "BASE" && ver="$$ver+"; \
 	rel=`perl -ne 'print,exit if s/^\s*RELEASE:\s*(\S*).*/\1/i' $$meta`; \
+	test "$$tag" = "HEAD" && rel="`date +%Y%m%d%H%M`"; \
 	if test -z "$$rel"; then \
 	  pkg=$$name-$$ver; rel=1; else pkg=$$name-$$ver-$$rel; fi; \
         if test -x "$$tmp/$$proj/autogen.sh"; then \
@@ -117,6 +114,7 @@ rpm-internal: tar-internal
 	  echo "ERROR: Cannot create $$proj.spec." 1>&2; exit 1; fi; \
 	rpmbuild --showrc | egrep "_(gpg|pgp)_nam" >/dev/null && sign="--sign"; \
 	if ! rpmbuild -ba --define "_tmppath $$tmp/TMP" --define "_topdir $$tmp" \
-	  $$sign --quiet $$tmp/SPECS/$$proj.spec >$$tmp/rpm.log 2>&1; then \
-	    cat $$tmp/rpm.log; exit 1; fi; \
+	  $$sign --quiet $$rpmargs $$tmp/SPECS/$$proj.spec \
+            >$$tmp/rpm.log 2>&1; then \
+	        cat $$tmp/rpm.log; exit 1; fi; \
 	cp -p $$tmp/RPMS/*/$$proj-*.rpm $$tmp/SRPMS/$$proj-*.src.rpm . || exit 1
