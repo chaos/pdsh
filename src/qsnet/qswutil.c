@@ -80,8 +80,10 @@ int qsw_init(void)
 
     elanconf = elanhost_config_create();
 
-    if (elanhost_config_read(elanconf, NULL) < 0) 
-        errx("%p: error: %s\n", elanhost_config_err(elanconf));
+    if (elanhost_config_read(elanconf, NULL) < 0) {
+        err("%p: error: %s\n", elanhost_config_err(elanconf));
+        return -1;
+    }
 
     return 0;
 }
@@ -154,7 +156,7 @@ static void *neterr_thr(void *arg)
     struct neterr_args *args = arg;
 
 	if (!elan3_init_neterr_svc(0)) {
-		err("%p: elan3_init_neterr_svc: %m");
+		syslog(LOG_ERR, "elan3_init_neterr_svc: %m");
 		goto fail;
 	}
 
@@ -165,10 +167,10 @@ static void *neterr_thr(void *arg)
 	 */
 	if (!elan3_register_neterr_svc()) {
 		if (errno != EADDRINUSE) {
-			err("%p: elan3_register_neterr_svc: %m");
+			syslog(LOG_ERR, "elan3_register_neterr_svc: %m");
 			goto fail;
 		}
-		err("%p: Warning: Elan error resolver thread already running");
+        /* error resolver already running, just return */
         goto done;
 	}
 
@@ -178,6 +180,7 @@ static void *neterr_thr(void *arg)
      */
     _set_elan_ids(elanconf);
 
+   done:
 	/* 
 	 *  Signal main thread that we've successfully initialized
 	 */
@@ -193,8 +196,7 @@ static void *neterr_thr(void *arg)
 	 */
 	elan3_run_neterr_svc();
 
-   done:
-	return NULL;
+    return NULL;
 
    fail:
 	pthread_mutex_lock(args->mutex);
