@@ -97,7 +97,7 @@ Usage: pdcp [-options] src [src2...] dest\n\
 -m block|cyclic   (qshell) control assignment of procs to nodes\n"
 
 #define OPT_USAGE_NODEUPDOWN "\
--v                for -a, skip node if host_responds is false\n"
+-v                for -a, skip node if node indicate down by ganglia\n"
 
 #define DSH_ARGS	"sS"
 #define PCP_ARGS	"pr"

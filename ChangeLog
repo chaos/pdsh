@@ -1,6 +1,7 @@
 2003-03-12 achu
 	* tagged pdsh-1-8-3chaos
 	* updated for changes in whatsup-1-0-3 libnodeupdown API changes
+	* minor fix on "--help" output
 	
 2003-03-07 achu
 	* tagged pdsh-1-8-2chaos
