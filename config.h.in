@@ -52,6 +52,9 @@
 /* define for RMS support */
 #undef HAVE_RMS
 
+/* Define if RMS is available */
+#undef HAVE_RMSQUERY
+
 /* Define if SDR is available */
 #undef HAVE_SDR
 

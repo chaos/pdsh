@@ -257,13 +257,11 @@ fi
 AC_SUBST(HAVE_GENDERS)
 AC_SUBST(NODEATTR)
 
-if test "$withrms" = yes; then
-    AC_PATH_PROG(RMSQUERY, rmsquery, [], /usr/bin:$PATH)
-    if test -n "$RMSQUERY"; then
-        AC_DEFINE_UNQUOTED(_PATH_RMSQUERY, "$RMSQUERY", [Path to rmsquery])
-    else
-        AC_MSG_ERROR([--with-rms specified but rmsquery program is not found])
-    fi
+AC_PATH_PROG(RMSQUERY, rmsquery, [], /usr/bin:$PATH)
+if test -n "$RMSQUERY"; then
+    AC_DEFINE_UNQUOTED(_PATH_RMSQUERY, "$RMSQUERY", [Path to rmsquery])
+    AC_DEFINE(HAVE_RMSQUERY, 1, [Define if RMS is available]) 
+    HAVE_RMS=1
 fi
 AC_SUBST(RMSQUERY)
 
@@ -309,10 +307,6 @@ if test "$withelan" = yes; then
     AC_CHECK_LIB([elan3], [elan3_create],,AC_MSG_ERROR([No libelan3!]))
 #    AC_CHECK_LIB([pam], [pam_start], LIBSPAM="-lpam -lpam_misc",
 #	AC_MSG_ERROR([No libpam!]), [-lpam -lpam_misc])
-fi
-if test "$withrms" = yes; then
-#    AC_CHECK_LIB([rmsapi], [rms_numNodes], LIBS="-lrmsapi -lrms $LIBS",
-I#	AC_MSG_ERROR([No librmsapi!]), [-lrmsapi -lrms])
 fi
 AC_SUBST(LIBSPAM)
 if test "$withkrb4" = yes; then
