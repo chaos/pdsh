@@ -90,7 +90,7 @@ Usage: pdcp [-options] src [src2...] dest\n\
 
 #define DSH_ARGS	"sS"
 #define PCP_ARGS	"pr"
-#define GEN_ARGS	"LR:t:csqf:w:x:l:u:bI:deVT:Q"
+#define GEN_ARGS	"hLR:t:csqf:w:x:l:u:bI:deVT:Q"
 
 /*
  *  Pdsh options string (for getopt) -- initialized
@@ -267,9 +267,9 @@ void opt_args(opt_t * opt, int argc, char *argv[])
             mod_list_module_info();
             exit(0);
             break;
-		case 'R': 
-			opt->rcmd_name = Strdup(optarg);
-			break;
+        case 'R': 
+            opt->rcmd_name = Strdup(optarg);
+            break;
         case 'S':              /* get remote command status */
             opt->getstat = ";echo " RC_MAGIC "$?";
             break;
@@ -323,11 +323,11 @@ void opt_args(opt_t * opt, int argc, char *argv[])
             opt->test_range_expansion = true;
             break;
         case 'h':              /* display usage message */
-			_usage(opt);
-			break;
+            _usage(opt);
+            break;
         default:
-			if (mod_process_opt(opt, c, optarg) < 0)
-					_usage(opt);
+            if (mod_process_opt(opt, c, optarg) < 0)
+               _usage(opt);
         }
     }
 
