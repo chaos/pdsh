@@ -71,6 +71,29 @@ the list of "all" nodes.  Specify the location of this file using the
 make
 make install
 
++---------+
+| GOTCHAS |
++---------+
+
+Watch out for the following gotchas:
+
+1) Pdsh uses one reserved socket for each active connection, two if it is 
+maintaining a separate connection for stderr.  It obtains these sockets
+by calling rresvport(), which normally draws from a pool of 256 sockets.
+You may exhaust these if multiple pdsh's are running simultanously on
+a machine, or if the fanout is set too high.
+
+2) When pdsh is configured to use rsh, and rsh is wrapped with TCP wrappers,
+there are two areas where bottlenecks can be created: IDENT and DNS.
+If your hosts.allow includes {users}@, e.g.  "in.rshd : ALL@ALL : ALLOW"
+and tcp wrappers is configured to support IDENT, each simultaneous rsh 
+connection will result in an IDENT query back to the source.  For large fanouts
+this can quickly overwhelm the source.  Similarly, if TCP wrappers is
+configured to query the DNS on every rsh connection, there is the possibility
+of overwhelming the DNS server.  Consider either reducing the pdsh fanout,
+or if security permits, unconfiguring the PARANOID option and using
+IP addresses in your hosts.allow.
+
 +---------------------+
 | THEORY OF OPERATION |
 +---------------------+

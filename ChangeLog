@@ -176,3 +176,5 @@ Release 1.6+
 	Run man pages through autoconf and put correct version in header.
 
 	Test HAVE_WORKING_STRERROR_R; strerror_r is broken on AIX.
+
+	Added "Gotchas" in README.
