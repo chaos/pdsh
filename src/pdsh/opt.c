@@ -626,7 +626,7 @@ static void usage(opt_t *opt)
 
 static void show_version(void)
 {
-	printf("%s-%s", PROJECT, VERSION);
+	printf("%s-%s (", PROJECT, VERSION);
 #ifdef	_PATH_NODEATTR
 	printf("+genders");
 #endif
@@ -639,8 +639,10 @@ static void show_version(void)
 #if	HAVE_KRB4
 	printf("+krb4");
 #endif
-#ifdef	_PATH_MACHINES
-	printf("+mpich");
+#ifdef _PATH_MACHINES
+#if	!defined(_PATH_NODEATTR) && !defined(_PATH_SDRGETOBJECTS)
+	printf("+mpichmachinesfile");
+#endif
 #endif
 #ifdef	_PATH_SDRGETOBJECTS
 	printf("+sdr");
@@ -648,6 +650,6 @@ static void show_version(void)
 #if	!NDEBUG
 	printf("+debug");
 #endif
-	printf("\n");
+	printf(")\n");
 	exit(0);
 }
