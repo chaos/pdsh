@@ -427,7 +427,8 @@ static void stderr_parent(int sock, int pype, int pid) {
         guys--;
       }
       /* pid is the "program description" if using Elan */
-      else killpg(pid, sig);
+      else 
+        rms_prgsignal(pid, sig);
     }
     if (FD_ISSET(pype, &ready)) {
       cc = read(pype, buf, sizeof(buf));
