@@ -71,6 +71,25 @@ AC_ARG_WITH(krb4,
 )
 AC_MSG_RESULT(${withkrb4=no})
 
+AC_MSG_CHECKING(whether to include Genders support)
+AC_ARG_WITH(genders,
+    AC_HELP_STRING([--with-genders], [Include Genders support]),
+    [ case "$withval" in
+	no)
+	    withgenders=no
+	    ;;
+	yes)
+	    withgenders=yes
+            AC_DEFINE(HAVE_GENDERS, 1, [define for Genders support])
+	    ;;
+	*)
+	    AC_MSG_RESULT(doh!)
+	    AC_MSG_ERROR([bad value "$withval" for --with-genders])
+	    ;;
+    esac ]
+)
+AC_MSG_RESULT(${withgenders=no})
+
 # Not yet configurable features
 RANGE_OP='-'
 AC_DEFINE_UNQUOTED(RANGE_OP, "$RANGE_OP", [Range operator])
