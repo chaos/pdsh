@@ -154,4 +154,6 @@ Release 1.6
 	Avoid non-portable gethostbyname_r call on non-AIX system by doing 
 	all DNS lookups before threads start up.
 
+	Made ssh configurable with --with-ssh (removed -e option).
+
 	Released version 1.6.
