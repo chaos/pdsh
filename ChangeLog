@@ -1,12 +1,13 @@
 2003-12-10  Mark Grondona <mgrondona@llnl.gov>
 	
-	* src/common/Makefile.am, src/modules/Makefile.am, src/pdsh/Makefile.am:
-	No whitespace between -I and arguments -- some compilers (Compaq *cough*)
-	can't handle it.
+	* src/common/Makefile.am, src/modules/Makefile.am, 
+	src/pdsh/Makefile.am: No whitespace between -I and arguments -- 
+	some compilers (Compaq *cough*) can't handle it.
 
 	* configure.ac: remove -q from grep command lines for portability.
 
-	* src/pdsh/opt.c (opt_register): _init_pdsh_options() doesn't take an arg.
+	* src/pdsh/opt.c (opt_register): _init_pdsh_options() doesn't take 
+	an arg.
 
 	* src/pdsh/dsh.c (_xsignal): Actually return old signal handler. 
 
@@ -17,6 +18,17 @@
 
 	* src/qsnet/qshell.c (stderr_parent): Call qsw_prgsignal() abstraction
 	instead of rms_prgsignal() directly.
+
+	* src/pdsh/opt.c (opt_default, opt_verify): Only allocate list for
+	opt->infile_names if personality == PCP.
+
+	* src/modules/mcmd.c (mcmd): Use a munge ctx for better error msgs.
+	
+	* src/modules/genders.c: Added ModExitF genders_fini to free any
+	memory used by module.
+
+	* src/pdsh/main.c, src/pdsh/dsh.c: Move rcmd_exit() call from dsh()
+	back up into main().
 
 2003-12-09  Albert Chu <chu11@llnl.gov>
 
