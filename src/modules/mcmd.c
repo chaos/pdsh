@@ -225,6 +225,7 @@ mcmd(char *ahost, char *addr, char *remuser, char *cmd, int *fd2p)
         if (( rv = strcmp(ahost,"localhost")) == 0 ) {
                 errno = EACCES;
                 err("%p: %S: mcmd: Can't use localhost\n", ahost);
+                EXIT_PTHREAD();
         }
 
         /*
