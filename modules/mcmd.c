@@ -114,11 +114,11 @@ static char sccsid[] = "@(#)mcmd.c      Based from: 8.3 (Berkeley) 3/26/94";
 #include <string.h>
 #include <stdlib.h>
 
-#include "fd.h"
 #include <munge.h>
 
 #include "dsh.h"       /* LINEBUFSIZE */
 #include "err.h"
+#include "fd.h"
 #include "mod.h"
 
 #define MRSH_PORT       21212
