@@ -32,8 +32,8 @@
  * to local stdout/stderr and closing the connection).  The main thread makes 
  * sure that at most fanout number of threads are active at any given time.  
  * When a thread terminates, it signals a condition variable (threadcount_cond)
- * which causes the main thread to start another rsh/krsh/etc. thread to take its
- * place.
+ * which causes the main thread to start another rsh/krsh/etc. thread to take 
+ * its place.
  *
  * We rely on implicit stdio locking to enable us to write lines to 
  * stdout/stderr from multiple threads concurrently without getting the lines 
@@ -133,7 +133,9 @@ static int connect_timeout, command_timeout;
  * Emulate signal() but with BSD semantics (i.e. don't restore signal to
  * SIGDFL prior to executing handler).
  */
-static void _xsignal(int signal, void (*handler) (int))
+typedef void SigFunc(int signal);
+
+static SigFunc *_xsignal(int signal, SigFunc *handler)
 {
     struct sigaction sa, old_sa;
 
@@ -183,7 +185,7 @@ static void _list_slowthreads(void)
             break;
         case DSH_NEW:
             if (debug)
-                err("%p: %S: [new]\\n", t[i].host);
+                err("%p: %S: [new]\n", t[i].host);
             break;
         case DSH_FAILED:
             if (debug)
@@ -836,6 +838,7 @@ int dsh(opt_t * opt)
     pthread_attr_t attr_wdog;
     List pcp_infiles = NULL;
     hostlist_iterator_t itr;
+    SigFunc *old_int_handler = NULL;
 
     /*
      *   Initialize rcmd modules...
@@ -848,9 +851,9 @@ int dsh(opt_t * opt)
     /* install signal handlers */
     _xsignal(SIGALRM, _alarm_handler);
     if (opt->sigint_terminates)
-        _xsignal(SIGINT, _int_handler_justdie);
+        old_int_handler = _xsignal(SIGINT, _int_handler_justdie);
     else
-        _xsignal(SIGINT, _int_handler);
+        old_int_handler = _xsignal(SIGINT, _int_handler);
 
     rshcount = hostlist_count(opt->wcoll);
 
@@ -975,6 +978,12 @@ int dsh(opt_t * opt)
 
     if (debug)
         _dump_debug_stats(rshcount);
+
+    /*
+     * Reinstall old handler for SIGINT since _int_handler
+     *  will segfault once we start freeing thd info structures.
+     */
+    _xsignal(SIGINT, old_int_handler);
 
     /* if -S, our exit value is the largest of the return codes */
     if (opt->getstat) {
