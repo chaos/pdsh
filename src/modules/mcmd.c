@@ -276,8 +276,7 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     struct in_addr m_in;
     unsigned int rand, randl;
     unsigned char *hptr;
-    int s, s2, rv, mount, lport;
-    int mcount;
+    int s, s2, rv, mcount, lport;
     char c;
     char num[6] = {0};
     char *mptr;
