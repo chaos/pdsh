@@ -156,14 +156,10 @@ struct if_ipaddr_list {
 struct if_ipaddr_list *list_head;
 
 /* error codes */
-enum stderr_err {__NONE = 0, __READ, __MUNGE, __PAYLOAD, __PORT,  
-                 __CRED, __SYSTEM, __INTERNAL};
+enum stderr_err {__NONE = 0, __READ, __MUNGE, __PAYLOAD, 
+                 __PORT, __CRED, __SYSTEM, __INTERNAL};
 
 enum stderr_err errnum = __NONE;
-
-#ifdef DEBUG
-static int mdebug = 1;
-#endif
 
 char username[20] = "USER=";
 char homedir[64] = "HOME=";
@@ -193,6 +189,7 @@ errorsock(int sock, const char *fmt, ...) {
   va_end(ap);
   fd_write_n(sock, buf, strlen(buf));
 }
+
 /*
  * Report error to client.
  * Note: can't be used until second socket has connected
@@ -490,9 +487,7 @@ doit(struct sockaddr_in *fromp)
    * stderr on.  If zero, stderr is folded in with stdout.
    */
         
-#ifndef DEBUG
   alarm(60);
-#endif
 
   hostname = &m_hostname[0];
   memset(&mbuf[0],0,sizeof(mbuf));
@@ -726,7 +721,7 @@ doit(struct sockaddr_in *fromp)
       free(mptr);
       exit(1);
     }
-    if (errnum) {
+    if (errnum != __NONE) {
       switch(errnum) {
       case __READ: errorsock(sock, "mqshd: error reading munge blob."  );
         break;
@@ -782,7 +777,10 @@ doit(struct sockaddr_in *fromp)
     if (getstr(envstr, sizeof(envstr), "envstr") < 0) {
       goto bad2;
     }
-    putenv(strdup(envstr));             /* achu: mem-leak fix later */
+    /* Following is a mem-leak on some systems, on others it is
+     * the proper way to call putenv.
+     */
+    putenv(strdup(envstr));
   } 
  
   /* read elan capability */
@@ -914,6 +912,7 @@ doit(struct sockaddr_in *fromp)
     errlog("setgid: %s", strerror(errno));
     exit(1);
   }
+
   if (initgroups(pwd->pw_name, pwd->pw_gid)) {
     errlog("initgroups: %s", strerror(errno));
     exit(1);
@@ -1083,12 +1082,6 @@ main(int argc, char *argv[])
   }
   argc -= optind;
   argv += optind;
-
-#ifdef DEBUG
-  while (mdebug) {
-    sleep(1);
-  }
-#endif
 
   network_init(0, &from);
   doit(&from);
