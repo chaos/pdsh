@@ -467,7 +467,7 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
    * some reason (i.e. bad credentials).
    */
   m_rv = fd_write_n(s, num, strlen(num)+1);
-  if (m_rv != sizeof(num)) {
+  if (m_rv != (strlen(num+1))) {
     close(s2);
     free(m);
     free(tmbuf);
