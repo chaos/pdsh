@@ -412,7 +412,7 @@ mod_get_type(mod_t mod)
     return mod->pmod->type;
 }
 
-void * 
+RcmdInitF
 mod_get_rcmd_init(mod_t mod) {
 
     assert(mod != NULL);
@@ -424,7 +424,7 @@ mod_get_rcmd_init(mod_t mod) {
         return NULL;
 }
 
-void * 
+RcmdSigF
 mod_get_rcmd_signal(mod_t mod) {
 
     assert(mod != NULL);
@@ -436,7 +436,7 @@ mod_get_rcmd_signal(mod_t mod) {
         return NULL;
 }
 
-void * 
+RcmdF
 mod_get_rcmd(mod_t mod) {
 
     assert(mod != NULL);

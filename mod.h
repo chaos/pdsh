@@ -122,20 +122,6 @@ void mod_print_all_options(int column);
 void mod_print_options(mod_t mod, int descr_column);
 
 /*
- *  Module accessor functions. Return module name, type, and
- *    look up additional exported symbols in given module.
- *
- *  All return a pointer to the desired value if successful, or NULL
- *    on failure.
- */
-char * mod_get_name(mod_t mod);
-char * mod_get_type(mod_t mod);
-void * mod_get_rcmd_init(mod_t mod);
-void * mod_get_rcmd_signal(mod_t mod);
-void * mod_get_rcmd(mod_t mod);
-
-
-/*
  * Functions that may be exported by any pdsh module
  *   via a pdsh_module_operations structure. 
  */
@@ -152,6 +138,19 @@ typedef int        (*RcmdInitF)     (opt_t *);
 typedef int        (*RcmdSigF)      (int, int);
 typedef int        (*RcmdF)         (char *, char *, char *, char *, char *,
                                      int, int *);
+/*
+ *  Module accessor functions. Return module name, type, and
+ *    look up additional exported symbols in given module.
+ *
+ *  All return a pointer to the desired value if successful, or NULL
+ *    on failure.
+ */
+char *    mod_get_name(mod_t mod);
+char *    mod_get_type(mod_t mod);
+RcmdInitF mod_get_rcmd_init(mod_t mod);
+RcmdSigF  mod_get_rcmd_signal(mod_t mod);
+RcmdF     mod_get_rcmd(mod_t mod);
+
 
 /* 
  * Store all module operations of a module 
