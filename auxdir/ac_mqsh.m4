@@ -90,12 +90,12 @@ AC_DEFUN([AC_MQSH],
 
   if test "$ac_with_mqsh" = "yes"; then
      ac_have_mqsh=yes
-     PROG_MQSH=in.mqshd   
+     PROG_MQSHD=in.mqshd   
      AC_NETTOOLS
   else
      ac_have_mqsh=no
   fi      
 
   AC_SUBST(MQSH_LIBS)
-  AC_SUBST(PROG_MQSH)
+  AC_SUBST(PROG_MQSHD)
 ])
