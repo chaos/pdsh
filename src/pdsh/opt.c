@@ -271,6 +271,8 @@ void opt_default(opt_t * opt, char *argv0)
     if ((pw = getpwuid(getuid())) != NULL) {
         strncpy(opt->luser, pw->pw_name, MAX_USERNAME);
         strncpy(opt->ruser, pw->pw_name, MAX_USERNAME);
+        opt->luser[MAX_USERNAME - 1] = '\0';
+        opt->ruser[MAX_USERNAME - 1] = '\0';
         opt->luid = pw->pw_uid;
     } else
         errx("%p: who are you?\n");
@@ -420,6 +422,7 @@ void opt_args(opt_t * opt, int argc, char *argv[])
             break;
         case 'l':              /* specify remote username for rshd */
             strncpy(opt->ruser, optarg, MAX_USERNAME);
+            opt->ruser[MAX_USERNAME - 1] = '\0';
             break;
         case 'r':              /* rcp: copy recursively */
             opt->recursive = true;

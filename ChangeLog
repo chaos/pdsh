@@ -2,6 +2,9 @@
 
 	* src/pdsh/opt.h: Increased MAX_USERNAME from 9 to 17.
 
+	* src/pdsh/opt.c (opt_default, opt_args): Null terminate
+	luser or ruser username strings in case overflow occurred.
+
 2003-09-26  Albert Chu <chu11@llnl.gov>
 
 	* src/modules/mcmd.c (mcmd): Changed size_t to socklen_t for 'len'
