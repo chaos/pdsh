@@ -1,3 +1,7 @@
+2003-12-30  Albert Chu <chu11@llnl.gov>
+
+	* README.modules: Removed mrshd package requirement.
+
 2003-12-22  Albert Chu <chu11@llnl.gov>
 
 	* src/qsnet/mqshd.c (check_interfaces): Removed logically unused

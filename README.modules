@@ -35,7 +35,7 @@ Module:      rcmd/mrsh
 Package:     pdsh-rcmd-mrsh
 Description: Rcmd connect method using Munge authentication.
 Conflicts:   None
-Requires:    munge, mrshd 
+Requires:    munge 
 
 Module:      rcmd/qsh
 Package:     pdsh-rcmd-qshell
