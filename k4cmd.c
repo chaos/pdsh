@@ -53,6 +53,8 @@
 #include "config.h"
 #endif
 
+#if	HAVE_KRB4
+
 #if	HAVE_PTHREAD_H
 #include <pthread.h>
 #endif
@@ -93,34 +95,6 @@
 
 extern errno;
 extern char *inet_ntoa();
-
-MODULE_TYPE        ( "rcmd"                               );
-MODULE_NAME        ( "k4"                                 );
-MODULE_AUTHOR      ( "Jim Garlick <garlick@llnl.gov>"     );
-MODULE_DESCRIPTION ( "kerberos based rcmd connect method" );
-
-/*
- *  Export misc pdsh module operations
- *
- *  Note: All functionality of this module is in the "rcmd" portion
- */
-
-struct pdsh_module_operations pdsh_module_ops = {
-    NULL,
-    NULL,
-    NULL,
-    NULL
-};
-
-
-/*
- *  Export rcmd module specific functions:
- *
- */
-#define k4cmd_init      pdsh_rcmd_init
-#define k4cmd_signal    pdsh_signal
-#define k4cmd           pdsh_rcmd
-
 
 void k4cmd_init(opt_t * opt)
 {
@@ -355,6 +329,7 @@ k4cmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     pthread_sigmask(SIG_SETMASK, &oldset, NULL);
     return (-1);
 }
+#endif                          /* HAVE_KRB4 */
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
