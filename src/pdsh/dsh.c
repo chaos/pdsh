@@ -238,6 +238,8 @@ static void _int_handler(int signum)
 {
     static time_t last_intr = 0;
 
+    if (!t) return;
+
     if (time(NULL) - last_intr > INTR_TIME) {
         err("%p: interrupt (one more within %d sec to abort)\n",
             INTR_TIME);
