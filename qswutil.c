@@ -288,7 +288,7 @@ qsw_decode_cap(char *s, ELAN_CAPABILITY *cap)
 int
 qsw_decode_cap_bitmap(char *s, ELAN_CAPABILITY *cap, int i)
 {
-	if (sscanf(s, ":%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x",
+	if (sscanf(s, "%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x.%x",
 				&cap->Bitmap[i+0], &cap->Bitmap[i+1], 
 				&cap->Bitmap[i+2], &cap->Bitmap[i+3],
 				&cap->Bitmap[i+4], &cap->Bitmap[i+5], 
