@@ -83,6 +83,7 @@ typedef struct thd {
 	int		nnodes;			/* number of nodes in job */
 	int		fd;			/* stdin/stdout */
 	int		efd;			/* signal/stderr */
+	bool		labels;			/* display host: labels */
 } thd_t;
 
 struct hostent *xgethostbyname(const char *);

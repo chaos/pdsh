@@ -118,6 +118,7 @@ void opt_default(opt_t *opt)
 	opt->allnodes = false;
 	opt->altnames = false;
 	opt->debug = false;
+	opt->labels = true;
 
 	/* SDR */
 	opt->sdr_verify = false;
@@ -351,10 +352,13 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 			opt->fanout = list_length(opt->wcoll);
 		if (opt->allocation == ALLOC_UNSPEC)
 			opt->allocation = ALLOC_BLOCK;
-		if (opt->nprocs == -1 && opt->wcoll != NULL)
-			opt->nprocs = list_length(opt->wcoll);
+		opt->labels = false;
+		if (opt->dshpath != NULL)
+			xfree((void **)&opt->dshpath);
 	}
 #endif
+	if (opt->nprocs == -1 && opt->wcoll != NULL)
+		opt->nprocs = list_length(opt->wcoll);
 }
 
 /*
@@ -443,9 +447,11 @@ bool opt_verify(opt_t *opt)
 			verified = false;
 		}
 	} else {
-		if (opt->nprocs != -1) {
-			err("%p: -n can only be specified with -E\n");
-			verified = false;
+		if (opt->wcoll != NULL) {
+			if (opt->nprocs != list_length(opt->wcoll)) {
+				err("%p: -n can only be specified with -E\n");
+				verified = false;
+			}
 		}
 		if (opt->allocation != ALLOC_UNSPEC) {
 			err("%p: -m can only be specified with -E\n");
@@ -460,8 +466,11 @@ bool opt_verify(opt_t *opt)
 #define BOOLSTR(x)	((x) ? "Yes" : "No")
 #define STRORNULL(x)	((x) ? (x) : "none")
 #define RCMDSTR(x)	(x == RCMD_BSD ? "RCMD_BSD" :  \
-			    (x == RCMD_K4 ? "RCMD_K4" : \
-			         (x == RCMD_SSH ? "RCMD_SSH" : "<Unknown>")))
+			  (x == RCMD_K4 ? "RCMD_K4" : \
+			    (x == RCMD_QSHELL ? "RCMD_QSHELL" : \
+			      (x == RCMD_SSH ? "RCMD_SSH" : "<Unknown>"))))
+#define ALLOCSTR(x)	(x == ALLOC_BLOCK ? "ALLOC_BLOCK" : \
+			  (x == ALLOC_CYCLIC ? "ALLOC_CYCLIC" : "<Unknown>"))
 
 /*
  * List the current options.
@@ -475,6 +484,8 @@ void opt_list(opt_t *opt)
 	out("-- DSH-specific options --\n");
 	out("Separate stderr/stdout	%s\n", BOOLSTR(opt->separate_stderr));
 	out("Delete on next pass	%s\n", BOOLSTR(opt->delete_nextpass));
+	out("(elan) nprocs       	%d\n", opt->nprocs);
+	out("(elan) allocation     	%s\n", ALLOCSTR(opt->allocation));
 	out("Path prepended to cmd	%s\n", STRORNULL(opt->dshpath));
 	out("Appended to cmd         %s\n", STRORNULL(opt->getstat));
 	out("Command:		%s\n", STRORNULL(opt->cmd));
@@ -493,6 +504,7 @@ void opt_list(opt_t *opt)
 	out("Connect timeout (secs)	%d\n", opt->connect_timeout);
 	out("Command timeout (secs)	%d\n", opt->command_timeout);
 	out("Fanout			%d\n", opt->fanout);
+	out("Display hostname labels	%s\n", BOOLSTR(opt->labels));
 	out("All nodes       	%s\n", BOOLSTR(opt->allnodes));
 	infile_str = list_join(", ", opt->infile_names);
 	if (infile_str) {

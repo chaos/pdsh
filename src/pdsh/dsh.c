@@ -689,10 +689,14 @@ static void *rsh(void *args)
 				}
 				if (rv == -1)  			/* error */
 					err("%p: %S: xfgets: %m\n", a->host);
-				if (buf != NULL && strlen(buf) > 0){ /* ready */
+								/* ready */
+				if (buf != NULL && strlen(buf) > 0)
 					a->rc = extract_rc(buf);
-					if (strlen(buf) > 0)
+				if (buf != NULL && strlen(buf) > 0) {
+					if (a->labels)
 						out("%S: %s", a->host, buf);
+					else
+						out("%s", buf);
 				}
 			}
 
@@ -705,9 +709,13 @@ static void *rsh(void *args)
 				}
 				if (rv == -1) 			/* error */
 					err("%p: %S: xfgets: %m\n", a->host);
-						
-				if (buf != NULL && strlen(buf) > 0) /* ready */
-					err("%S: %s", a->host, buf);
+								/* ready */	
+				if (buf != NULL && strlen(buf) > 0) {
+					if (a->labels)
+						err("%S: %s", a->host, buf);
+					else
+						err("%s", buf);
+				}
 			}
 
 			/* stdin ready ? */
@@ -823,8 +831,7 @@ int dsh(opt_t *opt)
 		pcp_infiles = expand_dirs(opt->infile_names);
 
 	/* prepend DSHPATH setting to command */
-	if (opt->personality == DSH && opt->dshpath 
-			&& opt->rcmd_type != RCMD_QSHELL) {
+	if (opt->personality == DSH && opt->dshpath) {
 		int cmd_len;
 		char *cmd = xstrdup(opt->dshpath, &cmd_len);
 
@@ -856,6 +863,9 @@ int dsh(opt_t *opt)
 		t[i].rcmd_type = opt->rcmd_type;
 		t[i].state = DSH_NEW;
 		t[i].host = list_nth(opt->wcoll, i);
+		t[i].labels = opt->labels;
+		t[i].fd = t[i].efd = -1;
+		t[i].nodeid = i;
 		t[i].dsh_cmd = opt->cmd; 		/* dsh-specific */	
 		t[i].dsh_sopt = opt->separate_stderr;	
 		t[i].rc = 0;
@@ -863,8 +873,6 @@ int dsh(opt_t *opt)
 		t[i].pcp_outfile = opt->outfile_name;	
 		t[i].pcp_popt = opt->preserve;
 		t[i].pcp_ropt = opt->recursive;
-		t[i].nodeid = i;
-		t[i].fd = t[i].efd = -1;
 	} 
 	t[i].host = NULL;
 

@@ -61,6 +61,7 @@ typedef struct {
 	char *getstat;		/* optional echo $? appended to cmd */
 	int nprocs;		/* -n (Elan only) */
 	alloc_t allocation;	/* -m block */
+	bool labels;		/* display host: before output */
 
 	/* PCP-specific options */
 	bool preserve;		/* -p */

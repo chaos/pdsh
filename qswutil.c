@@ -36,11 +36,6 @@
 #define QSW_PRG_START  1
 #define QSW_PRG_END    INT_MAX
 
-/* pdsh will allocate hardware context numbers in this range */
-#define QSW_HWCX_START	ELAN_USER_BASE_CONTEXT_NUM
-#define QSW_HWCX_END	ELAN_USER_TOP_CONTEXT_NUM
-
-
 /* 
  * Convert hostname to elan node number.  This version just returns
  * the numerical part of the hostname, true on our current systems.
@@ -334,8 +329,9 @@ qsw_init_capability(ELAN_CAPABILITY *cap, int nprocs, list_t nodelist,
 	 *  hi-lo range of a common capability.  With pdsh we have no 
 	 * persistant daemon to allocate these, so we settle for a random one.  
 	 */
-	cap->LowContext = lrand48() % (QSW_HWCX_END - QSW_HWCX_START + 1);
-	cap->LowContext += QSW_HWCX_START;
+	cap->LowContext = lrand48() % 
+		(ELAN_USER_TOP_CONTEXT_NUM - ELAN_USER_BASE_CONTEXT_NUM + 1);
+	cap->LowContext +=  ELAN_USER_BASE_CONTEXT_NUM;
 	cap->HighContext = cap->LowContext + procs_per_node - 1;
 	/* not necessary to initialize cap->MyContext */
 
@@ -560,7 +556,7 @@ verify_cap_encoding(ELAN_CAPABILITY *cap)
 
 /* concatenate args into a single string */
 static void 
-strcatargs(char *buf, int len, int argc, char *argv[])
+strncatargs(char *buf, int len, int argc, char *argv[])
 {
 	if (len > 0) {
 		buf[0] = '\0';
@@ -626,7 +622,7 @@ main(int argc, char *argv[])
 		usage();
 
 	/* prep arg for the shell */
-	strcatargs(cmdbuf, sizeof(cmdbuf), argc, argv);
+	strncatargs(cmdbuf, sizeof(cmdbuf), argc, argv);
 
 	/* create working collective containing only this host */
 	if (gethostname(hostname, sizeof(hostname)) < 0)
