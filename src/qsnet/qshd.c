@@ -1,4 +1,6 @@
 /*-
+ * Started with BSD rshd which is:
+ *
  * Copyright (c) 1988, 1989 The Regents of the University of California.
  * All rights reserved.
  *

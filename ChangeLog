@@ -191,3 +191,4 @@
 	* Broke TODO out of ChangeLog
 	* Removed aborted attempt at QsNet cleanup (libqsw dir)
 	* Added wrapped support for Mark Grondona's excellent hostlist.[ch].
+	* Added COPYING and added GPL headers to source modules.

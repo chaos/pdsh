@@ -1,13 +1,6 @@
-/* 
- * $Id$  
- */
-
-
 /*
- * Started with BSD rcmd.c.
- */
-
-/*
+ * Started with BSD rcmd.c which is:
+ * 
  * Copyright (c) 1983, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
  *

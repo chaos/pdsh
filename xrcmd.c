@@ -1,12 +1,6 @@
-/* 
- * $Id$  
- */
-
 /*
- * This is BSD rcmd.c with MT safety added and a different interface.
- */
-
-/*
+ * Started with BSD rcmd.c which is:
+ *
  * Copyright (c) 1983, 1993, 1994
  *	The Regents of the University of California.  All rights reserved.
  *
@@ -37,6 +31,12 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
+ */
+
+/*
+ * Changes:
+ *  - MT save 
+ *  - changed functional interface.
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
