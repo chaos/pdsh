@@ -132,6 +132,9 @@ static bool dist_set = false;
 static bool cyclic   = false;
 static int  nprocs   = 1;
 
+static unsigned int  railmask      = 1;
+static bool          railmask_set  = false;
+
 static char cwd[MAXPATHLEN + 1];
 static qsw_info_t qinfo;
 static ELAN_CAPABILITY cap;
@@ -158,6 +161,7 @@ static int mqcmd_postop(opt_t *opt);
 
 static int mqcmd_opt_m(opt_t *, int, char *);
 static int mqcmd_opt_n(opt_t *, int, char *);
+static int mqcmd_opt_r(opt_t *, int, char *);
 
 static int mqcmd_init(opt_t *);
 static int mqcmd_signal(int, int);
@@ -193,6 +197,8 @@ struct pdsh_module_option mqcmd_module_options[] =
     DSH, (optFunc) mqcmd_opt_m },
   { 'n', "n",            "(mqshell) set number of tasks per node",
     DSH, (optFunc) mqcmd_opt_n },
+  { 'r', "railmask",     "(mqshell) set rail bitmask for job on multirail system",
+    DSH, (optFunc) mqcmd_opt_r }, 
   PDSH_OPT_TABLE_END
 };
 
@@ -202,7 +208,7 @@ struct pdsh_module_option mqcmd_module_options[] =
 struct pdsh_module pdsh_module_info = {
     "rcmd",
     "mqsh",
-    "Mike Haskell <haskell5@llnl.gov> and Jim Garlick <garlick1@llnl.gov>",
+    "Jim Garlick <garlick1@llnl.gov>",
     "Run MPI jobs over QsNet with mrsh authentication",
     DSH, 
 
@@ -233,6 +239,20 @@ mqcmd_opt_n(opt_t *pdsh_opts, int opt, char *arg)
     return 0;
 }
 
+static int
+mqcmd_opt_r(opt_t *pdsh_opts, int opt, char *arg)
+{
+    char *p = NULL;
+    long int val = strtol (arg, &p, 0);
+
+    if (*p != '\0')
+        errx ("%p: Invalid value for railmask: \"%s\"\n", arg);
+
+    railmask = (unsigned int) val;
+    railmask_set = true;
+    return (0);
+}
+
 static int mqcmd_postop(opt_t *opt)
 {
     int errors = 0;
@@ -249,6 +269,10 @@ static int mqcmd_postop(opt_t *opt)
             err("%p: -n should be > 0\n");
             errors++;
         }
+        if ((railmask == 0) || (railmask > QSW_RAILMASK_MAX)) {
+            err ("%p: mqcmd: invalid value %d for -r railmask\n", railmask);
+            errors++;
+        }
     } else {
         if (nprocs != 1) {
             err("%p: mqcmd: -n can only be specified with -R mqsh\n");
@@ -257,6 +281,11 @@ static int mqcmd_postop(opt_t *opt)
 
         if (dist_set) {
             err("%p: mqcmd: -m may only be specified with -R mqsh\n");
+            errors++;
+        }
+
+        if (railmask_set) {
+            err("%p: mqcmd: -r may only be specified with -R mqsh\n");
             errors++;
         }
     }
@@ -316,7 +345,7 @@ static int mqcmd_init(opt_t * opt)
         exit(1);
 
     /* initialize Elan capability structure. */
-    if (qsw_init_capability(&cap, totprocs, opt->wcoll, cyclic) < 0) {
+    if (qsw_init_capability(&cap, totprocs, opt->wcoll, cyclic, railmask) < 0) {
         err("%p: mqcmd: failed to initialize Elan capability\n");
         return -1;
     }

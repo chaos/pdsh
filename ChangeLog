@@ -1,3 +1,25 @@
+2004-04-07  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/dsh.c (_fwd_signal) : Check for valid file descriptor
+	before passing to mod_rcmd_signal().
+
+	* src/pdsh/dsh.c (_rsh_thread) : Block SIGPIPE outside while loop
+	and before call to connect.
+
+	* src/pdsh/opt.c (opt_args) : Pass PCP only arguments to modules
+	when in DSH mode.
+
+	* src/qsnet/qswutil.c, src/modules/mqcmd.c, src/modules/qcmd.c: 
+	Add support for user supplied railmask (default to 1). Fix 
+	broken multrail (for elanctrl interface) reported by Fabrizio
+	Petrini <fabrizio@lanl.gov>
+
+	* src/qsnet/qshell.c (get_qshell_info) : Re-map QSHELL_REMOTE_* 
+	environment variables to their unprefixed counterparts to allow  
+	propagation of LD_LIBRARY_PATH and LD_PREOPEN to qshell jobs as
+	suggested by Ashley Pittman <ashley@quadrics.com>.
+	
+	
 2004-04-02  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/qsnet/Makfile.am : Need to link libqsw with libdl when not using 

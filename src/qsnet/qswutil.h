@@ -35,6 +35,11 @@
 
 #include "src/common/hostlist.h"
 
+#ifndef ELAN_MAX_RAILS
+#  define ELAN_MAX_RAILS 16
+#endif
+#define QSW_RAILMASK_MAX    (1<<ELAN_MAX_RAILS - 1)
+
 typedef struct {
     int prgnum;
     int rank;
@@ -55,7 +60,8 @@ int qsw_cap_bitmap_count(void);
 int qsw_encode_info(char *s, int len, qsw_info_t * qi);
 int qsw_decode_info(char *s, qsw_info_t * qi);
 int qsw_init_capability(ELAN_CAPABILITY * cap, int nprocs,
-                        hostlist_t nodelist, int cyclic_alloc);
+                        hostlist_t nodelist, int cyclic_alloc, 
+                        unsigned int railmask);
 int qsw_get_prgnum(void);
 void qsw_setup_program(ELAN_CAPABILITY * cap, qsw_info_t * qi, uid_t uid);
 int qsw_prgsignal(int prgid, int signo);

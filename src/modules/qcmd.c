@@ -123,9 +123,12 @@ int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
 
 extern char **environ;
 
-static bool dist_set = false;
-static bool cyclic   = false;
-static int  nprocs   = 1;
+static bool dist_set   = false;
+static bool cyclic     = false;
+static int  nprocs     = 1;
+
+static unsigned int railmask     = 1;
+static bool         railmask_set = false;
 
 static char cwd[MAXPATHLEN + 1];
 static qsw_info_t qinfo;
@@ -135,6 +138,7 @@ static int qcmd_postop(opt_t *opt);
 
 static int qcmd_opt_m(opt_t *, int, char *);
 static int qcmd_opt_n(opt_t *, int, char *);
+static int qcmd_opt_r(opt_t *, int, char *);
 
 static int qcmd_init(opt_t *);
 static int qcmd_signal(int, int);
@@ -167,6 +171,8 @@ struct pdsh_module_option qcmd_module_options[] =
      DSH, (optFunc) qcmd_opt_m },
    { 'n', "n",            "(qshell) set number of tasks per node",
      DSH, (optFunc) qcmd_opt_n },
+  { 'r', "railmask",      "(qshell) set railmask for job on multirail system",
+     DSH, (optFunc) qcmd_opt_r }, 
    PDSH_OPT_TABLE_END
  };
 
@@ -207,6 +213,20 @@ qcmd_opt_n(opt_t *pdsh_opts, int opt, char *arg)
     return 0;
 }
 
+static int
+qcmd_opt_r(opt_t *pdsh_opts, int opt, char *arg)
+{
+    char *p = NULL;
+    long int val = strtol (arg, &p, 0);
+
+    if (*p != '\0')
+        errx ("%p: Invalid value for railmask: \"%s\"\n", arg);
+
+    railmask = (unsigned int) val;
+    railmask_set = true;
+    return (0);
+}
+
 
 /*
  * Use rcmd backchannel to propagate signals.
@@ -244,6 +264,10 @@ static int qcmd_postop(opt_t *opt)
             err("%p: -n should be > 0\n");
             errors++;
         }
+        if ((railmask == 0) || (railmask > QSW_RAILMASK_MAX)) {
+            err ("%p: mqcmd: invalid value for -r (nrails)\n");
+            errors++;
+        }
     } else {
         if (nprocs != 1) {
             err("%p: -n can only be specified with \"-R qsh\"\n"); 
@@ -252,6 +276,11 @@ static int qcmd_postop(opt_t *opt)
 
         if (dist_set) {
             err("%p: -m may only be specified with \"-R qsh\"\n");
+            errors++;
+        }
+
+        if (railmask_set) {
+            err("%p: mqcmd: -r may only be specified with -R mqsh\n");
             errors++;
         }
     }
@@ -300,7 +329,7 @@ static int qcmd_init(opt_t * opt)
         errx("%p: getcwd failed: %m\n");
 
     /* initialize Elan capability structure. */
-    if (qsw_init_capability(&cap, totprocs, opt->wcoll, cyclic) < 0)
+    if (qsw_init_capability(&cap, totprocs, opt->wcoll, cyclic, railmask) < 0)
         errx("%p: failed to initialize Elan capability\n");
 
     /* initialize elan info structure */

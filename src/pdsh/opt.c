@@ -427,10 +427,16 @@ void opt_args(opt_t * opt, int argc, char *argv[])
             opt->ruser[MAX_USERNAME - 1] = '\0';
             break;
         case 'r':              /* rcp: copy recursively */
-            opt->recursive = true;
+            if (pdsh_personality() == PCP)
+                opt->recursive = true;
+            else
+                goto test_module_option;
             break;
         case 'p':              /* rcp: preserve permissions */
-            opt->preserve = true;
+            if (pdsh_personality() == PCP)
+                opt->preserve = true;
+            else
+                goto test_module_option;
             break;
         case 'V':              /* show version */
             _show_version();
@@ -446,12 +452,18 @@ void opt_args(opt_t * opt, int argc, char *argv[])
             _usage(opt);
             break;
         case 'y':
-            opt->target_is_directory = true;  /* is target a dir? */
+            if (pdsh_personality() == PCP)
+                opt->target_is_directory = true;  /* is target a dir? */
+            else
+                goto test_module_option;
             break;
         case 'z':
-            opt->pcp_server = true;          /* run PDCP server */
+            if (pdsh_personality() == PCP)
+                opt->pcp_server = true;          /* run PDCP server */
+            else
+                goto test_module_option;
             break;
-        default:
+        default: test_module_option:
             if (mod_process_opt(opt, c, optarg) < 0)
                _usage(opt);
         }

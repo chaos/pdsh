@@ -68,7 +68,11 @@ Allows \fBpdsh\fR to execute MPI jobs over QsNet. Qshell propagates
 the current working directory, pdsh environment, and Elan capabilities
 to the remote process. The following environment variable are also
 appended to the environment: RMS_RANK, RMS_NODEID, RMS_PROCID, RMS_NNODES,
-and RMS_NPROCS.
+and RMS_NPROCS. Since \fBpdsh\fR needs to run setuid root for qshell
+support, qshell does not directly support propagation of LD_LIBRARY_PATH
+and LD_PREOPEN. Instead the QSHELL_REMOTE_LD_LIBRARY_PATH and 
+QSHELL_REMOTE_LD_PREOPEN environment variables will may be used and will
+be remapped to LD_LIBRARY_PATH and LD_PREOPEN by the qshell daemon if set.
 .TP
 mqshell
 Similar to qshell, but uses the mrsh protocol instead of the rsh protocol.
@@ -164,6 +168,13 @@ Set the number of tasks spawned per node. Default is 1.
 .I "-m block | cyclic"
 Set block versus cyclic allocation of processes to nodes. Default is
 block. 
+.TP
+.I "-r railmask"
+Set the rail bitmask for a job on a multirail system. The default 
+railmask is 1, which corresponds to rail 0 only. Each bit set in 
+the argument to \fI-r\fR corresponds to a rail on the system, so
+a value of 2 would correspond to rail 1 only, and 3 would indicate
+to use both rail 1 and rail 0.
 
 .SH "machines module options"
 .TP
