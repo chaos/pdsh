@@ -20,7 +20,13 @@ AC_DEFUN([AC_DMALLOC],
   AC_MSG_CHECKING([if malloc debugging is wanted])
   AC_ARG_WITH(dmalloc,
     AC_HELP_STRING([--with-dmalloc], [compile using Gray Watson's dmalloc]),
-    [ ac_with_dmalloc=yes]
+     [ case "$withval" in
+        yes) ac_with_dmalloc=yes ;;
+        no)  ac_with_dmalloc=no ;;
+        *)   AC_MSG_RESULT([doh!])
+             AC_MSG_ERROR([bad value "$withval" for --withdmalloc]) ;;
+      esac
+    ]
   )
   AC_MSG_RESULT([${ac_with_dmalloc=no}])
 

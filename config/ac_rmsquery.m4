@@ -15,13 +15,20 @@
 AC_DEFUN([AC_RMSQUERY],
 [
   #
-  # Check for whether to build nodeattr module
-  #
+  # Check for whether to build rms module
+  # 
+  ac_with_rms=
   AC_MSG_CHECKING([for whether to build rms module])
   AC_ARG_WITH([rms],
     AC_HELP_STRING([--with-rms], 
       [support running pdsh under RMS allocation]),
-    [ ac_with_rms=yes ]
+      [ case "$withval" in
+        yes) ac_with_rms=yes ;;
+        no)  ac_with_rms=no ;;
+        *)   AC_MSG_RESULT([doh!])
+             AC_MSG_ERROR([bad value "$withval" for --with-rms]) ;;
+      esac
+    ]
   )
   AC_MSG_RESULT([${ac_with_rms=no}]) 
 

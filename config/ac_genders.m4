@@ -52,7 +52,13 @@ AC_DEFUN([AC_GENDERS],
   AC_ARG_WITH([genders],
     AC_HELP_STRING([--with-genders],
       [Build genders module for libgenders support]),
-    [ ac_with_libgenders=yes ]
+    [ case "$withval" in
+        no)  ac_with_libgenders=no ;;
+        yes) ac_with_libgenders=yes ;;
+        *)   AC_MSG_RESULT([doh!])
+             AC_MSG_ERROR([bad value "$withval" for --with-genders]) ;;
+      esac
+    ]
   )
   AC_MSG_RESULT([${ac_with_libgenders=no}])
     
@@ -74,7 +80,13 @@ AC_DEFUN([AC_GENDERS],
   AC_MSG_CHECKING([for whether to build nodeupdown module])
   AC_ARG_WITH([genders],
     AC_HELP_STRING([--with-nodeupdown], [Build nodeupdown module]),
-    [ ac_with_libnodeupdown=yes ]
+    [ case "$withval" in
+        no)  ac_with_libnodeupdown=no ;;
+        yes) ac_with_libnodeupdown=yes ;;
+        *)   AC_MSG_RESULT([doh!])
+             AC_MSG_ERROR([bad value "$withval" for --with-nodeupdown]) ;;
+      esac
+    ]
   )
   AC_MSG_RESULT([${ac_with_libnodeupdown=no}])
    
