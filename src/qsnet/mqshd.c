@@ -408,7 +408,7 @@ static void doit(struct sockaddr_in *fromp) {
 
     /* Address does not match an interface on this machine */
     if (found == 0) {
-      syslog(LOG_ERR, "%s: %m","Munge IP address doesn't match");
+      syslog(LOG_ERR, "%s: %s","Munge IP address doesn't match", dec_addr);
       errmsg = "Permission Denied";
       goto error_out; 
     }
@@ -421,13 +421,13 @@ static void doit(struct sockaddr_in *fromp) {
   errno = 0;
   port = strtol(m_head, (char **)NULL, 10);
   if (port == 0 && errno != 0) {
-    syslog(LOG_ERR, "%s: %m", "mqshd: Bad port number from client.");
+    syslog(LOG_ERR, "%s: %s", "mqshd: Bad port number from client.", m_head);
     errmsg = "internal Error";
     goto error_out;
   }
 
   if (port != cport) {
-    syslog(LOG_ERR, "%s: %m", "Port mismatch");
+    syslog(LOG_ERR, "%s: %d, %d", "Port mismatch", cport, port);
     errmsg = "Protocol Error";
     goto error_out;
   }
@@ -439,14 +439,14 @@ static void doit(struct sockaddr_in *fromp) {
   errno = 0;
   randnum = strtol(m_head,(char **)NULL,10);
   if (randnum == 0 && errno != 0) {
-    syslog(LOG_ERR, "%s: %m", "mqshd: Bad random number from client.");
+    syslog(LOG_ERR, "%s: %s", "mqshd: Bad random number from client.", m_head);
     errmsg = "internal system error";
     goto error_out;
   }
 
   /* Double check to make sure protocol is ok */
   if (cport == 0 && randnum != 0) {
-    syslog(LOG_ERR,"protocol error, rand should be 0");
+    syslog(LOG_ERR,"protocol error, rand should be 0, %d", randnum);
     errmsg = "Protocol Error";
     goto error_out;
   }
@@ -459,6 +459,7 @@ static void doit(struct sockaddr_in *fromp) {
     strncpy(&cmdbuf[0], m_head, sizeof(cmdbuf));
     cmdbuf[sizeof(cmdbuf) - 1] = '\0';
   } else {
+    syslog(LOG_ERR, "Not enough space for command: %s", m_head);
     errmsg = "Command too long";
     goto error_out;
   }
