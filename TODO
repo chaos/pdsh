@@ -8,3 +8,7 @@
 - support long options
 - logical querying of genders attributes
   i.e. -g "foo-(bar,car+dar)"
+- command line check for fanout > posix thread limit
+- option to allocate all threads/mem before executing command
+  - important so that if fanout is too large, commands won't
+    be started and killed halfway through.
