@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include <slurm/slurm.h>
 #include <slurm/slurm_errno.h>
@@ -63,10 +64,10 @@ int pdsh_module_priority = 10;
 static int mod_slurm_init(void);
 static int mod_slurm_wcoll(opt_t *opt);
 static int mod_slurm_exit(void);
-static hostlist_t _slurm_wcoll(int32_t jobid);
+static hostlist_t _slurm_wcoll(List jobids);
 static int slurm_process_opt(opt_t *, int opt, char *arg);
 
-static char * job_arg = NULL;
+static List job_list = NULL;
 
 /*
  *  Export generic pdsh module options
@@ -111,6 +112,88 @@ static int mod_slurm_init (void)
     return (0);
 }
 
+static void _free (void *arg)
+{
+    Free ((void **) &arg);
+}
+
+/* 
+ * Helper function for list_split(). Extract tokens from str.  
+ * Return a pointer to the next token; at the same time, advance 
+ * *str to point to the next separator.  
+ *   sep (IN)   string containing list of separator characters
+ *   str (IN)   double-pointer to string containing tokens and separators
+ *   RETURN next token
+ */
+static char *_next_tok(char *sep, char **str)
+{
+    char *tok;
+
+    /* push str past any leading separators */
+    while (**str != '\0' && strchr(sep, **str) != '\0')
+        (*str)++;
+
+    if (**str == '\0')
+        return NULL;
+
+    /* assign token pointer */
+    tok = *str;
+
+    /* push str past token and leave pointing to first separator */
+    while (**str != '\0' && strchr(sep, **str) == '\0')
+        (*str)++;
+
+    /* nullify consecutive separators and push str beyond them */
+    while (**str != '\0' && strchr(sep, **str) != '\0')
+        *(*str)++ = '\0';
+
+    return tok;
+}
+
+
+
+/*
+ * Given a list of separators and a string, generate a list
+ *   sep (IN)   string containing separater characters
+ *   str (IN)   string containing tokens and separators
+ *   RETURN     new list containing all tokens
+ */
+static List _list_split(char *sep, char *str)
+{
+    List new = list_create((ListDelF) _free);
+    char *tok;
+
+    if (sep == NULL)
+        sep = " \t";
+
+    while ((tok = _next_tok(sep, &str)) != NULL) {
+        if (strlen(tok) > 0)
+            list_append(new, Strdup(tok));
+    }
+
+    return new;
+}
+
+/*
+ *  Split comma-separated "attrs" from str and append to list `lp'
+ */
+static List _list_append (List l, char *str)
+{
+    List tmp = _list_split (",", str);
+    ListIterator i = NULL;
+    char *attr = NULL;
+
+    if (l == NULL)
+        return ((l = tmp));
+
+    i = list_iterator_create (tmp);
+    while ((attr = list_next (i)))
+        list_append (l, Strdup(attr));
+    list_destroy (tmp);
+
+    return (l);
+}
+
 
 static int32_t str2jobid (char *str)
 {
@@ -134,7 +217,7 @@ slurm_process_opt(opt_t *pdsh_opts, int opt, char *arg)
 {
     switch (opt) {
     case 'j':
-        job_arg = Strdup(arg);
+        job_list = _list_append (job_list, Strdup(arg));
         break;
     default:
         break;
@@ -146,8 +229,9 @@ slurm_process_opt(opt_t *pdsh_opts, int opt, char *arg)
 static int
 mod_slurm_exit(void)
 {
-    if (job_arg)
-        Free((void **)&job_arg);
+    if (job_list)
+        list_destroy (job_list);
+
     return (0);
 }
 
@@ -158,15 +242,11 @@ mod_slurm_exit(void)
  */
 static int mod_slurm_wcoll(opt_t *opt)
 {
-    if (job_arg && opt->wcoll)
+    if (job_list && opt->wcoll)
         errx("%p: do not specify -j with any other node selection option.\n");
 
-    if (!opt->wcoll) {
-        if (job_arg)
-            opt->wcoll = _slurm_wcoll (str2jobid (job_arg));
-        else
-            opt->wcoll = _slurm_wcoll (-1); 
-    }
+    if (!opt->wcoll) 
+            opt->wcoll = _slurm_wcoll (job_list); 
 
     return 0;
 }
@@ -176,29 +256,50 @@ static int32_t _slurm_jobid (void)
     return (str2jobid (getenv ("SLURM_JOBID")));
 }
 
-static hostlist_t _slurm_wcoll(int32_t jobid)
+static _find_id (char *jobid, uint32_t *id)
+{
+    return (*id == str2jobid (jobid));
+}
+
+static hostlist_t _slurm_wcoll (List joblist)
 {
     int i;
     hostlist_t hl = NULL;
     job_info_msg_t * msg;
+    int32_t jobid = 0;
 
-    if ((jobid < 0) && (jobid = _slurm_jobid()) < 0)
+    if ((joblist == NULL) && (jobid = _slurm_jobid()) < 0)
         return (NULL);
-    
+
     if (slurm_load_jobs((time_t) NULL, &msg, 1) < 0) 
         errx ("Unable to contact slurm controller: %s\n", 
               slurm_strerror (errno));
 
     for (i = 0; i < msg->record_count; i++) {
         job_info_t *j = &msg->job_array[i];
-        
-        if (j->job_id == (uint32_t) jobid) {
+
+        if (!joblist && (j->job_id == jobid)) {
             hl = hostlist_create (j->nodes);
             break;
+        }
+        
+        if ( joblist 
+           && list_delete_all (joblist, (ListFindF)_find_id, &j->job_id)) {
+
+            if (!hl)
+                hl = hostlist_create (j->nodes);
+            else
+                hostlist_push (hl, j->nodes);
+
+            if (list_count (joblist) == 0)
+                break;
         }
     }
     
     slurm_free_job_info_msg (msg);
+
+    if (hl)
+        hostlist_uniq (hl);
 
     return (hl);
 }

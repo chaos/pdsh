@@ -1,3 +1,7 @@
+2004-07-19  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/modules/slurm.c : Allow multiple jobids to -j option.
+
 2004-06-23  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/opt.c (opt_args) : Do not abort when none of the 
