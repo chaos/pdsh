@@ -81,6 +81,8 @@ Release 1.3
 
 Release 1.4pre
 
+	Added RPM spec file.
+
 	Fixed bug with opt_list dumping core on linux.
 	
 	Added pdsh -V to display version (PDSH_VERSION in conf.h).
