@@ -195,4 +195,4 @@
 	* Removed code that deleted unreachable hosts from the target list in
 	  interactive mode.  This didn't work because we fork for each
 	  round.  Got rid of -c option which was used to disable this behavior.
-	  As this has not worked for a long time, probably not a problem.
+	  As this has not worked for a long time, probably won't be missed.
