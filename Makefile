@@ -4,9 +4,8 @@
 # This makefile works for aix 4.3, linux (RedHat5.2/sparc), and 
 # Digital Unix 4.0.
 #
-PACKAGE=	pdsh
+PROJECT=	pdsh
 VERSION=	1.5
-RELEASE=	2
 
 OBJS= 		list.o xmalloc.o xstring.o dsh.o main.o opt.o wcoll.o \
 		rcmd.o err.o pipecmd.o qcmd.o $(KRB_OBJS)

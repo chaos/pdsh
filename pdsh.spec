@@ -1,11 +1,11 @@
 Name: 
 Version: 
-Release: 
+Release: 1
 Summary: Parallel remote shell program.
 Copyright: none
 Group: System Environment/Base
-Source: %{name}-%{version}-%{release}.tgz
-BuildRoot: /var/tmp/%{name}-buildroot
+Source: %{name}-%{version}.tgz
+BuildRoot: %{_tmppath}/%{name}-%{version}
 Prereq: genders
 
 %description
@@ -24,7 +24,7 @@ Sets up Elan capabilities and environment variables needed by Quadrics MPICH
 executables.
 
 %prep
-%setup -n %{name}-%{version}-%{release}
+%setup
 
 %build
 make all qshd
