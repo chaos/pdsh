@@ -68,6 +68,9 @@ sub cmp_list
 
 	$retval = 1;
 
+	if ($#{$l1} != $#{$l2}) {
+		return 0;
+	}
 	for ($i = 0; $i <= $#{$l1} && $retval == 1; $i++) {
 		if (!defined(${$l2}[$i]) || ${$l1}[$i] ne ${$l2}[$i]) {
 			$retval = 0;
@@ -93,7 +96,7 @@ sub compress
 
         # build %nn (lists of numeric hostname suffixes by prefix)
         foreach $node (@nodes) {
-                if ($node =~ /^(\D+)(\d+)$/) {
+                if ($node =~ /^(.+)(\d+)$/) {
                         push(@{$nn{$1}}, $2);
                 } else {
                         push(@out, $node);
