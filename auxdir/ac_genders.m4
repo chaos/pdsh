@@ -41,7 +41,7 @@ AC_DEFUN([AC_GENDERS],
     if test -n "$NODEATTR"; then
       ac_have_nodeattr=yes
       AC_DEFINE_UNQUOTED(_PATH_NODEATTR, "$NODEATTR", [Path to nodeattr.])
-      AC_DEFINE(HAVE_NODEATTR, 1, [Define if nodeattr program is available.])
+      AC_DEFINE([HAVE_NODEATTR], [1], [Define if nodeattr program is available.])
     fi
   fi
 
@@ -113,5 +113,6 @@ AC_DEFUN([AC_GENDERS],
   AC_SUBST(HAVE_LIBNODEUPDOWN)
   AC_SUBST(NODEUPDOWN_LIBS)
   AC_SUBST(HAVE_GENDERS)
-
+  AC_SUBST(HAVE_NODEATTR)
+  AC_SUBST(NODEATTR)
 ])

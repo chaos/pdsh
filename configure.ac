@@ -149,9 +149,12 @@ AC_DMALLOC
 #
 AC_PATH_PROG([SDRGETOBJECTS], [SDRGetObjects], [], [/usr/lpp/ssp/bin:$PATH])
 if test -n "$SDRGETOBJECTS"; then
+    AC_DEFINE([HAVE_SDR], [1], [Define if you have SDR])
     AC_DEFINE_UNQUOTED(_PATH_SDRGETOBJECTS, "$SDRGETOBJECTS", 
 			          [Path to SDRGetObjects])
 fi
+AC_SUBST(HAVE_SDR)
+AC_SUBST(SDRGETOBJECTS)
 AM_CONDITIONAL(WITH_SDR, [test -n "$SDRGETOBJECTS"])
 
 #

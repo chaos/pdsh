@@ -24,17 +24,20 @@ AC_DEFUN([AC_MACHINES],
     [ case "$withval" in
         no)  ac_with_machines=no ;;
         yes) ac_with_machines=yes
-             MACHINES_FILE="/etc/machines" ;;
+             MACHINES="/etc/machines" ;;
         *)   ac_with_machines=yes
-			 MACHINES_FILE=$withval 
+			 MACHINES=$withval 
       esac
     ]
   )
-  AC_MSG_RESULT([${MACHINES_FILE=none}])
+  AC_MSG_RESULT([${MACHINES=none}])
   : ${ac_with_machines=no}
   if test "$ac_with_machines" = yes; then
-	  AC_DEFINE_UNQUOTED([_PATH_MACHINES], ["$MACHINES_FILE"], 
-			             [Define to default machines file.])
+        AC_DEFINE([HAVE_MACHINES], [1], [Define if you have machines])
+	AC_DEFINE_UNQUOTED([_PATH_MACHINES], ["$MACHINES"], 
+	        		             [Define to default machines file.])
   fi
-  AC_SUBST(MACHINES_FILE)
+
+  AC_SUBST(HAVE_MACHINES)
+  AC_SUBST(MACHINES)
 ])
