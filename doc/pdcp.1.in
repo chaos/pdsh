@@ -1,6 +1,6 @@
 \." $Id$
 .\"
-.TH "@PROJECT@" "1" "@host_os@" "Version @VERSION@-@RELEASE@"
+.TH "@PACKAGE@" "1" "@host_os@" "Version @VERSION@-@RELEASE@"
 .SH NAME
 pdcp \- copy files to groups of hosts in parallel
 .SH SYNOPSIS
