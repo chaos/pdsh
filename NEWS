@@ -16,6 +16,8 @@ documents thos changes that are of interest to users and admins.
  -- Added mrsh and mqshell client modules, as well as mqshd server for Munge
     authenticated rcmd() support.
  -- QsNet support now requires "/etc/elanhosts" config file (see README.QsNet).
+ -- QsNet support includes support for QSW elanctrl interface. (Elan3/Elan4)
  -- Added support for running Elan network error resolver thread in qshd/mqshd.
+    (Elan3 only)
 
 $Id$
