@@ -80,34 +80,21 @@ AC_DEFUN([AC_MQSHELL],
           ac_mqshell_munge=no
        fi
     fi
-                         
-    # check if mrsh is installed if --with-mrsh was not specified
-    if test "$ac_have_mrsh" = "yes" ; then
-       ac_mqshell_mrsh=yes
-    else
-       AC_MSG_CHECKING([for mshell in /etc/services])
-       if grep "^mshell" /etc/services > /dev/null 2>&1; then
-          ac_mqshell_mrsh=yes
-       else
-          ac_mqshell_mrsh=no
-       fi     
-       AC_MSG_RESULT([${ac_mqshell_mrsh=no}])
-    fi
 
     # do we have everything we want?
     if test "$ac_mqshell_qshell" = "yes" &&
-       test "$ac_mqshell_munge" = "yes" &&
-       test "$ac_mqshell_mrsh" = "yes" ; then
+       test "$ac_mqshell_munge" = "yes" ; then
        ac_have_mqshell=yes
        AC_ADD_STATIC_MODULE("mqcmd")
        AC_DEFINE([HAVE_MQSHELL], [1], [Define if you have mqshell.])
        PROG_MQSHD=in.mqshd   
-       AC_STRUCT_SA_LEN
 
        # check for IPv6, IEEE standard says it should be in sys/socket.h 
        AC_CHECK_DECL([AF_INET6], 
                      AC_DEFINE(HAVE_IPV6,1,[have IPv6]),,
                      [#include <sys/socket.h>])  
+
+       AC_STRUCT_SA_LEN
 
        # compile libqsw
        ac_have_qsw=yes

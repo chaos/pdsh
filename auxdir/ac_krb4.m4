@@ -19,7 +19,7 @@ AC_DEFUN([AC_KRB4],
 [
 
 #
-# Check for kerberos libraries, if they exist, automatically built
+# Check for kerberos libraries, if they exist, automatically build
 # kerberos module
 #
 
@@ -27,12 +27,13 @@ AC_CHECK_LIB([krb], [krb_sendauth],
              [ac_have_krb4=yes],
              [ac_have_krb4=no], [-lkrb -ldes])
 
-AM_CONDITIONAL(WITH_KRB4, test $ac_have_krb4 = yes)
 if test "$ac_have_krb4" = "yes" ; then
     AC_ADD_STATIC_MODULE("k4cmd")
     KRB_LIBS="-lkrb -ldes"
     AC_DEFINE([HAVE_KRB4], [1], [Define if you have Kerberos])
 fi
+
+AM_CONDITIONAL(WITH_KRB4, test "$ac_have_krb4" = "yes")
 
 AC_SUBST(KRB_LIBS)
 
