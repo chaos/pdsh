@@ -98,7 +98,7 @@ char rcsid[] = "$Id$";
 #include <unistd.h>
 #endif
 
-#include <fcntl.h>                /* SIOCGIFADDR */
+#include <fcntl.h>
 #include <sys/socket.h>           /* connect */
 #include <sys/types.h>
 #include <netinet/in.h>           /* sockaddr_in, htons */
@@ -192,7 +192,6 @@ static int getifrlen(struct ifreq *ifr) {
 static int check_interfaces(void *munge_addr, int addr_len) {
     struct ifconf ifc;
     struct ifreq *ifr;
-    struct ifreq ifaddr;
     int s, found = 0, lastlen = -1;
     int len = sizeof(struct ifreq) * 100;
     void *buf = NULL, *ptr = NULL;
@@ -252,14 +251,6 @@ static int check_interfaces(void *munge_addr, int addr_len) {
         /* Currently, we only care about IPv4 (i.e. AF_INET) */
         if (ifr->ifr_addr.sa_family != AF_INET)
             continue;
-
-        strcpy(ifaddr.ifr_name, ifr->ifr_name);
-        ifaddr.ifr_addr.sa_family = AF_INET;
-        if (ioctl(s, SIOCGIFADDR, &ifaddr) < 0) {
-            syslog(LOG_ERR, "ioctl SIOCGIFADDR failed: %m");
-            errmsg = "Internal System Error";
-            goto bad;
-        }
 
         sin = (struct sockaddr_in *)&ifr->ifr_addr;
 

@@ -1,3 +1,8 @@
+2003-12-22  Albert Chu <chu11@llnl.gov>
+
+	* src/qsnet/mqshd.c (check_interfaces): Removed logically unused
+	code.
+	
 2003-12-18  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/qsnet/qswutil.c (_setbitmap): Fixed bug when using cyclic
