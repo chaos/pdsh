@@ -53,7 +53,7 @@
  *    Calling the module in postop allows us to be sure that all other
  *    modules had a chance to update the wcoll.
  */
-static int mod_slurm_postop(opt_t *opt);
+static int mod_slurm_wcoll(opt_t *opt);
 static int mod_slurm_exit(void);
 static hostlist_t _slurm_wcoll(int32_t jobid);
 static int slurm_process_opt(opt_t *, int opt, char *arg);
@@ -66,8 +66,8 @@ static char * job_arg = NULL;
 struct pdsh_module_operations slurm_module_ops = {
     (ModInitF)       NULL, 
     (ModExitF)       mod_slurm_exit, 
-    (ModReadWcollF)  NULL,
-    (ModPostOpF)     mod_slurm_postop
+    (ModReadWcollF)  mod_slurm_wcoll,
+    (ModPostOpF)     NULL
 };
 
 /* 
@@ -149,7 +149,7 @@ mod_slurm_exit(void)
  *    SLURM_JOBID env var, and set wcoll to the list of nodes allocated
  *    to that job.
  */
-static int mod_slurm_postop(opt_t *opt)
+static int mod_slurm_wcoll(opt_t *opt)
 {
     if (job_arg && opt->wcoll)
         errx("%p: do not specify -j with any other node selection option.\n");
