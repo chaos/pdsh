@@ -18,6 +18,11 @@ AC_CONFIG_SRCDIR([configure.ac])
 AC_CANONICAL_TARGET
 AC_SUBST(host_cpu)
 
+# hack to fix dejagnu.am brokenness before automake 1.6
+if test x$host_alias = x ; then
+   host_alias=$host_cpu
+fi
+
 #
 # Determine project/version from META file.
 # These are substituted into the Makefile and config.h.
