@@ -1,5 +1,5 @@
 2003-02-28 achu
-	* tagged pdsh-1-8-7chaos
+	* tagged pdsh-1-8-1chaos
 
 2003-02-26 achu
 	* Added linux support for -v option by using nodeupdown library
