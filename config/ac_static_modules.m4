@@ -59,8 +59,8 @@ AC_DEFUN([AC_STATIC_MODULES_EXIT],
      AC_MSG_ERROR([--with-machines conflicts with --with-sdr])
   fi
 
-  if test "$ac_have_elan" = "yes" && test "$ac_have_mqsh" = "yes"; then
-     AC_MSG_ERROR([--with-elan conflicts with --with-mqsh])
+  if test "$ac_have_qshell" = "yes" && test "$ac_have_mqshell" = "yes"; then
+     AC_MSG_ERROR([--with-qshell conflicts with --with-mqshell])
   fi
 
   for module in $MODULES; do
