@@ -31,4 +31,6 @@ EXTRA_DIST = \
     ac_static_modules.m4 \
     acx_pthread.m4 \
     ac_elan.m4 \
+    ac_rsh.m4 \
+    ac_slurm.m4 \
     libtool.m4
