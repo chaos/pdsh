@@ -47,9 +47,9 @@ function.  If multiple rcmd modules are installed on the same system,
 the default service selected by pdcp is based on the order listed below.
 A list of all available rcmd modules is listed with the -h option.
 .LP
-.B bsd
+.B rsh
 .LP
-The bsd module allows users to remote copy through rsh(1).  
+The rsh module allows users to remote copy through rsh(1).  
 .LP
 .B mrsh
 .LP
@@ -59,7 +59,7 @@ The mrsh module allows users to remote copy through mrsh(1).
 .LP
 The ssh module allows users to remote copy through ssh(1).
 .LP
-,B krb4
+.B krb4
 .LP
 The k4b4 module allows users to execute remote commands after
 authenticating with kerberos.

@@ -56,9 +56,9 @@ function.  If multiple rcmd modules are installed on the same system,
 the default service selected by pdsh is based on the order listed below.
 A list of all available rcmd modules is listed with the -h option.
 .LP
-.B bsd
+.B rsh
 .LP
-The bsd module allows users to execute remote commands through rsh(1).  
+The rsh module allows users to execute remote commands through rsh(1).  
 .LP
 .B mrsh
 .LP
