@@ -163,7 +163,6 @@ static int mqcmd(char *, char *, char *, char *, char *, int, int *);
 
 /* random num for all jobs in this group */
 static unsigned int randy = -1;
-static char num_seq[12] = {0};
 
 /* 
  * Export pdsh module operations structure
@@ -325,6 +324,7 @@ static int mqcmd_init(opt_t * opt)
    * Generate a random number to send in our package to the 
    * server.  We will see it again and compare it when the
    * server sets up the stderr socket and sends it to us.
+   * We need to loop for the tiny possibility we read 0 :P
    */
   rand_fd = open ("/dev/urandom", O_RDONLY | O_NONBLOCK);
   if ( rand_fd < 0 ) {
@@ -332,25 +332,22 @@ static int mqcmd_init(opt_t * opt)
     return -1;
   }
 
-  m_rv = read (rand_fd, &randy, sizeof(uint32_t));
-  if (m_rv < 0) {
-    close(rand_fd);
-    err("%p: mqcmd: Read of /dev/urandom failed\n");
-    return -1;
-  }
-
-  if (m_rv < (int) (sizeof(uint32_t))) {
-    close(rand_fd);
-    err("%p: mqcmd: Read of /dev/urandom returned too few bytes\n");
-    return -1;
-  }
+  do {
+    m_rv = read (rand_fd, &randy, sizeof(uint32_t));
+    if (m_rv < 0) {
+      close(rand_fd);
+      err("%p: mqcmd: Read of /dev/urandom failed\n");
+      return -1;
+    }
+    
+    if (m_rv < (int) (sizeof(uint32_t))) {
+      close(rand_fd);
+      err("%p: mqcmd: Read of /dev/urandom returned too few bytes\n");
+      return -1;
+    }
+  } while (randy == 0);
 
   close(rand_fd);
-
-  /*
-   * Convert to decimal string...
-   */
-  snprintf(num_seq, sizeof(num_seq),"%d",randy);
 
   return 0;
 }
@@ -480,6 +477,7 @@ mqcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
   sigset_t blockme;
   sigset_t oldset;
   struct xpollfd xpfds[2];
+  char num_seq[12] = {0};
 
   sigemptyset(&blockme);
   sigaddset(&blockme, SIGURG);
@@ -491,6 +489,12 @@ mqcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     err("%p: %S: mqcmd: Can't use localhost\n", ahost);
     EXIT_PTHREAD();
   }
+
+  /* Convert randy to decimal string, 0 if we dont' want stderr */
+  if (fd2p != NULL)
+    snprintf(num_seq, sizeof(num_seq),"%d",randy);
+  else
+    snprintf(num_seq, sizeof(num_seq),"%d",0);
 
   /*
    * Start setup of the stdin/stdout socket...
@@ -528,47 +532,57 @@ mqcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
    * Start the socket setup for the stderr.
    */
   lport = 0;
-  if (fd2p == 0) {
-    err("%p: %S: mqcmd: no stderr defined\n", ahost);
-    goto bad;
-  }
+  if (fd2p != NULL) {
 
-  s2 = socket(AF_INET, SOCK_STREAM, 0);
-  if (s2 < 0) {
-    err("%p: %S: mqcmd: socket call for stderr failed: %m\n", ahost);
-    goto bad;
-  }
+    s2 = socket(AF_INET, SOCK_STREAM, 0);
+    if (s2 < 0) {
+      err("%p: %S: mqcmd: socket call for stderr failed: %m\n", ahost);
+      goto bad;
+    }
 
-  memset (&stderr_sock, 0, sizeof(stderr_sock));
-  stderr_sock.sin_family = AF_INET;
-  stderr_sock.sin_addr.s_addr = htonl(INADDR_ANY);
-  stderr_sock.sin_port = 0;
+    memset (&stderr_sock, 0, sizeof(stderr_sock));
+    stderr_sock.sin_family = AF_INET;
+    stderr_sock.sin_addr.s_addr = htonl(INADDR_ANY);
+    stderr_sock.sin_port = 0;
 
-  if (bind(s2, (struct sockaddr *)&stderr_sock, sizeof(stderr_sock)) < 0) {
-    close(s2);
-    err("%p: %S: bind failed: %m\n", ahost);
-    goto bad;
-  }
+    if (bind(s2, (struct sockaddr *)&stderr_sock, sizeof(stderr_sock)) < 0) {
+      close(s2);
+      err("%p: %S: bind failed: %m\n", ahost);
+      goto bad;
+    }
                 
-  len = sizeof(struct sockaddr);
+    len = sizeof(struct sockaddr);
 
-  /*
-   * Retrieve our port number so we can hand it to the server
-   * for the return (stderr) connection...
-   */
+    /*
+     * Retrieve our port number so we can hand it to the server
+     * for the return (stderr) connection...
+     */
 
-  /* getsockname is thread safe */
-  if (getsockname(s2,&m_socket,&len) < 0) {
-    close(s2);
-    err("%p: %S: getsockname failed: %m\n", ahost);
-    goto bad;
+    /* getsockname is thread safe */
+    if (getsockname(s2,&m_socket,&len) < 0) {
+      close(s2);
+      err("%p: %S: getsockname failed: %m\n", ahost);
+      goto bad;
+    }
+    
+    getp = (struct sockaddr_in *)&m_socket;
+
+    lport = ntohs(getp->sin_port);
+
+    rv = listen(s2, 1);
+    if (rv < 0) {
+      close(s2);
+      err("%p: %S: mqcmd: listen() failed: %m\n", ahost);
+      goto bad;
+    }
   }
-
-  getp = (struct sockaddr_in *)&m_socket;
-  lport = ntohs(getp->sin_port);
+  else {
+    /* achu: part of original rsh protocol, send a null */
+    write(s, "", 1);
+    lport = 0;
+  }
 
   snprintf(num,sizeof(num),"%d",lport);
-
   memcpy(&m_in.s_addr, addr, IP_ADDR_LEN);
 
   /* inet_ntoa is not thread safe, so we use the following,
@@ -577,13 +591,6 @@ mqcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
   hptr = (unsigned char *)&m_in;
   sprintf(haddrdot, "%u.%u.%u.%u", hptr[0], hptr[1], hptr[2], hptr[3]);
 
-  rv = listen(s2, 1);
-  if (rv < 0) {
-    close(s2);
-    err("%p: %S: mqcmd: listen() failed: %m\n", ahost);
-    goto bad;
-  }
-
   /*
    * We call munge_encode which will take what we write in and return a
    * pointer to an munged buffer.  What we get back is a null terminated
@@ -591,6 +598,10 @@ mqcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
    * 
    * The format of the unmunged buffer is as follows (each a string terminated 
    * with a '\0' (null):
+   *
+   * stderr_port_number & /dev/urandom_client_produce_number are 0
+   * if user did not request stderr socket
+   *
    *                                              SIZE            EXAMPLE
    *                                              ==========      =============
    * remote_user_name                             variable        "mhaskell"
@@ -644,7 +655,8 @@ mqcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
         
   /*
    * Write stderr port in the clear in case we can't decode for
-   * some reason (i.e. bad credentials).
+   * some reason (i.e. bad credentials).  May be 0 if user
+   * doesn't want stderr
    */
   m_rv = fd_write_n(s, num, strlen(num)+1);
   if (m_rv != (strlen(num)+1)) {
@@ -677,71 +689,73 @@ mqcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
   free(m);
   free(tmbuf);
 
-  errno = 0;
-  xpfds[0].fd = s;
-  xpfds[1].fd = s2;
-  xpfds[0].events = xpfds[1].events = XPOLLREAD;
-  if (((rv = xpoll(xpfds, 2, -1)) < 0) || rv != 1 || (xpfds[0].revents > 0)) {
-    if (errno != 0)
-      err("%p: %S: mqcmd: xpoll (setting up stderr): %m\n", ahost);
-    else
-      err("%p: %S: mqcmd: xpoll: protocol failure in circuit setup\n", ahost);
-    (void) close(s2);
-    goto bad;
-  }
+  if (fd2p != NULL) {
+    errno = 0;
+    xpfds[0].fd = s;
+    xpfds[1].fd = s2;
+    xpfds[0].events = xpfds[1].events = XPOLLREAD;
+    if (((rv = xpoll(xpfds, 2, -1)) < 0) || rv != 1 || (xpfds[0].revents > 0)) {
+      if (errno != 0)
+        err("%p: %S: mqcmd: xpoll (setting up stderr): %m\n", ahost);
+      else
+        err("%p: %S: mqcmd: xpoll: protocol failure in circuit setup\n", ahost);
+      (void) close(s2);
+      goto bad;
+    }
 
-  len = sizeof(from); /* arg to accept */
-  s3 = accept(s2, (struct sockaddr *)&from, &len);
-  if (s3 < 0) {
+    len = sizeof(from); /* arg to accept */
+    s3 = accept(s2, (struct sockaddr *)&from, &len);
+    if (s3 < 0) {
+      close(s2);
+      err("%p: %S: mqcmd: accept (stderr) failed: %m\n", ahost);
+      goto bad;
+    }
+
     close(s2);
-    err("%p: %S: mqcmd: accept (stderr) failed: %m\n", ahost);
-    goto bad;
-  }
-
-  close(s2);
-
-  if (write(s,"",1) < 0) {
+    
+    if (write(s,"",1) < 0) {
       err("%p: %S: mqcmd: Cannot communicate with daemon to proceed: %m\n", ahost);
       close(s3);
       goto bad;
-  }
+    }
 
-  /*
-   * Read from our stderr.  The server should have placed our random number
-   * we generated onto this socket.
-   */
-  m_rv = fd_read_n(s3, &rand, sizeof(rand));
-  if (m_rv != (ssize_t) (sizeof(rand))) {
-    err("%p: %S: mqcmd: Bad read of expected verification "
-        "number off of stderr socket: %m\n", ahost);
-    close(s3);
-    goto bad;
-  }
-
-  randl = ntohl(rand);
-  if (randl != randy) {
-    char tmpbuf[LINEBUFSIZE] = {0};
-    char *tptr = &tmpbuf[0];
-
-    memcpy(tptr,(char *) &rand,sizeof(rand));
-    tptr += sizeof(rand);
-    m_rv = fd_read_line (s3, tptr, LINEBUFSIZE);
-    if (m_rv < 0)
-      err("%p: %S: mqcmd: Bad read of error from stderr: %m\n", ahost);
-    else
-      err("%p: %S: mqcmd: Error: %s\n", ahost, &tmpbuf[0]);
-    close(s3);
-    goto bad;
-  }
-
-  /*
-   * Set the stderr file descriptor for the user...
-   */
-  *fd2p = s3;
-  from.sin_port = ntohs((u_short)from.sin_port);
-  if (from.sin_family != AF_INET) {
-    err("%p: %S: mqcmd: socket: protocol failure in circuit setup\n", ahost);
-    goto bad2;
+    /*
+     * Read from our stderr.  The server should have placed our random number
+     * we generated onto this socket.
+     */
+    m_rv = fd_read_n(s3, &rand, sizeof(rand));
+    if (m_rv != (ssize_t) (sizeof(rand))) {
+      err("%p: %S: mqcmd: Bad read of expected verification "
+          "number off of stderr socket: %m\n", ahost);
+      close(s3);
+      goto bad;
+    }
+    
+    randl = ntohl(rand);
+    if (randl != randy) {
+      char tmpbuf[LINEBUFSIZE] = {0};
+      char *tptr = &tmpbuf[0];
+      
+      memcpy(tptr,(char *) &rand,sizeof(rand));
+      tptr += sizeof(rand);
+      m_rv = fd_read_line (s3, tptr, LINEBUFSIZE);
+      if (m_rv < 0)
+        err("%p: %S: mqcmd: Bad read of error from stderr: %m\n", ahost);
+      else
+        err("%p: %S: mqcmd: Error: %s\n", ahost, &tmpbuf[0]);
+      close(s3);
+      goto bad;
+    }
+    
+    /*
+     * Set the stderr file descriptor for the user...
+     */
+    *fd2p = s3;
+    from.sin_port = ntohs((u_short)from.sin_port);
+    if (from.sin_family != AF_INET) {
+      err("%p: %S: mqcmd: socket: protocol failure in circuit setup\n", ahost);
+      goto bad2;
+    }
   }
 
   /* send extra information */
@@ -777,7 +791,8 @@ mqcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
   return (s);
 
  bad2:
-  close(*fd2p);
+  if (fd2p != NULL)
+    close(*fd2p);
  bad:
   close(s);
   EXIT_PTHREAD();

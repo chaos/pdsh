@@ -527,7 +527,7 @@ doit(struct sockaddr_in *fromp)
   } while (clear_port[i-1] != '\0');
 
   cport = strtol(clear_port, (char **)NULL, 10);
-  if (cport == 0 && errno != 0) {
+  if (errno != 0) {
     syslog(LOG_ERR, "%s: %m", "mqshd: Bad stderr port received.");
     exit(1);
   }
@@ -768,6 +768,15 @@ doit(struct sockaddr_in *fromp)
     goto error_out;
   }
 
+  /* Double check to make sure protocol is ok */
+  if (cport == 0) {
+    if (rand != 0) {
+      syslog(LOG_ERR,"protocol error");
+      errnum = __PORT;
+      goto error_out;
+    }
+  }
+
  error_out:
   alarm(0);
 
@@ -776,6 +785,7 @@ doit(struct sockaddr_in *fromp)
    * for the client.
    */
 
+  sock = 0;
   if (cport != 0) {
     int length;
     char c;
@@ -805,46 +815,52 @@ doit(struct sockaddr_in *fromp)
       syslog (LOG_ERR, "%s", "mqshd: Client not ready.");
       goto quit_now;
     }
-
-    if (errnum != __NONE) {
-      switch(errnum) {
-      case __READ: errorsock(sock, "mqshd: error reading munge blob."  );
-        break;
-      case __MUNGE: errorsock(sock,"mqshd: %s", munge_strerror(m_rv));
-        break;
-      case __PAYLOAD: errorsock(sock,"mqshd: Bad payload data.");
-        break;
-      case __PORT: errorsock(sock,"mqshd: Cleartext stderr port number"
-                             " is not the same as the encrypted one.");
-        break;
-      case __CRED: errorsock(sock,"mqshd: failed credential check.");
-        break;
-      case __AUTH: errorsock(sock, "mqshd: failed authentication.");
-        break;
-      case __SYSTEM: errorsock(sock,"mqshd: internal system error.");
-        break;
-      case __INTERNAL: errorsock(sock,"mqshd: internal error.");
-        break;
-      default:
-        break;
-      }
-
-    quit_now:      
-      if (errnum != __READ && errnum != __MUNGE && errnum != __PAYLOAD)
-        goto bad2;
-      goto bad;
-    }
   }
 
-  /*
-   * Write random number to stderr
-   */
-  rand = htonl(rand);
-  rv = fd_write_n(sock,&rand,sizeof(rand));
-  if (rv == -1) {
-    syslog(LOG_ERR,"%s: %m","couldn't write to stderr port: ");
-    error("mqshd: internal system error.");
-    goto bad2;
+  if (errnum != __NONE) {
+    /* If stderr port requested, these errors are sent on the stderr
+     * stream.  If stderr not requested, they are sent on the
+     * stdout stream.
+     */
+    switch(errnum) {
+    case __READ: errorsock(sock, "mqshd: error reading munge blob."  );
+      break;
+    case __MUNGE: errorsock(sock,"mqshd: %s", munge_strerror(m_rv));
+      break;
+    case __PAYLOAD: errorsock(sock,"mqshd: Bad payload data.");
+      break;
+    case __PORT: errorsock(sock,"mqshd: Cleartext stderr port number"
+                           " is not the same as the encrypted one.");
+      break;
+    case __CRED: errorsock(sock,"mqshd: failed credential check.");
+      break;
+    case __AUTH: errorsock(sock, "mqshd: failed authentication.");
+      break;
+    case __SYSTEM: errorsock(sock,"mqshd: internal system error.");
+      break;
+    case __INTERNAL: errorsock(sock,"mqshd: internal error.");
+      break;
+    default:
+      break;
+    }
+    
+  quit_now:      
+    if (errnum != __READ && errnum != __MUNGE && errnum != __PAYLOAD)
+      goto bad2;
+    goto bad;
+  }
+
+  if (cport != 0) {
+    /*
+     * Write random number to stderr
+     */
+    rand = htonl(rand);
+    rv = fd_write_n(sock,&rand,sizeof(rand));
+    if (rv == -1) {
+      syslog(LOG_ERR,"%s: %m","couldn't write to stderr port: ");
+      error("mqshd: internal system error.");
+      goto bad2;
+    }
   }
 
   /*
