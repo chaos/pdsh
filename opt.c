@@ -170,72 +170,80 @@ bool opt_register(struct pdsh_module_option *opt_table)
 }
 
 /*
+ * Check current path dir, cwd, and argv0 for path to program
+ */
+char * _check_path(char *dir, char *cwd, char *argv0)
+{
+  char *abspath = NULL;
+
+  if (*dir != '/') {
+    abspath = Strdup(cwd);
+    xstrcat(&abspath, "/");
+  }
+  xstrcat(&abspath, dir);
+  xstrcat(&abspath, "/");
+  xstrcat(&abspath, argv0);
+  
+  if (access(abspath, R_OK) == 0)
+      return abspath;
+
+  Free((void **) &abspath);
+
+  return NULL;
+}
+
+/*
  *  Determine absolute path to the progam name based in as argv0
  */
 char * _find_path(char *argv0) 
 {
-    char *abspath;
+    char *abspath = NULL;
+    char cwd[MAXPATHLEN];
 
-    if (personality == PCP) {
-        if (*argv0 == '/') {
-            /* path absolute */
-            abspath = Strdup(argv0);
-        }
-        else {
-            char cwd[MAXPATHLEN];
+    if (personality != PCP)
+        goto done;
 
-            if (getcwd(cwd, MAXPATHLEN) == NULL) 
-                errx("%p: getcwd failed: %m\n"); 
-
-            if (*argv0 == '.' || strchr(argv0, '/') != NULL) {
-                /* path relative */
-                abspath = Strdup(cwd);
-                xstrcat(&abspath, "/");
-                xstrcat(&abspath, argv0);
-            }
-            else {
-                /* argv0 executed in PATH environment var */
-                char        *dir, *path, *cur, *p;
-                List         l = list_create(NULL);
-                ListIterator i;
-          
-                if ((path = Strdup(getenv("PATH"))) == NULL)
-                    errx("%p: getenv failed\n"); 
-          
-                cur = path;
-                while ((p = strchr(cur,':')) != NULL) {
-                    *p = '\0';
-                    if (strlen(cur) > 0)
-                        list_append(l, cur);
-                    cur = ++p;
-                }
-
-                i = list_iterator_create(l);
-                while ((dir = list_next(i))) {
-                    abspath = NULL;
-            
-                    if (*dir != '/') {
-                        abspath = Strdup(cwd);
-                        xstrcat(&abspath, "/");
-                    }
-                    xstrcat(&abspath, dir);
-                    xstrcat(&abspath, "/");
-                    xstrcat(&abspath, argv0);
-            
-                    if (access(abspath, R_OK) == 0)
-                        break;
-
-                    Free((void **) &abspath);
-                }
-                
-                Free((void **) &path);
-                list_destroy(l);
-            }
-        }
+    if (*argv0 == '/') {
+        /* is absolute path */
+        abspath = Strdup(argv0);
+        goto done;
     }
-    else
-        abspath = NULL;
 
+    if (getcwd(cwd, MAXPATHLEN) == NULL) 
+        errx("%p: getcwd failed: %m\n"); 
+      
+    if (*argv0 == '.' || strchr(argv0, '/') != NULL) {
+        /* path relative */
+        abspath = Strdup(cwd);
+        xstrcat(&abspath, "/");
+        xstrcat(&abspath, argv0);
+    }
+    else {
+      /* argv0 executed in PATH environment var */
+      char *path, *dir, *p;
+      
+      if ((path = Strdup(getenv("PATH"))) == NULL)
+        errx("%p: getenv PATH failed\n"); 
+      
+      dir = path;
+      while ((p = strchr(dir,':')) != NULL) {
+        *p = '\0';
+        
+        if (strlen(dir) > 0 && (abspath = _check_path(dir,cwd,argv0)) != NULL) {
+            Free((void **) &path);
+            goto done;
+        }
+
+        dir = ++p;
+      }
+      
+      if (strlen(dir) > 0)
+          abspath = _check_path(dir,cwd,argv0);
+        
+      Free((void **) &path);
+    }
+
+done:
     return abspath;
 }
 
