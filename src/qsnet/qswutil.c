@@ -304,7 +304,9 @@ qsw_init_capability(ELAN_CAPABILITY *cap, int nprocs, list_t nodelist,
 		int cyclic_alloc)
 {
 	int i;
-	int procs_per_node = nprocs / list_length(nodelist);
+	int num_nodes = list_length(nodelist);
+	int procs_per_node = nprocs / num_nodes;
+	
 
 	srand48(getpid());
 
@@ -358,7 +360,7 @@ qsw_init_capability(ELAN_CAPABILITY *cap, int nprocs, list_t nodelist,
 				ELAN_MAX_VPS);
 		return -1;
 	}
-	if (abs(cap->HighNode - cap->LowNode) == cap->Entries - 1)
+	if (abs(cap->HighNode - cap->LowNode) == num_nodes - 1)
 		cap->Type |= ELAN_CAP_TYPE_BROADCASTABLE;
 
 	return 0;
