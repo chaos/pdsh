@@ -158,8 +158,7 @@ Release 1.6
 	Configure --with-krb4 configures pdsh to use krb4 for all connnections.
 	The two configuration options cannot be specified together.  In the
 	absense of either, rsh is used (the preferred option).  Got rid of 
-	-e, -R, and -k options for selecting these at runtime.  Stop treating
-	root and users differently wtih krb4 (if --with-krb4, use that for
-	everyone).
+	-e, -R, and -k options for selecting these at runtime.  Do not use
+	rsh for non-root users if --with-krb4 specified.
 
 	Released version 1.6.
