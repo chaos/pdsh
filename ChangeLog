@@ -1,3 +1,12 @@
+2003-10-13  Mark Grondona <mgrondona@llnl.gov>
+
+	* config/ac_mqshell.m4, config/ac_qshell.m4, config/ac_elan.m4:
+	Abstract Elan tests into AC_ELAN macro. Test for either libelanctrl
+	or libelan3.
+
+	* src/qsnet/qswutil.c: Integrate patch from Quadrics to support
+ 	new QSW elanctrl interface.
+	
 2003-10-12  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/qsnet/qshell.c (getpwnam_common): return copy of passwd
