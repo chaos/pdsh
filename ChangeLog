@@ -1,8 +1,8 @@
 2003-09-17  Albert Chu <chu11@llnl.gov>
 
 	* src/pdsh/dsh.c (dsh): 
-	Fixed bug in which _rsh_thread does not terminate jobs.  Bug
-	caused by kill_on_fail value not being propogated properly to
+	Fixed bug in which _rsh_thread does not terminate jobs properly.
+	Bug caused by kill_on_fail value not being propogated properly to
 	_rsh_thread.
 
 	* src/pdsh/dsh.c (dsh): 
