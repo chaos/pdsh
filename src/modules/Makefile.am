@@ -41,13 +41,11 @@ endif
 
 if WITH_MRSH
 MRSH_MODULE = mcmd.la
+endif
 
-if WITH_ELAN
+if WITH_MQSH
 MQSH_MODULE = mqcmd.la
 endif
-
-endif
-
 
 pkglib_LTLIBRARIES = \
 	sshcmd.la \
