@@ -384,12 +384,12 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 #endif
 #if HAVE_RMS_PMANAGER
 	/* get wcoll from RMS partition manager */
-	if (opt->rms_partition) { 
+	if (opt->rms_partition || opt->wcoll == NULL) { 
 		/* catch couple of errors early */
 		if (opt->wcoll)
-			errx("%p: -P cannot be used with -w or other lists\n");
+			errx("%p: RMS cannot be used with -w or other lists\n");
 		if (opt->rms_nnodes == -1 && opt->q_nprocs == -1)
-			errx("%p: -P requires -N and/or -n\n");
+			errx("%p: RMS requires -N and/or -n\n");
 		if (opt->q_nprocs != -1 && opt->rcmd_type != RCMD_QSHELL)
 			errx("%p: -n requires -E\n");
 
