@@ -27,12 +27,12 @@
 /* 
  * Theory of operation:
  *
- * The main thread creates a separate thread for each rsh/krsh which lasts 
+ * The main thread creates a separate thread for each rsh/krsh/etc. which lasts 
  * the life of the connection (establishing it, copying remote stdout/stderr  
  * to local stdout/stderr and closing the connection).  The main thread makes 
  * sure that at most fanout number of threads are active at any given time.  
  * When a thread terminates, it signals a condition variable (threadcount_cond)
- * which causes the main thread to start another rsh/krsh thread to take its
+ * which causes the main thread to start another rsh/krsh/etc. thread to take its
  * place.
  *
  * We rely on implicit stdio locking to enable us to write lines to 
@@ -40,7 +40,7 @@
  * all mixed up.
  * 
  * A special watchdog thread sends SIGLARM to any threads that have been in 
- * the DSH_RCMD state (usually connect() in rcmd.c or k4cmd.c) for more than 
+ * the DSH_RCMD state (usually connect() in rcmd/k4cmd/etc.) for more than 
  * CONNECT_TIMEOUT seconds.  SIGALRM is masked everywhere but during connect().
  * Similarly, if a command timeout is specified (default is none), the watchdog
  * thread sends SIGALRM to threads that have been in the DSH_READING state
@@ -141,7 +141,7 @@ static void _xsignal(int signal, void (*handler) (int))
 
 /*
  * SIGALRM handler.  This is just a stub because we are really interested
- * in interrupting connect() in k4cmd/rcmd or select() in rsh() below and
+ * in interrupting connect() in rcmd/k4cmd/etc. or select() below and
  * causing them to return EINTR.
  */
 static void _alarm_handler(int dummy)
