@@ -24,6 +24,9 @@ To configure in additional feature modules:
 
 ./configure [options]
 
+--with-ssh
+        Enable support of ssh(1) remote shell service.
+
 --with-machines=/path/to/machines
 	Use a flat file list of machine names for -a instead of
         genders, nodeattr, or SDRGetObjects.  
@@ -34,19 +37,24 @@ To configure in additional feature modules:
 
 --with-genders
         Enable support of a genders database through the genders(3)
-        library.
+        library.  For pdsh's -i option to function properly, the genders
+        database must have alternate node names listed as the value of
+        the "altname" attribute. 
 
 --with-nodeattr=/path/to/nodeattr
         Enable support of a genders database through the nodeattr(1)
         command. This is primarily for older systems that do not yet
-        have genders(3) library support.
+        have genders(3) library support.  For pdsh's -i option to
+        function properly, the genders database must have alternate
+        node names listed as the value of the "altname" attribute and
+        the nodeattr command must have the -r option available. 
 
 --with-nodeupdown
         Enable support of dynamic elimination of down nodes through
         the nodeupdown(3) library. 
 
 --with-mrsh
-        Enable support of the mrsh(1) shell service.
+        Enable support of mrsh(1) remote shell service.
    
 --with-mqshell
         Enable support for runnig parallel jobs on the Quadrics Elan
@@ -69,9 +77,10 @@ To configure in additional feature modules:
 Note that a number of the above configurations options may "conflict"
 with each other because they perform identical operations.  For
 example, genders and nodeattr both support the -g option.  If several
-modules are built that support identical options, the options will
-default to one particular module.  See the man page in this directory
-for details on which modules conflict.
+modules are installed that support identical options, the options will
+default to one particular module.  Static compilation of modules will
+fail if conflicting modules are selected.  See the man page in this
+directory for details on which modules conflict.
 
 +------------+
 | INSTALLING |

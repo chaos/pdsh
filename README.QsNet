@@ -1,10 +1,10 @@
-If built with --with-elan or --with-mqsh, pdsh may be used to run MPI
-jobs on a QsNet interconnect.  This option requires that you have the
-Elan user space libraries installed (qswelan-r RPM for Linux) and that
-your kernel be patched to run the 'elan3' and 'rms' device drivers.
-Pdsh can run independently of the RMS product (the 'rms' kernel
-module, which is used by pdsh, is a distinct facility from the RMS
-product).
+If built with --with-qshell or --with-mqshell, pdsh may be used to run
+MPI jobs on a QsNet interconnect.  This option requires that you have
+the Elan user space libraries installed (qswelan-r RPM for Linux) and
+that your kernel be patched to run the 'elan3' and 'rms' device
+drivers.  Pdsh can run independently of the RMS product (the 'rms'
+kernel module, which is used by pdsh, is a distinct facility from the
+RMS product).
 
 Pdsh can also be run via the Quadrics RMS 'allocate' command such that
 allocate takes care of the node reservations and passes a batch ID

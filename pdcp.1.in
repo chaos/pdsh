@@ -67,9 +67,11 @@ user a number of other possible options when running pdcp.
 .LP
 .B genders
 .LP
-The genders module allows pdcp to access the genders database through
+The genders module allows pdsh to access the genders database through
 the genders(3) library.  The -g, -a, and -i options are available when
-this module is installed.
+this module is installed.  The -i option will only work if the genders
+database has alternate node names listed as the value of the "altname"
+attribute.
 .LP
 .B machines
 .LP
@@ -79,10 +81,13 @@ when this module is installed.
 .LP
 .B nodeattr
 .LP
-The nodeattr module allows pdcp to access the genders database through
+The nodeattr module allows pdsh to access the genders database through
 the nodeattr(1) command.  This module is primarily needed for older
 systems that do not yet have the gender(3) library installed.  The -g,
--a, and -i options are available when this module is installed.
+-a, and -i options are available when this module is installed.  The
+-i option will only work if the genders database has alternate node
+names listed as the value of the "altname" attribute and if the
+nodeattr command has the -r option available.
 .LP
 .B nodeupdown
 .LP
@@ -110,9 +115,9 @@ one per line.  The host list may contain hostname ranges of the form
 HOST RANGES section below.
 .LP
 .I "-x host,host,..."
-Exclude the specified hosts.  May be specified in conjunction with other
-target node list options such as -a. Hostname ranges may also be specified
-to the -x option (see HOST RANGES section below)
+Exclude the specified hosts.  May be specified in conjunction with
+other target node list options such as -a and -g. Hostname ranges may
+also be specified to the -x option (see HOST RANGES section below)
 .LP
 .I "-a"
 Target "all" nodes in the cluster.  Conflicts with -w and -g options.
@@ -120,8 +125,9 @@ Available only if the genders, nodeattr, SDR, or machines module is
 installed.
 .LP
 .I "-v"
-In combination with -a, eliminate nodes that are down.  Available only
-if the SDR or nodeupdown module is installed.
+Eliminate target nodes that are down.  Available only if the SDR or
+nodeupdown module is installed.  On AIX, the -v option can only be
+used in conjunction with the -a option.
 .LP
 .I "-G"
 In combination with -a, include all partitions. Available only 
@@ -135,7 +141,8 @@ module is installed.
 .I "-i"
 In conjunction with -a or -g, request canonical hostnames.  The
 default is to use reliable hostnames.  Available only if the
-genders or nodeattr module is installed.
+genders or nodeattr module is installed.  On AIX, the -i option
+can only be used in conjunction with the -a option.
 .LP
 If none of the above options are specified, the WCOLL environment variable
 must point to a file that contains a list of nodes, one per line.  

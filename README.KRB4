@@ -1,14 +1,14 @@
-NOTE: this has not been tested in a long while.  We have stopped using KRB4
-for pdsh on our SP's because we would occasionally overwhelm our KDC.
-Also there is a bug which causes pdsh to run very slowly when pdsh has to
-refresh the tgt for a node. --jg
----
 To build the *API only* on an SP with AIX 4.2.1 / PSSP 2.4 and install in 
 /usr/local/krb4, use the following manual procedure or run the attached script
 (but look at it first:  set paths appropriate to your environment and note
 that it destroys an old copy of the API if it is in the way).
 
-NOTE: gcc needs to be in your PATH.
+NOTES: 
+- This has not been tested in a long while.  We have stopped using KRB4
+for pdsh on our SP's because we would occasionally overwhelm our KDC.
+Also there is a bug which causes pdsh to run very slowly when pdsh has to
+refresh the tgt for a node. --jg
+- gcc needs to be in your PATH.
 
 1) Obtain cns-96q4.tar.gz distribution from MIT and untar in ./kerberos.
    See: http://web.mit.edu/network/kerberos-form.html (verified this 3/98).
