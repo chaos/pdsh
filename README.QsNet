@@ -24,26 +24,7 @@ The `/etc/elanhosts' config file
 Pdsh uses a simple config file, /etc/elanhosts, to describe hosts
 containing Elan adapters (and on which Elan MPI jobs may be run). The
 config file is also used by the daemons qshd and mqshd to initialize
-the Elan network error resolver thread. The /etc/elanhosts file has the
-following format:
-
- Type  ElanIDs  Hostnames
-
-where Type is one of "eip" (the eip hostname), "eth" (ethernet hostname),
-or "other" (something else). The only required entry is "eip," which
-lists the hostnames of the Elan IP adapters in each node of the cluster.
-
-As an example, the config file:
-
-# Type ElanIDs  Hostnames
-  eip  [0-15]   host[0-15]
-  eth  [0-15]   ehost[0-15]
-  eth  [0,15]   host0-eth2,host15-eth2
-
-describes a 16 node cluster with eip hostnames of host0, host1, host2, ...
-and an ethernet adapter in each node with a hostname similar to the eip
-hostname with the letter `e' prefixed. It also describes two more special
-ethernet hostnames for host0 and host15 (perhaps a gigabit connection
-to storage). The extra "eth" entries allow pdsh to run Elan MPI jobs
-through these nodes via the `ehost' interfaces as well as the eip `host'
-interfaces.
+the Elan network error resolver thread. Parsing of the /etc/elanhosts
+file is accomplished by using the libelanhosts(3) library, upon which
+pdsh depends (when building for QsNet). See the elanhosts(5)
+man page for a description of the /etc/elanhosts file format.
