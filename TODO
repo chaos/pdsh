@@ -12,3 +12,5 @@
 - Addy requests more prun-like options
 - Consider defining WANT_RECKLESS_HOSTRANGE_EXPANSION to 1 on SP where
   hyphens in hostnames are less likely than linux?
+- Make PAM support work in qshd 
+  o consider whether appropriate to reuse service name "rsh"

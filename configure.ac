@@ -311,8 +311,8 @@ if test "$withelan" = yes; then
 #	AC_MSG_ERROR([No libpam!]), [-lpam -lpam_misc])
 fi
 if test "$withrms" = yes; then
-    AC_CHECK_LIB([rmsapi], [rms_numNodes], LIBS="-lrmsapi -lrms $LIBS",
-	AC_MSG_ERROR([No librmsapi!]), [-lrmsapi -lrms])
+#    AC_CHECK_LIB([rmsapi], [rms_numNodes], LIBS="-lrmsapi -lrms $LIBS",
+I#	AC_MSG_ERROR([No librmsapi!]), [-lrmsapi -lrms])
 fi
 AC_SUBST(LIBSPAM)
 if test "$withkrb4" = yes; then
