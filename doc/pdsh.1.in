@@ -256,7 +256,7 @@ via the nodeattr(1) command. See the \fBgenders\fR section above
 for a list of support options with this module. The option usage
 with the \fBnodeattr\fR module is the same as \fBgenders\fR, above,
 with the exception that the \fI-i\fR option may only be used
-with \fI-a\fR or \fI-g\fR, and the \fI-F\fR option is not available.
+with \fI-a\fR or \fI-g\fR.
 
 .SH "ENVIRONMENT VARIABLES"
 .PP
