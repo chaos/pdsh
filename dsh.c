@@ -875,7 +875,7 @@ int dsh(opt_t * opt)
 
     /* build PCP command */
     if (pdsh_personality() == PCP) {
-        char *cmd;
+        char *cmd = NULL;
 
         /* expand directories, if any, and verify access for all files */
         pcp_infiles = _expand_dirs(opt->infile_names);
