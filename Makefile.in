@@ -85,6 +85,7 @@ tags: $(PROGS)
 
 
 include Make-rpm.mk
+include Make-test.mk
 
 # AUTO-REMAKE OF AUTOCONF-RELATED TARGETS
 
