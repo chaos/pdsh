@@ -32,7 +32,9 @@
 
 #if	HAVE_KRB4
 
+#if	HAVE_PTHREAD_H
 #include <pthread.h>
+#endif
 
 #include <stdio.h>
 #include <string.h>

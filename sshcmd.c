@@ -26,7 +26,9 @@
 #if	HAVE_UNISTD_H
 #include <unistd.h>	
 #endif
+#if	HAVE_PTHREAD_H
 #include <pthread.h>
+#endif
 #include <string.h>	/* memset */
 
 #include "xstring.h"

@@ -56,12 +56,11 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-
+#if	HAVE_PTHREAD_H
 #include <pthread.h>
-
+#endif
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
 #include <signal.h>
 #if HAVE_FCNTL_H
 #include <fcntl.h>

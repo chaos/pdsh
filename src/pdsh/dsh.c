@@ -41,7 +41,9 @@
 #include "config.h"
 #endif
 
+#if	HAVE_PTHREAD_H
 #include <pthread.h>
+#endif
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/select.h>
