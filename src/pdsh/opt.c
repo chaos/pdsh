@@ -52,12 +52,12 @@ Usage: pdcp [-options] src [src2...] dest\n\
 -a                target all nodes\n\
 -i                request alternate hostnames\n\
 -q                list the option settings and quit\n\
--b                disable ^C status feature\n\
+-b                disable ^C status feature (batch mode)\n\
 -l user           execute remote commands as user\n\
--t seconds        set connect timeout (default is 5 sec)\n\
+-t seconds        set connect timeout (default is 10 sec)\n\
 -u seconds        set command timeout (no default)\n\
 -f n              use fanout of n nodes\n\
--w host,host,...  set target node list on command line\n\"
+-w host,host,...  set target node list on command line\n"
 
 #define OPT_USAGE_SDR "\
 -G                for -a, include all partitions of SP System\n\
@@ -307,13 +307,13 @@ opt_args(opt_t *opt, int argc, char *argv[])
 			case 'l':	/* specify remote username for rshd */
 				strncpy(opt->ruser, optarg, MAX_USERNAME);
 				break;
-			case 'r':
+			case 'r':	/* rcp: copy recursively */
 				opt->recursive = true;
 				break;
-			case 'p':
+			case 'p':	/* rcp: preserve permissions */
 				opt->preserve = true;
 				break;
-			case 'V':
+			case 'V':	/* show version */
 				show_version();
 				break;
 			case 'h':	/* display usage message */
@@ -356,7 +356,7 @@ opt_args(opt_t *opt, int argc, char *argv[])
 #elif 	HAVE_GENDERS
 		opt->wcoll = read_genders("all", opt->altnames);
 #else
-#error bogus configuration
+#error configure erorr
 #endif
 	} 
 #if	HAVE_GENDERS
