@@ -320,7 +320,7 @@ if test "$withrms" = yes; then
     AC_CHECK_LIB([rmsapi], [rms_numNodes], LIBS="-lrmsapi -lrms $LIBS",
 	AC_MSG_ERROR([No librmsapi!]), [-lrmsapi -lrms])
 fi
-# AC_SUBST(LIBSPAM)
+AC_SUBST(LIBSPAM)
 if test "$withkrb4" = yes; then
     AC_CHECK_LIB([krb], [krb_sendauth], LIBS="-lkrb -ldes $LIBS",
 	AC_MSG_ERROR([No libkrb!]), [-lkrb -ldes])

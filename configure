@@ -2770,7 +2770,7 @@ echo "$as_me: error: No librmsapi!" >&2;}
 fi
 
 fi
-# AC_SUBST(LIBSPAM)
+
 if test "$withkrb4" = yes; then
     echo "$as_me:2775: checking for krb_sendauth in -lkrb" >&5
 echo $ECHO_N "checking for krb_sendauth in -lkrb... $ECHO_C" >&6
@@ -4246,6 +4246,7 @@ s,@SDRGETOBJECTS@,$SDRGETOBJECTS,;t t
 s,@HAVE_SDR@,$HAVE_SDR,;t t
 s,@RCP@,$RCP,;t t
 s,@RSH@,$RSH,;t t
+s,@LIBSPAM@,$LIBSPAM,;t t
 s,@CPP@,$CPP,;t t
 CEOF
 
@@ -4361,7 +4362,7 @@ done; }
   esac
 
   if test x"$ac_file" != x-; then
-    { echo "$as_me:4364: creating $ac_file" >&5
+    { echo "$as_me:4365: creating $ac_file" >&5
 echo "$as_me: creating $ac_file" >&6;}
     rm -f "$ac_file"
   fi
@@ -4379,7 +4380,7 @@ echo "$as_me: creating $ac_file" >&6;}
       -) echo $tmp/stdin ;;
       [\\/$]*)
          # Absolute (can't be DOS-style, as IFS=:)
-         test -f "$f" || { { echo "$as_me:4382: error: cannot find input file: $f" >&5
+         test -f "$f" || { { echo "$as_me:4383: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          echo $f;;
@@ -4392,7 +4393,7 @@ echo "$as_me: error: cannot find input file: $f" >&2;}
            echo $srcdir/$f
          else
            # /dev/null tree
-           { { echo "$as_me:4395: error: cannot find input file: $f" >&5
+           { { echo "$as_me:4396: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          fi;;
@@ -4453,7 +4454,7 @@ for ac_file in : $CONFIG_HEADERS; do test "x$ac_file" = x: && continue
   * )   ac_file_in=$ac_file.in ;;
   esac
 
-  test x"$ac_file" != x- && { echo "$as_me:4456: creating $ac_file" >&5
+  test x"$ac_file" != x- && { echo "$as_me:4457: creating $ac_file" >&5
 echo "$as_me: creating $ac_file" >&6;}
 
   # First look for the input files in the build tree, otherwise in the
@@ -4464,7 +4465,7 @@ echo "$as_me: creating $ac_file" >&6;}
       -) echo $tmp/stdin ;;
       [\\/$]*)
          # Absolute (can't be DOS-style, as IFS=:)
-         test -f "$f" || { { echo "$as_me:4467: error: cannot find input file: $f" >&5
+         test -f "$f" || { { echo "$as_me:4468: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          echo $f;;
@@ -4477,7 +4478,7 @@ echo "$as_me: error: cannot find input file: $f" >&2;}
            echo $srcdir/$f
          else
            # /dev/null tree
-           { { echo "$as_me:4480: error: cannot find input file: $f" >&5
+           { { echo "$as_me:4481: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          fi;;
@@ -4594,7 +4595,7 @@ cat >>$CONFIG_STATUS <<\EOF
   rm -f $tmp/in
   if test x"$ac_file" != x-; then
     if cmp -s $ac_file $tmp/config.h 2>/dev/null; then
-      { echo "$as_me:4597: $ac_file is unchanged" >&5
+      { echo "$as_me:4598: $ac_file is unchanged" >&5
 echo "$as_me: $ac_file is unchanged" >&6;}
     else
       ac_dir=`$as_expr X"$ac_file" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
