@@ -17,7 +17,6 @@ AC_DEFUN([AC_RMSQUERY],
   #
   # Check for whether to build rms module
   # 
-  ac_with_rms=
   AC_MSG_CHECKING([for whether to build rms module])
   AC_ARG_WITH([rms],
     AC_HELP_STRING([--with-rms], 
