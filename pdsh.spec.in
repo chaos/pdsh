@@ -27,7 +27,7 @@ Sets up Elan capabilities and environment variables needed by Quadrics MPICH
 executables.
 
 %prep
-%setup
+%setup -n %{name}-%{version}-%{release}
 
 %build
 %if %chaos
