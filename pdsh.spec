@@ -27,7 +27,7 @@ executables.
 %setup
 
 %build
-make all qshd
+make
 
 %install
 rm -rf $RPM_BUILD_ROOT
