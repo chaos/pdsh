@@ -125,6 +125,7 @@ EXTRA_DIST = \
     pdsh.spec.in \
     dshbak dshbak.1 \
     qshell.xinetd \
+    mqshell.xinetd \
     autogen.sh    
 
 # hack for automake version compatibility
