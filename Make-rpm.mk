@@ -74,6 +74,7 @@ tar rpm:
 	if test "$$proj" != "$$name"; then \
 	  echo "ERROR: PROJECT does not match metadata." 1>&2; exit 1; fi; \
 	ver=`perl -ne 'print,exit if s/^\s*VERSION:\s*(\S*).*/\1/i' $$meta`; \
+	rver="$$ver"; \
 	test "$$tag" = "HEAD" -o "$$tag" = "BASE" && ver="$$ver+"; \
 	rel=`perl -ne 'print,exit if s/^\s*RELEASE:\s*(\S*).*/\1/i' $$meta`; \
 	if test -z "$$rel"; then \
@@ -82,7 +83,7 @@ tar rpm:
 	  mv "$$tmp/$$proj" "$$tmp/$$proj.bak" || exit 1; \
 	  (cd "$$tmp/$$proj.bak"; ./autogen.sh; ./configure; \
 	   $(MAKE) -s distdir) || exit 1; \
-	  mv "$$tmp/$$proj.bak/$$name-$$ver" "$$tmp/$$pkg" || exit 1; \
+	  mv "$$tmp/$$proj.bak/$$name-$$rver" "$$tmp/$$pkg" || exit 1; \
 	  rm -rf "$$tmp/$$proj.bak"; \
 	  else mv "$$tmp/$$proj" "$$tmp/$$pkg" || exit 1; fi; \
 	$(MAKE) -s $@-internal mkdir="$$mkdir" tmp="$$tmp" \
