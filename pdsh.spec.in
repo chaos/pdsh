@@ -8,10 +8,9 @@ Source: %{name}-%{version}.tgz
 BuildRoot: %{_tmppath}/%{name}-%{version}
 # Prereq: 
 
-%define withelan 0
-%define withrms 0
-%define withssh 0
-%define enabledebug 0
+# Set this to 1 to build with genders support and framework for
+# running Elan jobs.
+%define chaos 0
 
 %description
 Pdsh is a multithreaded remote shell client which executes commands
@@ -31,19 +30,11 @@ executables.
 %setup
 
 %build
-%if %withelan
-CONFOPTS="--with-elan $CONFOPTS"
+%if %chaos
+./configure --prefix=/usr --with-elan --with-rms
+%else
+./configure --prefix=/usr --with-machines=/usr/local/etc/machines
 %endif
-%if %enabledebug
-CONFOPTS="--enable-debug $CONFOPTS"
-%endif
-%if %withrms
-CONFOPTS="--with-rms $CONFOPTS"
-%endif
-%if %withssh
-CONFOPTS="--with-ssh $CONFOPTS"
-%endif
-CFLAGS="$RPM_OPT_FLAGS" LDFLAGS="-s" ./configure --prefix=/usr $CONFOPTS
 make
 
 %install
@@ -58,7 +49,7 @@ gzip pdsh.1 pdcp.1 dshbak.1
 cp pdsh.1.gz $RPM_BUILD_ROOT/usr/man/man1
 cp pdcp.1.gz $RPM_BUILD_ROOT/usr/man/man1
 cp dshbak.1.gz $RPM_BUILD_ROOT/usr/man/man1
-%if %{withelan}
+%if %{chaos}
 mkdir -p $RPM_BUILD_ROOT/etc/xinetd.d
 mkdir -p $RPM_BUILD_ROOT/usr/sbin
 cp qshell.xinetd $RPM_BUILD_ROOT/etc/xinetd.d/qshell
@@ -75,7 +66,7 @@ install -s qshd $RPM_BUILD_ROOT/usr/sbin/in.qshd
 /usr/man/man1/pdcp.1.gz
 /usr/man/man1/dshbak.1.gz
 
-%if %{withelan}
+%if %{chaos}
 %files qshd
 %defattr(-,root,root)
 /usr/sbin/in.qshd
