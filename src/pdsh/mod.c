@@ -433,13 +433,13 @@ static void
 _print_option_help(struct pdsh_module_option *p, int col)
 {
     char buf[81];
-    assert(opt != NULL);
+
     assert(p != NULL);
 
     snprintf(buf, 81, "-%c %-*s %s\n", p->opt, col - 4, 
              (p->arginfo ? p->arginfo : ""), p->descr);
 
-    out("%s", buf);
+    err("%s", buf);
 }
 
 void
