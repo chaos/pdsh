@@ -198,10 +198,8 @@ mcmd_init(opt_t * opt)
     /*
      * Drop elevated permissions if we have them.
      */
-    if ((geteuid() != getuid())) {
-        setuid(getuid());
-        setgid(getgid());
-    }
+    setuid(getuid());
+    setgid(getgid());
 
     /*
      * Generate a random number to send in our package to the 

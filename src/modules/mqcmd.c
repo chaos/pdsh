@@ -268,10 +268,8 @@ _mqcmd_opt_init(opt_t *opt)
     /*
      * Drop elevated permissions if we have them.
      */
-    if ((geteuid() != getuid())) {
-        setuid(getuid());
-        setgid(getgid());
-    }
+    setuid(getuid());
+    setgid(getgid());
 
     if (opt->fanout == DFLT_FANOUT && opt->wcoll != NULL)
         opt->fanout = hostlist_count(opt->wcoll);
