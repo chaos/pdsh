@@ -85,76 +85,84 @@ needed by Quadrics MPICH executables.
 #
 # Module packages:
 #
-%package  rcmd-rsh
-Summary:  Provides bsd rcmd capability to pdsh.
-Group:    System Environment/Base
-Provides: pdsh-rcmd
+%package   rcmd-rsh
+Summary:   Provides bsd rcmd capability to pdsh.
+Group:     System Environment/Base
+Provides:  pdsh-rcmd
 %description rcmd-rsh
 Pdsh module for bsd rcmd functionality.
 
-%package  rcmd-ssh
-Summary:  Provides ssh rcmd capability to pdsh.
-Group:    System Environment/Base
-Provides: pdsh-rcmd
+%package   rcmd-ssh
+Summary:   Provides ssh rcmd capability to pdsh.
+Group:     System Environment/Base
+Provides:  pdsh-rcmd
 %description rcmd-ssh
 Pdsh module for ssh rcmd functionality.
 
-%package  rcmd-qshell
-Summary:  Provides qshell rcmd capability to pdsh.
-Group:    System Environment/Base
-Provides: pdsh-rcmd
-Requires: pdsh-qshd
+%package   rcmd-qshell
+Summary:   Provides qshell rcmd capability to pdsh.
+Group:     System Environment/Base
+Provides:  pdsh-rcmd
+Requires:  pdsh-qshd
+Conflicts: pdsh-rcmd-mqshell
 %description rcmd-qshell
 Pdsh module for running QsNet MPI jobs.
 
-%package  rcmd-mrsh
-Summary:  Provides mrsh rcmd capability to pdsh.
-Group:    System Environment/Base
-Provides: pdsh-rcmd
-Requires: mrshd
+%package   rcmd-mrsh
+Summary:   Provides mrsh rcmd capability to pdsh.
+Group:     System Environment/Base
+Provides:  pdsh-rcmd
+Requires:  mrshd
 %description rcmd-mrsh
 Pdsh module for mrsh rcmd functionality.
 
-%package  rcmd-mqshell
-Summary:  Provides mqshell rcmd capability to pdsh.
-Group:    System Environment/Base
-Provides: pdsh-rcmd
-Requires: pdsh-mqshd
+%package   rcmd-mqshell
+Summary:   Provides mqshell rcmd capability to pdsh.
+Group:     System Environment/Base
+Provides:  pdsh-rcmd
+Requires:  pdsh-mqshd
+Conflicts: pdsh-rcmd-qshell
 %description rcmd-mqshell
 Pdsh module for mqshell rcmd functionality.
 
-%package  mod-genders
-Summary:  Provides libgenders support for pdsh.
-Group:    System Environment/Base
-Requires: genders >= 1.1
+%package   mod-genders
+Summary:   Provides libgenders support for pdsh.
+Group:     System Environment/Base
+Requires:  genders >= 1.1
+Conflicts: pdsh-mod-nodeattr
+Conflicts: pdsh-mod-machines
 %description mod-genders
 Pdsh module for libgenders functionality.
 
-%package  mod-nodeattr
-Summary:  Provides genders support for pdsh using the nodeattr program.
-Group:    System Environment/Base
-Requires: genders 
+%package   mod-nodeattr
+Summary:   Provides genders support for pdsh using the nodeattr program.
+Group:     System Environment/Base
+Requires:  genders 
+Conflicts: pdsh-mod-genders
+Conflicts: pdsh-mod-machines
 %description mod-nodeattr
 Pdsh module for genders functionality using the nodeattr program.
 
-%package  mod-nodeupdown
-Summary:  Provides libnodeupdown support for pdsh.
-Group:    System Environment/Base
-Requires: whatsup
+%package   mod-nodeupdown
+Summary:   Provides libnodeupdown support for pdsh.
+Group:     System Environment/Base
+Requires:  whatsup
 %description mod-nodeupdown
 Pdsh module providing -v functionality using libnodeupdown.
 
-%package  mod-rms
-Summary:  Provides RMS support for pdsh.
-Group:    System Environment/Base
-Requires: qsrmslibs
+%package   mod-rms
+Summary:   Provides RMS support for pdsh.
+Group:     System Environment/Base
+Requires:  qsrmslibs
 %description mod-rms
 Pdsh module providing support for gathering the list of target nodes
 from an allocated RMS resource.
 
-%package  mod-machines
-Summary:  Pdsh module for gathering list of target nodes from a machines file.
-Group:    System Environment/Base
+%package   mod-machines
+Summary:   Pdsh module for gathering list of target nodes from a machines file.
+Group:     System Environment/Base
+Conflicts: pdsh-mod-genders
+Conflicts: pdsh-mod-nodeattr
 %description mod-machines
 Pdsh module for gathering list of all target nodes from a machines file.
 
