@@ -138,10 +138,7 @@ rms_la_LDFLAGS =          $(MODULE_FLAGS)
 sdr_la_SOURCES =          sdr.c
 sdr_la_LDFLAGS =          $(MODULE_FLAGS)
 
-force:
-$(qcmd_la_LIBADD) : force
-	@cd `dirname $@` && $(MAKE) `basename $@`
+$(top_builddir)/libqsw.la : force-dependency-check
+	@cd `dirname $@` && make `basename $@`
 
-force:
-$(mqcmd_la_LIBADD) : force
-	@cd `dirname $@` && $(MAKE) `basename $@`
+force-dependency-check:

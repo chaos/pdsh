@@ -14,7 +14,7 @@ man_MANS =                 pdsh.1 pdcp.1 dshbak.1
 noinst_LTLIBRARIES =       libqsw.la
 
 if WITH_QSW
-libqsw_la_SOURCES =        qswutil.c qswutil.h
+libqsw_la_SOURCES =        qswutil.c qswutil.h elanhosts.c elanhosts.h
 QSW_LIBS =                 libqsw.la
 endif
 
@@ -28,7 +28,7 @@ LTDL_FILES =               ltdl.h ltdl.c
 endif
 
 libqsw_la_LDFLAGS =        $(QSHELL_LIBS)
-EXTRA_libqsw_la_SOURCES =  qswutil.c qswutil.h
+EXTRA_libqsw_la_SOURCES =  qswutil.c qswutil.h elanhosts.c elanhosts.h
 
 pdsh_SOURCES =             $(COMMON_FILES) $(LTDL_FILES)
 nodist_pdsh_SOURCES =      testconfig.c
@@ -63,7 +63,7 @@ in_qshd_SOURCES = \
 	err.c err.h \
 	hostlist.c hostlist.h
 
-in_qshd_LDADD = libqsw.la
+in_qshd_LDADD = $(top_builddir)/libqsw.la
 
 in_mqshd_SOURCES = \
 	mqshd.c \
@@ -71,11 +71,14 @@ in_mqshd_SOURCES = \
 	xmalloc.c xmalloc.h \
 	xstring.c xstring.h \
 	err.c err.h \
+	list.c list.h \
 	hostlist.c hostlist.h 
 
-in_mqshd_LDADD = libqsw.la
-
+in_mqshd_LDADD = $(top_builddir)/libqsw.la
 in_mqshd_LDFLAGS = $(MRSH_LIBS)
+
+
+force-dependency-check:
 
 # Makefile rule for building rpm directly from CVS repository
 include $(top_srcdir)/Make-rpm.mk
