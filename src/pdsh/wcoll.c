@@ -106,8 +106,8 @@ hostlist_t read_genders(char *attr, int iopt)
   }
   
   /* assumes genders file in default location */
-  if (genders_open(handle, NULL) == -1) {
-    errx("%p: error opening genders files, %s\n", 
+  if (genders_load_data(handle, NULL) == -1) {
+    errx("%p: error loading genders data, %s\n", 
 	 genders_strerror(genders_errnum(handle)));
   }
 
@@ -174,11 +174,6 @@ hostlist_t read_genders(char *attr, int iopt)
 	 genders_strerror(genders_errnum(handle)));
   }
   
-  if (genders_close(handle) == -1) {
-    errx("%p: error closing genders handle, %s\n",
-	 genders_strerror(genders_errnum(handle)));
-  }
-
   if (genders_handle_destroy(handle) == -1) {
     errx("%p: error destroying genders handle, %s\n",
 	 genders_strerror(genders_errnum(handle)));
