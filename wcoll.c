@@ -126,7 +126,7 @@ hostlist_t read_genders(char *attr, int iopt)
   }
   
   /* does user want alternate names? */
-  if (iopt) {
+  if (!iopt) {
     if ((maxvallen = genders_getmaxvallen(handle)) == -1) {
       errx("%p: error getting max value length, %s\n",
 	 genders_strerror(genders_errnum(handle)));

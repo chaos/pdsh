@@ -1,3 +1,7 @@
+2003-03-05 achu
+	* tagged pdsh-1-8-2chaos
+	* fixed logic bug with -i option.
+
 2003-02-28 achu
 	* tagged pdsh-1-8-1chaos
 
