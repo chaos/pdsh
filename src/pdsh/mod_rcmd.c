@@ -41,7 +41,7 @@
  *   Warning: If none of these are loaded, there will be no default.
  */
 static char * rcmd_rank[] = 
-    { "rsh", "mrsh", "ssh", "krb4", "qsh", "mqsh", NULL };
+    { "mrsh", "rsh", "ssh", "krb4", "qsh", "mqsh", NULL };
 
 /* 
  *  Container for information specific to rcmd modules.
