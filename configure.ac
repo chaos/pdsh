@@ -69,7 +69,6 @@ AC_ARG_WITH(krb4,
 	    ;;
 	yes)
 	    withkrb4=yes
-            AC_DEFINE(HAVE_KRB4, 1, [define for Kerberos IV support])
 	    ;;
 	*)
 	    withkrb4=yes
@@ -79,6 +78,9 @@ AC_ARG_WITH(krb4,
     esac ]
 )
 AC_MSG_RESULT(${withkrb4=no})
+if test "$withkrb4" = yes; then
+    AC_DEFINE(HAVE_KRB4, 1, [define for Kerberos IV support])
+fi
 
 # --with-genders
 AC_MSG_CHECKING(whether to include Genders support)
