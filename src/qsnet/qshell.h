@@ -85,7 +85,6 @@ int qshell(int ac, char *argv[], QshGetArgsF getargs, char *name,
  */
 void error(const char *, ...);
 void errlog(const char *, ...);
-void errorsock(int, const char *, ...);
 
 /*
  *  Put a string of maximum length `len' into the destination `dst'

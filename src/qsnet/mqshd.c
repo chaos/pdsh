@@ -136,6 +136,10 @@ extern int sent_null;
 static char errmsgbuf[ERRMSGLEN];
 static const char *errmsg = NULL;
 
+#if USE_PAM
+extern char *pam_errmsg;
+#endif
+
 static char *munge_parse(char *buf, char *buf_end) {
     int len = strlen(buf);
 
@@ -300,7 +304,7 @@ static void mqshell_get_args(struct sockaddr_in *fromp,
 {
     struct sockaddr_in sin;
     struct passwd cred;
-    int rv = -1, m_rv = -1;
+    int rv = -1;
     int buf_length;
     unsigned short port = 0;
     unsigned int randnum;
@@ -347,7 +351,7 @@ static void mqshell_get_args(struct sockaddr_in *fromp,
      *
      */
     mptr = &mbuf[0];
-    if ((m_rv = munge_decode(mbuf,0,(void **)&mptr,&buf_length,
+    if ((rv = munge_decode(mbuf,0,(void **)&mptr,&buf_length,
                     &cred.pw_uid,&cred.pw_gid)) != EMUNGE_SUCCESS) {
 
         syslog(LOG_ERR, "%s: %s", "munge_decode error", munge_strerror(rv));
@@ -458,7 +462,7 @@ static void mqshell_get_args(struct sockaddr_in *fromp,
     if (pamauth(args->pwd, "mqshell", args->pwd->pw_name, 
                 args->hostname, args->pwd->pw_name       ) < 0) {
         syslog(LOG_ERR, "PAM failed authentication");
-        errmsg = "Permission Denied";
+        errmsg = pam_errmsg;
         goto error_out;
     }
 #endif
@@ -483,18 +487,17 @@ error_out:
         }
 
         /* Sync with client to avoid race condition */
-        m_rv = read(0,&c,1);
-        if (m_rv != 1 || c != '\0') { 
+        rv = read(0,&c,1);
+        if (rv != 1 || c != '\0') { 
             syslog (LOG_ERR, "%s", "mqshd: Client not ready.");
             goto bad;
         }
     }
 
     if (errmsg != NULL) {
-        /* Error may be sent on stdout or stderr streams, depending on if
-         * user requested stderr stream.
-         */
-        errorsock(args->sock, "mqshd: %s.\n", errmsg);
+        char buf[BUFSIZ], *bp = buf;
+        snprintf(bp, sizeof(buf)-1, "%c%s\n", '\01', errmsg);
+        fd_write_n(args->sock, buf, strlen(buf));
         goto bad;
     }
 

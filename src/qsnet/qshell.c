@@ -141,7 +141,13 @@ extern int _check_rhosts_file;
 #ifdef USE_PAM
 #include <security/pam_appl.h>
 #include <security/pam_misc.h>
+#include "src/common/list.h"
 pam_handle_t *pamh;
+static char *last_pam_msg = NULL;
+
+#define PAM_ERRMSGLEN 4096
+char pam_errmsgbuf[PAM_ERRMSGLEN];
+const char *pam_errmsg = NULL;
 #endif
 
 char username[20] = "USER=";
@@ -152,7 +158,7 @@ char *envinit[] = { homedir, shell, path, username, 0 };
 extern char **environ;
 
 static void errcommon(int, const char *, va_list, int);
-static int  getcommon(char *);
+static int  readchar(char *);
 static int  getint(void);
 static int  get_qshell_info(ELAN_CAPABILITY *, qsw_info_t *, char *, int);
 static void stderr_parent(int, int, int);
@@ -182,14 +188,7 @@ void errlog(const char *fmt, ...) {
     va_end(ap);
 }
 
-void errorsock(int sock, const char *fmt, ...) {
-    va_list ap;
-    va_start(ap, fmt);
-    errcommon(sock, fmt, ap, 0);
-    va_end(ap);
-}
-
-int getcommon(char *err) {
+int readchar(char *err) {
     int rv;
     char c;
 
@@ -210,7 +209,7 @@ int getstr(char *buf, int cnt, char *err) {
     int rv;
 
     do {
-        if ((rv = getcommon(err)) == -1)
+        if ((rv = readchar(err)) == -1)
             return -1;
         *buf++ = (char)rv;
 
@@ -224,20 +223,23 @@ int getstr(char *buf, int cnt, char *err) {
 }
 
 int getint(void) {
-    int rv, port = 0;
-
+    /* achu: Must fatally exit here without message back to user.  No
+     * port to connect on stderr, and a write on stdout calls
+     * xrcmd/mcmd to fail in xpoll.
+     */
+    int port = 0;
+    char c;
     do {
-        if ((rv = getcommon("port")) == -1)
-            return -1;
-
-        if (isascii((char)rv) && isdigit((char)rv))
-            port = port * 10 + ((char)rv) - '0';
-
-    } while (rv != 0);
-
+        /* achu: Can't use readchar, for above reason */
+        if (read(0, &c, 1) != 1) {
+            syslog(LOG_ERR, "read port: %m");
+            exit(1);
+        }
+        if (isascii(c) && isdigit(c)) 
+            port = port*10 + c-'0';
+    } while (c != 0);
     return port;
 }
-
 
 static void copy_passwd_struct(struct passwd *to, struct passwd *from)
 {
@@ -312,46 +314,208 @@ char *findhostname(struct sockaddr_in *fromp) {
 }
 
 #ifdef USE_PAM
-int pamauth(struct passwd *pwd, char *service, char *remuser,
-        char *hostname, char *locuser) {
-    static struct pam_conv conv = { misc_conv, NULL };
-    int ret;
+int qshell_conv(int num_msg, const struct pam_message **msg,
+                struct pam_response **resp, void *appdata_ptr) {
 
-    if ((ret = pam_start(service, locuser, &conv, &pamh)) != PAM_SUCCESS) { 
-        syslog(LOG_ERR, "pam_start: %s\n", pam_strerror(pamh, ret));
-        return -1;
+    /* rcmd/mqcmd requires that no data come over the stdout connection
+     * before a separate stderr connection has been made.  Therefore,
+     * we cannot send PAM_ERROR_MSG or PAM_TEXT_INFO over stdout.
+     * Instead, we will store all messages in a list until we are
+     * assured of a PAM_FAILURE or PAM_SUCCESS.
+     */
+  
+    int i = 0;
+    struct pam_response *reply;
+
+    if (num_msg <= 0)
+        return PAM_CONV_ERR;
+
+    reply = (struct pam_response *)malloc(num_msg*sizeof(struct pam_response));
+    if (!reply)
+        return PAM_CONV_ERR;
+
+    for (i = 0; i < num_msg; i++) {
+        char *string = NULL;
+
+        switch (msg[i]->msg_style) {
+        case PAM_ERROR_MSG:
+        case PAM_TEXT_INFO:
+        {
+            char *str = NULL;
+            List pam_msgs = *((List *)appdata_ptr);
+            
+            if (!(msg[i]->msg))
+                return -1;
+
+            if ((str = strdup(msg[i]->msg)) == NULL)
+                return -1;
+
+            if (list_append(pam_msgs, (void *)str) == NULL) {
+                syslog(LOG_ERR, "list_append failed: %s\n", str);
+                free(str);
+                return -1;
+            }
+
+            last_pam_msg = str;
+            break;
+        }
+        case PAM_BINARY_PROMPT:
+        {
+            /* More or less ripped from PAM's misc_conv.c */
+
+            /* As of this revision, PAM 0.77 functionality of
+             * PAM_BINARY_PROMPT was still under development.  This
+             * code is placed here to hopefully be compatible with any
+             * existing pam modules that may use PAM_BINARY_PROMPT.
+             */
+
+            pamc_bp_t binary_prompt = NULL;
+
+            if (!msg[i]->msg || !pam_binary_handler_fn)
+                goto error;
+
+            PAM_BP_RENEW(&binary_prompt,
+                         PAM_BP_RCONTROL(msg[i]->msg),
+                         PAM_BP_LENGTH(msg[i]->msg));
+            PAM_BP_FILL(binary_prompt, 0, PAM_BP_LENGTH(msg[i]->msg),
+                        PAM_BP_RDATA(msg[i]->msg));
+
+            if (pam_binary_handler_fn(appdata_ptr,
+                                      &binary_prompt) != PAM_SUCCESS
+                || (binary_prompt == NULL))
+                goto error;
+
+            string = (char *) binary_prompt;
+            binary_prompt = NULL;
+            
+            break;
+        }
+        case PAM_PROMPT_ECHO_OFF:
+        case PAM_PROMPT_ECHO_ON:
+            /* Giving the user a prompt for input defeats the purpose
+             * of not sending the data over stdout.  A pam module
+             * under mqsh should never ask the user for data.  So fall
+             * through.
+             */
+        default:
+            syslog(LOG_ERR, "bad conversation: %d", msg[i]->msg_style);
+            goto error;
+            break;
+        }
+
+        /* Must set values, or _pam_drop_reply in pam modules will fail */
+        reply[i].resp_retcode = 0;
+        if (string != NULL) {
+            reply[i].resp = string;
+            string = NULL;
+        }
+        else
+            reply[i].resp = NULL;
+    }
+    
+    *resp = reply;
+    reply = NULL;
+
+    return PAM_SUCCESS;
+
+ error:
+    if (reply) {
+        for (i = 0; i < num_msg; i++) {
+            if (reply[i].resp == NULL)
+                continue;
+            if (msg[i]->msg_style == PAM_BINARY_PROMPT)
+                pam_binary_handler_free(appdata_ptr,
+                                        (pamc_bp_t *) &reply[i].resp);
+            else
+                /* Uhh, we shouldn't be able to get here */
+                free(reply[i].resp);
+            reply[i].resp = NULL;
+        }
+        free(reply);
+        reply = NULL;
+    }
+    return PAM_CONV_ERR;
+}
+
+int pamauth(struct passwd *pwd, char *service, char *remuser,
+            char *hostname, char *locuser) {
+    static struct pam_conv conv;
+    int retcode;
+    List pam_msgs = NULL;
+
+    if ((pam_msgs = list_create((ListDelF)free)) == NULL) {
+        syslog(LOG_ERR, "list_create() failed\n");
+        pam_errmsg = "Internal System Error";
+        goto error;
+    }
+
+    conv.conv = qshell_conv;
+    conv.appdata_ptr = (void *)&pam_msgs;
+
+    retcode = pam_start(service, locuser, &conv, &pamh);
+    if (retcode != PAM_SUCCESS) { 
+        syslog(LOG_ERR, "pam_start: %s\n", pam_strerror(pamh, retcode));
+        goto error;
     }
     pam_set_item(pamh, PAM_RUSER, remuser);
     pam_set_item(pamh, PAM_RHOST, hostname);
     pam_set_item(pamh, PAM_TTY, service);
 
-    if ((ret = pam_authenticate(pamh, 0)) == PAM_SUCCESS)
-        ret = pam_acct_mgmt(pamh, 0);
+    retcode = pam_authenticate(pamh, 0);
+    if (retcode == PAM_SUCCESS) {
+        last_pam_msg = NULL;
+        retcode = pam_acct_mgmt(pamh, 0);
+    }
 
-    if (ret == PAM_SUCCESS) {
-        /* Why do we do this here instead of near setuid()? */
+    if (retcode == PAM_SUCCESS) {
+        /*
+         * Why do we need to set groups here?
+         * Also, this stuff should be moved down near where the setuid() is.
+         */
         if (setgid(pwd->pw_gid) != 0) {
             pam_end(pamh, PAM_SYSTEM_ERR);
-            return -1;
+            goto error;
         }
 
         if (initgroups(locuser, pwd->pw_gid) != 0) {
             pam_end(pamh, PAM_SYSTEM_ERR);
-            return -1;
+            goto error;
         }
-        ret = pam_setcred(pamh, PAM_ESTABLISH_CRED);
+        last_pam_msg = NULL;
+        retcode = pam_setcred(pamh, PAM_ESTABLISH_CRED);
     }
 
-    if (ret == PAM_SUCCESS)
-        ret = pam_open_session(pamh, 0);
-
-    if (ret != PAM_SUCCESS) {
-        pam_end(pamh, ret);
-        return -1;
+    if (retcode == PAM_SUCCESS) {
+        last_pam_msg = NULL;
+        retcode = pam_open_session(pamh, 0);
+    }
+    if (retcode != PAM_SUCCESS) {
+        pam_end(pamh, retcode);
+        if (last_pam_msg != NULL) {
+            /* Dump all pam messages to syslog, Send only the
+             * last message to the user
+             */
+            ListIterator itr = list_iterator_create(pam_msgs);
+            char *msg;
+            while (msg = (char *)list_next(itr))
+                syslog(LOG_ERR, "pam_msg: %s\n", msg);
+            list_iterator_destroy(itr);
+            snprintf(pam_errmsgbuf, PAM_ERRMSGLEN, "%s", last_pam_msg);
+            pam_errmsg = pam_errmsgbuf;
+            return -1;    
+        }
+        goto error;
     }
     return 0;
+
+ error:
+    if (pam_msgs)
+        list_destroy(pam_msgs);
+    syslog(LOG_ERR, "PAM Authentication Failure\n");
+    pam_errmsg = "Permission Denied";
+    return -1;
 }
-#endif
+#endif /* USE_PAM */
 
 
 /*
@@ -391,7 +555,7 @@ int get_qshell_info(ELAN_CAPABILITY *cap, qsw_info_t *qinfo,
         return -1;
 
     if (qsw_decode_cap(tmpstr, cap) < 0) {
-        errlog("error reading capability: %s", tmpstr);
+        errlog("error reading capability: %s\n", tmpstr);
         return -1;
     }
 
@@ -400,7 +564,7 @@ int get_qshell_info(ELAN_CAPABILITY *cap, qsw_info_t *qinfo,
             return -1;
 
         if (qsw_decode_cap_bitmap(tmpstr, cap, i) < 0) {
-            errlog("error reading capability bitmap(%d): %s", i, tmpstr);
+            errlog("error reading capability bitmap(%d): %s\n", i, tmpstr);
             return -1;
         }
     }
@@ -410,7 +574,7 @@ int get_qshell_info(ELAN_CAPABILITY *cap, qsw_info_t *qinfo,
         return -1;
 
     if (qsw_decode_info(tmpstr, qinfo) < 0) {
-        errlog("error reading qsw info: %s", tmpstr);
+        errlog("error reading qsw info: %s\n", tmpstr);
         return -1;
     }
 

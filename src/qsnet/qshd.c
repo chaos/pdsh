@@ -97,6 +97,9 @@ char rcsid[] = "$Id$";
 extern int paranoid;
 extern int sent_null;
 extern int allow_root_rhosts;
+#ifdef USE_PAM
+extern char *pam_errmsg;
+#endif
 
 static struct passwd *doauth(char *remuser, char *hostname, char *locuser) {
     struct passwd *pwd;
@@ -105,12 +108,18 @@ static struct passwd *doauth(char *remuser, char *hostname, char *locuser) {
         return NULL;
 
 #ifdef USE_PAM
-    if (pamauth(pwd, "qshell", remuser, hostname, locuser) < 0)
+    if (pamauth(pwd, "qshell", remuser, hostname, locuser) < 0) {
+        syslog(LOG_INFO | LOG_AUTH, "PAM Authentication Failure\n");
+        error("%s\n", pam_errmsg);
         return NULL;
+    }
 #else
     if ((pwd->pw_uid == 0 && !allow_root_rhosts) ||
-        (ruserok(hostname, pwd->pw_uid == 0, remuser, locuser) < 0))
+        (ruserok(hostname, pwd->pw_uid == 0, remuser, locuser) < 0)) {
+        syslog(LOG_INFO | LOG_AUTH, "Authentication Failure\n");
+        error("Permission Denied\n");
         return NULL;
+    }
 #endif
 
     return pwd;
@@ -150,18 +159,17 @@ static void qshd_get_args(struct sockaddr_in *fp, struct qshell_args *args)
     if (getstr(cmdbuf,  sizeof(cmdbuf),  "command") < 0)
         exit(1);
 
-    if ((args->hostname = findhostname(fp)) == NULL)
-        exit(1);
-
-    if ((args->pwd = doauth(remuser, args->hostname, locuser)) == NULL) {
-        syslog(LOG_INFO | LOG_AUTH, "Permission denied\n");
-        error("Permission denied");
+    if ((args->hostname = findhostname(fp)) == NULL) {
+        error("Host Address Mismatch");
         exit(1);
     }
 
+    if ((args->pwd = doauth(remuser, args->hostname, locuser)) == NULL)
+        exit(1);
+
     args->remuser = Strdup(remuser);
     args->locuser = Strdup(remuser);
-    args->cmdbuf =  Strdup(remuser);
+    args->cmdbuf =  Strdup(cmdbuf);
 
     return;
 }
