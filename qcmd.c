@@ -160,13 +160,13 @@ qcmd_send_extra_args(int s, int nodeid)
 		(void)write(s, *ep, strlen(*ep)+1);
 
 	/* send elan capability */
-	if (qsw_pack_cap(tmpstr, sizeof(tmpstr), &cap) < 0)
+	if (qsw_encode_cap(tmpstr, sizeof(tmpstr), &cap) < 0)
 		return -1;
 	(void)write(s, tmpstr, strlen(tmpstr)+1);
 
 	/* send elan info */
 	qinfo.nodeid = qinfo.rank = qinfo.procid = nodeid;
-	if (qsw_pack_info(tmpstr, sizeof(tmpstr), &qinfo) < 0)
+	if (qsw_encode_info(tmpstr, sizeof(tmpstr), &qinfo) < 0)
 		return -1;
 	(void)write(s, tmpstr, strlen(tmpstr)+1);
 

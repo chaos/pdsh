@@ -7,6 +7,10 @@
 
 #include "conf.h"
 
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <syslog.h>
+#include <errno.h>
 #include <string.h>
 #include <paths.h>
 #include <stdarg.h>
@@ -20,10 +24,11 @@
 
 #include "list.h"
 #include "qswutil.h"
+#include "err.h"
 
 /* we will allocate program descriptions in this range */
 #define ELAN_PRG_START  0
-#define ELAN_PRG_END    3
+#define ELAN_PRG_END    0
 
 /* we will allocate hardware context numbers in this range */
 #define ELAN_HWCX_START	ELAN_USER_BASE_CONTEXT_NUM
@@ -38,7 +43,7 @@
  * 	host (IN)		hostname
  *	nodenum (RETURN)	elanid (-1 on failure)
  */
-int
+static int
 qsw_host2elanid(char *host)
 {
 	char *p = host;
@@ -103,8 +108,8 @@ qsw_setbitmap(list_t nodelist, int tasks_per_node, ELAN_CAPABILITY *cap)
  * XXX Space is allocated on the heap and will never be reclaimed.
  * Example: setenvf("RMS_RANK=%d", rank);
  */
-int
-qsw_setenvf(const char *fmt, ...) 
+static int
+setenvf(const char *fmt, ...) 
 {
 	va_list ap;
 	char buf[BUFSIZ];
@@ -120,18 +125,26 @@ qsw_setenvf(const char *fmt, ...)
 	return putenv(bufcpy);
 }
 
-int
-qsw_qshell_setenv(qsw_info_t *qi)
+static int
+qsw_rms_setenv(qsw_info_t *qi)
 {
-	if (qsw_setenvf("RMS_RANK=%d", qi->rank) < 0)
+	if (setenvf("RMS_RANK=%d", qi->rank) < 0)
 		return -1;
-	if (qsw_setenvf("RMS_NODEID=%d", qi->nodeid) < 0)
+	if (setenvf("RMS_NODEID=%d", qi->nodeid) < 0)
 		return -1;
-	if (qsw_setenvf("RMS_PROCID=%d", qi->procid) < 0)
+	if (setenvf("RMS_PROCID=%d", qi->procid) < 0)
 		return -1;
-	if (qsw_setenvf("RMS_NNODES=%d", qi->nnodes) < 0)
+	if (setenvf("RMS_NNODES=%d", qi->nnodes) < 0)
 		return -1;
-	if (qsw_setenvf("RMS_NPROCS=%d", qi->nprocs) < 0)
+	if (setenvf("RMS_NPROCS=%d", qi->nprocs) < 0)
+		return -1;
+
+	/* XXX these are probably unnecessary */
+	if (setenvf("RMS_MACHINE=yourmom") < 0)
+		return -1;
+	if (setenvf("RMS_RESOURCEID=pdsh.%d", qi->prgnum) < 0)
+		return -1;
+	if (setenvf("RMS_JOBID=%d", qi->prgnum) < 0)
 		return -1;
 	return 0;
 }
@@ -140,7 +153,7 @@ qsw_qshell_setenv(qsw_info_t *qi)
  * capability -> string
  */
 int
-qsw_pack_cap(char *s, int len, ELAN_CAPABILITY *cap)
+qsw_encode_cap(char *s, int len, ELAN_CAPABILITY *cap)
 {
 	assert(sizeof(cap->UserKey.Values[0]) == 4);
 	assert(sizeof(cap->UserKey) / sizeof(cap->UserKey.Values[0]) == 4);
@@ -184,7 +197,7 @@ qsw_pack_cap(char *s, int len, ELAN_CAPABILITY *cap)
  * string -> capability
  */
 int
-qsw_unpack_cap(char *s, ELAN_CAPABILITY *cap)
+qsw_decode_cap(char *s, ELAN_CAPABILITY *cap)
 {
 	/* initialize capability - not sure if this is necessary */
 	elan3_nullcap(cap);
@@ -226,7 +239,7 @@ qsw_unpack_cap(char *s, ELAN_CAPABILITY *cap)
 }
 
 int
-qsw_unpack_info(char *s, qsw_info_t *qi)
+qsw_decode_info(char *s, qsw_info_t *qi)
 {
 	if (sscanf(s, "%x.%x.%x.%x.%x.%x", 
 			&qi->prgnum,
@@ -241,7 +254,7 @@ qsw_unpack_info(char *s, qsw_info_t *qi)
 }
 
 int
-qsw_pack_info(char *s, int len, qsw_info_t *qi)
+qsw_encode_info(char *s, int len, qsw_info_t *qi)
 {
 	snprintf(s, len, "%x.%x.%x.%x.%x.%x",
 			qi->prgnum,
@@ -305,17 +318,180 @@ qsw_init_capability(ELAN_CAPABILITY *cap, int tasks_per_node, list_t nodelist)
 	cap->LowContext = lrand48() % (ELAN_HWCX_END - ELAN_HWCX_START + 1);
 	cap->LowContext += ELAN_HWCX_START;
 	cap->HighContext = cap->LowContext + tasks_per_node - 1;
-	cap->MyContext = cap->LowContext; /* override per task */
+	/* not necessary to initialize cap->MyContext */
 
 	/*
 	 * Describe the mapping of tasks to nodes.
 	 * This sets cap->HighNode, cap->LowNode, and cap->Bitmap.
 	 */
-	if (qsw_setbitmap(nodelist, tasks_per_node, cap) < 0)
+	if (qsw_setbitmap(nodelist, tasks_per_node, cap) < 0) {
+		err("%p: do all target nodes have an Elan adapter?");
 		return -1;
+	}
 	cap->Entries = list_length(nodelist) * tasks_per_node;
 
+	if (cap->Entries > ELAN_MAX_VPS) {
+		err("%p: too many tasks requested (max %d)", ELAN_MAX_VPS);
+		return -1;
+	}
+
 	return 0;
+}
+
+/*
+ * Take necessary steps to set up to run an Elan MPI "program" (set of tasks)
+ * on a node.  
+ *
+ * Process 1	Process 2	|	Process 3	Process 4
+ * read args			|
+ * fork	-------	rms_prgcreate	|
+ * waitpid 	elan3_create	|
+ * 		rms_prgaddcap	|
+ *		fork N tasks ---+------	rms_setcap
+ *		wait all	|	setup RMS_ env	
+ *				|	fork ----------	setuid, etc.
+ *				|	wait		exec mpi task
+ *				|	exit
+ *		exit		|
+ * rms_prgdestroy		|
+ * exit				|     (one pair of processes per task!)
+ *
+ * Excessive forking seems to be required!  
+ * - The first fork is required because rms_prgdestroy can't occur in the 
+ *   process that calls rms_prgcreate (since it is a member, ECHILD).
+ * - The second fork is required when running multiple tasks per node because
+ *   each process must announce its use of one of the hw contexts in the range
+ *   allocated in the capability.
+ * - The third fork seems required after the rms_setcap or else elan3_attach
+ *   will fail wiht EINVAL.
+ *
+ * One task:
+ *    init-xinetd-+-in.qshd---in.qshd---in.qshd---in.qshd---sleep
+ * Two tasks:
+ *    init-xinetd-+-in.qshd---in.qshd---2*[in.qshd---in.qshd---sleep]
+ * (if stderr backchannel is active, add one in.qshd)
+ *   
+ * Any errors result in a message on stderr and program exit.
+ */
+void
+qsw_setup_program(ELAN_CAPABILITY *cap, qsw_info_t *qi, uid_t uid)
+{
+	int pid; 
+	int cpid[ELAN_MAX_VPS];
+	ELAN3_CTX *ctx;
+	char tmpstr[1024];
+	int tasks_per_node; 
+	int task_index;
+
+	if (qi->nprocs > ELAN_MAX_VPS) /* should catch this in client */
+		errx("%p: too many tasks requested");
+
+	/* 
+	 * First fork.  Parent waits for child to terminate, then cleans up.
+	 */
+	pid = fork();
+	switch (pid) {
+		case -1:	/* error */
+			errx("%p: fork: %m");
+		case 0:		/* child falls thru */
+			break;
+		default:	/* parent */
+			if (waitpid(pid, NULL, 0) < 0)
+				errx("%p: waitpid: %m");
+			while (rms_prgdestroy(qi->prgnum) < 0) {
+				if (errno != ECHILD)
+					errx("%p: rms_prgdestroy: %m");
+				sleep(1); /* waitprg would be nice! */
+			}
+			exit(0);
+	}
+	/* child continues here */
+
+	/* obtain an Elan context to use in call to elan3_create */
+	if ((ctx = _elan3_init(0)) == NULL)
+		errx("%p: _elan3_init failed: %m");
+
+	/* associate this process and its children with prgnum */
+	if (rms_prgdestroy(qi->prgnum) == 0) 
+		err("%p: cleaned up old prgnum %d", qi->prgnum);
+	if (rms_prgcreate(qi->prgnum, uid, 1) < 0)	/* 1 cpu (bogus!) */
+		errx("%p: rms_prgcreate %d failed: %m", qi->prgnum);
+
+	/* make cap known via rms_getcap/rms_ncaps to members of this prgnum */
+	if (elan3_create(ctx, cap) < 0)
+		errx("%p: elan3_create failed: %m");
+	if (rms_prgaddcap(qi->prgnum, 0, cap) < 0)
+		errx("%p: rms_prgaddcap failed: %m");
+
+	syslog(LOG_DEBUG, "prg %d cap %s bitmap 0x%.8x", qi->prgnum,
+			elan3_capability_string(cap, tmpstr), cap->Bitmap[0]);
+
+
+
+	/* 
+	 * Second fork - once for each task.
+	 * Parent waits for all children to exit the it exits.
+	 * Child assigns hardware context to each task, then forks again...
+	 */
+	tasks_per_node = qi->nprocs / qi->nnodes;
+	for (task_index = 0; task_index < tasks_per_node; task_index++) {
+		cpid[task_index] = fork();
+		if (cpid[task_index] < 0)
+			errx("%p: fork (%d): %m", task_index);
+		else if (cpid[task_index] == 0)
+			break;
+	}
+	/* parent */
+	if (task_index == tasks_per_node) {
+		int waiting = tasks_per_node;
+		int i;
+
+		while (waiting > 0) {
+			pid = waitpid(0, NULL, 0); /* any in pgrp */
+			if (pid < 0)
+				errx("%p: waitpid: %m");
+			for (i = 0; i < tasks_per_node; i++) {
+				if (cpid[i] == pid)
+					waiting--;
+			}
+		}
+		exit(0);
+	}
+	/* child falls through here */
+
+	/*
+	 * Assign elan hardware context to current process.
+	 * - arg1 is an index into the kernel's list of caps for this 
+	 *   program desc (added by rms_prgaddcap).  There will be
+	 *   one per rail.
+	 * - arg2 indexes the hw ctxt range in the capability
+	 *   [cap->LowContext, cap->HighContext]
+	 */
+	if (rms_setcap(0, task_index) < 0)
+		errx("%p: rms_setcap (%d): %m", task_index);
+
+	/* set RMS_ environment vars */
+	qi->procid = qi->rank = (qi->nodeid * tasks_per_node) + task_index;
+	if (qsw_rms_setenv(qi) < 0)
+		errx("%p: failed to set environment variables: %m");
+
+	/*
+	 * Third fork.  XXX Necessary but I don't know why.
+	 */
+	pid = fork();
+	switch (pid) {
+		case -1:	/* error */
+			errx("%p: fork: %m");
+		case 0:		/* child falls thru */
+			break;
+		default:	/* parent */
+			if (waitpid(pid, NULL, 0) < 0)
+				errx("%p: waitpid: %m");
+			exit(0);
+	}
+	/* child continues here */
+
+	/* Exec the task... */
 }
 
 #ifdef TEST_MAIN
@@ -331,7 +507,7 @@ main(int argc, char *argv[])
 	qsw_info_t qi, qi2;
 	list_t wcoll = list_new();
 
-	/* test packing/unpacking/initializing Elan capabilities */
+	/* test encoding/decoding/initializing Elan capabilities */
 	list_push(wcoll, "foo0");
 	list_push(wcoll, "foo1");
 	list_push(wcoll, "foo6");
@@ -339,11 +515,13 @@ main(int argc, char *argv[])
 	err = qsw_init_capability(&cap, 4, wcoll);
 	assert(err >= 0);
 	printf("%s %x\n", elan3_capability_string(&cap, tmpstr), cap.Bitmap[0]);
-	err = qsw_pack_cap(tmpstr, sizeof(tmpstr), &cap);
+	err = qsw_encode_cap(tmpstr, sizeof(tmpstr), &cap);
 	assert(err >= 0);
-	err = qsw_unpack_cap(tmpstr, &cap2);
+	err = qsw_decode_cap(tmpstr, &cap2);
 	assert(err >= 0);
-	assert(ELAN_CAP_MATCH(&cap, &cap2));
+	/* ELAN_CAP_MATCH is broken (see QSW GNATS#3875) */
+	/*assert(ELAN_CAP_MATCH(&cap, &cap2)); */ 
+	assert(memcmp(&cap, &cap2, sizeof(cap));
 
 	/* test qsw_setenvf function */
 	err = qsw_setenvf("SNERG=%d%s", 42, "blah");
@@ -357,16 +535,16 @@ main(int argc, char *argv[])
 	assert(p != NULL);
 	assert(strcmp(p, "sniff11") == 0);
 
-	/* test packing/unpacking qsw_info_t struct */
+	/* test encoding/decoding qsw_info_t struct */
 	qi.prgnum = qsw_get_prgnum();
 	qi.rank = 0;
 	qi.nodeid = 0;
 	qi.procid = 0;
 	qi.nnodes = 4;
 	qi.nprocs = 16;
-	err = qsw_pack_info(tmpstr, sizeof(tmpstr), &qi);
+	err = qsw_encode_info(tmpstr, sizeof(tmpstr), &qi);
 	assert(err >= 0);
-	err = qsw_unpack_info(tmpstr, &qi2);
+	err = qsw_decode_info(tmpstr, &qi2);
 	assert(memcmp(&qi, &qi2, sizeof(qi)) == 0);
 
 	printf("All tests passed.\n");

@@ -26,6 +26,7 @@ PREFIX=		/usr/local
 ELAN_TARGS=	qshd
 ELAN_OBJS=	qswutil.o qcmd.o
 ELAN_LIB=	-lelan3 -lrmscall
+ELAN_INC=
 
 # Solaris
 #LIBS =	-lpthread -lgen -lnsl -lsocket
@@ -35,7 +36,7 @@ ELAN_LIB=	-lelan3 -lrmscall
 LIBS = $(KRB_LIB)  -lpthread $(ELAN_LIB)
 
 CC=		cc
-CFLAGS=		-Wall -I. -g $(KRB_INC)
+CFLAGS=		-Wall -I. -g $(KRB_INC) $(ELAN_INC)
 LDFLAGS=
 
 all: pdsh $(ELAN_TARGS)
@@ -47,16 +48,15 @@ qshd: $(QSHD_OBJS)
 	$(CC) -o $@ $(QSHD_OBJS) $(LIBS)
 
 install:
-	install -m 555 -o root -g root qshd /usr/sbin/in.qshd
-	#install -m 4755 -o root -g root pdsh 	$(PREFIX)/bin/pdsh
-	#install -m 4755 -o root -g root pdsh 	$(PREFIX)/bin/pdcp
-	#install -m 555  -o root -g root dshbak $(PREFIX)/bin/dshbak
-	#install -m 444  -o root -g root pdsh.1 $(PREFIX)/man/man1/pdsh.1
-	#install -m 444  -o root -g root pdcp.1 $(PREFIX)/man/man1/pdcp.1
-	#install -m 444  -o root -g root dshbak.1 $(PREFIX)/man/man1/dshbak.1
+	install -m 4755 -o root -g root pdsh 	$(PREFIX)/bin/pdsh
+	install -m 4755 -o root -g root pdsh 	$(PREFIX)/bin/pdcp
+	install -m 555  -o root -g root dshbak $(PREFIX)/bin/dshbak
+	install -m 444  -o root -g root pdsh.1 $(PREFIX)/man/man1/pdsh.1
+	install -m 444  -o root -g root pdcp.1 $(PREFIX)/man/man1/pdcp.1
+	install -m 444  -o root -g root dshbak.1 $(PREFIX)/man/man1/dshbak.1
 
 clean:
-	rm -f *.o core a.out pdsh qshd
+	rm -f *.o core a.out pdsh $(ELAN_TARGS)
 	rm -f *.rpm *.tgz 
 
 $(OBJS): $(HDRS)

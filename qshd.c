@@ -95,6 +95,7 @@ char rcsid[] =
 #include <elan3/elanvp.h>
 #include <rms/rmscall.h>
 
+#include "list.h"
 #include "qswutil.h"
 
 #if defined(__GLIBC__) && (__GLIBC__ >= 2)
@@ -376,7 +377,6 @@ doit(struct sockaddr_in *fromp)
 	char tmpstr[1024];
 	int envcount;
 	ELAN_CAPABILITY cap;
-	ELAN3_CTX *ctx;
 	qsw_info_t qinfo;
 
 	signal(SIGINT, SIG_DFL);
@@ -441,14 +441,14 @@ doit(struct sockaddr_in *fromp)
 
 	/* read elan capability */
 	getstr(tmpstr, sizeof(tmpstr), "capability");
-	if (qsw_unpack_cap(tmpstr, &cap) < 0) {
+	if (qsw_decode_cap(tmpstr, &cap) < 0) {
 		errlog("error reading capability: %s", tmpstr);
 		exit(1);
 	}
 
 	/* read info structure */
 	getstr(tmpstr, sizeof(tmpstr), "qsw info");
-	if (qsw_unpack_info(tmpstr, &qinfo) < 0) {
+	if (qsw_decode_info(tmpstr, &qinfo) < 0) {
 		errlog("error reading qsw info: %s", tmpstr);
 		exit(1);
 	}
@@ -480,69 +480,6 @@ doit(struct sockaddr_in *fromp)
 		exit(1);
 	}
 
-	/* 
-	 * Fork here.  Parent waits for child to terminate, then cleans up.
-	 * NOTE: Cannot destroy prg if we are the process that created it.
-	 */
-	pid = fork();
-	switch (pid) {
-		case -1:	/* error */
-			errlog("fork: %s", strerror(errno));
-			exit(1);
-		case 0:		/* child falls thru */
-			break;
-		default:	/* parent */
-			if (waitpid(pid, NULL, 0) < 0) {
-				errlog("waitpid: %s", strerror(errno));
-				exit(1);
-			}
-			syslog(LOG_DEBUG, "destroying prg %d", qinfo.prgnum);
-			while (rms_prgdestroy(qinfo.prgnum) < 0) {
-				if (errno != ECHILD) {
-					errlog("rms_prgdestroy: %s", 
-							strerror(errno));
-					exit(1);
-				}
-				sleep(1); /* waitprg would be nice! */
-			}
-			syslog(LOG_DEBUG, "successfully destroyed prg %d", 
-					qinfo.prgnum);
-			exit(0);
-	}
-	/* child continues here */
-
-	/*
-	 * At this point we are authenticated to run as 'locuser' but are 
-	 * still root.
-	 */
-	/* obtain an Elan context to use in call to elan3_create */
-	if ((ctx = _elan3_init(0)) == NULL) {
-		errlog("_elan3_init failed: %s", strerror(errno));
-		exit(1);
-	}
-	/* associate this process and its children with prgnum */
-	rms_prgdestroy(qinfo.prgnum); /* XXX remove after debug over */
-	if (rms_prgcreate(qinfo.prgnum, pwd->pw_uid, 1) < 0) { /* 1 cpu */
-		errlog("rms_prgcreate %d failed: %s", qinfo.prgnum,
-				strerror(errno));
-		exit(1);
-	}
-	/* make cap known via rms_getcap/rms_ncaps to members of this prgnum */
-	if (elan3_create(ctx, &cap) < 0) {
-		errlog("elan3_create failed: %s", strerror(errno));
-		exit(1);
-	}
-	if (rms_prgaddcap(qinfo.prgnum, 0, &cap) < 0) {
-		errlog("rms_prgaddcap failed: %s", strerror(errno));
-		exit(1);
-	}
-	syslog(LOG_DEBUG, "prg %d cap %s bitmap 0x%.8x", qinfo.prgnum,
-			elan3_capability_string(&cap, tmpstr), cap.Bitmap[0]);
-
-	if (qsw_qshell_setenv(&qinfo) < 0) {
-		errlog("error setting env variables");
-		exit(1);
-	}
 
 	/*
  	 * Fork off a process to send back stderr if requested.
@@ -572,35 +509,12 @@ doit(struct sockaddr_in *fromp)
 		close(pv[1]);
 	}
 
-
 	/*
-	 * Assign elan hardware context to current process.
-	 * This is a context index, not the context number.
+	 * Set up quadrics Elan capabilities and program desc.
+	 * Fork a couple of times in here.
+	 * On error, send diagnostics to stderr and exit.
 	 */
-	if (rms_setcap(0, 0) < 0) {
-		errlog("rms_setcap: %s", strerror(errno));
-		exit(1);
-	}
-
-	/* 
-	 * Fork again.  It seems that setcap needs to happen in the parent
-	 * of the user process.
-	 */
-	pid = fork();
-	switch (pid) {
-		case -1:	/* error */
-			errlog("fork: %s", strerror(errno));
-			exit(1);
-		case 0:	 	/* child falls through */
-			break;
-		default:	/* parent...just need to wait */
-			if (waitpid(pid, NULL, 0) < 0) {
-				errlog("waitpid: %s", strerror(errno));
-				exit(1);
-			}
-			exit(0);
-	}
-	/* child falls through here */
+	qsw_setup_program(&cap, &qinfo, pwd->pw_uid);
 
 	/*
 	 *  Become the locuser, etc. etc. then exec the shell command.

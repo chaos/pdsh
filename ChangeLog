@@ -130,8 +130,6 @@ Todo
 
 	Consider making -s the default for proper cleanup on ctrl-C.
 	
-	Add -n# to specify number of tasks per node.
-
 	Add option to close stdin on remote side.
 
 	Autoconf!
