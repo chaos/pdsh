@@ -49,86 +49,67 @@ AC_DEFUN([AC_MQSHELL],
   AC_MSG_RESULT([${ac_with_mqshell=no}])
    
   if test "$ac_with_mqshell" = "yes"; then
+       
+     AC_ELAN
+       
+     if test "$ac_have_elan" != "yes"; then 
+       ac_have_mqshell=no
+     else
         
-    # check for elan libs if --with-qshell was not specified
-    if test "$ac_have_qshell" = "yes"; then 
-       ac_mqshell_qshell=yes
-    else
-       AC_CHECK_LIB([rmscall], [rms_prgcreate], [ac_mqshell_have_rms=yes])
-       AC_CHECK_LIB([elan3],   [elan3_create],  [ac_mqshell_have_elan=yes])
-        
-       if test "$ac_mqshell_have_rms" != "yes" ; then
-          AC_MSG_NOTICE([Cannot support mqshell without librmscall])        
-       fi
-
-       if test "$ac_mqshell_have_elan" != "yes" ; then
-          AC_MSG_NOTICE([Cannot support mqshell without libelan3])
-       fi
-
        if test "$ac_with_pam" = "yes" ; then
           AC_CHECK_LIB([pam], [pam_start], [ac_mqshell_have_pam=yes])
           if test "$ac_mqshell_have_pam" != "yes" ; then
              AC_MSG_NOTICE([Cannot support mqshell without libpam])
-             AC_MSG_NOTICE([Consider turning off pam support with --without-pam])
-          fi
-       else
-          ac_mqshell_have_pam=yes
-       fi
-
-       if test "$ac_mqshell_have_rms" = "yes" && 
-          test "$ac_mqshell_have_elan" = "yes" &&
-          test "$ac_mqshell_have_pam" = "yes" ; then
-          QSHELL_LIBS="-lrmscall -lelan3" 
-          if test "$ac_with_pam" = "yes" ; then
-             QSHELL_LIBS="$QSHELL_LIBS -lpam -lpam_misc"
+             AC_MSG_NOTICE([Consider turning off PAM with --without-pam])
+           else
+             QSHELL_LIBS="-lpam -lpam_misc"
              AC_DEFINE_UNQUOTED(USE_PAM, [1])
-          fi
-          AC_SUBST(QSHELL_LIBS)
+             ac_mqshell_qshell=yes
+           fi
+       else
+          ac_mqshell_have_pam=no
           ac_mqshell_qshell=yes
        fi
-    fi
 
-    # check for munge libs if --with-mrsh was not specified
-    if test "$ac_have_libmunge" = "yes"; then 
-       ac_mqshell_munge=yes
-    else
-       AC_CHECK_LIB([munge], [munge_encode], [ac_mqshell_have_munge=yes])
+       AC_SUBST(QSHELL_LIBS)
 
-       if test "$ac_mqshell_have_munge" != "yes" ; then
-          AC_MSG_NOTICE([Cannot support mqshell without libmunge])
-       fi 
-
-       if test "$ac_mqshell_have_munge" = "yes" ; then
-          MRSH_LIBS="-lmunge" 
-          AC_SUBST(MRSH_LIBS)
+       # check for munge libs if --with-mrsh was not specified
+       if test "$ac_have_libmunge" = "yes"; then 
           ac_mqshell_munge=yes
        else
-          ac_mqshell_munge=no
+          AC_CHECK_LIB([munge], [munge_encode], [ac_mqshell_have_munge=yes])
+
+          if test "$ac_mqshell_have_munge" != "yes" ; then
+             AC_MSG_NOTICE([Cannot support mqshell without libmunge])
+             ac_mqshell_munge=no
+          else
+             ac_mqshell_munge=yes
+             MRSH_LIBS="-lmunge" 
+             AC_SUBST(MRSH_LIBS)
+          fi
        fi
-    fi
 
-    # do we have everything we want?
-    if test "$ac_mqshell_qshell" = "yes" &&
-       test "$ac_mqshell_munge" = "yes" ; then
-       ac_have_mqshell=yes
-       AC_ADD_STATIC_MODULE("mqcmd")
-       AC_DEFINE_UNQUOTED([HAVE_MQSHELL], [1], [Define if you have mqshell.])
-       PROG_MQSHD=in.mqshd   
+       # do we have everything we want?
+       if test "$ac_mqshell_qshell" = "yes" &&
+          test "$ac_mqshell_munge" = "yes" ; then
+          ac_have_mqshell=yes
+          AC_ADD_STATIC_MODULE("mqcmd")
+          AC_DEFINE_UNQUOTED([HAVE_MQSHELL], [1], [Define if you have mqshell.])
+          PROG_MQSHD=in.mqshd   
 
-       # check for IPv6, IEEE standard says it should be in sys/socket.h 
-       AC_CHECK_DECL([AF_INET6], 
-                     AC_DEFINE(HAVE_IPV6,1,[have IPv6]),,
-                     [#include <sys/socket.h>])  
+          # check for IPv6, IEEE standard says it should be in sys/socket.h 
+          AC_CHECK_DECL([AF_INET6], 
+                        AC_DEFINE(HAVE_IPV6,1,[have IPv6]),,
+                        [#include <sys/socket.h>])  
 
-       AC_STRUCT_SA_LEN
+          AC_STRUCT_SA_LEN
 
-       # compile libqsw
-       ac_have_qsw=yes
-    fi
-  else
-    ac_have_mqshell=no
-  fi      
+          # compile libqsw
+          ac_have_qsw=yes
+       fi
+     fi      
+   fi
 
-  AC_SUBST(PROG_MQSHD)
-  AC_SUBST(HAVE_MQSHELL)
+   AC_SUBST(PROG_MQSHD)
+   AC_SUBST(HAVE_MQSHELL)
 ])

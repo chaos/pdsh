@@ -27,6 +27,12 @@
 #ifndef _QSWUTIL_INCLUDED
 #define _QSWUTIL_INCLUDED
 
+#if defined(HAVE_LIBELANCTRL)
+#  include <elan/capability.h>
+#elif defined(HAVE_LIBELAN3)
+#  include <elan3/elan3.h>
+#endif
+
 #include "src/common/hostlist.h"
 
 typedef struct {

@@ -24,7 +24,8 @@ in_qshd_SOURCES = \
 
 in_qshd_LDADD = \
     $(top_builddir)/src/qsnet/libqsw.la \
-    $(top_builddir)/src/common/libcommon.la 
+    $(top_builddir)/src/common/libcommon.la  \
+    $(QSHELL_LIBS)
 
 in_mqshd_SOURCES = \
     qshell.c \
@@ -34,13 +35,14 @@ in_mqshd_SOURCES = \
 in_mqshd_LDADD = \
     $(top_builddir)/src/qsnet/libqsw.la \
     $(top_builddir)/src/common/libcommon.la \
-    $(MRSH_LIBS)
+    $(MRSH_LIBS) \
+    $(QSHELL_LIBS)
 
 noinst_LTLIBRARIES = \
     libqsw.la
 
 libqsw_la_LDFLAGS = \
-    $(QSHELL_LIBS)
+    $(ELAN_LIBS)
 
 QSWSOURCES = \
     qswutil.c \

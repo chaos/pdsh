@@ -115,10 +115,6 @@
 #include <ctype.h>
 #include <assert.h>
 
-#include <elan3/elan3.h>
-#include <elan3/elanvp.h>
-#include <rms/rmscall.h>
-
 #include "src/common/xstring.h"
 #include "src/common/err.h"
 #include "src/common/fd.h"
