@@ -4,6 +4,9 @@
 	  when --with-qshell or --with-mqshell is supplied and PAM support
 	  cannot be found (instead of silently deactivating these options).
 
+	* Makefile.am : Remove redundant install and uninstall hooks from top-
+	  level Makefile. (reported by Tsung-i Mark Huan <tihuang@cs.uh.edu>)
+
 2005-03-18  Mark Grondona <mgrondona@llnl.gov>
 
 	* README.QsNet : Add reference to Quadrics' pdsh FAQ.

@@ -12,14 +12,6 @@ AUTOMAKE_OPTIONS =             foreign dist-bzip2
 CONFIG_STATUS_DEPENDENCIES =   META
 SUBDIRS =                      src testsuite doc etc scripts config
 
-install-exec-hook:
-	-mv $(DESTDIR)$(bindir)/pdsh.inst $(DESTDIR)$(bindir)/pdsh
-	@cp -p $(DESTDIR)$(bindir)/pdsh $(DESTDIR)$(bindir)/pdcp ||\
-	 echo "Unable to copy pdsh to pdcp"
-
-uninstall-local:
-	$(RM) $(DESTDIR)$(bindir)/pdcp
-
 maintainer-clean-local:
 	-(cd $(top_srcdir) && rm -rf autom4te.cache)
 	-find . -name "Makefile.in" -exec rm {} \;
