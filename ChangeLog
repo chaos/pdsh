@@ -1,3 +1,12 @@
+2004-03-30  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/dsh.c (_rsh_thread) : Remove calls to xfgets() and
+	use internal pdsh buffering to line-buffer output data. (gnats:408)
+	
+	* src/pdsh/cbuf.c, src/pdsh/cbuf.h: Added.
+	
+	* src/common/xstring.c (xfgets, xfgets2) : Removed unused functions.
+	
 2004-03-23  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/dsh.c (_wdog) : Fix bug in watchdog sleep (found
