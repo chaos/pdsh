@@ -143,6 +143,7 @@ to the -x option (see HOST RANGES section below)
 .I "-a"
 Target "all" nodes in the cluster.  Available only if the genders,
 nodeattr, SDR, or machines module is installed.
+.LP
 .I "-v"
 In combination with -a, eliminate nodes that are down.  Available only
 if the SDR or nodeupdown module is installed.
