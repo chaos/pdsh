@@ -1,4 +1,8 @@
 2002-10-09 garlick
+	* Building non-chaos version for distro.
+	* Tagged pdsh-1-7-6
+
+2002-10-09 garlick
 	* Eliminate third fork in qswutil.c per Addy at Quadrics.
 	* Tagged pdsh-1-7-6chaos
 
