@@ -9,8 +9,8 @@ VERSION=	1.5
 RELEASE=	2
 
 OBJS= 		list.o xmalloc.o xstring.o dsh.o main.o opt.o wcoll.o \
-		rcmd.o err.o pipecmd.o $(KRB_OBJS)
-HDRS=		list.h xmalloc.h xstring.h dsh.h opt.h wcoll.h conf.h err.h
+		rcmd.o err.o pipecmd.o qcmd.o $(KRB_OBJS)
+HDRS=		list.h xmalloc.h xstring.h dsh.h opt.h wcoll.h conf.h err.h 
 
 prefix=		/usr/local
 
@@ -33,7 +33,7 @@ mkinstalldirs=  $(SHELL) $(top_srcdir)/auxdir/mkinstalldirs
 LIBS = $(KRB_LIB) -lpthread
 
 CC=		cc
-CFLAGS=		-I. -g $(KRB_INC)
+CFLAGS=		-Wall -I. -g $(KRB_INC)
 LDFLAGS=
 
 all: pdsh
@@ -41,16 +41,20 @@ all: pdsh
 pdsh: $(OBJS) $(LIBOBJS)
 	$(CC) -o $@ $(OBJS) $(LDFLAGS) $(LIBS) $(LIBOBJS)
 
+qshd: qshd.o
+	$(CC) -o $@ $< -lelan3 -lrmscall
+
 install:
-	install -m 4755 -o root -g root pdsh 	$prefix/bin/pdsh
-	install -m 4755 -o root -g root pdsh 	$prefix/bin/pdcp
-	install -m 555  -o root -g root dshbak 	$prefix/bin/dshbak
-	install -m 444  -o root -g root pdsh.1 	$prefix/man/man1/pdsh.1
-	install -m 444  -o root -g root pdcp.1 	$prefix/man/man1/pdcp.1
-	install -m 444  -o root -g root dshbak.1 $prefix/man/man1/dshbak.1
+	install -m 4755 -o root -g root pdsh 	$(prefix)/bin/pdsh
+	install -m 4755 -o root -g root pdsh 	$(prefix)/bin/pdcp
+	install -m 555  -o root -g root dshbak $(prefix)/bin/dshbak
+	install -m 444  -o root -g root pdsh.1 $(prefix)/man/man1/pdsh.1
+	install -m 444  -o root -g root pdcp.1 $(prefix)/man/man1/pdcp.1
+	install -m 444  -o root -g root dshbak.1 $(prefix)/man/man1/dshbak.1
 
 clean:
-	rm -f $(OBJS) $(LIBOBJS) core a.out pdsh *.rpm *.tgz
+	rm -f *.o core a.out pdsh qshd
+	rm -f *.rpm *.tgz 
 
 $(OBJS): $(HDRS)
 

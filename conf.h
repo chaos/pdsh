@@ -21,6 +21,7 @@
 #define HAVE_PTHREAD_SIGMASK	1
 #define HAVE_GETHOSTBYNAME_R	1
 #define HAVE_STRERROR_R		1
+#define HAVE_ELAN3		1
 #ifdef sparc
 #endif
 

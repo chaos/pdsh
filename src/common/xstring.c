@@ -59,7 +59,6 @@ void xstrcln(char **str, char *verboten)
  */
 int xfgets(char **str, int *size, FILE *stream)
 {
-	char *p;
 	int check_err = 0;
 	int rv = 1;
 	int nread = 0;
@@ -116,7 +115,7 @@ int xfgets(char **str, int *size, FILE *stream)
  */
 static void makespace(char **str, int *size, int needed)
 {
-	int used, want;
+	int used;
 
 	if (*str == NULL)
 		*str = xmalloc(*size = needed + 1);
@@ -177,8 +176,6 @@ static void strcatchar(char *str, char c)
  */
 void xstrcatchar(char **str, int *size, char c)
 {
-	int length;
-
 	makespace(str, size, 1);
 	strcatchar(*str, c);
 }

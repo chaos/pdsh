@@ -3,7 +3,17 @@
  */
 
 /*
- * This is BSD rcmd.c with MT safety added and a different interface.
+ * Started with BSD rcmd.c, modified thus:
+ *
+ * Sends additional arguments to remote:
+ * - current working directory
+ * - count of environment vars (client plus some expected by Elan MPICH)
+ * - environment vars themselves
+ * - Elan capability 128-bit user key, randomly generated
+ * - Elan hw program number, randomly generated
+ * - Elan hw context number, randomly generated
+ * - List of Elan ID's for nodes participating in job (for setting up Elan
+ *   capability)
  */
 
 /*
@@ -51,7 +61,6 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-#include <stdio.h>
 
 #include <pthread.h>
 
@@ -74,13 +83,174 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #include <dsh.h>
 #include <err.h>
 
-#define RSH_PORT 514
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include "conf.h"
+#include "xstring.h"
+#include "list.h"
+#if 0
+#include <elan3/elan3.h>
+#include <elan3/elanvp.h>
+#else
+#define ELAN_USER_BASE_CONTEXT_NUM 0x20
+#define ELAN_USER_TOP_CONTEXT_NUM 0x7ff
+#endif
+#define ELAN_PRG_START	0
+#define ELAN_PRG_END	1024
+
+#define QSHELL_PORT 523
 
 #if HAVE_GETHOSTBYNAME_R
 #define HBUF_LEN	1024
 #endif
 
-int xrcmd(char *ahost, char *locuser, char *remuser, char *cmd, int *fd2p)
+
+extern char **environ;
+
+static char cwd[MAXPATHLEN+1];
+static uint32_t key[4];
+static uint32_t prgnum;
+static uint32_t ctxt;
+static char *nodelist;
+static int nnodes;
+
+/* 
+ * Convert hostname to elan node number.  This version just returns
+ * the numerical part of the hostname.  
+ * XXX When RMS is in use, this is a valid assumption; in future, use genders 
+ * to determine host->elanId mapping.
+ * 	host (IN)		hostname
+ *	nodenum (RETURN)	numerical portion of hostname
+ */
+static char *
+elanid(char *host)
+{
+	char *nodenum = host;
+
+	while (*nodenum && !isdigit(*nodenum))
+		nodenum++;
+	return nodenum;
+}
+
+/* 
+ * This is called once before all the parallel qcmd invocations to
+ * initialize globals containing current working directory, 128-bit Elan
+ * capability userkey, Elan program number, Elan context, list of Elan
+ * node ID's, and count of target nodes. 
+ * 	wcoll (IN)	list of nodes
+ */
+void
+qcmd_init(list_t wcoll)
+{
+	int i;
+	list_t tmplist = list_new();
+
+	/* record current working directory */
+	if (getcwd(cwd, sizeof(cwd)) == NULL)
+		errx("%p: getcwd failed\n");
+
+	/* generate 128-bit key for elan context */
+	srand48(getpid());
+	for (i = 0; i < sizeof(key) / sizeof(key[0]); i++) {
+		key[i] = lrand48();
+	}
+
+	/* generate random elan program number */
+	prgnum = lrand48() % (ELAN_PRG_END - ELAN_PRG_START);	
+	prgnum += ELAN_PRG_START;
+
+	/* generate random elan context number */
+	ctxt = lrand48() % 
+		(ELAN_USER_TOP_CONTEXT_NUM - ELAN_USER_BASE_CONTEXT_NUM + 1);
+	ctxt += ELAN_USER_BASE_CONTEXT_NUM;
+
+	/* build string containing comma-sep elan node id's from wcoll */
+	for (i = 0; i < list_length(wcoll); i++) {
+		list_push(tmplist, elanid(list_nth(wcoll, i)));
+	}
+	nodelist = list_join(",", tmplist);
+	list_free(&tmplist);
+
+	/* count of nodes in working collective */
+	nnodes = list_length(wcoll);
+}
+
+/*
+ * Write to the remote xrshd the number of environment vars to follow, 
+ * then the variables themselves.  The environment consists of pdsh's 
+ * environment plus RMS variables.
+ *	s (IN)		socket 
+ *	rank (IN)	MPI rank for this connection
+ */
+static void
+env_write(int s, int rank)
+{
+	char **ep;
+	char tmpstr[16];
+	int count = 0;
+
+	/* count them and add 5 for RMS_* variables */
+	for (ep = environ; *ep != NULL; ep++)
+		count++;
+	sprintf(tmpstr, "%d", count + 5);
+	(void)write(s, tmpstr, strlen(tmpstr)+1);
+
+	/* write them */
+	for (ep = environ; *ep != NULL; ep++)
+		(void)write(s, *ep, strlen(*ep)+1);
+
+	sprintf(tmpstr, "RMS_RANK=%d", rank);
+	(void)write(s, tmpstr, strlen(tmpstr)+1);
+
+	sprintf(tmpstr, "RMS_NODEID=%d", rank);
+	(void)write(s, tmpstr, strlen(tmpstr)+1);
+
+	sprintf(tmpstr, "RMS_PROCID=%d", rank);
+	(void)write(s, tmpstr, strlen(tmpstr)+1);
+
+	sprintf(tmpstr, "RMS_NNODES=%d", nnodes);
+	(void)write(s, tmpstr, strlen(tmpstr)+1);
+
+	sprintf(tmpstr, "RMS_NPROCS=%d", nnodes);
+	(void)write(s, tmpstr, strlen(tmpstr)+1);
+}
+
+/*
+ * Write to the remote xrshd the Elan capability user key, hardware context
+ * number, program number, and list of Elan node ID's.
+ *	s (IN)		socket 
+ */
+static void
+elan_write(int s)
+{
+	char tmpstr[1024];
+
+	sprintf(tmpstr, "%x.%x.%x.%x", key[0], key[1], key[2], key[3]);
+	(void)write(s, tmpstr, strlen(tmpstr)+1);
+
+	/* XXX would need >1 ctxt if >1 tasks per node */
+	sprintf(tmpstr, "%x.%x", prgnum, ctxt);
+	(void)write(s, tmpstr, strlen(tmpstr)+1);
+
+	/* write list of nodes */
+	(void)write(s, nodelist, strlen(nodelist)+1);
+}
+
+/*
+ * Derived from the rcmd() libc call, with modified interface.
+ * This version is MT-safe.  Errors are displayed in pdsh-compat format.
+ * Connection can time out.
+ *	ahost (IN)		target hostname
+ *	locuser (IN)		local username
+ *	remuser (IN)		remote username
+ *	cmd (IN)		remote command to execute under shell
+ *	fd2p (IN)		if non NULL, return stderr file descriptor here
+ *	rank (IN)		MPI rank for this connection
+ *	int (RETURN)		-1 on error, socket for I/O on success
+ */
+int 
+qcmd(char *ahost, char *locuser, char *remuser, char *cmd, int *fd2p, int rank)
 {
 	struct hostent *hp;
 	struct sockaddr_in sin, from;
@@ -132,7 +302,7 @@ int xrcmd(char *ahost, char *locuser, char *remuser, char *cmd, int *fd2p)
 		fcntl(s, F_SETOWN, pid);
 		sin.sin_family = hp->h_addrtype;
 		memcpy(&sin.sin_addr, hp->h_addr_list[0], hp->h_length);
-		sin.sin_port = htons(RSH_PORT);
+		sin.sin_port = htons(QSHELL_PORT);
 		rv = connect(s, (struct sockaddr *)&sin, sizeof(sin));
 		if (rv >= 0)
 			break;
@@ -142,6 +312,7 @@ int xrcmd(char *ahost, char *locuser, char *remuser, char *cmd, int *fd2p)
 			continue;
 		}
 		if (errno == ECONNREFUSED && timo <= 16) {
+			printf("qcmd: connection refused, retrying\n");
 			(void)sleep(timo);
 			timo *= 2;
 			continue;
@@ -178,7 +349,7 @@ int xrcmd(char *ahost, char *locuser, char *remuser, char *cmd, int *fd2p)
 		if (s2 < 0)
 			goto bad;
 		listen(s2, 1);
-		sprintf(num, "%d", lport);
+		(void)sprintf(num, "%d", lport);
 		if (write(s, num, strlen(num)+1) != strlen(num)+1) {
 			err("%p: %S: rcmd: write (setting up stderr): %m\n", 
 			    ahost);
@@ -219,6 +390,10 @@ int xrcmd(char *ahost, char *locuser, char *remuser, char *cmd, int *fd2p)
 	(void)write(s, locuser, strlen(locuser)+1);
 	(void)write(s, remuser, strlen(remuser)+1);
 	(void)write(s, cmd, strlen(cmd)+1);
+	(void)write(s, cwd, strlen(cwd)+1);
+	env_write(s, rank);
+	elan_write(s);
+
 	if (read(s, &c, 1) != 1) {
 		err("%p: %S: read: %m\n", ahost);
 		goto bad2;
@@ -249,5 +424,4 @@ bad:
 	pthread_sigmask(SIG_SETMASK, &oldset, NULL);
 	return (-1);
 }
-
 

@@ -17,6 +17,10 @@
 #include <signal.h>
 #include <errno.h>
 #include <netdb.h>
+#include <sys/types.h>
+#include <stdlib.h>	/* putenv */
+#include <unistd.h>	
+#include <string.h>	/* bzero */
 #include <pthread.h>
 
 #include <conf.h>
@@ -126,6 +130,7 @@ static int pipecmd(char *path, char *args[], const char *ahost, int *fd2p)
 		return sp[0];
 	}
 	/*NOTREACHED*/
+	return 0;
 }
 
 int sshcmd(char *ahost, char *luser, char *ruser, char *cmd, int *fd2p)

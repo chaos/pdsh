@@ -27,7 +27,7 @@ typedef enum {false, true} bool;
 #define RC_FAILED	254	/* -S exit value if any hosts fail to connect */
 
 typedef enum { DSH, PCP } pers_t;
-typedef enum { RCMD_BSD, RCMD_K4, RCMD_SSH } rcmd_t;
+typedef enum { RCMD_BSD, RCMD_K4, RCMD_SSH, RCMD_QSHELL } rcmd_t;
  
 typedef struct {
 

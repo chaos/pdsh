@@ -65,7 +65,7 @@ list_t read_wcoll(char *file, FILE *f)
 		words = list_split(NULL, buf);
 		if (list_length(words) > 0) {
 			word = list_nth(words, 0);
-			if (p = strchr(word, '#'))
+			if ((p = strchr(word, '#')) != NULL)
 				*p = '\0';
 			p = word;
 			xstrcln(&p, NULL);

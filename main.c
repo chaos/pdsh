@@ -8,10 +8,16 @@
 
 #include <conf.h>
 
-#include <signal.h>	/* for signal (), SIG* */
-#include <errno.h>	/* for EINTR */
+#include <signal.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/unistd.h>	/* seteuid */
+#include <sys/wait.h>	/* wait */
+#include <string.h>	/* strcmp */
+#include <stdlib.h>	/* exit */
 
 #include "err.h"
+#include "xmalloc.h"
 #include "xstring.h"
 #include "dsh.h"
 #include "opt.h"
@@ -71,19 +77,19 @@ static void interactive_dsh(opt_t *opt)
 
 	signal(SIGINT, SIG_IGN);
 
-	while (opt->cmd = getcmd(opt->progname))  {
+	while ((opt->cmd = getcmd(opt->progname)))  {
 		if (*opt->cmd == '\0') { 		/* empty command */
-			xfree(&opt->cmd);
+			xfree((void **)&opt->cmd);
 			continue;
 		}
 		if (*opt->cmd == '!') { 		/* shell escape */
 			shell(opt->luid, opt->cmd + 1);
-			xfree(&opt->cmd);
+			xfree((void **)&opt->cmd);
 			continue;
 		}
 		if (strcmp(opt->cmd, "quit") == 0 	/* user exit */
 		    || strcmp(opt->cmd, "exit") == 0) {
-			xfree(&opt->cmd);
+			xfree((void **)&opt->cmd);
 			break;
 		}
 
@@ -95,10 +101,10 @@ static void interactive_dsh(opt_t *opt)
 			dsh(opt);			/* run command */
 			exit(0);
 		default:
-			while (waitpid(pid, NULL, NULL) < 0 && errno == EINTR)
+			while (waitpid(pid, NULL, 0) < 0 && errno == EINTR)
 				;
 		}
-		xfree(&opt->cmd);
+		xfree((void **)&opt->cmd);
 	}
 }
 
@@ -121,7 +127,7 @@ static void shell(uid_t uid, char *cmd)
 			system(cmd);
 			exit(0);
 		default:
-			waitpid(pid, NULL, NULL);
+			waitpid(pid, NULL, 0);
 	}	
 }
 

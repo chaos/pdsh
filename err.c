@@ -15,6 +15,9 @@
 #include <netdb.h>
 #include <string.h>
 #include <assert.h>
+#include <unistd.h>	/* gethostname */
+#include <ctype.h>
+#include <stdlib.h>	/* exit */
 
 #include "xstring.h"
 #include "xmalloc.h"
@@ -34,7 +37,7 @@ void err_init(char *str)
         char *p;
  
 	gethostname(thishost, MAXHOSTNAMELEN);
-	if (p = strchr(thishost, '.'))
+	if ((p = strchr(thishost, '.')) != NULL)
 		*p = '\0';
 	host = xstrdup(thishost, NULL);
 
@@ -66,7 +69,7 @@ void err_cleanup()
 static void verr(FILE *stream, char *format, va_list ap) 
 {
 	char *buf = NULL;
-	char *p, *q;
+	char *q;
 	int percent = 0, bufsize = 0;	
 	char tmpstr[LINEBUFSIZE];
 

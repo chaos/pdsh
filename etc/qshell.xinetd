@@ -1,0 +1,13 @@
+# default: on
+# description: The qshd server is an rsh-like service for running \
+#	quadrics elan3 jobs.
+service xshell
+{
+	disable	= no
+	socket_type		= stream
+	wait			= no
+	user			= root
+#	log_on_success		+= USERID
+#	log_on_failure 		+= USERID
+	server			= /usr/sbin/in.qshd
+}

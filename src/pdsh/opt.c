@@ -7,12 +7,13 @@
 
 #include <conf.h>
 
-#include <string.h>	/* for strcpy() */
-#include <stdlib.h>	/* for getenv() */
-#include <pwd.h>	/* for getpwuid() */
+#include <string.h>	/* strcpy */
+#include <stdlib.h>	/* getenv */
+#include <pwd.h>	/* getpwuid */
 
 #include <sys/types.h>
-#include <sys/stat.h>	/* for stat() */
+#include <sys/stat.h>	/* stat */
+#include <unistd.h>	/* getopt */
 
 #include "dsh.h"
 #include "opt.h"
@@ -20,6 +21,7 @@
 #include "list.h"
 #include "wcoll.h"
 #include "xstring.h"
+#include "xmalloc.h"	
 
 static void usage(opt_t *opt);
 static void show_version(void);
@@ -44,6 +46,7 @@ Usage: dcp [-options] src [src2...] dest\n\
 -u seconds        set command timeout (no default)\n\
 -f n              use fanout of n nodes\n\
 -w host,host,...  set target node list on command line\n\
+-E                run Elan job using xrshd\n\
 -e                use ssh to connect\n"
 
 #define OPT_USAGE_SDR "\
@@ -59,7 +62,7 @@ Usage: dcp [-options] src [src2...] dest\n\
 
 #define DSH_ARGS	"csS"
 #define PCP_ARGS	"pr"
-#define GEN_ARGS	"at:csqf:w:l:u:bI:ideV"
+#define GEN_ARGS	"at:csqf:w:l:u:bI:idEeV"
 #define KRB4_ARGS	"Rk"
 #define SDR_ARGS	"Gv"
 #define GEND_ARGS	"g:"
@@ -72,7 +75,7 @@ void opt_default(opt_t *opt)
 {
 	struct passwd *pw;
 
-	if (pw = getpwuid(getuid())) {
+	if ((pw = getpwuid(getuid())) != NULL) {
 		strncpy(opt->luser, pw->pw_name, MAX_USERNAME);
 		strncpy(opt->ruser, pw->pw_name, MAX_USERNAME);	
 		opt->luid = pw->pw_uid;
@@ -127,16 +130,16 @@ void opt_default(opt_t *opt)
  */
 void opt_env(opt_t *opt)
 {
-	char *dshpath, *rhs;
+	char *rhs;
 	int dshpath_size;
 
-	if (rhs = getenv("WCOLL"))
+	if ((rhs = getenv("WCOLL")) != NULL)
 		opt->wcoll = read_wcoll(rhs, NULL);
 
-        if (rhs = getenv("FANOUT"))
+        if ((rhs = getenv("FANOUT")) != NULL)
                 opt->fanout = atoi(rhs);
 
-        if (rhs = getenv("DSHPATH")) {
+        if ((rhs = getenv("DSHPATH")) != NULL) {
 		struct passwd *pw = getpwnam(opt->luser);
 		char *shell = "sh";
 
@@ -233,6 +236,9 @@ void opt_args(opt_t *opt, int argc, char *argv[])
 				break;
 			case 'e':	/* use ssh */
 				opt->rcmd_type = RCMD_SSH;
+				break;
+			case 'E':	/* use qshell */
+				opt->rcmd_type = RCMD_QSHELL;
 				break;
 			case 'a':	/* indicates all nodes */
 				opt->allnodes = true;
@@ -423,7 +429,7 @@ void opt_list(opt_t *opt)
 	infile_str = list_join(", ", opt->infile_names);
 	if (infile_str) {
 		out("Infile(s)		%s\n", infile_str);
-		xfree(&infile_str);
+		xfree((void **)&infile_str);
 	}
 	out("Use alt hostname	%s\n", BOOLSTR(opt->altnames));
 	out("Debugging       	%s\n", BOOLSTR(opt->debug));
@@ -436,7 +442,7 @@ void opt_list(opt_t *opt)
 	wcoll_str = list_join(",", opt->wcoll);
 	out("%s\n", wcoll_str);
 
-	xfree(&wcoll_str);
+	xfree((void **)&wcoll_str);
 }
 
 /*
@@ -448,7 +454,7 @@ void opt_free(opt_t *opt)
 	if (opt->wcoll != NULL)
 		list_free(&opt->wcoll);
 	if (opt->cmd != NULL)
-		xfree(&opt->cmd);		
+		xfree((void **)&opt->cmd);		
 }
 
 /*

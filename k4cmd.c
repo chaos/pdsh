@@ -149,7 +149,7 @@ int k4cmd(char *ahost, char *locuser, char *remuser, char *cmd, int *fd2p)
 		fcntl(s, F_SETOWN, pid);
 		sin.sin_family = hp->h_addrtype;
 		memcpy((caddr_t) & sin.sin_addr, hp->h_addr_list[0], hp->h_length);
-		sin.sin_port = KCMD_PORT;
+		sin.sin_port = htons(KCMD_PORT);
 
                 rv = connect(s, (struct sockaddr *)&sin, sizeof(sin));
 

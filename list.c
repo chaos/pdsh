@@ -12,6 +12,7 @@
 #include "list.h"
 #include "xmalloc.h"
 #include "xstring.h"
+#include "err.h"
 
 /*
  * number of entries to allocate to a list initially and at subsequent

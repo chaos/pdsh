@@ -67,6 +67,7 @@
 #include "dsh.h"
 #include "err.h"
 #include "opt.h"
+#include "wcoll.h"
 
 static int debug = 0;
 
@@ -227,6 +228,10 @@ static void *wdog(void *args)
 			  && t[i].connect + command_timeout < time(NULL))
 			    pthread_kill(t[i].thread, SIGALRM);
 			break;
+		    case DSH_NEW:
+		    case DSH_DONE:
+		    case DSH_FAILED:
+			break;
 		}
 	    }
 	    sleep(i == 0 ? connect_timeout : WDOG_POLL);
@@ -244,7 +249,7 @@ static void rexpand_dir(list_t list, char *name)
 	dir = opendir(name);
 	if (dir == NULL)
 		errx("%p: opendir: %s: %m\n", name);
-	while (dp = readdir(dir)) {
+	while ((dp = readdir(dir))) {
 		if (dp->d_ino == 0)
 			continue;
 		if (!strcmp(dp->d_name, ".") || !strcmp(dp->d_name, ".."))
@@ -309,7 +314,6 @@ static int rcp_send_file_data(int outfd, char *filename, char *host)
 			retval = outbytes;
 		close(infd);
 	}
-fail:
 	if (retval <= 0)
 		err("%S: error sending contents of %s\n", host, filename);
 	return retval;
@@ -382,7 +386,7 @@ static int rcp_sendfile(int fd, char *file, char *host, bool popt)
 		 *    (st_atime, st_atime_usec, st_mtime, st_mtime_usec)
 		 */
 		sprintf(tmpstr, "T%ld %ld %ld %ld\n", 
-		    sb.st_atime, 0, sb.st_mtime, 0);
+		    sb.st_atime, 0L, sb.st_mtime, 0L);
 		if (rcp_sendstr(fd, tmpstr, host) < 0)
 			goto fail;
 
@@ -472,6 +476,10 @@ static void *rcp(void *args)
 		case RCMD_BSD:
 			fd = xrcmd(a->host, a->luser, a->ruser, cmd, 0);
 			break;
+		case RCMD_QSHELL:
+			fd = qcmd(a->host, a->luser, a->ruser, cmd, 0, 
+					a->rank);
+			break;
 		case RCMD_SSH:
 			fd = sshcmdrw(a->host, a->luser, a->ruser, cmd, 0);
 		default:		/* won't happen */
@@ -539,8 +547,7 @@ static void *rsh(void *args)
 	int rv, fd, efd, maxfd, bufsize = 0;
 	FILE *fp, *efp;
 	fd_set readfds, writefds, wantrfds, wantwfds;
-	char *buf = NULL, *p;
-	sigset_t mask;
+	char *buf = NULL;
 	int result = DSH_DONE; /* the desired outcome */
 
 	int_block();			/* block SIGINT */
@@ -559,6 +566,10 @@ static void *rsh(void *args)
 		case RCMD_BSD:
 			fd = xrcmd(a->host, a->luser, a->ruser, a->dsh_cmd, 
 		    	    a->dsh_sopt ? &efd : NULL);
+			break;
+		case RCMD_QSHELL:
+			fd = qcmd(a->host, a->luser, a->ruser, a->dsh_cmd, 
+		    	    a->dsh_sopt ? &efd : NULL, a->rank);
 			break;
 		case RCMD_SSH:
 			fd = sshcmd(a->host, a->luser, a->ruser, 
@@ -714,15 +725,21 @@ void dump_debug_stats(int rshcount)
  */
 int dsh(opt_t *opt)
 {
-	int i, j, rc = 0;
-	FILE *f;
-        char *cmd_esc;
-	int rv, rshcount, rmt_rshcount;
-	int wcoll_nitems;
+	int i, rc = 0;
+	int rv, rshcount;
 	pthread_t thread_wdog;
 	pthread_attr_t attr_wdog;
-	sigset_t blockme;
 	list_t pcp_infiles = NULL;
+
+	switch (opt->rcmd_type) {
+		case RCMD_QSHELL:
+			qcmd_init(opt->wcoll);
+			break;
+		case RCMD_K4:
+		case RCMD_SSH:
+		case RCMD_BSD:
+			break;
+	}
 
 	/* install signal handlers */
 	xsignal(SIGALRM, alarm_handler);
@@ -738,7 +755,8 @@ int dsh(opt_t *opt)
 		pcp_infiles = expand_dirs(opt->infile_names);
 
 	/* prepend DSHPATH setting to command */
-	if (opt->personality == DSH && opt->dshpath) {
+	if (opt->personality == DSH && opt->dshpath 
+			&& opt->rcmd_type != RCMD_QSHELL) {
 		int cmd_len;
 		char *cmd = xstrdup(opt->dshpath, &cmd_len);
 
@@ -777,6 +795,7 @@ int dsh(opt_t *opt)
 		t[i].pcp_outfile = opt->outfile_name;	
 		t[i].pcp_popt = opt->preserve;
 		t[i].pcp_ropt = opt->recursive;
+		t[i].rank = i;
 	} 
 	t[i].host = NULL;
 

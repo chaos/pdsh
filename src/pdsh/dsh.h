@@ -73,6 +73,8 @@ typedef struct thd {
 	bool 		pcp_popt;		/* preserve mtime/mode */
 	bool 		pcp_ropt;		/* recursive */
 	int		rc;			/* remote return code (-S) */
+	int		rank;			/* mpi rank */
+	int		nnodes;			/* number of nodes in job */
 } thd_t;
 
 struct hostent *xgethostbyname(const char *);
@@ -82,5 +84,7 @@ int xrcmd(char *, char *, char *, char *, int *);
 int k4cmd (char *, char *, char *, char *, int *);
 int sshcmd (char *, char *, char *, char *, int *);
 int sshcmdrw (char *, char *, char *, char *, int *);
+int qcmd(char *, char *, char *, char *, int *, int);
+void qcmd_init(list_t);
 
 #endif /* _DSH_INCLUDED */
