@@ -5,6 +5,7 @@
 	  of the rcp command is now coded internaly within pdcp.  
 	* Eliminated several bugs from original rcp code.
 	* Fixed several pdcp bugs related to -r option.
+	* Fixed pdcp access/modification time errors with -p option.
 	* Updated pdcp manpage to be clearer about pdcp functionality.
 	* "bsd" rcmd renamed to "rsh" rcmd 
 	* Fixed scalability issues with mcmd/mqcmd file descriptors
