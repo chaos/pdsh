@@ -89,7 +89,7 @@ typedef struct thd {
 	int		fd;			/* stdin/stdout */
 	int		efd;			/* signal/stderr */
 	bool		labels;			/* display host: labels */
-	char		addr[IP_ADDR_LEN];	/* IP address */
+	char 		addr[IP_ADDR_LEN];	/* IP address */
 } thd_t;
 
 int dsh(opt_t *);

@@ -789,6 +789,18 @@ void dump_debug_stats(int rshcount)
 	err("Failures:      %d\n", failed);
 }
 
+void gethost(char *name, char *addr)
+{
+	struct hostent *hp;
+
+	if (!(hp = gethostbyname(name)))
+		errx("%p: gethostbyname %S failed: %s\n", 
+				name, hstrerror(h_errno));
+	assert(hp->h_addrtype == AF_INET);
+	assert(IP_ADDR_LEN == hp->h_length);
+	memcpy(addr, hp->h_addr_list[0], IP_ADDR_LEN);
+}
+
 /* 
  * Run command on a list of hosts, keeping 'fanout' number of connections 
  * active concurrently.
@@ -861,8 +873,6 @@ int dsh(opt_t *opt)
 	t = (thd_t *)Malloc(sizeof(thd_t) * (rshcount + 1));
 
 	for (i = 0; i < rshcount; i++) {
-		struct hostent *hp;
-
 		t[i].luser = opt->luser;		/* general */
 		t[i].ruser = opt->ruser;
 		t[i].rcmd_type = opt->rcmd_type;
@@ -878,16 +888,9 @@ int dsh(opt_t *opt)
 		t[i].pcp_outfile = opt->outfile_name;	
 		t[i].pcp_popt = opt->preserve;
 		t[i].pcp_ropt = opt->recursive;
-
-		/* gethostbyname is not MT safe so do it here */
-		hp = gethostbyname(t[i].host);
-		if (hp == NULL) {
-			errx("%p: gethostbyname: lookup %S failed: %s\n", 
-					t[i].host, hstrerror(h_errno));
-		}
-		assert(hp->h_addrtype == AF_INET);
-		assert(IP_ADDR_LEN == hp->h_length);
-		memcpy(t[i].addr, hp->h_addr_list[0], IP_ADDR_LEN);
+#if	!HAVE_GETHOSTBYNAME_R
+		gethost(t[i].host, t[i].addr);
+#endif
 	} 
 	t[i].host = NULL;
 
