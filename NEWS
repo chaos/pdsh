@@ -1,6 +1,11 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
+* Changes in pdsh-2.4  (2004-12-08)
+===================================
+ -- (mrsh) Update to mrsh protocol version 2.1, provided by mrsh >= 2.3.
+    This version of the protocol allows connections over "localhost."
+
 * Changes in pdsh-2.3  (2004-11-22)
 ===================================
  -- Support copying files >2GB in pdcp.
