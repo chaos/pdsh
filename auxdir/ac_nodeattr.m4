@@ -34,8 +34,13 @@ AC_DEFUN([AC_NODEATTR],
   AC_MSG_RESULT([${ac_with_nodeattr=no}])
 
   if test "$ac_with_nodeattr" = "yes"; then
-    # Note: AC_PATH_PROG will do nothing if NODEATTR already defined.
-    AC_PATH_PROG([NODEATTR], [nodeattr], [], [/usr/bin:/admin/scripts:$PATH])
+
+    # Newer versions of autoconf do not require the if statement
+    # below, b/c AC_PATH_PROG will not execute if NODEATTR is already
+    # defined.  But the if statement is necessary for older autoconfs.
+    if test -z "$NODEATTR"; then
+      AC_PATH_PROG([NODEATTR], [nodeattr], [], [/usr/bin:/admin/scripts:$PATH])
+    fi
 
     if test -n "$NODEATTR"; then
       ac_have_nodeattr=yes
