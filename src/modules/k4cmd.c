@@ -53,8 +53,6 @@
 #include "config.h"
 #endif
 
-#if	HAVE_KRB4
-
 #if	HAVE_PTHREAD_H
 #include <pthread.h>
 #endif
@@ -357,7 +355,6 @@ k4cmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     pthread_sigmask(SIG_SETMASK, &oldset, NULL);
     return (-1);
 }
-#endif                          /* HAVE_KRB4 */
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
