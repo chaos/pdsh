@@ -50,11 +50,11 @@ option.
 .B Pdsh 
 originally executed remote commands through rcmd(3) (the library
 routine used by rsh(1)).  Depending on the modules installed, remote
-commands can now be executed through several different methods.  The
-user can select the method using the -R option.  Atleast one of the
+commands can now be executed through several different services.  The
+user can select the service type using the -R option.  Atleast one of the
 following must be installed on the system in order for pdsh to
 function.  If multiple rcmd modules are installed on the same system,
-the default method selected by pdsh is based on the order listed below.
+the default service selected by pdsh is based on the order listed below.
 A list of all available rcmd modules is output with the -h option.
 .LP
 .B bsd
