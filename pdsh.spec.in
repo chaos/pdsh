@@ -180,6 +180,8 @@ Pdsh module for gathering list of all target nodes from a machines file.
 %build
 %configure --program-prefix=%{?_program_prefix:%{_program_prefix}} \
     %{?_enable_debug}       \
+    %{?_with_rsh}           \
+    %{?_without_rsh}        \
     %{?_with_ssh}           \
     %{?_without_ssh}        \
     %{?_with_qshell}        \
