@@ -1,4 +1,4 @@
-2003-07-10 achu
+2003-07-16 achu
         * Fixed additional issues with command line options and modules
 	  recognized (or not-recognized) between pdsh and pdcp.
 	* Removed dependence of rcp command from pdcp.  All functionality
@@ -6,6 +6,8 @@
 	* Eliminated several bugs from original rcp code.
 	* Fixed several pdcp bugs related to -r option.
 	* Updated pdcp manpage to be clearer about pdcp functionality.
+	* "bsd" rcmd renamed to "rsh" rcmd 
+	* Fixed scalability issues with mcmd/mqcmd file descriptors
 	* Tweaked of configuration, makefiles, manpages, and documents for
 	  readability and portability.
 	
