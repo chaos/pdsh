@@ -210,7 +210,7 @@
    */
 #undef LSTAT_FOLLOWS_SLASHED_SYMLINK
 
-/* Project name */
+/* Define the project's name. */
 #undef PROJECT
 
 /* Range operator */
@@ -225,7 +225,7 @@
 /* Define if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
-/* Project version */
+/* Define the project's version. */
 #undef VERSION
 
 /* Path to nodeattr */

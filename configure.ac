@@ -1,25 +1,15 @@
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(dummy, dummy, garlick@llnl.gov)
-AC_CONFIG_SRCDIR([dsh.h])
+AC_INIT(dsh.h)
 AC_CONFIG_HEADER([conf.h])
 AC_CONFIG_AUX_DIR([auxdir])
 
-# override 'dummy' project & version above
+# determine project/version from META file
 PROJECT="`perl -ne 'print,exit if s/^\s*NAME:\s*(\S*).*/\1/i' $srcdir/META`"
-PACKAGE_NAME=$PROJECT
 AC_DEFINE_UNQUOTED(PROJECT, "$PROJECT", [Define the project's name.])
 AC_SUBST(PROJECT)
 VERSION="`perl -ne 'print,exit if s/^\s*VERSION:\s*(\S*).*/\1/i' $srcdir/META`"
-PACKAGE_VERSION=$VERSION
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Define the project's version.])
-AC_SUBST(VERSION)
-
-PROJECT=$PACKAGE_NAME
-AC_DEFINE_UNQUOTED(PROJECT, "$PROJECT", [Project name])
-AC_SUBST(PROJECT)
-VERSION=$PACKAGE_VERSION
-AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Project version])
 AC_SUBST(VERSION)
 
 # Enable features
