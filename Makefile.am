@@ -4,16 +4,6 @@ AUTOMAKE_OPTIONS = foreign
 
 SUBDIRS = . testsuite
 
-EXTRA_DIST = 		\
-	auxdir		\
-	dshbak dshbak.1 \
-	README.KRB4 	\
-	README.QsNet 	\
-	TODO		\
-	Make-rpm.mk     \
-	META		\
-	pdsh.spec.in
-
 bin_PROGRAMS   = pdsh	
 sbin_PROGRAMS  = @PROG_QSHD@
 bin_SCRIPTS    = dshbak
@@ -47,9 +37,10 @@ pdsh_SOURCES =			\
 	xrcmd.c			\
 	$(SSHCMD_SRC) $(ELAN_SRC) $(K4CMD_SRC)
 
-# Extra sources that may appear in RCMD_SOURCES must be listed here:
+# Extra sources included conditionally above must also be listed here
 EXTRA_pdsh_SOURCES =		\
 	qswutil.c qswutil.h	\
+	qcmd.c			\
 	sshcmd.c		\
 	k4cmd.c	
 
@@ -62,11 +53,24 @@ qshd_SOURCES =			\
 	qswutil.c qswutil.h	\
 	hostlist.c hostlist.h
 
+# Makefile rule for building rpm directly from CVS repository
+include $(top_srcdir)/Make-rpm.mk
+
 MAINTAINERCLEANFILES = 		\
 	Makefile.in aclocal.m4 config.guess \
 	config.h.in config.sub configure install-sh \
-	missing mkinstalldirs stamp-h.in
+	missing mkinstalldirs stamp-h.in \
+	autom4te.cache
 
-include $(top_srcdir)/Make-rpm.mk
-
-
+# Extra files to distribute with `make dist'
+EXTRA_DIST = 		\
+	DISCLAIMER	\
+	README.KRB4 	\
+	README.QsNet 	\
+	TODO		\
+	META		\
+	Make-rpm.mk     \
+	pdsh.spec.in	\
+	auxdir		\
+	dshbak dshbak.1 \
+	qshell.xinetd
