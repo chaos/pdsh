@@ -27,6 +27,10 @@ The PDSH_RANGE_OPERATOR environment variable will override the default
 range operator character of '@RANGE_OP@', or disable hostname range 
 expansion if set to the empty string.
 .LP
+.I "-x host,host,..."
+Exclude the specified hosts.  May be specified in conjunction with other
+target node list options such as -a.
+.LP
 .I "-a"
 Target "all" nodes in the cluster.
 .if @HAVE_SDR@ \{

@@ -416,6 +416,23 @@ list_test(list_t l, char *item)
 	return found;
 }
 
+/*
+ * Remove the items in l2 from l1.
+ *   l1 (IN/OUT)	first list
+ *   l2 (IN)		list of items to be deleted from l1
+ */
+void
+list_subtract(list_t l1, list_t l2)
+{
+	int i;
+
+	assert(l1->magic == LIST_MAGIC);
+	assert(l2->magic == LIST_MAGIC);
+	for (i = 0; i < l1->nitems; i++)
+		if (list_test(l2, l1->data[i]))
+			list_del(l1, i--);
+}
+
 /* 
  * Similar to list_pushl(), but only items not already found in l1 are pushed
  * from l2 to l1.

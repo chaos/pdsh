@@ -19,7 +19,7 @@
 typedef enum {false, true} bool;
 #endif
 
-list_t read_wcoll(char *, FILE *);
+list_t read_wcoll(char *, FILE *, char *);
 void del_wcoll(list_t, char *);
 
 #if	HAVE_SDR

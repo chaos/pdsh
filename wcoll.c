@@ -52,10 +52,11 @@ del_wcoll(list_t wcoll, char *host)
  * (one of the arguments must be NULL).  
  *	file (IN)	name of wcoll file (or NULL)
  *	f (IN)		FILE pointer to wcoll file (or NULL)	
+ *	range_op (IN)	string containing single-char range delimiter
  *	RETURN		new list containing hostnames
  */
 list_t 
-read_wcoll(char *file, FILE *f)
+read_wcoll(char *file, FILE *f, char *range_op)
 {
 	list_t new = list_new();
 	list_t words;
@@ -81,15 +82,13 @@ read_wcoll(char *file, FILE *f)
 				*p = '\0';
 			xstrcln(word, NULL);
 			if (strlen(word) > 0) {
-				/* we support host[i-j] ranges */
-				if (strchr(word, '[')) {
-					list_t tmp;
-
-					tmp = list_split_range(",", "-", word);
-					list_pushl(new, tmp);
-					list_free(&tmp);
-				} else
-					list_push(new, word);
+				list_t tmp;
+				/* indiv entries can be ranges */
+				tmp = (range_op == NULL) 
+					? list_split(",", word) 
+					: list_split_range(",", range_op, word);
+				list_pushl(new, tmp);
+				list_free(&tmp);
 			}
 		}
 		list_free(&words);

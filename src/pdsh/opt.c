@@ -58,6 +58,7 @@ Usage: pdcp [-options] src [src2...] dest\n\
 -u seconds        set command timeout (no default)\n\
 -f n              use fanout of n nodes\n\
 -w host,host,...  set target node list on command line\n\
+-x host,host,...  set node exclusion list on command line\n\
 -n n              set number of tasks per node\n"
 /* undocumented "-T testcase" option */
 
@@ -74,7 +75,7 @@ Usage: pdcp [-options] src [src2...] dest\n\
 
 #define DSH_ARGS	"csS"
 #define PCP_ARGS	"pr"
-#define GEN_ARGS	"n:at:csqf:w:l:u:bI:ideVT:"
+#define GEN_ARGS	"n:at:csqf:w:x:l:u:bI:ideVT:"
 #define SDR_ARGS	"Gv"
 #define GEND_ARGS	"g:"
 #define ELAN_ARGS	"Em:"
@@ -106,6 +107,7 @@ opt_default(opt_t *opt)
 
 	opt->info_only = false;
 	opt->wcoll = NULL;
+	opt->exclude = NULL;
 	opt->range_op = RANGE_OP;
 	opt->progname = NULL;
 	opt->connect_timeout = CONNECT_TIMEOUT;
@@ -153,7 +155,7 @@ opt_env(opt_t *opt)
 	char *rhs;
 
 	if ((rhs = getenv("WCOLL")) != NULL)
-		opt->wcoll = read_wcoll(rhs, NULL);
+		opt->wcoll = read_wcoll(rhs, NULL, opt->range_op);
 
         if ((rhs = getenv("FANOUT")) != NULL)
                 opt->fanout = atoi(rhs);
@@ -194,10 +196,9 @@ opt_args(opt_t *opt, int argc, char *argv[])
 	int c;
 	extern int optind;
 	extern char *optarg;
-	char *wcoll_buf;
+	char *wcoll_buf = NULL;
+	char *exclude_buf = NULL;
 	char *pname = xbasename(argv[0]);
-
-	wcoll_buf = NULL;
 
 	/* deal with program name */
 	opt->progname = pname;
@@ -241,9 +242,13 @@ opt_args(opt_t *opt, int argc, char *argv[])
 				break;
 			case 'w':	/* target node list */
 				if (strcmp(optarg, "-") == 0)
-					opt->wcoll = read_wcoll(NULL, stdin);
+					opt->wcoll = read_wcoll(NULL, stdin, 
+							opt->range_op);
 				else 
 				        wcoll_buf = Strdup(optarg);
+				break;
+			case 'x':	/* exclude node list */
+				exclude_buf = Strdup(optarg);
 				break;
 			case 'g':	/* genders attribute */
 				strncpy(opt->gend_attr, optarg, MAX_GENDATTR);
@@ -324,6 +329,14 @@ opt_args(opt_t *opt, int argc, char *argv[])
 		Free((void **)&wcoll_buf);
 	}
 
+	/* expand exclusion list if needed */
+	if (exclude_buf != NULL) {
+		opt->exclude = (opt->range_op == NULL) ? 
+			list_split(",", exclude_buf) :
+			list_split_range(",", opt->range_op, exclude_buf);
+		Free((void **)&exclude_buf);
+	}
+
 	/* DSH: build command */
 	if (opt->personality == DSH) {
 		for ( ; optind < argc; optind++) {
@@ -342,21 +355,18 @@ opt_args(opt_t *opt, int argc, char *argv[])
 
 	/* get wcoll, SDR, genders file, or MPICH machines file */
 	if (opt->allnodes) {
-		char *rhs;
 #if	HAVE_MACHINES
-		opt->wcoll = read_wcoll(_PATH_MACHINES, NULL);
+		opt->wcoll = read_wcoll(_PATH_MACHINES, NULL, opt->range_op);
 #elif 	HAVE_SDR
 		opt->wcoll = sdr_wcoll(opt->sdr_global, 
 		    opt->altnames, opt->sdr_verify);
 #elif 	HAVE_GENDERS
-		if ((rhs = getenv("PDSH_GENDERS_ALL")) != NULL)
-			opt->wcoll = read_genders(rhs, opt->altnames);
-		else
-			opt->wcoll = read_genders("all", opt->altnames);
+		opt->wcoll = read_genders("all", opt->altnames);
 #else
 #error configure erorr
 #endif
-	} 
+	}
+
 #if	HAVE_GENDERS
 	/* get wcoll from genders - all nodes with a particular attribute */
 	if (*(opt->gend_attr)) {
@@ -380,6 +390,12 @@ opt_args(opt_t *opt, int argc, char *argv[])
 			Free((void **)&opt->dshpath);
 	}
 #endif /* HAVE_ELAN */
+
+	/* handle -x option */
+	if (opt->exclude && opt->wcoll) {
+		list_subtract(opt->wcoll, opt->exclude);
+		list_free(&opt->exclude);
+	}
 }
 
 /*

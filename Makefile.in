@@ -48,9 +48,6 @@ pdsh: $(PDSH_OBJS)
 qshd: $(QSHD_OBJS)
 	$(CC) -o $@ $(QSHD_OBJS) $(LIBS)
 
-qswutil_main.o: qswutil.c
-	$(CC) -o $@ -c $(CFLAGS) -DTEST_MAIN qswutil.c
-
 install: $(PROGS)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
 	$(mkinstalldirs) $(DESTDIR)$(mandir)/man1

@@ -23,6 +23,7 @@ void list_dump(list_t);
 char *list_join(char *, list_t);
 void list_pushl(list_t, list_t);
 int list_test(list_t, char *);
+void list_subtract(list_t, list_t);
 void list_merge(list_t, list_t);
 int list_length(list_t);
 char *list_nth(list_t, int);
