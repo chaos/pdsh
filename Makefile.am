@@ -5,7 +5,7 @@ AUTOMAKE_OPTIONS =         foreign dist-bzip2
 SUBDIRS =                  modules . testsuite
 
 noinst_PROGRAMS=           pdsh 
-bin_PROGRAMS =		   pdsh.inst
+bin_PROGRAMS =             pdsh.inst
 sbin_PROGRAMS =            @PROG_QSHD@ @PROG_MQSHD@
 
 bin_SCRIPTS =              dshbak
@@ -15,6 +15,16 @@ noinst_LTLIBRARIES =       libqsw.la
 
 if WITH_QSW
 libqsw_la_SOURCES =        qswutil.c qswutil.h
+QSW_LIBS =                 libqsw.la
+endif
+
+if WITH_STATIC_MODULES
+pdsh_LDADD =               $(READLINE_LIBS) 
+pdsh_LDFLAGS = 	           modules/libmods.la $(QSW_LIBS)
+else
+pdsh_LDADD =               $(LIBADD_DL) $(READLINE_LIBS) 
+pdsh_LDFLAGS =             -export-dynamic  
+LTDL_FILES =               ltdl.h ltdl.c
 endif
 
 libqsw_la_LDFLAGS =        $(ELAN_LIBS)
@@ -25,14 +35,6 @@ nodist_pdsh_SOURCES =      testconfig.c
 pdsh_inst_SOURCES =        $(COMMON_FILES) $(LTDL_FILES)
 nodist_pdsh_inst_SOURCES = config.c
 
-if WITH_STATIC_MODULES
-pdsh_LDADD =               $(READLINE_LIBS) 
-pdsh_LDFLAGS = 	           modules/libmods.la libqsw.la
-else
-pdsh_LDADD =               $(LIBADD_DL) $(READLINE_LIBS) 
-pdsh_LDFLAGS =             -export-dynamic  
-LTDL_FILES =               ltdl.h ltdl.c
-endif
 
 pdsh_inst_LDADD =          $(pdsh_LDADD)
 pdsh_inst_LDFLAGS =        $(pdsh_LDFLAGS)

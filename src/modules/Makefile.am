@@ -1,79 +1,37 @@
 # $Id$
 
 INCLUDES =         -I $(top_srcdir)
+AUTOMAKE_OPTIONS = foreign
 
 if WITH_STATIC_MODULES
-
-if WITH_SSH
-SSH_FILE = sshcmd.c
+MODULE_FLAGS = 
+else
+MODULE_FLAGS =     -module -avoid-version
 endif
 
-if WITH_ELAN
-ELAN_FILE = qcmd.c
-endif
 
-if WITH_LIBGENDERS
-GENDERS_FILE = genders.c
-endif
-
-if WITH_NODEATTR
-NODEATTR_FILE = nodeattr.c
-endif
-
-if WITH_NODEUPDOWN
-NODEUPDOWN_FILE = nodeupdown.c
-endif
-
-if WITH_RMS
-RMS_FILE = rms.c
-endif
-
-if WITH_MACHINES
-MACHINES_FILE = machines.c
-endif
-
-if WITH_SDR
-SDR_FILE = sdr.c
-endif
-
-if WITH_MRSH
-MRSH_FILE = mcmd.c
-endif
-
-if WITH_MQSH
-MQSH_FILE = mqcmd.c
-endif
-
-if WITH_KRB4
-KRB4_FILE = k4cmd.c
-endif
-
+libmods_la_SOURCES = static_modules.h
 noinst_LTLIBRARIES = libmods.la
 
-libmods_la_SOURCES = \
+EXTRA_libmods_la_SOURCES = \
 	xrcmd.c \
-	$(SSH_FILE) \
-	$(MRSH_FILE) \
-	$(MQSH_FILE) \
-	$(ELAN_FILE) \
-	$(GENDERS_FILE) \
-	$(NODEATTR_FILE) \
-	$(NODEUPDOWN_FILE) \
-	$(RMS_FILE) \
-	$(MACHINES_FILE) \
-	$(SDR_FILE) \
-	$(KRB4_FILE)
+	sshcmd.c \
+	mcmd.c  \
+	mqcmd.c \
+	qcmd.c  \
+	genders.c \
+	nodeattr.c \
+	nodeupdown.c \
+	rms.c \
+	machines.c \
+	sdr.c \
+	k4cmd.c
  
 libmods_la_LDFLAGS = \
 	$(MRSH_LIBS) \
 	$(NODEUPDOWN_LIBS) \
 	$(KRB_LIBS) \
 	$(GENDERS_LIBS)
-
-else
-
-AUTOMAKE_OPTIONS = foreign
-MODULE_FLAGS =     -module -avoid-version
 
 if WITH_SSH
 SSH_MODULE = sshcmd.la
@@ -127,11 +85,15 @@ if WITH_KRB4
 KRB4_MODULE = k4cmd.la
 endif
 
+if WITH_STATIC_MODULES
+libmods_la_LIBADD = $(LIBMODS_OBJS)
+libmods_la_DEPENDENCIES = $(LIBMODS_OBJS) 
+else
 pkglib_LTLIBRARIES = \
 	xrcmd.la \
 	$(SSH_MODULE) \
-        $(MRSH_MODULE) \
-        $(MQSH_MODULE) \
+    $(MRSH_MODULE) \
+    $(MQSH_MODULE) \
 	$(ELAN_MODULE) \
 	$(GENDERS_MODULE) \
 	$(NODEATTR_MODULE) \
@@ -140,6 +102,7 @@ pkglib_LTLIBRARIES = \
 	$(MACHINES_MODULE) \
 	$(SDR_MODULE) \
 	$(KRB4_MODULE)
+endif
 
 xrcmd_la_SOURCES =        xrcmd.c
 xrcmd_la_LDFLAGS =        $(MODULE_FLAGS)
@@ -182,5 +145,3 @@ $(qcmd_la_LIBADD) : force
 force:
 $(mqcmd_la_LIBADD) : force
 	@cd `dirname $@` && $(MAKE) `basename $@`
-
-endif
