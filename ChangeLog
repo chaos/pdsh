@@ -187,15 +187,7 @@
 	  shortly after starting when done with pdsh or prun. I changed it to
 	  'reload' inside the specfile which seems safer.
 
-TODO for version 1.7
-	- improve deja-gnu support
-	- make rms queries to db using direct msql as in pam_rms module
-	- switch to libqsw (modify to set env vars)
-	- switch to automake?
-	- ganglia: add support for -v option (borrow code from gstat)
-	- ganglia: support gexec/authd connection method?
-	- implement C interface to genders
-	- implement node range conversion functions (both directions)
-	- GPL release 1.7
-	- need a better way to build chaos/non-chaos RPM's
-	- link statically to avoid runtime elan dependencies?
+2002-08-10 garlick
+	* Broke TODO out of ChangeLog
+	* Removed aborted attempt at QsNet cleanup (libqsw dir)
+	* Added wrapped support for Mark Grondona's excellent hostlist.[ch].

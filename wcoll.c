@@ -23,7 +23,7 @@
 #include "xstring.h"
 #include "xpopen.h"	/* for xpopen/close */
 #include "wcoll.h"
-#include "hostrange.h"
+#include "hostlist_wrap.h"
 
 #if	HAVE_RMS
 #include <qsw/types.h>

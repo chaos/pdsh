@@ -1,0 +1,14 @@
+- improve deja-gnu support
+  o resolve problems with dejagnu-1.4.2-3:
+    ERROR: Couldn't find config.guess program.
+- make rms queries to db using direct msql as in pam_rms module
+- switch to automake?
+- ganglia support
+  o -v option works like SP switch_responds/host_responds
+  o borrow code from gstat
+- implement C interface to genders
+- change release terms to GPL
+- need a better way to build chaos/non-chaos RPM's
+  o consider static linkage statically to avoid runtime elan dependencies?
+  o dlopen trick?
+- Addy requests more prun-like options

@@ -26,7 +26,7 @@
 #include "wcoll.h"
 #include "xstring.h"
 #include "xmalloc.h"	
-#include "hostrange.h"
+#include "hostlist_wrap.h"
 
 static void usage(opt_t *opt);
 static void show_version(void);
