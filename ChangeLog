@@ -181,10 +181,11 @@ Release 1.6+
 
 	Remove all _AIX ifdefs from code and added a single ifdef to
 	config.h bottom which define HAVE_MTSAFE_GETHOSTBYNAME and 
-	HAVE_MAGIC_RSHELL_CLEANUP.
+	HAVE_MAGIC_RSHELL_CLEANUP.  Use socklen_t for 3rd are to accept.
 
 	Rcp code to handle short writes just in case.
 
 	Updated copyright notice and normalized function defs.
 
 	If using ssh/kerberos, use conservative fanout and open stderr socket.
+
