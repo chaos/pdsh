@@ -1,6 +1,6 @@
 DEJATOOL = `pwd`/$(PROJECT)
 RUNTESTFLAGS =
-RUNTESTDEFAULTFLAGS = --tool $(PROJECT) --srcdir $$srcdir/testsuite 
+RUNTESTDEFAULTFLAGS = --all --tool $(PROJECT) --srcdir $$srcdir/testsuite 
 EXPECT = /usr/bin/expect
 RUNTEST = /usr/bin/runtest
 srcdir = $(top_srcdir)
@@ -9,7 +9,7 @@ check: site.exp
 	@srcdir=`cd $(srcdir) && pwd`; export srcdir; \
         EXPECT=$(EXPECT); export EXPECT; \
         if $(SHELL) -c "$(RUNTEST) --version" > /dev/null 2>&1; then \
-            $(RUNTEST) $(RUNTESTDEFAULTFLAGS) $(RUNTESTFLAGS); \
+            $(RUNTEST) $(RUNTESTDEFAULTFLAGS) $(RUNTESTFLAGS); exit 0; \
         else \
   	    echo "Could not find $(RUNTEST).  Is dejagnu installed?" 1>&2; :;\
         fi

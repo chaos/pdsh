@@ -102,10 +102,14 @@ verr(FILE *stream, char *format, va_list ap)
 			} else if (*format == 'm') {	/* %m - error code */
 				xstrerrorcat(&buf);
 			} else if (*format == 'P') {	/* %P - prog name */
+				assert(prog != NULL);
 				xstrcat(&buf, prog);
 			} else if (*format == 'H') {	/* %H - this host */
+				assert(host != NULL);
 				xstrcat(&buf, host);
 			} else if (*format == 'p') {	/* %p - prog@host */
+				assert(prog != NULL);
+				assert(host != NULL);
 				sprintf(tmpstr, "%s@%s", prog, host);
 				xstrcat(&buf, tmpstr);
 			} else				/* pass thru */

@@ -10,7 +10,7 @@ expect {
 }
 
 # gnats:35 pdsh does not properly display errors on AIX
-set test "strerror_r gnats:35"
+set test "xstrerrorcat gnats:35"
 spawn $pdsh -T 0
 expect  {
 	-re ".*PASS"			{ pass "$test" }
@@ -20,7 +20,7 @@ expect  {
 }
 
 # gnats:36 dshbak -c doesn't show difference between mult length output
-set test "dshbak gnats:36"
+set test "dshbak -c gnats:36"
 spawn $dshbak -c
 send "foo1: bar\n"
 send "foo2: bar\n"
