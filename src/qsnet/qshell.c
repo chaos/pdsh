@@ -115,6 +115,7 @@
 #include <ctype.h>
 #include <assert.h>
 
+#include "src/common/xmalloc.h"
 #include "src/common/xstring.h"
 #include "src/common/err.h"
 #include "src/common/fd.h"
