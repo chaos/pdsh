@@ -281,6 +281,11 @@ processes per node may be interspersed when using Qshell or Mqshell.
 Host range parsing assumes numerical part of hostname is at the end, e.g.
 specifying foo[0-5]bar will not work.
 
+The number of nodes that pdsh can simultaneously execute remote jobs
+on is limited by the maximum number of threads that can be created
+concurrently.  On systems that implement Posix threads, the limit is
+typically defined by the constant PTHREADS_THREADS_MAX.
+
 .SH "FILES"
 .if @HAVE_RMSQUERY@ \{
 @RMSQUERY@ 
