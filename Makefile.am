@@ -66,6 +66,7 @@ in_mqshd_SOURCES = \
 	hostlist.c hostlist.h 
 
 in_mqshd_LDADD = libqsw.la net-toollib/lib/libnettools.la
+
 in_mqshd_LDFLAGS = $(MQSH_LIBS)
 
 # Makefile rule for building rpm directly from CVS repository
