@@ -1,9 +1,20 @@
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(pdsh, 1.6, garlick@llnl.gov)
+AC_INIT(dummy, dummy, garlick@llnl.gov)
 AC_CONFIG_SRCDIR([dsh.h])
 AC_CONFIG_HEADER([conf.h])
 AC_CONFIG_AUX_DIR([auxdir])
+
+# override 'dummy' project & version above
+PROJECT="`perl -ne 'print,exit if s/^\s*NAME:\s*(\S*).*/\1/i' $srcdir/META`"
+PACKAGE_NAME=$PROJECT
+AC_DEFINE_UNQUOTED(PROJECT, "$PROJECT", [Define the project's name.])
+AC_SUBST(PROJECT)
+VERSION="`perl -ne 'print,exit if s/^\s*VERSION:\s*(\S*).*/\1/i' $srcdir/META`"
+PACKAGE_VERSION=$VERSION
+AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Define the project's version.])
+AC_SUBST(VERSION)
+
 PROJECT=$PACKAGE_NAME
 AC_DEFINE_UNQUOTED(PROJECT, "$PROJECT", [Project name])
 AC_SUBST(PROJECT)
@@ -12,6 +23,7 @@ AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Project version])
 AC_SUBST(VERSION)
 
 # Enable features
+# --with-elan
 AC_MSG_CHECKING(whether to support Elan interconnect)
 AC_ARG_WITH(elan,
     AC_HELP_STRING([--with-elan], [Include QSW Elan support]),
@@ -33,6 +45,7 @@ AC_ARG_WITH(elan,
 AC_SUBST(ELAN_PROGS)
 AC_MSG_RESULT(${withelan=no})
 
+# --with-rms
 AC_MSG_CHECKING(whether to support RMS)
 AC_ARG_WITH(rms,
     AC_HELP_STRING([--with-rms], [Include RMS support]),
@@ -52,6 +65,7 @@ AC_ARG_WITH(rms,
 )
 AC_MSG_RESULT(${withrms=no})
 
+# --with-krb4
 AC_MSG_CHECKING(whether to include Kerberos IV support)
 AC_ARG_WITH(krb4,
     AC_HELP_STRING([--with-krb4], [Include Kerberos IV support]),
@@ -71,6 +85,7 @@ AC_ARG_WITH(krb4,
 )
 AC_MSG_RESULT(${withkrb4=no})
 
+# --with-genders
 AC_MSG_CHECKING(whether to include Genders support)
 AC_ARG_WITH(genders,
     AC_HELP_STRING([--with-genders], [Include Genders support]),
@@ -164,5 +179,5 @@ AC_FUNC_STAT
 AC_FUNC_STRERROR_R
 AC_CHECK_FUNCS([alarm dup2 endpwent getcwd gethostbyaddr gethostbyname gethostname inet_ntoa isascii memset putenv select strchr strdup strerror strrchr strstr strtoul])
 
-AC_OUTPUT_COMMANDS(echo "creating dependencies"; make depend >/dev/null)
 AC_OUTPUT([Makefile pdsh.spec])
+AC_OUTPUT_COMMANDS(echo "creating dependencies"; make depend >/dev/null)
