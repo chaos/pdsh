@@ -196,6 +196,14 @@ mcmd_init(opt_t * opt)
     ssize_t m_rv;
 
     /*
+     * Drop elevated permissions if we have them.
+     */
+    if ((geteuid() != getuid())) {
+        setuid(getuid());
+        setgid(getgid());
+    }
+
+    /*
      * Generate a random number to send in our package to the 
      * server.  We will see it again and compare it when the
      * server sets up the stderr socket and sends it to us.
