@@ -1,3 +1,8 @@
+2003-09-19  Albert Chu <chu11@llnl.gov>
+
+	* pdsh.spec.in: Removed dependency of mrshd package from
+	pdsh-rcmd-mrsh.
+
 2003-09-18  Albert Chu <chu11@llnl.gov>
 
 	* doc/pdsh.1.in, doc/pdcp.1.in: 

@@ -112,7 +112,6 @@ Pdsh module for running QsNet MPI jobs.
 Summary:   Provides mrsh rcmd capability to pdsh.
 Group:     System Environment/Base
 Provides:  pdsh-rcmd
-Requires:  mrshd
 %description rcmd-mrsh
 Pdsh module for mrsh rcmd functionality.
 
