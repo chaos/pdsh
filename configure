@@ -3773,7 +3773,7 @@ EOF
 
 fi
 
-for ac_header in fcntl.h sys/file.h sys/time.h unistd.h
+for ac_header in strings.h fcntl.h sys/file.h sys/time.h unistd.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
 echo "$as_me:3779: checking for $ac_header" >&5
@@ -3821,7 +3821,7 @@ EOF
 fi
 done
 
-for ac_header in krb.h kparse.h
+for ac_header in krb.h kparse.h pthread.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
 echo "$as_me:3827: checking for $ac_header" >&5

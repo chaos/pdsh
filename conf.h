@@ -55,6 +55,9 @@
 /* Define if you have the <ndir.h> header file, and it defines `DIR'. */
 /* #undef HAVE_NDIR_H */
 
+/* Define if you have the <pthread.h> header file. */
+#define HAVE_PTHREAD_H 1
+
 /* Define if you have the `pthread_sigmask' function. */
 #define HAVE_PTHREAD_SIGMASK 1
 
