@@ -1,8 +1,9 @@
 2003-09-17  Albert Chu <chu11@llnl.gov>
 
 	* src/pdsh/dsh.c (dsh): 
-	Propogated value of kill_on_fail value to _rsh_thread.  Allows
-	_rsh_thread to terminate properly during batch jobs.
+	Fixed bug in which _rsh_thread does not terminate jobs.  But
+	caused by kill_on_fail value not being propogated properly to
+	_rsh_thread.
 
 	* src/pdsh/dsh.c (dsh): 
 	Before exitting on a pthread_create failure, added code to kill
