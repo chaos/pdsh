@@ -148,6 +148,10 @@ static ELAN_CAPABILITY cap;
 #define EXIT_PTHREAD()          return -1
 #endif
 
+#if STATIC_MODULES
+#  define pdsh_module_info mqcmd_module_info
+#endif    
+
 static int mqcmd_postop(opt_t *opt);
 
 static int mqcmd_opt_m(opt_t *, int, char *);
@@ -190,7 +194,7 @@ struct pdsh_module_option mqcmd_module_options[] =
 /* 
  * Mqcmd module info 
  */
-struct pdsh_module mqcmd_module = {
+struct pdsh_module pdsh_module_info = {
   "rcmd",
   "mqsh",
   "Mike Haskell <haskell5@llnl.gov> and Jim Garlick <garlick1@llnl.gov>",

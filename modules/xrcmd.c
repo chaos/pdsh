@@ -112,6 +112,10 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 
 #define RSH_PORT 514
 
+#if STATIC_MODULES
+#  define pdsh_module_info xrcmd_module_info
+#endif    
+
 static int xrcmd_init(opt_t *);
 static int xrcmd_signal(int, int);
 static int xrcmd(char *, char *, char *, char *, char *, int, int *); 
@@ -146,7 +150,7 @@ struct pdsh_module_option xrcmd_module_options[] =
 /* 
  * Xrcmd module info 
  */
-struct pdsh_module xrcmd_module = {
+struct pdsh_module pdsh_module_info = {
   "rcmd",
   "bsd",
   "Jim Garlick <garlick@llnl.gov>",

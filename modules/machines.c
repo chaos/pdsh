@@ -31,6 +31,10 @@
 #include "wcoll.h"
 #include "mod.h"
 
+#if STATIC_MODULES
+#  define pdsh_module_info machines_module_info
+#endif    
+
 static hostlist_t read_machines(opt_t *opt);
 static int machines_opt_a(opt_t *, int, char *);
 
@@ -66,7 +70,7 @@ struct pdsh_module_option machines_module_options[] =
 /* 
  * Machines module info 
  */
-struct pdsh_module machines_module = {
+struct pdsh_module pdsh_module_info = {
   "misc",
   "machines",
   "Jim Garlick <garlick@llnl.gov>",

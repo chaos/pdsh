@@ -45,13 +45,19 @@
 #  define GENDERS_ALTNAME_ATTRIBUTE   "altname"
 #endif
 
+#if STATIC_MODULES
+#  define pdsh_module_info genders_module_info
+#endif    
+
 static hostlist_t genders_wcoll(opt_t *pdsh_opts);
 
 static int genders_process_opt(opt_t *, int, char *);
 static hostlist_t _read_genders(char *attr, int iopt);
 
+#if !GENDERS_G_ONLY
 static bool allnodes   = false;
 static bool altnames   = false;
+#endif /* !GENDERS_G_ONLY */
 static char *gend_attr = NULL;
 
 /* 
@@ -95,7 +101,7 @@ struct pdsh_module_option genders_module_options[] =
 /* 
  * Genders module info 
  */
-struct pdsh_module genders_module = {
+struct pdsh_module pdsh_module_info = {
     "misc",
 #if GENDERS_G_ONLY
     "genders-g",
@@ -122,12 +128,14 @@ static int
 genders_process_opt(opt_t *pdsh_opts, int opt, char *arg)
 {
     switch (opt) {
+#if !GENDERS_G_ONLY
     case 'a': 
         allnodes = true;
         break;
     case 'i':
         altnames = true;
         break;
+#endif /* !GENDERS_G_ONLY */
     case 'g':
         gend_attr = Strdup(arg);
         break;
@@ -146,20 +154,23 @@ genders_process_opt(opt_t *pdsh_opts, int opt, char *arg)
 static void
 _genders_opt_verify(opt_t *opt)
 {
+#if !GENDERS_G_ONLY
     if (altnames && !allnodes && (gend_attr == NULL)) {
         err("%p: Warning: Ignoring -i without -a or -g\n");
         altnames = false;
     }
 
-    if (allnodes && (gend_attr != NULL)) 
+    if (allnodes && (gend_attr != NULL))
         errx("%p: Do not specify -a with -g\n");
+#endif /* !GENDERS_G_ONLY */
 
-    if (opt->wcoll) {
-        if (allnodes || gend_attr)
-            errx( "%p: Do not specify %s with -w\n", 
-                  (allnodes && gend_attr) ? 
-                  "-a or -g" : (allnodes ? "-a" : "-g")
-                );
+    if(opt->wcoll) {
+#if !GENDERS_G_ONLY
+        if (allnodes)
+            errx("%p: Do not specify -a with other node selection options\n");
+#endif /* !GENDERS_G_ONLY */
+        if (gend_attr)
+            errx("%p: Do not specify -g with other node selection options\n");
     }
 }
 

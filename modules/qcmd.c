@@ -115,6 +115,10 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #define HBUF_LEN	1024
 #endif
 
+#if STATIC_MODULES
+#  define pdsh_module_info qcmd_module_info
+#endif    
+
 extern char **environ;
 
 static bool dist_set = false;
@@ -167,7 +171,7 @@ struct pdsh_module_option qcmd_module_options[] =
 /* 
  * Qcmd module info 
  */
-struct pdsh_module qcmd_module = {
+struct pdsh_module pdsh_module_info = {
   "rcmd",
   "qsh",
   "Jim Garlick <garlick@llnl.gov>",

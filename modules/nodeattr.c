@@ -45,6 +45,10 @@
 #  define LINEBUFSIZE 2048
 #endif
 
+#if STATIC_MODULES
+#  define pdsh_module_info nodeattr_module_info
+#endif    
+
 static hostlist_t nodeattr_wcoll(opt_t *pdsh_opts);
 
 static int nodeattr_process_opt(opt_t *, int, char *);
@@ -57,8 +61,10 @@ static hostlist_t _read_genders(char *attr, int iopt);
  *   -g attr select all nodes with genders attribute "attr"
  *
  */
+#if !GENDERS_G_ONLY
 static bool allnodes   = false;
 static bool altnames   = false;
+#endif /* !GENDERS_G_ONLY */
 static char *gend_attr = NULL;
 
 /* 
@@ -101,7 +107,7 @@ struct pdsh_module_option nodeattr_module_options[] =
 /* 
  * Nodeattr module info 
  */
-struct pdsh_module nodeattr_module = {
+struct pdsh_module pdsh_module_info = {
   "misc",
 #if GENDERS_G_ONLY
   "nodeattr-g",
@@ -112,7 +118,7 @@ struct pdsh_module nodeattr_module = {
 #if GENDERS_G_ONLY
   "target nodes using \"nodeattr -g attr\"",
 #else
-  "target nodes using \"nodeattr -[av] [-g attr]\"",
+  "target nodes using \"nodeattr -[ai] [-g attr]\"",
 #endif /* GENDERS_G_ONLY */
 
   &nodeattr_module_ops,
@@ -150,22 +156,23 @@ nodeattr_process_opt(opt_t *pdsh_opts, int opt, char *arg)
 static void
 _nodeattr_opt_verify(opt_t *opt)
 {
+#if !GENDERS_G_ONLY
     if (altnames && !allnodes && (gend_attr == NULL)) {
-        err("%p: Warning: Ignoring -i without -a\n");
+        err("%p: Warning: Ignoring -i without -a or -g\n");
         altnames = false;
     }
 
-    if (allnodes && (gend_attr != NULL)) {
+    if (allnodes && (gend_attr != NULL))
         errx("%p: Do not specify -a with -g\n");
-        allnodes = false;
-    }
+#endif /* !GENDERS_G_ONLY */
 
-    if (opt->wcoll) {
-        if (allnodes || gend_attr)
-            errx( "%p: Do not specify %s with -w\n", 
-                  (allnodes && gend_attr) ? 
-                  "-a or -g" : (allnodes ? "-a" : "-g")
-                );
+    if(opt->wcoll) {
+#if !GENDERS_G_ONLY
+        if (allnodes)
+            errx("%p: Do not specify -a with other node selection options\n");
+#endif /* !GENDERS_G_ONLY */
+        if (gend_attr)
+            errx("%p: Do not specify -g with other node selection options\n");
     }
 }
 

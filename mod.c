@@ -71,7 +71,7 @@ struct module_components {
 #if STATIC_MODULES
 static int  _mod_load(int);
 #else
-static int  _mod_load(const char *, const char *);
+static int  _mod_load(const char *);
 static int  _cmp_filenames(mod_t, char *);
 static int  _is_loaded(char *filename); 
 static bool _dir_ok(struct stat *);
@@ -181,6 +181,7 @@ mod_read_wcoll(opt_t *opt)
             opt->wcoll = hl;
 
     }
+
     return 0;
 }
 
@@ -268,13 +269,12 @@ static int
 #if STATIC_MODULES
 _mod_load(int index)
 #else
-_mod_load(const char *fq_path, const char *filename)
+_mod_load(const char *fq_path)
 #endif
 {
     mod_t mod = NULL;
 #if !STATIC_MODULES
     const lt_dlinfo *info;
-    char mod_name[MAXPATHLEN + strlen("_module") + 1];   
     assert(fq_path != NULL);
 #endif
 
@@ -298,16 +298,9 @@ _mod_load(const char *fq_path, const char *filename)
         err("%p: [%s] module already loaded\n", mod->filename);
         goto fail;
     }
-
-    /* Determine structure name that holds all module info.  Subtract
-     * three in order to remove ".la" from the filename.
-     */
-
-    strncpy(mod_name, filename, MAXPATHLEN);
-    strcpy(&mod_name[0] + strlen(filename) - 3, "_module");
-    
+  
     /* load all module info from the pdsh_module structure */
-    if (!(mod->pmod = lt_dlsym(mod->handle, mod_name))) {
+    if (!(mod->pmod = lt_dlsym(mod->handle, "pdsh_module_info"))) {
         err("%p:[%s] can't resolve pdsh module\n", mod->filename);
         goto fail;
     }
@@ -406,7 +399,7 @@ mod_load_modules(const char *dir)
         if (!S_ISREG(st.st_mode))
             continue;
 
-        if (_mod_load(path, entry->d_name) < 0) 
+        if (_mod_load(path) < 0) 
             continue;
 
         count++;

@@ -43,6 +43,10 @@
 #define MAX_SP_NODES_PER_FRAME  16
 #define MAX_SP_NODE_NUMBER (MAX_SP_NODES * MAX_SP_NODES_PER_FRAME - 1)
 
+#if STATIC_MODULES
+#  define pdsh_module_info sdr_module_info
+#endif    
+
 static hostlist_t read_sdr(opt_t *opt);
 
 static int sdr_process_opt(opt_t *, int, char *);
@@ -93,7 +97,7 @@ struct pdsh_module_option sdr_module_options[] =
 /* 
  * Sdr module info 
  */
-struct pdsh_module sdr_module = {
+struct pdsh_module pdsh_module_info = {
   "misc",
   "sdr",
   "Jim Garlick <garlick@llnl.gov>",
@@ -142,7 +146,7 @@ static hostlist_t read_sdr(opt_t *opt)
         return NULL;
 
     if (opt->wcoll)
-        errx("%p: Do not specify -a with -w\n");
+        errx("%p: Do not specify -a with other node selection options\n");
 
     return sdr_wcoll(global, altnames, verify);
 }

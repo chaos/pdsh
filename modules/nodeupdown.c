@@ -40,6 +40,10 @@
 #  define GENDERS_ALTNAME_ATTRIBUTE   "altname"
 #endif
 
+#if STATIC_MODULES
+#  define pdsh_module_info nodeupdown_module_info
+#endif    
+
 static int mod_nodeupdown_postop(opt_t *opt);
 static int nodeupdown_opt_v(opt_t *, int, char *);
 static void remove_all_down_nodes(hostlist_t);
@@ -78,7 +82,7 @@ struct pdsh_module_option nodeupdown_module_options[] =
 /* 
  * Nodeupdown module info 
  */
-struct pdsh_module nodeupdown_module = {
+struct pdsh_module pdsh_module_info = {
   "misc",
   "nodeupdown",
   "Al Chu <chu11@llnl.gov>",

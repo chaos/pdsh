@@ -82,7 +82,7 @@ AC_DEFUN([AC_STATIC_MODULES_EXIT],
 
   for i in $MODULES
   do
-     echo "extern struct pdsh_module ${i}_module;" >> modules/static_modules.h
+     echo "extern struct pdsh_module ${i}_module_info;" >> modules/static_modules.h
   done
 
   echo "                                        " >> modules/static_modules.h
@@ -94,7 +94,7 @@ AC_DEFUN([AC_STATIC_MODULES_EXIT],
 
   for i in $MODULES
   do
-     echo "    &${i}_module," >> modules/static_modules.h
+     echo "    &${i}_module_info," >> modules/static_modules.h
   done
      
   echo "    NULL                                " >> modules/static_modules.h

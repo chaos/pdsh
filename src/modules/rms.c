@@ -39,6 +39,10 @@
 #include "xstring.h"
 #include "mod.h"
 
+#if STATIC_MODULES
+#  define pdsh_module_info rms_module_info
+#endif    
+
 /*
  *  Call this module after all option processing. The module will only
  *    try to read the RMS_RESOURCEID if opt->wcoll is not already set.
@@ -79,7 +83,7 @@ struct pdsh_module_option rms_module_options[] =
 /* 
  * Rms module info 
  */
-struct pdsh_module rms_module = {
+struct pdsh_module pdsh_module_inf = {
   "misc",
   "rms",
   "Jim Garlick <garlick@llnl.gov>",

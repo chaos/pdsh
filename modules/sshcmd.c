@@ -68,6 +68,10 @@
 
 #define HBUF_LEN	1024
 
+#if STATIC_MODULES
+#  define pdsh_module_info sshcmd_module_info
+#endif    
+
 /*
  * use_rw will be set to true for PCP mode
  */
@@ -109,7 +113,7 @@ struct pdsh_module_option sshcmd_module_options[] =
 /* 
  * Sshcmd module info 
  */
-struct pdsh_module sshcmd_module = {
+struct pdsh_module pdsh_module_info = {
   "rcmd",
   "ssh",
   "Jim Garlick <garlick@llnl.gov>",

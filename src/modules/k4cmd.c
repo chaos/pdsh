@@ -91,6 +91,10 @@
 
 #define KCMD_PORT 544
 
+#if STATIC_MODULES
+#  define pdsh_module_info k4cmd_module_info
+#endif    
+
 extern errno;
 extern char *inet_ntoa();
 
@@ -128,7 +132,7 @@ struct pdsh_module_option k4cmd_module_options[] =
 /* 
  * k4cmd module info 
  */
-struct pdsh_module k4cmd_module = {
+struct pdsh_module pdsh_module_info = {
     "rcmd",
     "k4",
     "Jim Garlick <garlick@llnl.gov>",

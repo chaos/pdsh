@@ -4,8 +4,6 @@ INCLUDES =         -I $(top_srcdir)
 
 if WITH_STATIC_MODULES
 
-noinst_LTLIBRARIES = libmods.la
-
 if WITH_SSH
 SSH_FILE = sshcmd.c
 endif
@@ -49,6 +47,8 @@ endif
 if WITH_KRB4
 KRB4_FILE = k4cmd.c
 endif
+
+noinst_LTLIBRARIES = libmods.la
 
 libmods_la_SOURCES = \
 	xrcmd.c \

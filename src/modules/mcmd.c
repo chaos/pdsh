@@ -134,6 +134,10 @@ static char sccsid[] = "@(#)mcmd.c      Based from: 8.3 (Berkeley) 3/26/94";
 #define EXIT_PTHREAD()          return -1
 #endif
 
+#if STATIC_MODULES
+#  define pdsh_module_info mcmd_module_info
+#endif    
+
 static int mcmd_init(opt_t *);
 static int mcmd_signal(int, int);
 static int mcmd(char *, char *, char *, char *, char *, int, int *); 
@@ -168,7 +172,7 @@ struct pdsh_module_option mcmd_module_options[] =
 /* 
  * Mcmd module info 
  */
-struct pdsh_module mcmd_module = {
+struct pdsh_module pdsh_module_info = {
   "rcmd",
   "mrsh",
   "Mike Haskell <haskell5@llnl.gov>",
