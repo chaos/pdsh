@@ -1,4 +1,4 @@
-set pdsh "$objdir/pdsh"
+set pdsh "$objdir/src/pdsh/pdsh"
 
 #expect_after {
 #	timeout				{ unresolved "$test" }
@@ -12,7 +12,7 @@ set pdsh "$objdir/pdsh"
 set test "pdsh: version (if this fails beware that testsuite is outdated)"
 spawn $pdsh -V
 expect  {
-	-re "pdsh-1.8.*"		{ pass "$test" }
+	-re "pdsh-2.0"		        { pass "$test" }
 	eof				{ fail "$test" }
 }
 
