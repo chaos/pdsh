@@ -36,6 +36,7 @@
 #include "src/common/hostlist.h"
 #include "src/common/err.h"
 #include "src/common/xmalloc.h"
+#include "src/pdsh/ltdl.h"
 #include "src/pdsh/mod.h"
 
 #define ALL_NODES NULL
@@ -57,7 +58,8 @@ int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
  */
 static hostlist_t genders_wcoll(opt_t *pdsh_opts);
 static int        genders_process_opt(opt_t *, int, char *);
-static void       genders_fini(void);
+static int        genders_init(void);
+static int        genders_fini(void);
 static int        genders_postop(opt_t *);
 
 
@@ -72,11 +74,15 @@ static char *gfile     = NULL;
 static List attrlist   = NULL;
 static List excllist   = NULL;
 
+static lt_dlhandle dlh = NULL;
+static lt_ptr g_query_addr = NULL;
+typedef int (*g_query)(genders_t, char **, int, char *);
+
 /* 
  * Export pdsh module operations structure
  */
 struct pdsh_module_operations genders_module_ops = {
-    (ModInitF)       NULL, 
+    (ModInitF)       genders_init, 
     (ModExitF)       genders_fini, 
     (ModReadWcollF)  genders_wcoll, 
     (ModPostOpF)     genders_postop,
@@ -96,10 +102,10 @@ struct pdsh_rcmd_operations genders_rcmd_ops = {
  */
 struct pdsh_module_option genders_module_options[] = 
  { 
-   { 'g', "attribute,...", "target nodes with specified genders attributes",
+   { 'g', "query,...", "target nodes matched by specified genders queries",
      DSH | PCP, (optFunc) genders_process_opt 
    },
-   { 'X', "attribute,...", "exclude nodes with specified genders attributes",
+   { 'X', "attribute,...", "exclude nodes match by specified genders queries",
      DSH | PCP, (optFunc) genders_process_opt
    },
    { 'F', "file",          "use alternate genders file `file'",
@@ -185,7 +191,18 @@ genders_process_opt(opt_t *pdsh_opts, int opt, char *arg)
     return 0;
 }
 
-static void
+static int
+genders_init(void)
+{
+    if (!(dlh = lt_dlopen(NULL)))
+        errx("%p: Error loading self: %s\n", lt_dlerror());
+
+    g_query_addr = lt_dlsym(dlh, "genders_query");
+
+    return 0;
+}
+
+static int
 genders_fini(void)
 {
     if (attrlist)
@@ -197,7 +214,8 @@ genders_fini(void)
     if ((gh != NULL) && (genders_handle_destroy(gh) < 0))
         errx("%p: Error destroying genders handle: %s\n", genders_errormsg(gh));
 
-    return;
+    lt_dlclose(dlh);
+    return 0;
 }
 
 static hostlist_t 
@@ -401,23 +419,30 @@ _get_val(char *attr)
     return (val);
 }
 
-
 static hostlist_t 
-_read_genders_attr(char *attr)
+_read_genders_attr(char *query)
 {
     hostlist_t hl = NULL;
-    char *val;
     char **nodes;
     int len, nnodes;
-
-    val = _get_val(attr);
 
     if ((len = genders_nodelist_create(gh, &nodes)) < 0)
         errx("%p: genders: nodelist_create: %s\n", genders_errormsg(gh));
 
-    if ((nnodes = genders_getnodes(gh, nodes, len, attr, val)) < 0) {
-        errx("%p: Error querying genders for attr \"%s\": %s\n", 
-                attr ?: "(all)", genders_errormsg(gh));
+    if (g_query_addr) {
+        if ((nnodes = ((g_query)g_query_addr)(gh, nodes, len, query)) < 0) {
+            errx("%p: Error querying genders for query \"%s\": %s\n", 
+                 query ?: "(all)", genders_errormsg(gh));
+        }
+    }
+    else {
+        /* query defaults to just an attribute or attribute=value pair */
+        char *val;
+        val = _get_val(query);
+        if ((nnodes = genders_getnodes(gh, nodes, len, query, val)) < 0) {
+            errx("%p: Error querying genders for attr \"%s\": %s\n", 
+                 query ?: "(all)", genders_errormsg(gh));
+        }
     }
 
     hl = _genders_to_hostlist(gh, nodes, nnodes);
@@ -427,7 +452,6 @@ _read_genders_attr(char *attr)
                 genders_errormsg(gh));
     }
 
-
     return hl;
 }
 
@@ -436,7 +460,7 @@ _read_genders (List attrs)
 {
     ListIterator i  = NULL;
     hostlist_t   hl = NULL;
-    char *     attr = NULL;
+    char *    query = NULL;
 
     if ((attrs == NULL) && (allnodes)) /* Special "all nodes" case */
         return _read_genders_attr (ALL_NODES);
@@ -444,15 +468,15 @@ _read_genders (List attrs)
     if ((attrs == NULL) || (list_count (attrs) == 0))
         return NULL;
 
-   if ((i = list_iterator_create (attrs)) == NULL)
+    if ((i = list_iterator_create (attrs)) == NULL)
         errx ("genders: unable to create list iterator: %m\n");
 
-    while ((attr = list_next (i))) {
-        hostlist_t l = _read_genders_attr (attr);
+    while ((query = list_next (i))) {
+        hostlist_t l = _read_genders_attr (query);
 
         if (hl == NULL) {
             hl = l;
-		} else {
+        } else {
             hostlist_push_list (hl, l);
             hostlist_destroy (l);
         }

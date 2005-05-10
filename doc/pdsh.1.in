@@ -192,17 +192,35 @@ see the \fI-a\fR option below.
 Target all nodes in genders database except those with the "pdsh_all_skip"
 attribute. This is shorthand for running "pdsh -A -X pdsh_all_skip ..."
 .TP 
-.I "-g attribute[,attribute,...]"
-Target nodes that have any of the specified genders attributes. Conflicts
-with \fI\-a\fR and \fI\-w\fR options. This option targets the alternate
-hostnames in the genders database by default. The \fI\-i\fR option provided
-by the genders module may be used to translate these to the canonical
-genders hostnames.
+.I "-g query[,query,...]"
+Target nodes that match any of the specified genders
+queries. Conflicts with \fI\-a\fR and \fI\-w\fR options. This option
+targets the alternate hostnames in the genders database by
+default. The \fI\-i\fR option provided by the genders module may be
+used to translate these to the canonical genders hostnames. Genders
+queries will query the genders database for a set of nodes based on
+the union, intersection, difference, or complement of genders
+attributes and values.  The set operation union is represented by two
+pipe symbols ('||'), intersection by two ampersand symbols ('&&'),
+difference by two minus symbols ('--'), and complement by a tilde
+('~').  Parentheses may be used to change the order of operations.
+For older genders libraries, set operations may not be available.  The
+only acceptable queries for older libraries are individual attributes
+or attribute=value pairs.
 .TP
-.I "-X attribute[,attribute,...]"
-Exclude nodes that have any of the specified list of attributes.
-This option may be used in combination with any other of the node 
-selection options (e.g. \fI-w\fR, \fI-g\fR, \fI-a\fR, ...).
+.I "-X query[,query,...]"
+Exclude nodes that match any of the specified genders queries.  This
+option may be used in combination with any other of the node selection
+options (e.g. \fI-w\fR, \fI-g\fR, \fI-a\fR, ...).  Genders queries
+will query the genders database for a set of nodes based on the union,
+intersection, difference, or complement of genders attributes and
+values.  The set operation union is represented by two pipe symbols
+('||'), intersection by two ampersand symbols ('&&'), difference by
+two minus symbols ('--'), and complement by a tilde ('~').
+Parentheses may be used to change the order of operations.  For older
+genders libraries, set operations may not be available.  The only
+acceptable queries for older libraries are individual attributes or
+attribute=value pairs.
 .TP
 .I "-i"
 Request translation between canonical and alternate hostnames. 
