@@ -1,3 +1,8 @@
+2005-05-31  Mark Grondona <mgrondona@llnl.gov>
+	
+	* src/pdsh/dsh.c (dsh) : Don't call _increase_nofile_limit() until after 
+	  mod_rcmd_init().
+
 2005-05-09  Albert Chu <chu11@llnl.gov>
 
 	Added genders querying support to -g and -X options.
@@ -5,16 +10,16 @@
 	* src/modules/genders.c (genders_init): New function.
 
 	* src/modules/genders.c (genders_fini): Call lt_dlclose
-	appropriately.  Fix prototype to match ModExitF type and return 0.
+	  appropriately.  Fix prototype to match ModExitF type and return 0.
 	
 	* src/modules/genders.c (_read_genders_attr): Modified
-	appropriately to call genders_query if it is available.
+	  appropriately to call genders_query if it is available.
 	
 	* src/modules/genders.c (_read_genders): Renamed 'attr' local var
-	to 'query'.  
+	  to 'query'.  
 
 	* doc/pdsh.1.in: Updated information on -g and -X options
-	appropriately.
+	  appropriately.
 
 2005-03-28  Mark Grondona <mgrondona@llnl.gov>
 

@@ -578,7 +578,7 @@ static void _gethost(char *name, char *addr)
     struct hostent *hp;
 
     if (!(hp = gethostbyname(name)))
-        errx("%p: gethostbyname %S failed\n", name);
+            errx("%p: gethostbyname(\"%S\") failed\n", name);
     /* assert(hp->h_addrtype == AF_INET); */
     assert(IP_ADDR_LEN == hp->h_length);
     memcpy(addr, hp->h_addr_list[0], IP_ADDR_LEN);
@@ -959,7 +959,6 @@ int dsh(opt_t * opt)
     hostlist_iterator_t itr;
     SigFunc *old_int_handler = NULL;
 
-    _increase_nofile_limit (opt);
 
     /*
      *   Initialize rcmd modules...
@@ -968,6 +967,8 @@ int dsh(opt_t * opt)
         err("%p: unable to initialize an rcmd module\n");
 		exit(1);
     }
+
+    _increase_nofile_limit (opt);
 
     /* install signal handlers */
     _xsignal(SIGALRM, _alarm_handler);
