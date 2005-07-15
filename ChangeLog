@@ -1,3 +1,9 @@
+2005-07-15  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/dsh.c (dsh) : Be sure to handle error conditions on file
+	  descriptors when returning from xpoll(). (fixes pdsh hang on OS X
+	  as reported by Andrina Kelly <andrina@corefa.com>).
+
 2005-05-31  Mark Grondona <mgrondona@llnl.gov>
 	
 	* src/pdsh/dsh.c (dsh) : Don't call _increase_nofile_limit() until after 
