@@ -410,8 +410,10 @@ static int _rcp_write(int fd, char *buf, int size)
  */
 static int _rcp_send_file_data(int outfd, char *filename, char *host)
 {
-    int infd, inbytes;
+    int infd, inbytes, total = 0;
     char tmpbuf[BUFSIZ];
+
+    err ("_rcp_send_file_data (%d, \"%s\", %s)\n", outfd, filename, host);
 
     infd = open(filename, O_RDONLY);
     /* checked ahead of time - shouldn't happen */
@@ -426,6 +428,7 @@ static int _rcp_send_file_data(int outfd, char *filename, char *host)
             return -1;
         }
         if (inbytes > 0) {
+            total += inbytes;
             if (_rcp_write(outfd, tmpbuf, inbytes) < 0) {
                 err("%S: _rcp_send_file_data: write: %m\n", host);
                 return -1;
@@ -433,6 +436,7 @@ static int _rcp_send_file_data(int outfd, char *filename, char *host)
         }
     } while (inbytes > 0);      /* until EOF */
     close(infd);
+    err ("_rcp_send_file_data: wrote %d bytes\n", total);
     return 0;
 }
 
@@ -446,13 +450,17 @@ static int _rcp_send_file_data(int outfd, char *filename, char *host)
  */
 static int _rcp_sendstr(int fd, char *str, char *host)
 {
+    int n;
     assert(strlen(str) > 0);
     assert(str[strlen(str) - 1] == '\n');
 
-    if (_rcp_write(fd, str, strlen(str)) < 0) {
+    err ("_rpc_sendstr (%d, \"%s\", %s)\n", fd, str, host);
+
+    if ((n = _rcp_write(fd, str, strlen(str))) < 0) {
         err("%s: _rcp_sendstr: write: %m\n", host);
         return -1;
     }
+    assert(n == strlen(str));
     return 0;
 }
 
@@ -466,10 +474,19 @@ static int _rcp_response(int fd, char *host)
 {
     char resp;
     int i = 0, result = -1;
+    int n;
     char errstr[BUFSIZ];
 
-    if (read(fd, &resp, sizeof(resp)) == sizeof(resp)) {
-        switch (resp) {
+    err ("_rcp_response (%d, %s) .. ", fd, host);
+
+    if ((n = read(fd, &resp, sizeof(resp))) != sizeof(resp)) {
+        err ("_rcp_response: unable to read resp code\n");
+        return (-1);
+    }
+
+    err ("resp = %d\n", resp); 
+
+    switch (resp) {
         case 0:                /* ok */
             result = 0;
             break;
@@ -487,7 +504,6 @@ static int _rcp_response(int fd, char *host)
             err("%S: remote error: %s\n", host, errstr);
             if (resp != 1)
                 result = 0;
-        }
     }
     return result;
 }
@@ -506,6 +522,8 @@ static int _rcp_sendfile(int fd, char *file, char *host, bool popt)
         err("%S: %s: %m\n", host, file);
         goto fail;
     }
+
+    err ("_rcp_sendfile (%d, %s, %s, %d)\n", fd, file, host, popt);
 
     if (popt) {
         /* 
@@ -555,6 +573,7 @@ static int _rcp_sendfile(int fd, char *file, char *host, bool popt)
             goto fail;
 
         /* 6: SEND NULL byte */
+        err ("Sending NULL byte\n");
         if (_rcp_write(fd, "", 1) < 0)
             goto fail;
 
@@ -1127,6 +1146,7 @@ int dsh(opt_t * opt)
     /* if -S, our exit value is the largest of the return codes */
     if (opt->ret_remote_rc) {
         for (i = 0; t[i].host != NULL; i++) {
+            out ("%p: %s: RC=%d\n", t[i].host, t[i].rc);
             if (t[i].state == DSH_FAILED)
                 rc = RC_FAILED;
             if (t[i].rc > rc)

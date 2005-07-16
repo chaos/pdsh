@@ -1,14 +1,14 @@
 # $Id$
 
-Name:    @PACKAGE@
-Version: @VERSION@
-Release: @RELEASE@
+Name:    
+Version: 
+Release: 
 
 Summary: Parallel remote shell program.
 
 License: GPL
 Group: System Environment/Base
-Source: %{name}-%{version}-%{release}.tgz
+Source: 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}
 Requires: pdsh-rcmd
 

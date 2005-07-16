@@ -7,7 +7,7 @@
 # This file is to be processed with autoconf to generate a configure script.
 
 AC_INIT([pdsh])
-AC_META
+X_AC_META
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_SRCDIR([src/pdsh/dsh.h])
 AC_CANONICAL_SYSTEM
@@ -214,19 +214,19 @@ fi
 #
 # Build PDSH_VERSION string
 #
-if echo "$RELEASE" | grep '^[[0-9]][[0-9]]*$' >/dev/null 2>&1; then
-   PDSH_VERSION="$PACKAGE-$VERSION"
+if echo "$META_RELEASE" | grep '^[[0-9]][[0-9]]*$' >/dev/null 2>&1; then
+   PDSH_VERSION="$META_NAME-$META_VERSION"
 else
-   if echo "$RELEASE" | grep -e "pre0" -e "UNSTABLE" >/dev/null 2>&1; then
-      if test "$RELEASE" = "UNSTABLE"; then
+   if echo "$META_RELEASE" | grep -e "pre0" -e "UNSTABLE" >/dev/null 2>&1; then
+      if test "$META_RELEASE" = "UNSTABLE"; then
 	     DATE=`date +"%Y%m%d%H%M"`
       else
-	     DATE=`echo $RELEASE | cut -d. -f3`
+	     DATE=`echo $META_RELEASE | cut -d. -f3`
       fi
-      PDSH_VERSION="$PACKAGE-$VERSION (unstable cvs build $DATE)"
+      PDSH_VERSION="$META_NAME-$META_VERSION (unstable cvs build $DATE)"
    else
-      PDSH_RELEASE="`echo $RELEASE | sed 's/^[[^\.]]*\.//'`"
-      PDSH_VERSION="$PACKAGE-$VERSION-$PDSH_RELEASE"
+      PDSH_RELEASE="`echo $META_RELEASE | sed 's/^[[^\.]]*\.//'`"
+      PDSH_VERSION="$META_NAME-$META_VERSION-$PDSH_RELEASE"
    fi
 fi
 test "$ac_static_modules" = "yes" && EXTRA_VERS="+static-modules"
@@ -280,7 +280,6 @@ AC_CONFIG_FILES([
   doc/Makefile
   etc/Makefile
   scripts/Makefile
-  pdsh.spec 
   doc/pdcp.1 
   doc/pdsh.1
  ]

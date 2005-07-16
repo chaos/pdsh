@@ -94,6 +94,7 @@ char rcsid[] = "$Id$";
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdio.h>
 
 #include "src/common/err.h"
 #include "opt.h"
@@ -124,6 +125,22 @@ static BUF *_allocbuf(BUF *bp, int fd, int blksize);
 static void _error(const char *fmt, ...);
 static void _sink(opt_t *opt, char *targ);
 
+static FILE *logfp = NULL;
+
+static void _log_init (void)
+{
+	char filename[4096];
+	snprintf (filename, 4096, "/tmp/pdcp-%d.log", getpid());
+	logfp = fopen (filename, "w");
+
+	if (!logfp)
+		_error ("unable to open pdcp logfile\n");
+
+	setvbuf (logfp, NULL, _IOLBF, 0);
+
+	fprintf (logfp, "pdcp log started\n");
+}
+
 static void
 _verifydir(const char *cp)
 {
@@ -142,6 +159,8 @@ static int
 _response(void)
 {
     char resp;
+
+	fprintf (logfp, "_response\n");
 
     if (read(rem, &resp, sizeof(resp)) != sizeof(resp)) {
         _error("lost connection\n");
@@ -228,6 +247,8 @@ _sink(opt_t *opt, char *targ) {
 #define	mtime	tv[1]
 #define	SCREWUP(str)	{ why = str; goto screwup; }
 
+	fprintf (logfp, "_sink (%s)\n", targ);
+
     setimes = targisdir = 0;
     mask = umask(0);
     if (!opt->preserve)
@@ -236,13 +257,18 @@ _sink(opt_t *opt, char *targ) {
     if (opt->target_is_directory)
         _verifydir(opt->outfile_name);
 
+	fprintf (logfp, "write 1st NULL\n", targ);
+
     (void)write(rem, "", 1);
     if (stat(targ, &stb) == 0 && (stb.st_mode & S_IFMT) == S_IFDIR)
         targisdir = 1;
 
     for (first = 1;; first = 0) {
+		int rc;
         cp = buf;
-        if (read(rem, cp, 1) <= 0) {
+		fprintf (logfp, "read 1 byte: first = %d\n", first);
+        if ((rc = read(rem, cp, 1)) <= 0) {
+			fprintf (logfp, "read returned %d\n", rc);
             if (namebuf)
                 free(namebuf);
             return;
@@ -250,12 +276,15 @@ _sink(opt_t *opt, char *targ) {
         if (*cp++ == '\n')
             SCREWUP("unexpected <newline>");
 
+		fprintf (logfp, "read command to newline\n");
         do {
             if (read(rem, &ch, sizeof(ch)) != sizeof(ch))
                 SCREWUP("lost connection");
             *cp++ = ch;
         } while (cp < &buf[BUFSIZ - 1] && ch != '\n');
         *cp = 0;
+
+		fprintf (logfp, "buf = \"%s\"\n", buf);
 
         if (buf[0] == '\01' || buf[0] == '\02') {
             if (buf[0] == '\02')
@@ -264,6 +293,7 @@ _sink(opt_t *opt, char *targ) {
         }
 
         if (buf[0] == 'E') {
+			fprintf (logfp, "CMD = E, Write NULL\n");
             (void)write(rem, "", 1);
             if (namebuf)
                 free(namebuf);
@@ -276,6 +306,7 @@ _sink(opt_t *opt, char *targ) {
 #define getnum(t) (t) = 0; while (isdigit(*cp)) (t) = (t) * 10 + (*cp++ - '0');
         cp = buf;
         if (*cp == 'T') {
+			fprintf (logfp, "CMD = T\n");
             setimes++;
             cp++;
             getnum(mtime.tv_sec);
@@ -290,6 +321,7 @@ _sink(opt_t *opt, char *targ) {
             getnum(atime.tv_usec);
             if (*cp++ != '\0')
                 SCREWUP("atime.usec not delimited");
+			fprintf (logfp, "CMD = T, Write NULL response\n");
             (void)write(rem, "", 1);
             continue;
         }
@@ -323,6 +355,8 @@ _sink(opt_t *opt, char *targ) {
              */
 
             int need;
+
+			fprintf (logfp, "target is directory\n");
             
             need = strlen(targ) + strlen(cp) + 250;
             if (need > cursize) {
@@ -377,6 +411,8 @@ bad:
         if (exists && opt->preserve)
             (void)fchmod(ofd, mode);
 
+		fprintf (logfp, "Write NULL response\n");
+
         (void)write(rem, "", 1);
         if ((bp = _allocbuf(&buffer, ofd, BUFSIZ)) == NULL) {
             (void)close(ofd);
@@ -385,6 +421,7 @@ bad:
         cp = bp->buf;
         count = 0;
         wrerr = NO;
+		fprintf (logfp, "Need to read %d bytes\n", size);
         for (i = 0; i < size; i += BUFSIZ) {
             amt = BUFSIZ;
             if (i + amt > size)
@@ -406,6 +443,7 @@ bad:
                 cp = bp->buf;
             }
         }
+		fprintf (logfp, "read %d bytes\n", size);
         if (count != 0 && wrerr == NO && write(ofd, bp->buf, count) != count)
             wrerr = YES;
         if (ftruncate(ofd, size)) {
@@ -423,9 +461,11 @@ bad:
         }
         switch(wrerr) {
             case YES:
+				fprintf (logfp, "Write error resp. wrerr = YES\n");
                 _error("%s: %m\n", np);
                 break;
             case NO:
+				fprintf (logfp, "Write NULL resp. wrerr = NO\n");
                 (void)write(rem, "", 1);
                 break;
             case DISPLAYED:
@@ -451,6 +491,8 @@ int pcp_server(opt_t *opt) {
         return -1;
     }
     
+	_log_init ();
     _sink(opt, opt->outfile_name);
+	fclose (logfp);
     return 0;
 }

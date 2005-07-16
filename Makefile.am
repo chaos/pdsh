@@ -29,7 +29,7 @@ MAINTAINERCLEANFILES = \
 
 EXTRA_DIST = \
     DISCLAIMER META \
-    pdsh.spec.in \
+    pdsh.spec \
     README.KRB4 \
     README.QsNet \
     README.modules \
