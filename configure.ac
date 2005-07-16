@@ -22,7 +22,7 @@ fi
 #
 #  Automake support
 # 
-AM_INIT_AUTOMAKE([$PACKAGE], [$VERSION])
+AM_INIT_AUTOMAKE([$META_NAME], [$VERSION])
 AM_CONFIG_HEADER([config.h])
 
 #

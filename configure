@@ -3334,7 +3334,7 @@ fi
 
 
 # Define the identity of the package.
- PACKAGE=$PACKAGE
+ PACKAGE=$META_NAME
  VERSION=$VERSION
 
 
