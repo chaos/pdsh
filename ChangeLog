@@ -11,7 +11,7 @@
 
 2005-05-09  Albert Chu <chu11@llnl.gov>
 
-	Added genders querying support to -g and -X options.
+	* : Added genders querying support to -g and -X options.
 
 	* src/modules/genders.c (genders_init): New function.
 
