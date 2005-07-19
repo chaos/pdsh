@@ -668,7 +668,8 @@ mqcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     mptr += strlen(num_seq)+1;
     mptr = strcpy(mptr, cmd);
 
-    ctx = munge_ctx_create();
+    if ((ctx = munge_ctx_create()) == NULL)
+        goto bad;
 
     if ((rv = munge_encode(&m,0,mbuf,mcount)) != EMUNGE_SUCCESS) {
         err("%p: %S: mqcmd: munge_encode: %S\n", ahost, munge_ctx_strerror(ctx));

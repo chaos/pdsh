@@ -2,6 +2,10 @@
 
 	* src/common/xmalloc.h, src/common/xmalloc.c : Strdup takes const arg.
 
+	* src/modules/mqcmd.c (mqcmd) : Fail gracefully if munge_ctx_create
+	  returns NULL.
+
+
 2005-07-15  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/dsh.c (dsh) : Be sure to handle error conditions on file
