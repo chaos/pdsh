@@ -33,7 +33,7 @@ void *Malloc(size_t);
 void Realloc(void **, size_t);
 void Free(void **);
 int Size(void *);
-char *Strdup(char *);
+char *Strdup(const char *);
 
 #define XMALLOC_MAGIC 0x42
 

@@ -104,7 +104,7 @@ void Realloc(void **item, size_t newsize)
  *   str (IN)		string to duplicate
  *   RETURN		copy of string
  */
-char *Strdup(char *str)
+char *Strdup(const char *str)
 {
     char *result;
 
