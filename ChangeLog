@@ -5,6 +5,8 @@
 	  No longer invoke ssh backgrounded, as this is no longer needed since
 	  pdsh now reaps these processes.
 
+	* config/Make-rpm.mk, Makefile.am : Remove unneeded "make rpm" target.
+
 2005-07-19  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/common/xmalloc.h, src/common/xmalloc.c : Strdup takes const arg.
