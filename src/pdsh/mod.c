@@ -739,7 +739,6 @@ static bool
 _dir_ok(struct stat *st)
 {
     if ((st->st_uid != 0) && (st->st_uid != getuid())) {
-        err ("st_uid != 0 && st_uid != getuid(): uid=%d\n", (int) st->st_uid);
         return false;
     }
     if ((st->st_mode & S_IWOTH) /* || (st->st_mode & S_IWGRP) */) {
