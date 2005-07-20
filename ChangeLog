@@ -1,3 +1,10 @@
+2005-07-20  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/modules/sshcmd.c : Add ssh "reaper" thread to collect exit status
+	  of all ssh commands and print any nonzero exit codes at end of pdsh run.
+	  No longer invoke ssh backgrounded, as this is no longer needed since
+	  pdsh now reaps these processes.
+
 2005-07-19  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/common/xmalloc.h, src/common/xmalloc.c : Strdup takes const arg.
