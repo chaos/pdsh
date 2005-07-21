@@ -1,8 +1,8 @@
 # $Id$
 
-Name:    
-Version: 
-Release: 
+Name: pdsh   
+Version: 2.5
+Release: 1
 
 Summary: Parallel remote shell program.
 
