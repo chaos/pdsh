@@ -6,6 +6,10 @@
 	* src/pdsh/mod.c (_dir_ok) : Directory permissions are ok even if 
 	  other has write permission if the sticky bit is set.
 
+	* src/pdsh/mod.c (_mod_load_dynamic_modules) : Don't load module
+	  files owned by users other than current user and root, or files that
+	  have write permissions for other.
+
 2005-07-20  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/sshcmd.c : Add ssh "reaper" thread to collect exit status

@@ -701,6 +701,20 @@ _mod_load_dynamic_modules(const char *dir)
         if (!S_ISREG(st.st_mode))
             continue;
 
+        /*
+         *  Do not load modules that could have been altered by
+         *   a user other than root or the current user. Otherwise pdsh
+         *   could execute arbitrary code.
+         */
+        if ((st.st_uid != 0) && (st.st_uid != getuid())) {
+            err ("%p: skipping insecure module \"%s\" (check owner)\n", path);
+            continue;
+        }
+        if (st.st_mode & S_IWOTH) {
+            err ("%p: skipping insecure module \"%s\" (check perms)\n", path);
+            continue;
+        }
+        
         if (_mod_load_dynamic(path) < 0) 
             continue;
 
