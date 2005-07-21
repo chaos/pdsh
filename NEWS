@@ -1,6 +1,23 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
+* Changes in pdsh-2.5  (2005-07-21)
+===================================
+ -- (ssh) Added ssh "reaper" thread to collect exit status of ssh commands
+    invoked by pdsh. At the end of the pdsh or pdcp run, any non-zero
+	exit status from ssh will be written to stderr instead of silently 
+	ignored.
+ -- (genders) Added genders "query" support for genders versions that
+    support this functionality. (Al Chu <chu11@llnl.gov>)
+ -- (ssh) Fix for a possible pdsh hang when running with ssh on Mac OS X.
+ -- (qshell) Fix for m/qshd failure on nodes without an elan3 adapter.
+    (Daniel Blueman <daniel.blueman@quadrics.com>)
+ -- Update path to xinetd script in pdsh specfile (Daniel Blueman).
+ -- Don't increase number of open files rlimit until after rcmd modules
+    are initialized in case rcmd module increases fanout.
+ -- Don't consider directory permissions insecure when other has write
+    access if the sticky bit is set.
+
 * Changes in pdsh-2.4  (2004-12-08)
 ===================================
  -- (mrsh) Update to mrsh protocol version 2.1, provided by mrsh >= 2.3.
