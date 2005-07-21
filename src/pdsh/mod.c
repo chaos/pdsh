@@ -733,18 +733,16 @@ _is_loaded(char *filename)
 
 /*
  *  Return true if stat struct show ownership of root or calling user,
- *    and write permissions for user and group only.
+ *    and write permissions for user and group only (unless sticky bit 
+ *    is set).
  */
 static bool
 _dir_ok(struct stat *st)
 {
-    if ((st->st_uid != 0) && (st->st_uid != getuid())) {
+    if ((st->st_uid != 0) && (st->st_uid != getuid())) 
         return false;
-    }
-    if ((st->st_mode & S_IWOTH) /* || (st->st_mode & S_IWGRP) */) {
-        err ("st_mod & S_IWOTH");
+    if ((st->st_mode & S_IWOTH) && !(st->st_mode & S_ISVTX))
         return false;
-    }
     return true;
 }
 

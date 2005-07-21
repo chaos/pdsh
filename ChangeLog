@@ -3,6 +3,9 @@
 	* src/common/hostlist.c, src/common/hostlist.h : Update hostlist code
 	  to latest version from LSD-Tools project, which fixes many bugs.
 
+	* src/pdsh/mod.c (_dir_ok) : Directory permissions are ok even if 
+	  other has write permission if the sticky bit is set.
+
 2005-07-20  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/sshcmd.c : Add ssh "reaper" thread to collect exit status
