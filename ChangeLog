@@ -7,6 +7,8 @@
 
 	* config/Make-rpm.mk, Makefile.am : Remove unneeded "make rpm" target.
 
+	* doc/pdsh.1.in : Fix up some manpage text.
+
 2005-07-19  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/common/xmalloc.h, src/common/xmalloc.c : Strdup takes const arg.
