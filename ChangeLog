@@ -10,6 +10,8 @@
 	  files owned by users other than current user and root, or files that
 	  have write permissions for other.
 
+	* : tag pdsh-2.5
+
 2005-07-20  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/sshcmd.c : Add ssh "reaper" thread to collect exit status
