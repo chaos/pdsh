@@ -1,3 +1,8 @@
+2005-07-21  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/common/hostlist.c, src/common/hostlist.h : Update hostlist code
+	  to latest version from LSD-Tools project, which fixes many bugs.
+
 2005-07-20  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/sshcmd.c : Add ssh "reaper" thread to collect exit status

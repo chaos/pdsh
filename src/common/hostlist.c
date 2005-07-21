@@ -1,7 +1,7 @@
 /*****************************************************************************\
  *  $Id$
  *****************************************************************************
- *  $LSDId: hostlist.c,v 1.16 2004/04/02 00:28:49 grondo Exp $
+ *  $LSDId: hostlist.c,v 1.19 2005/01/10 17:01:56 achu Exp $
  *****************************************************************************
  *  Copyright (C) 2002 The Regents of the University of California.
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
@@ -98,6 +98,9 @@
 
 /* max host range: anything larger will be assumed to be an error */
 #define MAX_RANGE    16384    /* 16K Hosts */
+
+/* max host suffix value */
+#define MAX_HOST_SUFFIX 1<<25
 
 /* max number of ranges that will be processed between brackets */
 #define MAX_RANGES    10240    /* 10K Ranges */
@@ -500,7 +503,7 @@ static hostname_t hostname_create(const char *hostname)
     hn->suffix = hn->hostname + idx + 1;
     hn->num = strtoul(hn->suffix, &p, 10);
 
-    if (*p == '\0') {
+    if ((*p == '\0') && (hn->num <= MAX_HOST_SUFFIX)) {
         if (!(hn->prefix = malloc((idx + 2) * sizeof(char)))) {
             hostname_destroy(hn);
             out_of_memory("hostname prefix create");
@@ -1340,7 +1343,7 @@ static int _parse_single_range(const char *str, struct _range *range)
         goto error;
 
     if (range->hi - range->lo + 1 > MAX_RANGE ) {
-        _error(__FILE__, __LINE__, "Too many hosts in range `%s'\n", orig);
+        _error(__FILE__, __LINE__, "Too many hosts in range `%s'", orig);
         free(orig);
         seterrno_ret(ERANGE, 0);
     }
@@ -1350,7 +1353,7 @@ static int _parse_single_range(const char *str, struct _range *range)
     return 1;
 
   error:
-    _error(__FILE__, __LINE__, "Invalid range: `%s'\n", orig);
+    _error(__FILE__, __LINE__, "Invalid range: `%s'", orig);
     free(orig);
     seterrno_ret(EINVAL, 0);
 }
@@ -2203,7 +2206,8 @@ static void _iterator_advance_range(hostlist_iterator_t i)
 
 char *hostlist_next(hostlist_iterator_t i)
 {
-    char buf[MAXHOSTNAMELEN + 16];
+    char *buf = NULL;
+    char suffix[16];
     int len = 0;
     assert(i != NULL);
     assert(i->magic == HOSTLIST_MAGIC);
@@ -2215,12 +2219,20 @@ char *hostlist_next(hostlist_iterator_t i)
         return NULL;
     }
 
-    len = snprintf(buf, MAXHOSTNAMELEN + 15, "%s", i->hr->prefix);
+    suffix[0] = '\0';
+
     if (!i->hr->singlehost)
-        snprintf(buf + len, MAXHOSTNAMELEN + 15 - len, "%0*lu",
-             i->hr->width, i->hr->lo + i->depth);
+        snprintf (suffix, 15, "%0*lu", i->hr->width, i->hr->lo + i->depth);
+
+    len = strlen (i->hr->prefix) + strlen (suffix) + 1;
+    buf = malloc (len);
+    
+    buf[0] = '\0';
+    strcat (buf, i->hr->prefix);
+    strcat (buf, suffix);
+
     UNLOCK_HOSTLIST(i->hl);
-    return strdup(buf);
+    return (buf);
 }
 
 char *hostlist_next_range(hostlist_iterator_t i)
