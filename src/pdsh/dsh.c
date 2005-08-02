@@ -413,8 +413,6 @@ static int _rcp_send_file_data(int outfd, char *filename, char *host)
     int infd, inbytes, total = 0;
     char tmpbuf[BUFSIZ];
 
-    err ("_rcp_send_file_data (%d, \"%s\", %s)\n", outfd, filename, host);
-
     infd = open(filename, O_RDONLY);
     /* checked ahead of time - shouldn't happen */
     if (infd < 0) {
@@ -436,7 +434,6 @@ static int _rcp_send_file_data(int outfd, char *filename, char *host)
         }
     } while (inbytes > 0);      /* until EOF */
     close(infd);
-    err ("_rcp_send_file_data: wrote %d bytes\n", total);
     return 0;
 }
 
@@ -454,12 +451,9 @@ static int _rcp_sendstr(int fd, char *str, char *host)
     assert(strlen(str) > 0);
     assert(str[strlen(str) - 1] == '\n');
 
-    err ("_rpc_sendstr (%d, \"%s\", %s)\n", fd, str, host);
-
-    if ((n = _rcp_write(fd, str, strlen(str))) < 0) {
-        err("%s: _rcp_sendstr: write: %m\n", host);
+    if ((n = _rcp_write(fd, str, strlen(str))) < 0) 
         return -1;
-    }
+
     assert(n == strlen(str));
     return 0;
 }
@@ -477,14 +471,8 @@ static int _rcp_response(int fd, char *host)
     int n;
     char errstr[BUFSIZ];
 
-    err ("_rcp_response (%d, %s) .. ", fd, host);
-
-    if ((n = read(fd, &resp, sizeof(resp))) != sizeof(resp)) {
-        err ("_rcp_response: unable to read resp code\n");
+    if ((n = read(fd, &resp, sizeof(resp))) != sizeof(resp)) 
         return (-1);
-    }
-
-    err ("resp = %d\n", resp); 
 
     switch (resp) {
         case 0:                /* ok */
@@ -501,7 +489,6 @@ static int _rcp_response(int fd, char *host)
                     break;
             }
             errstr[i] = '\0';
-            err("%S: remote error: %s\n", host, errstr);
             if (resp != 1)
                 result = 0;
     }
@@ -522,8 +509,6 @@ static int _rcp_sendfile(int fd, char *file, char *host, bool popt)
         err("%S: %s: %m\n", host, file);
         goto fail;
     }
-
-    err ("_rcp_sendfile (%d, %s, %s, %d)\n", fd, file, host, popt);
 
     if (popt) {
         /* 
@@ -573,7 +558,6 @@ static int _rcp_sendfile(int fd, char *file, char *host, bool popt)
             goto fail;
 
         /* 6: SEND NULL byte */
-        err ("Sending NULL byte\n");
         if (_rcp_write(fd, "", 1) < 0)
             goto fail;
 
