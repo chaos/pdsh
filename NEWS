@@ -1,6 +1,12 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
+* Changes in pdsh-2.6 (2005-08-21)
+===================================
+ -- (ssh) Fix pdcp hang with ssh on HP-UX (and possibly other systems).
+    (Yehia Beyh <Yehia.Beyh@hp.com>)
+ -- Remove pdcp debugging code released with pdsh-2.5.
+
 * Changes in pdsh-2.5  (2005-07-21)
 ===================================
  -- (ssh) Added ssh "reaper" thread to collect exit status of ssh commands
