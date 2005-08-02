@@ -3,6 +3,12 @@
 	* src/pdsh/dsh.c, src/pdsh/pcp_server.c : Remove debug code for pdcp 
 	  which was accidentally committed.
 
+	* src/pdsh/pcp_server.c : Change all writes to go through stdout fd 
+	  instead of stdin fd. Stdin will work when pdcp is invoked via rshd
+	  started from inetd, and appears to work under Linux even for sshd, 
+	  but writing to stdin will block on many systems, hanging the pcp
+	  protocol.
+
 2005-07-21  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/common/hostlist.c, src/common/hostlist.h : Update hostlist code

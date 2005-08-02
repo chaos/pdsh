@@ -108,11 +108,8 @@ char rcsid[] = "$Id$";
  *   of pdsh/pdcp code. 
  */
 
-/* inetd sets both stdin and stdout descriptors to "point" to the
- * rsh/mrsh/etc TCP connection.  So we can read from and write to
- * descriptor 0
- */
-int rem = 0;  
+int infd = STDIN_FILENO;  
+int outfd = STDOUT_FILENO;
 
 typedef struct _buf {
     int	   cnt;
@@ -144,7 +141,7 @@ _response(void)
 {
     char resp;
 
-    if (read(rem, &resp, sizeof(resp)) != sizeof(resp)) {
+    if (read(infd, &resp, sizeof(resp)) != sizeof(resp)) {
         _error("lost connection\n");
         exit(1);
     }
@@ -196,7 +193,7 @@ _error(const char *fmt, ...)
     va_list ap;
     int save_errno = errno;   /* errno could be changed by fopen */
 
-    if (!fp && !(fp = fdopen(rem, "w")))
+    if (!fp && !(fp = fdopen(outfd, "w")))
         return;
 
     va_start(ap, fmt);
@@ -237,14 +234,14 @@ _sink(opt_t *opt, char *targ) {
     if (opt->target_is_directory)
         _verifydir(opt->outfile_name);
 
-    (void)write(rem, "", 1);
+    (void)write(outfd, "", 1);
     if (stat(targ, &stb) == 0 && (stb.st_mode & S_IFMT) == S_IFDIR)
         targisdir = 1;
 
     for (first = 1;; first = 0) {
 		int rc;
         cp = buf;
-        if ((rc = read(rem, cp, 1)) <= 0) {
+        if ((rc = read(infd, cp, 1)) <= 0) {
             if (namebuf)
                 free(namebuf);
             return;
@@ -253,7 +250,7 @@ _sink(opt_t *opt, char *targ) {
             SCREWUP("unexpected <newline>");
 
         do {
-            if (read(rem, &ch, sizeof(ch)) != sizeof(ch))
+            if (read(infd, &ch, sizeof(ch)) != sizeof(ch))
                 SCREWUP("lost connection");
             *cp++ = ch;
         } while (cp < &buf[BUFSIZ - 1] && ch != '\n');
@@ -266,7 +263,7 @@ _sink(opt_t *opt, char *targ) {
         }
 
         if (buf[0] == 'E') {
-            (void)write(rem, "", 1);
+            (void)write(outfd, "", 1);
             if (namebuf)
                 free(namebuf);
             return;
@@ -292,7 +289,7 @@ _sink(opt_t *opt, char *targ) {
             getnum(atime.tv_usec);
             if (*cp++ != '\0')
                 SCREWUP("atime.usec not delimited");
-            (void)write(rem, "", 1);
+            (void)write(outfd, "", 1);
             continue;
         }
         if (*cp != 'C' && *cp != 'D')
@@ -379,7 +376,7 @@ bad:
         if (exists && opt->preserve)
             (void)fchmod(ofd, mode);
 
-        (void)write(rem, "", 1);
+        (void)write(outfd, "", 1);
         if ((bp = _allocbuf(&buffer, ofd, BUFSIZ)) == NULL) {
             (void)close(ofd);
             continue;
@@ -393,7 +390,7 @@ bad:
                 amt = size - i;
             count += amt;
             do {
-                j = read(rem, cp, amt);
+                j = read(infd, cp, amt);
                 if (j <= 0) {
                     _error("%m\n");
                     exit(1);
@@ -428,7 +425,7 @@ bad:
                 _error("%s: %m\n", np);
                 break;
             case NO:
-                (void)write(rem, "", 1);
+                (void)write(outfd, "", 1);
                 break;
             case DISPLAYED:
                 break;
