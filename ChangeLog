@@ -7,7 +7,9 @@
 	  instead of stdin fd. Stdin will work when pdcp is invoked via rshd
 	  started from inetd, and appears to work under Linux even for sshd, 
 	  but writing to stdin will block on many systems, hanging the pcp
-	  protocol.
+	  protocol. (Yehia Beyh <Yehia.Beyh@hp.com>)
+
+	* : tag pdsh-2.6
 
 2005-07-21  Mark Grondona <mgrondona@llnl.gov>
 
