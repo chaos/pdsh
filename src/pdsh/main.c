@@ -32,7 +32,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #if	HAVE_UNISTD_H
-#include <unistd.h>             /* seteuid */
+#include <unistd.h>             /* setuid */
 #endif
 #include <sys/wait.h>           /* wait */
 #include <string.h>             /* strcmp */
@@ -219,7 +219,7 @@ static void _shell(uid_t uid, char *cmd)
     case -1:
         errx("%p: fork: %m\n");
     case 0:
-        seteuid(uid);
+        setuid(uid);
         system(cmd);
         exit(0);
     default:
