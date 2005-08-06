@@ -3,6 +3,8 @@
 	* src/pdsh/main.c : Change seteuid() to plain setuid() which is
 	  more portable and has the intended effect.
 
+	* src/modules/sshcmd.c : Change setenv() to putenv() for portability.
+
 2005-08-02  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/dsh.c, src/pdsh/pcp_server.c : Remove debug code for pdcp 

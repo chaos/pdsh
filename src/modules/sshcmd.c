@@ -301,7 +301,7 @@ static int _pipecmd(char *path, char *args[], const char *ahost, int *fd2p)
         }
 
         setsid();
-        setenv("DISPLAY", "", 1);
+        putenv("DISPLAY=");
         execvp(path, args);
         err("%p: execlp %s failed for %S: %m.", path, ahost);
         _exit(255);
