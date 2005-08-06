@@ -7,6 +7,10 @@
 
 	* src/modules/sshcmd.c : Remove sshcmdr() which is now identical
 	  to sshcmdrw().
+	
+	* src/pdsh/dsh.c () : Don't automatically close fd on XPOLLERR, there
+	  might still be pending data to read. Fixes output truncation bug
+	  report by Fred Cassirer <fred.cassirer@hp.com>.
 
 2005-08-02  Mark Grondona <mgrondona@llnl.gov>
 

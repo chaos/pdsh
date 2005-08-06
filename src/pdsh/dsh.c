@@ -816,28 +816,15 @@ static void *_rsh_thread(void *args)
             }
 
             /* stdout ready or closed ? */
-            if (xpfds[0].revents & XPOLLREAD) {
+            if (xpfds[0].revents & (XPOLLREAD|XPOLLERR)) {
                 if (_do_output (a->fd, a->outbuf, (out_f) out, true, a) <= 0)
                     xpfds[0].fd = -1;
             }
 
             /* stderr ready or closed ? */
-            if (a->dsh_sopt && xpfds[1].revents & XPOLLREAD) {
+            if (a->dsh_sopt && xpfds[1].revents & (XPOLLREAD|XPOLLERR)) {
                 if (_do_output (a->efd, a->errbuf, (out_f) err, false, a) <= 0)
                     xpfds[1].fd = -1;
-            }
-
-            /* 
-             *  Check for POLLERR or POLLHUP error conditions from poll().
-             *   Simply close the affected fd in case of error
-             */
-            if (xpfds[0].fd >= 0 && (xpfds[0].revents & XPOLLERR)) {
-                close (xpfds[0].fd); /* Ignore errors */
-                xpfds[0].fd = -1;
-            }
-            if (xpfds[1].fd >= 0 && (xpfds[1].revents & XPOLLERR)) {
-                close (xpfds[1].fd); /* Ignore errors */
-                xpfds[1].fd = -1;
             }
 
             /* kill parallel job if kill_on_fail and one task was signaled */
