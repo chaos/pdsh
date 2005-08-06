@@ -100,11 +100,6 @@ struct ssh_info_struct * ssh_info_find_by_fd (int fd);
 static void *ssh_reaper (void *arg);
 static void _block_sigchld (void);
     
-/*
- * use_rw will be set to true for PCP mode
- */
-static bool use_rw = false;
-
 static int mod_ssh_postop(opt_t *opt);
 static int mod_ssh_exit (void);
 
@@ -189,9 +184,6 @@ _drop_privileges()
 static int sshcmd_init(opt_t * opt)
 {
     pthread_attr_t attr;
-
-    if (pdsh_personality() == PCP)
-        use_rw = true;
 
     /*
      * Drop privileges if we're running setuid
@@ -329,29 +321,12 @@ static int _pipecmd(char *path, char *args[], const char *ahost, int *fd2p)
     /*NOTREACHED*/ return 0;
 }
 
-/* pdsh uses this version */
 static int
-sshcmdr(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
+sshcmdrw(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
        int rank, int *fd2p)
 {
     char *prog = "ssh"; /* xbasename(_PATH_SSH); */
     char *args[] = { 0, "-q", "-a", "-x", "-l", 0, 0, 0, 0, 0, 0 };
-
-    args[0] = prog;
-    args[5] = ruser;            /* solaris cc doesn't like non constant */
-    args[6] = ahost;            /*     initializers */
-    args[7] = cmd;
-
-    return _pipecmd("ssh", args, ahost, fd2p);
-}
-
-/* pdcp uses this version */
-static int
-sshcmdrw(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
-         int rank, int *fd2p)
-{
-    char *prog = "ssh"; /* xbasename(_PATH_SSH); */
-    char *args[] = { 0, "-q", "-a", "-x", "-l", 0, 0, 0, 0, 0 };
 
     args[0] = prog;
     args[5] = ruser;            /* solaris cc doesn't like non constant */
@@ -366,11 +341,8 @@ sshcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
          int rank, int *fd2p)
 {
     int rc;
-	if (use_rw)
-		rc = sshcmdrw(ahost, addr, luser, ruser, cmd, rank, fd2p);
-	else
-		rc = sshcmdr(ahost, addr, luser, ruser, cmd, rank, fd2p);
 
+    rc = sshcmdrw(ahost, addr, luser, ruser, cmd, rank, fd2p);
 
     pthread_mutex_lock (&reaper_mutex);
     if (first_ssh_started == 0) {
