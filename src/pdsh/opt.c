@@ -203,9 +203,6 @@ char * _find_path(char *argv0)
     char *abspath = NULL;
     char cwd[MAXPATHLEN];
 
-    if (personality != PCP)
-        goto done;
-
     if (*argv0 == '/') {
         /* is absolute path */
         abspath = Strdup(argv0);
@@ -317,13 +314,16 @@ void opt_default(opt_t * opt, char *argv0)
     opt->separate_stderr = true;
 #endif
 
+    opt->path_progname = _find_path(argv0);
+
     /* PCP specific */
     opt->outfile_name = NULL;
     opt->recursive = false;
     opt->preserve = false;
     opt->pcp_server = false;
     opt->target_is_directory = false;
-    opt->path_progname = _find_path(argv0);
+
+    return;
 }
 
 /*
