@@ -3,6 +3,10 @@
 	* src/pdsh/opt.c (opt_default, _find_path) : Initialize path_progname
 	  for both pdsh and pdcp.
 
+	* src/pdsh/mod.h, src/pdsh/mod.c, src/pdsh/main.c : 
+	  Accept module path element as secure if owner matches pdsh/pdcp 
+	  executable ownership, as well as root or current user. 
+
 2005-08-06  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/main.c : Change seteuid() to plain setuid() which is

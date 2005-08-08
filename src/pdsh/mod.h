@@ -65,7 +65,7 @@ int mod_exit(void);
  *
  *  Returns 0 for Success and -1 for Failure.
  */
-int mod_load_modules(const char *dir);
+int mod_load_modules(const char *dir, opt_t *opt);
 
 /*
  *  List information about all loaded modules to stdout.

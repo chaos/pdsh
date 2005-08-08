@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
      *  Load static or dynamic pdsh modules
      */
     mod_init();
-    if (mod_load_modules(pdsh_module_dir) < 0)
+    if (mod_load_modules(pdsh_module_dir, &opt) < 0)
         errx("%p: Couldn't load any pdsh modules\n");
 
     /*

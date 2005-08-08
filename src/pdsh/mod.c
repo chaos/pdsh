@@ -88,12 +88,12 @@ struct module_components {
 static int  _mod_load_static_modules(void);
 static int  _mod_load_static(int);
 #else
-static int  _mod_load_dynamic_modules(const char *);
+static int  _mod_load_dynamic_modules(const char *, opt_t *);
 static int  _mod_load_dynamic(const char *);
 static int  _cmp_filenames(mod_t, char *);
 static int  _is_loaded(char *filename); 
-static bool _dir_ok(struct stat *);
-static bool _path_permissions_ok(const char *dir);
+static bool _dir_ok(struct stat *, uid_t alt_uid);
+static bool _path_permissions_ok(const char *dir, const char *pdsh_path);
 #endif
 static void _mod_destroy(mod_t mod);
 static bool _mod_opts_ok(mod_t mod);
@@ -279,13 +279,13 @@ _cmp_f (mod_t x, mod_t y)
 }
 
 int 
-mod_load_modules(const char *dir)
+mod_load_modules(const char *dir, opt_t *opt)
 {
     int rc = 0;
 #if STATIC_MODULES
     rc = _mod_load_static_modules();
 #else
-    rc = _mod_load_dynamic_modules(dir);
+    rc = _mod_load_dynamic_modules(dir, opt);
 #endif
 
     list_sort(module_list, (ListCmpF) _cmp_f);
@@ -660,7 +660,7 @@ _mod_load_dynamic(const char *fq_path)
 }
 
 static int
-_mod_load_dynamic_modules(const char *dir)
+_mod_load_dynamic_modules(const char *dir, opt_t *pdsh_opts)
 {
     DIR           *dirp   = NULL;
     struct dirent *entry  = NULL;
@@ -674,7 +674,7 @@ _mod_load_dynamic_modules(const char *dir)
     if (!initialized) 
         mod_init();
 
-    if (!_path_permissions_ok(dir)) 
+    if (!_path_permissions_ok(dir, pdsh_opts->path_progname)) 
         return -1;
 
     if (!(dirp = opendir(dir)))
@@ -751,9 +751,10 @@ _is_loaded(char *filename)
  *    is set).
  */
 static bool
-_dir_ok(struct stat *st)
+_dir_ok(struct stat *st, uid_t alt_uid)
 {
-    if ((st->st_uid != 0) && (st->st_uid != getuid())) 
+    if (  (st->st_uid != 0) && (st->st_uid != getuid()) 
+       && (st->st_uid != alt_uid)) 
         return false;
     if ((st->st_mode & S_IWOTH) && !(st->st_mode & S_ISVTX))
         return false;
@@ -764,6 +765,7 @@ _dir_ok(struct stat *st)
  *  Returns true if, for the directory "dir" and all of its parent 
  *    directories,  the following are true:
  *    - ownership is root or the calling user (as returned by getuid())
+ *        or same ownership as the pdsh or pdcp binary.
  *    - directory has user write permission only
  *
  *  Returns false if one of the assertions above are false for any
@@ -771,15 +773,23 @@ _dir_ok(struct stat *st)
  *
  */
 static bool
-_path_permissions_ok(const char *dir)
+_path_permissions_ok(const char *dir, const char *pdsh_path)
 {
     struct stat st;
+    uid_t pdsh_owner;
     char dirbuf[MAXPATHLEN + 1];
     dev_t rootdev;
     ino_t rootino;
     int pos = 0;
 
     assert(dir != NULL);
+
+    if (stat (pdsh_path, &st) < 0) {
+        err ("%p: Unable to determine ownership of pdsh binary: %m\n");
+        return false;
+    }
+
+    pdsh_owner = st.st_uid;
 
     if (lstat("/", &st) < 0) {
         err("%p: Can't stat root directory: %m\n");
@@ -800,7 +810,7 @@ _path_permissions_ok(const char *dir)
             return false;
         }
 
-        if (!_dir_ok(&st)) {
+        if (!_dir_ok(&st, pdsh_owner)) {
             err("%p: module path \"%s\" insecure.\n", dir);
             return false;
         }
