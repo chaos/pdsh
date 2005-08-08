@@ -93,7 +93,7 @@ static int  _mod_load_dynamic(const char *);
 static int  _cmp_filenames(mod_t, char *);
 static int  _is_loaded(char *filename); 
 static bool _dir_ok(struct stat *, uid_t alt_uid);
-static bool _path_permissions_ok(const char *dir, const char *pdsh_path);
+static bool _path_permissions_ok(const char *dir, uid_t pdsh_owner);
 #endif
 static void _mod_destroy(mod_t mod);
 static bool _mod_opts_ok(mod_t mod);
@@ -659,6 +659,21 @@ _mod_load_dynamic(const char *fq_path)
     return -1;
 }
 
+static int  
+_pdsh_owner(const char *pdsh_path, uid_t *pdsh_uid)
+{
+    struct stat st;
+  
+    if (stat (pdsh_path, &st) < 0) {
+        err ("%p: Unable to determine ownership of pdsh binary: %m\n");
+        return -1;
+    }
+
+    *pdsh_uid = st.st_uid;
+
+    return 0;
+}
+
 static int
 _mod_load_dynamic_modules(const char *dir, opt_t *pdsh_opts)
 {
@@ -667,6 +682,7 @@ _mod_load_dynamic_modules(const char *dir, opt_t *pdsh_opts)
     char           path[MAXPATHLEN + 1];
     char           *p;
     int            count = 0;
+    uid_t          pdsh_owner = 0;
 
     assert(dir != NULL);
     assert(*dir != '\0');
@@ -674,7 +690,10 @@ _mod_load_dynamic_modules(const char *dir, opt_t *pdsh_opts)
     if (!initialized) 
         mod_init();
 
-    if (!_path_permissions_ok(dir, pdsh_opts->path_progname)) 
+    if (_pdsh_owner(pdsh_opts->path_progname, &pdsh_owner) < 0)
+        return -1;
+
+    if (!_path_permissions_ok(dir, pdsh_owner)) 
         return -1;
 
     if (!(dirp = opendir(dir)))
@@ -703,10 +722,12 @@ _mod_load_dynamic_modules(const char *dir, opt_t *pdsh_opts)
 
         /*
          *  Do not load modules that could have been altered by
-         *   a user other than root or the current user. Otherwise pdsh
-         *   could execute arbitrary code.
+         *   a user other than root or the current user or the user
+         *   owning the pdsh executable. Otherwise pdsh could execute 
+         *   arbitrary code.
          */
-        if ((st.st_uid != 0) && (st.st_uid != getuid())) {
+        if (  (st.st_uid != 0) && (st.st_uid != getuid())
+           && (st.st_uid != pdsh_owner)) {
             err ("%p: skipping insecure module \"%s\" (check owner)\n", path);
             continue;
         }
@@ -753,6 +774,8 @@ _is_loaded(char *filename)
 static bool
 _dir_ok(struct stat *st, uid_t alt_uid)
 {
+    if (!S_ISDIR(st->st_mode))
+        return false;
     if (  (st->st_uid != 0) && (st->st_uid != getuid()) 
        && (st->st_uid != alt_uid)) 
         return false;
@@ -773,23 +796,15 @@ _dir_ok(struct stat *st, uid_t alt_uid)
  *
  */
 static bool
-_path_permissions_ok(const char *dir, const char *pdsh_path)
+_path_permissions_ok(const char *dir, uid_t pdsh_owner)
 {
     struct stat st;
-    uid_t pdsh_owner;
     char dirbuf[MAXPATHLEN + 1];
     dev_t rootdev;
     ino_t rootino;
     int pos = 0;
 
     assert(dir != NULL);
-
-    if (stat (pdsh_path, &st) < 0) {
-        err ("%p: Unable to determine ownership of pdsh binary: %m\n");
-        return false;
-    }
-
-    pdsh_owner = st.st_uid;
 
     if (stat("/", &st) < 0) {
         err("%p: Can't stat root directory: %m\n");
