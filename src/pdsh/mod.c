@@ -791,7 +791,7 @@ _path_permissions_ok(const char *dir, const char *pdsh_path)
 
     pdsh_owner = st.st_uid;
 
-    if (lstat("/", &st) < 0) {
+    if (stat("/", &st) < 0) {
         err("%p: Can't stat root directory: %m\n");
         return false;
     }
@@ -805,7 +805,7 @@ _path_permissions_ok(const char *dir, const char *pdsh_path)
 
     do {
 
-        if (lstat(dirbuf, &st) < 0) {
+        if (stat(dirbuf, &st) < 0) {
             err("%p: Can't stat \"%s\": %m\n", dir);
             return false;
         }

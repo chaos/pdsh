@@ -7,6 +7,8 @@
 	  Accept module path element as secure if owner matches pdsh/pdcp 
 	  executable ownership, as well as root or current user. 
 
+	* src/pdsh/mod.c (_path_permissions_ok) : Use stat() instead of lstat().
+
 2005-08-06  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/main.c : Change seteuid() to plain setuid() which is
