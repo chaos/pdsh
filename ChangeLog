@@ -2,7 +2,7 @@
 
 	* src/modules/sshcmd.c : Add close-on-exec flag to file descriptors
 	  passed back from sshcmd() so they aren't inadvertently left open
-	  in subsequently invoked ssh commdands.
+	  in subsequently invoked ssh commands.
 
 2005-08-08  Mark Grondona <mgrondona@llnl.gov>
 
