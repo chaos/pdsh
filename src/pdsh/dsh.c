@@ -103,6 +103,7 @@
 #include "src/common/xstring.h"
 #include "src/common/err.h"
 #include "src/common/xpoll.h"
+#include "src/common/fd.h"
 #include "dsh.h"
 #include "opt.h"
 #include "wcoll.h"

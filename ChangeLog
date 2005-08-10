@@ -1,3 +1,7 @@
+2005-08-10  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/dsh.c : Include fd.h to avoid warning.
+
 2005-08-09  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/sshcmd.c : Add close-on-exec flag to file descriptors
