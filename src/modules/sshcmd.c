@@ -65,6 +65,7 @@
 #include "src/common/xstring.h"
 #include "src/common/err.h"
 #include "src/common/list.h"
+#include "src/common/fd.h"
 #include "src/pdsh/dsh.h"
 #include "src/pdsh/mod.h"
 
@@ -301,9 +302,16 @@ static int _pipecmd(char *path, char *args[], const char *ahost, int *fd2p)
     if (cpid > 0) {
         /* parent. close sp[1], return sp[0]. */
         (void) close(sp[1]);
+
+        /*
+         * Set close on exec for sp[0] and esp[0]
+         */
+        fd_set_close_on_exec (sp[0]);
+
         if (fd2p) {
             close(esp[1]);
             *fd2p = esp[0];
+            fd_set_close_on_exec (esp[0]);
         }
         /* reap child. */
         /* (void) wait(0); */
