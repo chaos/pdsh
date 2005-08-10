@@ -2,6 +2,8 @@
 
 	* src/pdsh/dsh.c : Include fd.h to avoid warning.
 
+	* src/modules/sshcmd.c : Fix some compile warnings.
+
 2005-08-09  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/sshcmd.c : Add close-on-exec flag to file descriptors

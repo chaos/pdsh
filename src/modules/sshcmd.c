@@ -152,8 +152,6 @@ struct pdsh_module pdsh_module_info = {
 
 static int mod_ssh_postop(opt_t *opt)
 {
-    pthread_attr_t attr;
-
     if (strcmp(opt->rcmd_name, "ssh") == 0) {
         if (opt->connect_timeout != CONNECT_TIMEOUT) {
             err("%p: Cannot specify -t with \"-R ssh\"\n");
@@ -412,7 +410,6 @@ static int cmp_pid (struct ssh_info_struct *s, pid_t *pidp)
 static void *ssh_reaper (void *arg)
 {
     sigset_t set;
-    int      sig;
 
     /*
      * Wait for signal that we're starting
