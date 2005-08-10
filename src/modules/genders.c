@@ -159,7 +159,7 @@ static List       _attrlist_append (List l, char *str);
 /*
  *  Functions:
  */
-
+int
 genders_process_opt(opt_t *pdsh_opts, int opt, char *arg)
 {
     switch (opt) {
