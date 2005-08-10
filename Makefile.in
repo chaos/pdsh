@@ -104,6 +104,9 @@ LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 MACHINES = @MACHINES@
+MAINT = @MAINT@
+MAINTAINER_MODE_FALSE = @MAINTAINER_MODE_FALSE@
+MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
 MAKEINFO = @MAKEINFO@
 META_ALIAS = @META_ALIAS@
 META_AUTHOR = @META_AUTHOR@
@@ -268,18 +271,18 @@ all: config.h
 
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno
-$(srcdir)/Makefile.in:  Makefile.am $(top_srcdir)/config/Make-inc.mk $(top_srcdir)/configure.ac $(ACLOCAL_M4)
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/config/Make-inc.mk $(top_srcdir)/configure.ac $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
 	  $(AUTOMAKE) --foreign  Makefile
-Makefile:  $(srcdir)/Makefile.in  $(top_builddir)/config.status
+Makefile: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $@ $(am__depfiles_maybe)
 
 $(top_builddir)/config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
-$(srcdir)/configure:  $(srcdir)/configure.ac $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
+$(srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(srcdir)/configure.ac $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)
 
-$(ACLOCAL_M4):  configure.ac config/ac_connect_timeout.m4 config/ac_debug.m4 config/ac_dmalloc.m4 config/ac_elan.m4 config/ac_fanout.m4 config/ac_genders.m4 config/ac_gpl_licensed.m4 config/ac_krb4.m4 config/ac_machines.m4 config/ac_meta.m4 config/ac_mqshell.m4 config/ac_mrsh.m4 config/ac_nodeattr.m4 config/ac_nodeupdown.m4 config/ac_pam.m4 config/ac_pollselect.m4 config/ac_qshell.m4 config/ac_readline.m4 config/ac_rmsquery.m4 config/ac_rsh.m4 config/ac_sdr.m4 config/ac_slurm.m4 config/ac_socklen_t.m4 config/ac_ssh.m4 config/ac_static_modules.m4 config/acx_pthread.m4 config/libtool.m4
+$(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ configure.ac config/ac_connect_timeout.m4 config/ac_debug.m4 config/ac_dmalloc.m4 config/ac_elan.m4 config/ac_fanout.m4 config/ac_genders.m4 config/ac_gpl_licensed.m4 config/ac_krb4.m4 config/ac_machines.m4 config/ac_meta.m4 config/ac_mqshell.m4 config/ac_mrsh.m4 config/ac_nodeattr.m4 config/ac_nodeupdown.m4 config/ac_pam.m4 config/ac_pollselect.m4 config/ac_qshell.m4 config/ac_readline.m4 config/ac_rmsquery.m4 config/ac_rsh.m4 config/ac_sdr.m4 config/ac_slurm.m4 config/ac_socklen_t.m4 config/ac_ssh.m4 config/ac_static_modules.m4 config/acx_pthread.m4 config/libtool.m4
 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 
 config.h: stamp-h1
@@ -292,7 +295,7 @@ stamp-h1: $(srcdir)/config.h.in $(top_builddir)/config.status
 	@rm -f stamp-h1
 	cd $(top_builddir) && $(SHELL) ./config.status config.h
 
-$(srcdir)/config.h.in:  $(top_srcdir)/configure.ac $(ACLOCAL_M4) 
+$(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(top_srcdir)/configure.ac $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOHEADER)
 	touch $(srcdir)/config.h.in
 

@@ -12,7 +12,6 @@ AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_SRCDIR([src/pdsh/dsh.h])
 AC_CANONICAL_SYSTEM
 AC_GPL_LICENSED
-AC_AIX
 
 # hack to fix dejagnu.am brokenness before automake 1.6
 if test x$host_alias = x ; then
@@ -22,8 +21,9 @@ fi
 #
 #  Automake support
 # 
-AM_INIT_AUTOMAKE([$META_NAME], [$VERSION])
+AM_INIT_AUTOMAKE([$META_NAME], [$VERSION], [no-define])
 AM_CONFIG_HEADER([config.h])
+AM_MAINTAINER_MODE
 
 #
 # Checks for programs.
@@ -59,6 +59,7 @@ else
    *-*-aix*)
      LDFLAGS="$LDFLAGS -Wl,-brtl -Wl,-bexpall" 
 	 AIX_PDSH_LDFLAGS="-Wl,-bgcbypass:1000" # hack to ensure no gc in libcommon
+	 AC_DEFINE(_AIX, 1, [Define if on AIX])
    ;;
    esac
 fi

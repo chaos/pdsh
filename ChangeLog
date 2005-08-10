@@ -4,6 +4,10 @@
 
 	* src/modules/sshcmd.c : Fix some compile warnings.
 
+	* configure.ac : Add AM_MAINTAINER_MODE to disable maintainer-mode by
+	  default. Remove AC_AIX which appears to leave CFLAGS set and disrupt
+	  proper functioning of other macros. Run ./bootstrap.
+
 2005-08-09  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/sshcmd.c : Add close-on-exec flag to file descriptors
