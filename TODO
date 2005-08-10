@@ -3,11 +3,11 @@
     ERROR: Couldn't find config.guess program.
 - Addy requests more prun-like options
 - Optional pdsh.conf file for configurable system wide defaults
+  - allow user to configure default rsh/mrsh/etc. mdoule to use
+    system wide
 - Improve xpoll() interface??
 - autoconf putenv
 - support long options
-- logical querying of genders attributes
-  i.e. -g "foo-(bar,car+dar)"
 - command line check for fanout > posix thread limit
 - option to allocate all threads/mem before executing command
   - important so that if fanout is too large, commands won't
