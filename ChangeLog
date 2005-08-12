@@ -8,6 +8,9 @@
 	  src/modules/Makefile.am : 
 	  Build, package, and document dshgroup module.
 
+	* src/pdsh/dsh.c : Add alternate definition of PTHREAD_STACK_MIN in
+	  case definition is missing from pthread.h.
+
 2005-08-10  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/dsh.c : Include fd.h to avoid warning.

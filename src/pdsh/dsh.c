@@ -91,6 +91,10 @@
 #define MAXPATHNAMELEN MAXPATHLEN
 #endif
 
+#ifndef PTHREAD_STACK_MIN
+#  define PTHREAD_STACK_MIN ((size_t) sysconf (_SC_THREAD_STACK_MIN))
+#endif
+
 /* set the default stacksize for threads to 128k */
 #define DSH_THREAD_STACKSIZE    128*1024
 
