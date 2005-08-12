@@ -282,6 +282,17 @@ with the \fBnodeattr\fR module is the same as \fBgenders\fR, above,
 with the exception that the \fI-i\fR option may only be used
 with \fI-a\fR or \fI-g\fR.
 
+.SH "dshgroup module options"
+The dshgroup module allows pdsh to use dsh (or Dancer's shell) style
+group files from /etc/dsh/group/ or ~/.dsh/group/. 
+.TP
+.I "-g groupname,..."
+Target nodes in dsh group file "groupname" found in either 
+~/.dsh/group/groupname or /etc/dsh/group/groupname.
+.TP
+.I "-X groupname,..."
+Exclude node in dsh group file "groupname."
+
 .SH "ENVIRONMENT VARIABLES"
 .PP
 .TP 

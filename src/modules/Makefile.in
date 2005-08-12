@@ -145,6 +145,8 @@ SHELL = @SHELL@
 SLURM_LIBS = @SLURM_LIBS@
 STRIP = @STRIP@
 VERSION = @VERSION@
+WITH_DSHGROUP_FALSE = @WITH_DSHGROUP_FALSE@
+WITH_DSHGROUP_TRUE = @WITH_DSHGROUP_TRUE@
 WITH_GNU_LD_FALSE = @WITH_GNU_LD_FALSE@
 WITH_GNU_LD_TRUE = @WITH_GNU_LD_TRUE@
 WITH_KRB4_FALSE = @WITH_KRB4_FALSE@
@@ -257,6 +259,8 @@ INCLUDES = -I$(top_srcdir)
 
 @WITH_SLURM_TRUE@SLURM_MODULE = slurm.la
 
+@WITH_DSHGROUP_TRUE@DSHGROUP_MODULE = dshgroup.la
+
 @WITH_GNU_LD_TRUE@VERSION_SCRIPT = \
 @WITH_GNU_LD_TRUE@	version.map
 
@@ -288,7 +292,8 @@ INCLUDES = -I$(top_srcdir)
 @WITH_STATIC_MODULES_FALSE@	$(MACHINES_MODULE) \
 @WITH_STATIC_MODULES_FALSE@	$(SDR_MODULE) \
 @WITH_STATIC_MODULES_FALSE@	$(KRB4_MODULE) \
-@WITH_STATIC_MODULES_FALSE@	$(SLURM_MODULE)
+@WITH_STATIC_MODULES_FALSE@	$(SLURM_MODULE) \
+@WITH_STATIC_MODULES_FALSE@	$(DSHGROUP_MODULE)
 
 
 @WITH_STATIC_MODULES_FALSE@BUILT_SOURCES = \
@@ -316,7 +321,8 @@ EXTRA_libmods_la_SOURCES = \
 	machines.c \
 	sdr.c \
 	k4cmd.c \
-	slurm.c
+	slurm.c \
+	dshgroup.c
 
 
 @WITH_QSW_TRUE@QSNET_LIBS = \
@@ -361,6 +367,8 @@ sdr_la_SOURCES = sdr.c
 sdr_la_LDFLAGS = $(MODULE_FLAGS)
 slurm_la_SOURCES = slurm.c 
 slurm_la_LDFLAGS = $(MODULE_FLAGS) $(SLURM_LIBS)
+dshgroup_la_SOURCES = dshgroup.c 
+dshgroup_la_LDFLAGS = $(MODULE_FLAGS) 
 
 DISTCLEANFILES = \
 	$(VERSION_SCRIPT)
@@ -372,6 +380,9 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES) $(pkglib_LTLIBRARIES)
 
+dshgroup_la_LIBADD =
+am_dshgroup_la_OBJECTS = dshgroup.lo
+dshgroup_la_OBJECTS = $(am_dshgroup_la_OBJECTS)
 genders_la_LIBADD =
 am_genders_la_OBJECTS = genders.lo
 genders_la_OBJECTS = $(am_genders_la_OBJECTS)
@@ -418,13 +429,13 @@ xrcmd_la_OBJECTS = $(am_xrcmd_la_OBJECTS)
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/config/depcomp
 am__depfiles_maybe = depfiles
-@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/genders.Plo ./$(DEPDIR)/k4cmd.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/machines.Plo ./$(DEPDIR)/mcmd.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/mqcmd.Plo ./$(DEPDIR)/nodeattr.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/nodeupdown.Plo ./$(DEPDIR)/qcmd.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/rms.Plo ./$(DEPDIR)/sdr.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/slurm.Plo ./$(DEPDIR)/sshcmd.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/xrcmd.Plo
+@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/dshgroup.Plo ./$(DEPDIR)/genders.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/k4cmd.Plo ./$(DEPDIR)/machines.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/mcmd.Plo ./$(DEPDIR)/mqcmd.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/nodeattr.Plo ./$(DEPDIR)/nodeupdown.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/qcmd.Plo ./$(DEPDIR)/rms.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/sdr.Plo ./$(DEPDIR)/slurm.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/sshcmd.Plo ./$(DEPDIR)/xrcmd.Plo
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
@@ -432,15 +443,15 @@ LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES = $(genders_la_SOURCES) $(k4cmd_la_SOURCES) \
-	$(EXTRA_libmods_la_SOURCES) $(machines_la_SOURCES) \
-	$(mcmd_la_SOURCES) $(mqcmd_la_SOURCES) $(nodeattr_la_SOURCES) \
-	$(nodeupdown_la_SOURCES) $(qcmd_la_SOURCES) $(rms_la_SOURCES) \
-	$(sdr_la_SOURCES) $(slurm_la_SOURCES) $(sshcmd_la_SOURCES) \
-	$(xrcmd_la_SOURCES)
+DIST_SOURCES = $(dshgroup_la_SOURCES) $(genders_la_SOURCES) \
+	$(k4cmd_la_SOURCES) $(EXTRA_libmods_la_SOURCES) \
+	$(machines_la_SOURCES) $(mcmd_la_SOURCES) $(mqcmd_la_SOURCES) \
+	$(nodeattr_la_SOURCES) $(nodeupdown_la_SOURCES) \
+	$(qcmd_la_SOURCES) $(rms_la_SOURCES) $(sdr_la_SOURCES) \
+	$(slurm_la_SOURCES) $(sshcmd_la_SOURCES) $(xrcmd_la_SOURCES)
 DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/config/Make-inc.mk \
 	Makefile.am
-SOURCES = $(genders_la_SOURCES) $(k4cmd_la_SOURCES) $(EXTRA_libmods_la_SOURCES) $(nodist_libmods_la_SOURCES) $(machines_la_SOURCES) $(mcmd_la_SOURCES) $(mqcmd_la_SOURCES) $(nodeattr_la_SOURCES) $(nodeupdown_la_SOURCES) $(qcmd_la_SOURCES) $(rms_la_SOURCES) $(sdr_la_SOURCES) $(slurm_la_SOURCES) $(sshcmd_la_SOURCES) $(xrcmd_la_SOURCES)
+SOURCES = $(dshgroup_la_SOURCES) $(genders_la_SOURCES) $(k4cmd_la_SOURCES) $(EXTRA_libmods_la_SOURCES) $(nodist_libmods_la_SOURCES) $(machines_la_SOURCES) $(mcmd_la_SOURCES) $(mqcmd_la_SOURCES) $(nodeattr_la_SOURCES) $(nodeupdown_la_SOURCES) $(qcmd_la_SOURCES) $(rms_la_SOURCES) $(sdr_la_SOURCES) $(slurm_la_SOURCES) $(sshcmd_la_SOURCES) $(xrcmd_la_SOURCES)
 
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -489,6 +500,8 @@ clean-pkglibLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
+dshgroup.la: $(dshgroup_la_OBJECTS) $(dshgroup_la_DEPENDENCIES) 
+	$(LINK) -rpath $(pkglibdir) $(dshgroup_la_LDFLAGS) $(dshgroup_la_OBJECTS) $(dshgroup_la_LIBADD) $(LIBS)
 genders.la: $(genders_la_OBJECTS) $(genders_la_DEPENDENCIES) 
 	$(LINK) -rpath $(pkglibdir) $(genders_la_LDFLAGS) $(genders_la_OBJECTS) $(genders_la_LIBADD) $(LIBS)
 k4cmd.la: $(k4cmd_la_OBJECTS) $(k4cmd_la_DEPENDENCIES) 
@@ -524,6 +537,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dshgroup.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/genders.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/k4cmd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/machines.Plo@am__quote@

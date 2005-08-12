@@ -85,3 +85,7 @@ Description: Allows list of targets to be built off SLURM_JOBID or `-j jobid'
 Conflictls:  None
 Requires:    slurm
 
+Module:      misc/dshgroup
+Package:     pdsh-mod-dshgroup
+Description: Allows list of targets to be built from dsh-style "group" files.
+Conflictls:  misc/genders

@@ -55,6 +55,7 @@ Requires: pdsh-rcmd
 %{!?_without_nodeattr: %{!?_with_nodeattr: %define _without_nodeattr --without-nodeattr}}
 %{!?_without_machines: %{!?_with_machines: %define _without_machines --without-machines}}
 %{!?_without_nodeupdown: %{!?_with_nodeupdown: %define _without_nodeupdown --without-nodeupdown}}
+%{!?_without_dshgroups: %{!?_with_dshgroups: %define _without_dshgroups --without-dshgroups}}
 
 %{?_with_qshell:BuildRequires: qsnetlibs}
 %{?_with_mqshell:BuildRequires: qsnetlibs}
@@ -174,6 +175,15 @@ Conflicts: pdsh-mod-nodeattr
 %description mod-machines
 Pdsh module for gathering list of all target nodes from a machines file.
 
+%package   mod-dshgroup
+Summary:   Provides dsh-style group file support for pdsh.
+Group:     System Environment/Base
+Requires:  whatsup
+%description mod-nodeupdown
+Pdsh module providing dsh (Dancer's shell) style "group" file support.
+Provides -g groupname and -X groupname options to pdsh.
+
+
 %package   mod-slurm
 Summary:   Provides support for running pdsh under SLURM allocations.
 Group:     System Environment/Base
@@ -216,7 +226,9 @@ from an allocated SLURM job.
     %{?_with_mqshell}       \
     %{?_without_mqshell}    \
     %{?_with_slurm}         \
-    %{?_without_slurm}        
+    %{?_without_slurm}      \ 
+    %{?_with_dshgroups}     \
+    %{?_without_dshgroups}   
     
            
 if [ "$SMP" != "" ] ; then
@@ -323,6 +335,12 @@ rm -rf "$RPM_BUILD_ROOT"
 %endif
 ##############################################################################
 
+%if %{?_with_dshgroups:1}%{!?_with_dshgroups:0}
+%files mod-dshgroup
+%defattr(-,root,root)
+%{_libdir}/pdsh/dshgroup.*
+%endif
+##############################################################################
 %if %{?_with_slurm:1}%{!?_with_slurm:0}
 %files mod-slurm
 %defattr(-,root,root)

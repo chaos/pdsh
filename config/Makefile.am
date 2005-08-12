@@ -32,4 +32,5 @@ EXTRA_DIST = \
     ac_elan.m4 \
     ac_rsh.m4 \
     ac_slurm.m4 \
+    ac_dshgroup.m4 \
     libtool.m4

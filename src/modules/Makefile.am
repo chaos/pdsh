@@ -64,6 +64,10 @@ if WITH_SLURM
 SLURM_MODULE = slurm.la
 endif
 
+if WITH_DSHGROUP
+DSHGROUP_MODULE = dshgroup.la
+endif
+
 if WITH_GNU_LD
 VERSION_SCRIPT = \
 	version.map
@@ -94,7 +98,8 @@ pkglib_LTLIBRARIES = \
 	$(MACHINES_MODULE) \
 	$(SDR_MODULE) \
 	$(KRB4_MODULE) \
-	$(SLURM_MODULE)
+	$(SLURM_MODULE) \
+	$(DSHGROUP_MODULE)
 
 BUILT_SOURCES = \
 	$(VERSION_SCRIPT)
@@ -119,7 +124,8 @@ EXTRA_libmods_la_SOURCES = \
 	machines.c \
 	sdr.c \
 	k4cmd.c \
-	slurm.c
+	slurm.c \
+	dshgroup.c
 
 if WITH_QSW
 QSNET_LIBS = \
@@ -163,6 +169,8 @@ sdr_la_SOURCES =          sdr.c
 sdr_la_LDFLAGS =          $(MODULE_FLAGS)
 slurm_la_SOURCES =        slurm.c 
 slurm_la_LDFLAGS =        $(MODULE_FLAGS) $(SLURM_LIBS)
+dshgroup_la_SOURCES =     dshgroup.c 
+dshgroup_la_LDFLAGS =     $(MODULE_FLAGS) 
 
 $(VERSION_SCRIPT) : 
 	(echo  "{ global:";                \

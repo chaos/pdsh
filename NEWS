@@ -1,7 +1,20 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
-* Changes in pdsh-2.6 (2005-08-21)
+* Changes in pdsh-2.7 (2005-08-21)
+===================================
+ -- Add dshgroup module which adds -g/-X groupname to utilize dsh-style
+    "group" files in ~/.dsh/group/groupname || /etc/dsh/group/groupname.
+ -- Fix possible truncation of output when poll() returns POLLHUP before
+    all data has been read. 
+ -- Close pdsh file descriptors opened to ssh commands before invoking 
+    subsequent ssh connections to fix possible pdsh hang with -Rssh.
+ -- Replace setenv() & seteuid() with putenv() & setuid() for portability.
+ -- Module path elements now considered secure if they have same ownership	
+    as pdsh binary (as well as either root or current user). Allows pdsh
+	to be installed with other than root ownership.
+
+* Changes in pdsh-2.6 (2005-08-02)
 ===================================
  -- (ssh) Fix pdcp hang with ssh on HP-UX (and possibly other systems).
     (Yehia Beyh <Yehia.Beyh@hp.com>)

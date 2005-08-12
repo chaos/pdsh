@@ -145,6 +145,8 @@ SHELL = @SHELL@
 SLURM_LIBS = @SLURM_LIBS@
 STRIP = @STRIP@
 VERSION = @VERSION@
+WITH_DSHGROUP_FALSE = @WITH_DSHGROUP_FALSE@
+WITH_DSHGROUP_TRUE = @WITH_DSHGROUP_TRUE@
 WITH_GNU_LD_FALSE = @WITH_GNU_LD_FALSE@
 WITH_GNU_LD_TRUE = @WITH_GNU_LD_TRUE@
 WITH_KRB4_FALSE = @WITH_KRB4_FALSE@
@@ -282,7 +284,7 @@ $(top_builddir)/config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 $(srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(srcdir)/configure.ac $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)
 
-$(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ configure.ac config/ac_connect_timeout.m4 config/ac_debug.m4 config/ac_dmalloc.m4 config/ac_elan.m4 config/ac_fanout.m4 config/ac_genders.m4 config/ac_gpl_licensed.m4 config/ac_krb4.m4 config/ac_machines.m4 config/ac_meta.m4 config/ac_mqshell.m4 config/ac_mrsh.m4 config/ac_nodeattr.m4 config/ac_nodeupdown.m4 config/ac_pam.m4 config/ac_pollselect.m4 config/ac_qshell.m4 config/ac_readline.m4 config/ac_rmsquery.m4 config/ac_rsh.m4 config/ac_sdr.m4 config/ac_slurm.m4 config/ac_socklen_t.m4 config/ac_ssh.m4 config/ac_static_modules.m4 config/acx_pthread.m4 config/libtool.m4
+$(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ configure.ac config/ac_connect_timeout.m4 config/ac_debug.m4 config/ac_dmalloc.m4 config/ac_dshgroup.m4 config/ac_elan.m4 config/ac_fanout.m4 config/ac_genders.m4 config/ac_gpl_licensed.m4 config/ac_krb4.m4 config/ac_machines.m4 config/ac_meta.m4 config/ac_mqshell.m4 config/ac_mrsh.m4 config/ac_nodeattr.m4 config/ac_nodeupdown.m4 config/ac_pam.m4 config/ac_pollselect.m4 config/ac_qshell.m4 config/ac_readline.m4 config/ac_rmsquery.m4 config/ac_rsh.m4 config/ac_sdr.m4 config/ac_slurm.m4 config/ac_socklen_t.m4 config/ac_ssh.m4 config/ac_static_modules.m4 config/acx_pthread.m4 config/libtool.m4
 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 
 config.h: stamp-h1

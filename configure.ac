@@ -196,6 +196,13 @@ AM_CONDITIONAL([WITH_RMS], [test "$ac_have_rmsquery" = "yes"])
 AC_SLURM
 AM_CONDITIONAL([WITH_SLURM], [test "$ac_have_slurm" = "yes"])
 
+#
+# Determine whether to build dshgroup module 
+# (support dsh-style /etc/dsh/group/%s ~/.dsh/group/%s files)
+#
+AC_DSHGROUP
+AM_CONDITIONAL([WITH_DSHGROUP], [test "$ac_with_dshgroup" = "yes"])
+
 dnl
 dnl check for whether to include readline support
 dnl
