@@ -102,10 +102,12 @@ struct pdsh_rcmd_operations genders_rcmd_ops = {
  */
 struct pdsh_module_option genders_module_options[] = 
  { 
-   { 'g', "query,...", "target nodes matched by specified genders queries",
+   { 'g', "query,...", 
+     "target nodes using genders query",
      DSH | PCP, (optFunc) genders_process_opt 
    },
-   { 'X', "attribute,...", "exclude nodes match by specified genders queries",
+   { 'X', "query,...", 
+     "exclude nodes using genders query",
      DSH | PCP, (optFunc) genders_process_opt
    },
    { 'F', "file",          "use alternate genders file `file'",
