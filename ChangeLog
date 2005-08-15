@@ -6,6 +6,8 @@
 
 	* src/modules/genders.c : Tweak module help info for clarity.
 
+	* : tag pdsh-2.7
+
 2005-08-12  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/dshgroup.c : Add dshgroup module providing 
