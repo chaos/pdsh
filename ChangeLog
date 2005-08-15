@@ -1,3 +1,9 @@
+2005-08-15  Mark Grondona <mgrondona@llnl.gov>
+
+	* pdsh.spec : Allow PDSH_WITH_OPTIONS and PDSH_WITHOUT_OPTIONS
+	  to be used to specify which conditional subpackages to build with
+	  rpmbuild as well as existing --with and --without flags.
+
 2005-08-12  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/dshgroup.c : Add dshgroup module providing 

@@ -12,18 +12,6 @@ Source:
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}
 Requires: pdsh-rcmd
 
-
-#
-# If "--with debug" is set compile with --enable-debug
-#   and try not to strip binaries.
-#
-# (See /usr/share/doc/rpm-*/conditionalbuilds)
-#
-%if %{?_with_debug:1}%{!?_with_debug:0}
-  %define _enable_debug --enable-debug
-  %define __os_install_post /usr/lib/rpm/brp-compress
-%endif
-
 #
 # Enabling and disabling pdsh options
 #  defaults:
@@ -37,25 +25,58 @@ Requires: pdsh-rcmd
 #  Similarly, to disable various pdsh options pass --without <pkg> on
 #   the rpmbuild command line.
 #
-
-# readline, rsh, and ssh are built by default:
+#  This specfile also supports passing the --with and --without through
+#   the environment variables PDSH_WITH_OPTIONS and PDSH_WITHOUT_OPTIONS.
+#   e.g. PDSH_WITH_OPTIONS="qshell genders" rpmbuild ....
 #
-%{!?_with_readline: %{!?_without_readline: %define _with_readline --with-readline}}
-%{!?_with_rsh: %{!?_without_rsh: %define _with_rsh 1}}
-%{!?_with_ssh: %{!?_without_ssh: %define _with_ssh --with-ssh}}
+%define _without_env ${PDSH_WITHOUT_OPTIONS}
+%define _with_env ${PDSH_WITH_OPTIONS} 
+%define dstr "%%%%"define
+%define check() echo %_%{1}_env|grep -qw %%1 && echo %dstr _%{1}_%%1 --%{1}-%%1
+%{expand: %%define pdsh_with() %%((%{check with})||(%{check without}))%%{nil}}
+%define def() %%{!?_%{2}_%1: %%{!?_%{3}_%1: %%global _%{2}_%1 --%{2}-%1}}
 
-# everything else is disabled
+%{expand: %pdsh_with ssh}
+%{expand: %def ssh with without}
+%{expand: %pdsh_with rsh}
+%{expand: %def rsh with without}
+%{expand: %pdsh_with readline}
+%{expand: %def readline with without}
+
+%{expand: %pdsh_with mrsh}
+%{expand: %def mrsh without with}
+%{expand: %pdsh_with qshell}
+%{expand: %def qshell without with}
+%{expand: %pdsh_with mqshell}
+%{expand: %def mqshell without with}
+%{expand: %pdsh_with genders}
+%{expand: %def genders without with}
+%{expand: %pdsh_with nodeattr}
+%{expand: %def nodeattr without with}
+%{expand: %pdsh_with nodeupdown}
+%{expand: %def nodeupdown without with}
+%{expand: %pdsh_with dshgroups}
+%{expand: %def dshgroups without with}
+%{expand: %pdsh_with machines}
+%{expand: %def machines without with}
+%{expand: %pdsh_with slurm}
+%{expand: %def slurm without with}
+%{expand: %pdsh_with rms}
+%{expand: %def rms without with}
+%{expand: %pdsh_with debug}
+%{expand: %def debug without with}
+
 #
-%{!?_without_rms: %{!?_with_rms: %define _without_rms --without-rms}}
-%{!?_without_slurm: %{!?_with_slurm: %define _without_slurm --without-slurm}}
-%{!?_without_mrsh: %{!?_with_mrsh: %define _without_mrsh --without-mrsh}}
-%{!?_without_qshell: %{!?_with_qshell: %define _without_qshell --without-qshell}}
-%{!?_without_mqshell: %{!?_with_mqshell: %define _without_mqshell --without-mqshell}}
-%{!?_without_genders: %{!?_with_genders: %define _without_genders --without-genders}}
-%{!?_without_nodeattr: %{!?_with_nodeattr: %define _without_nodeattr --without-nodeattr}}
-%{!?_without_machines: %{!?_with_machines: %define _without_machines --without-machines}}
-%{!?_without_nodeupdown: %{!?_with_nodeupdown: %define _without_nodeupdown --without-nodeupdown}}
-%{!?_without_dshgroups: %{!?_with_dshgroups: %define _without_dshgroups --without-dshgroups}}
+# If "--with debug" is set compile with --enable-debug
+#   and try not to strip binaries.
+#
+# (See /usr/share/doc/rpm-*/conditionalbuilds)
+#
+%if %{?_with_debug:1}%{!?_with_debug:0}
+  %define _enable_debug --enable-debug
+  %define __os_install_post /usr/lib/rpm/brp-compress
+%endif
+
 
 %{?_with_qshell:BuildRequires: qsnetlibs}
 %{?_with_mqshell:BuildRequires: qsnetlibs}
@@ -179,7 +200,7 @@ Pdsh module for gathering list of all target nodes from a machines file.
 Summary:   Provides dsh-style group file support for pdsh.
 Group:     System Environment/Base
 Requires:  whatsup
-%description mod-nodeupdown
+%description mod-dshgroup
 Pdsh module providing dsh (Dancer's shell) style "group" file support.
 Provides -g groupname and -X groupname options to pdsh.
 
@@ -203,7 +224,7 @@ from an allocated SLURM job.
 %build
 %configure --program-prefix=%{?_program_prefix:%{_program_prefix}} \
     %{?_enable_debug}       \
-    %{?_with_rsh}           \
+        %{?_with_rsh}           \
     %{?_without_rsh}        \
     %{?_with_ssh}           \
     %{?_without_ssh}        \
@@ -226,9 +247,9 @@ from an allocated SLURM job.
     %{?_with_mqshell}       \
     %{?_without_mqshell}    \
     %{?_with_slurm}         \
-    %{?_without_slurm}      \ 
+    %{?_without_slurm}      \
     %{?_with_dshgroups}     \
-    %{?_without_dshgroups}   
+    %{?_without_dshgroups}
     
            
 if [ "$SMP" != "" ] ; then
