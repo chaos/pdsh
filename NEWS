@@ -1,7 +1,7 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
-* Changes in pdsh-2.7 (2005-08-21)
+* Changes in pdsh-2.7 (2005-08-15)
 ===================================
  -- Add dshgroup module which adds -g/-X groupname to utilize dsh-style
     "group" files in ~/.dsh/group/groupname || /etc/dsh/group/groupname.
