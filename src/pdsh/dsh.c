@@ -1122,7 +1122,6 @@ int dsh(opt_t * opt)
     /* if -S, our exit value is the largest of the return codes */
     if (opt->ret_remote_rc) {
         for (i = 0; t[i].host != NULL; i++) {
-            out ("%p: %s: RC=%d\n", t[i].host, t[i].rc);
             if (t[i].state == DSH_FAILED)
                 rc = RC_FAILED;
             if (t[i].rc > rc)
