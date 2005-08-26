@@ -132,7 +132,7 @@ static hostlist_t _read_groupfile (const char *group)
         err ("%p: dshgroup: warning: Unable to read $HOME env var\n");
 
     if (access (backupfile, R_OK) >= 0)
-        return read_wcoll(groupfile, NULL);
+        return read_wcoll(backupfile, NULL);
 
     err ("%p: unable to read group file from ");
     if (home)

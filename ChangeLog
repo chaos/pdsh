@@ -1,3 +1,10 @@
+2005-08-26  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/modules/dshgroup.c (_read_groupfile) : module was testing 
+	  for backupfile (/etc/dsh/group/%s), after access() call for 
+	  default ($HOME/.dsh/group/%s) failed, but was still opening
+	  default instead of backupfile. (Joe Ramey <ramey@it.com>)
+
 2005-08-17  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/dsh.c (dsh) : Remove debug output when processing
