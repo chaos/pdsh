@@ -1,7 +1,7 @@
 /*****************************************************************************\
  *  $Id$
  *****************************************************************************
- *  $LSDId: hostlist.c,v 1.19 2005/01/10 17:01:56 achu Exp $
+ *  $LSDId: hostlist.c,v 1.20 2005/09/13 23:32:21 grondo Exp $
  *****************************************************************************
  *  Copyright (C) 2002 The Regents of the University of California.
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
@@ -352,6 +352,22 @@ static void _error(char *file, int line, char *msg, ...)
     return;
 }
 
+static int _advance_past_brackets (char *tok, char **str)
+{
+    /* if _single_ opening bracket exists b/w tok and str, push str
+     * past first closing bracket to next seperator */
+    if (   memchr(tok, '[', *str - tok) != NULL
+        && memchr(tok, ']', *str - tok) == NULL ) {
+        char *q = strchr(*str, ']');
+        if (q && memchr(*str, '[', q - *str) == NULL) {
+            *str = q + 1;
+            return (1);
+        }
+    }
+
+    return 0;
+}
+
 /* 
  * Helper function for host list string parsing routines 
  * Returns a pointer to the next token; additionally advance *str
@@ -376,20 +392,18 @@ static char * _next_tok(char *sep, char **str)
     /* assign token ptr */
     tok = *str;
 
-    /* push str past token and leave pointing to first separator */
-    while (**str != '\0' && strchr(sep, **str) == '\0')
-        (*str)++;
+    /*
+     * Advance str past any separators, but if a separator occurs between
+     *  brackets, e.g. foo[0-3,5], then advance str past closing brackets and
+     *  try again.
+     */
+    do {
+        /* push str past token and leave pointing to first separator */
+        while (**str != '\0' && strchr(sep, **str) == '\0')
+            (*str)++;
+    } while (_advance_past_brackets (tok, str));
 
-    /* if _single_ opening bracket exists b/w tok and str, push str
-     * past first closing bracket */
-    if (   memchr(tok, '[', *str - tok) != NULL
-        && memchr(tok, ']', *str - tok) == NULL ) {
-        char *q = strchr(*str, ']');
-        if (q && memchr(*str, '[', q - *str) == NULL)
-            *str = q + 1;
-    }
-
-    /* nullify consecutive separators and push str beyond them */
+   /* nullify consecutive separators and push str beyond them */
     while (**str != '\0' && strchr(sep, **str) != '\0')
         *(*str)++ = '\0';
 
@@ -896,6 +910,9 @@ static int hostrange_hn_within(hostrange_t hr, hostname_t hn)
 {
     int retval = 0;
 
+    if (hr->singlehost && (strcmp(hn->hostname, hr->prefix) == 0))
+        return 1;
+
     if (strcmp(hr->prefix, hn->prefix) == 0) {
         if (!hostname_suffix_is_valid(hn)) {
             if (hr->singlehost)
@@ -1393,6 +1410,24 @@ _push_range_list(hostlist_t hl, char *pfx, struct _range *rng,
     }
 }
 
+static void
+_push_range_list_with_suffix(hostlist_t hl, char *pfx, char *sfx, 
+                             struct _range *rng, int n)
+{
+    int i;
+    unsigned long j;
+    for (i = 0; i < n; i++) {
+        for (j = rng->lo; j <= rng->hi; j++) {
+            char host[4096];
+            hostrange_t hr;
+            snprintf (host, 4096, "%s%0*lu%s", pfx, rng->width, j, sfx);
+            hr = hostrange_create_single (host);
+            hostlist_push_range (hl, hr);
+        }
+        rng++;
+    }
+}
+
 /*
  * Create a hostlist from a string with brackets '[' ']' to aid 
  * detection of ranges and compressed lists
@@ -1426,7 +1461,11 @@ _hostlist_create_bracketed(const char *hostlist, char *sep, char *r_op)
                 nr = _parse_range_list(p, ranges, MAX_RANGES);
                 if (nr < 0) 
                     goto error;
-                _push_range_list(new, prefix, ranges, nr);
+
+                if (*(++q) != '\0')
+                    _push_range_list_with_suffix (new, prefix, q, ranges, nr);
+                else
+                    _push_range_list(new, prefix, ranges, nr);
 
                 
             } else
@@ -1823,7 +1862,7 @@ int hostlist_find(hostlist_t hl, const char *hostname)
 
     for (i = 0, count = 0; i < hl->nranges; i++) {
         if (hostrange_hn_within(hl->hr[i], hn)) {
-            if (hostname_suffix_is_valid(hn))
+            if (hostname_suffix_is_valid(hn) && !hl->hr[i]->singlehost)
                 ret = count + hn->num - hl->hr[i]->lo;
             else
                 ret = count;

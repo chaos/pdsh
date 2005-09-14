@@ -1,3 +1,8 @@
+2005-09-14  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/common/hostlist.c : Update to latest hostlist code which
+	  allows a suffix on hostlist expressions, e.g. foo[0-10]-bar.
+
 2005-08-26  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/dshgroup.c (_read_groupfile) : module was testing 
