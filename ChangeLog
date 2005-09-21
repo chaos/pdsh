@@ -1,3 +1,9 @@
+2005-09-21  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/common/dsh.c (_rcp_response) : Print error string recvd from
+	  remote RCP server. Remove confusing "Failed to initiate RCP protocol"
+	  error message.
+
 2005-09-14  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/common/hostlist.c : Update to latest hostlist code which

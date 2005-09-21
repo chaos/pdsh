@@ -496,6 +496,7 @@ static int _rcp_response(int fd, char *host)
             errstr[i] = '\0';
             if (resp != 1)
                 result = 0;
+            err("%p: %S: error: %s\n", host, errstr);
     }
     return result;
 }
@@ -638,10 +639,10 @@ static void *_rcp_thread(void *args)
             }
             list_iterator_destroy(i);
         } else {
-            err("%p: %S: Failed to initiate RCP protocol.\n", a->host);
             /* 
              *  Copy any pending stderr to user 
              *   (ignore errors) 
+             *  XXX: Is this necessary. Will there be any data on stderr?
              */
             while (_do_output (a->efd, a->errbuf, (out_f) err, false, a) > 0)
                 ;
