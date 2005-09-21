@@ -485,18 +485,11 @@ static int _rcp_response(int fd, char *host)
             break;
         default:               /* just error string */
             errstr[i++] = resp;
-        case 1:                /* non-fatal error + string */
-        case 2:                /* fatal error + string */
-            for (; i < BUFSIZ; i++) {
-                if (read(fd, &errstr[i], 1) != 1)
-                    break;
-                if (errstr[i] == '\n')
-                    break;
-            }
-            errstr[i] = '\0';
-            if (resp != 1)
-                result = 0;
-            err("%p: %S: error: %s\n", host, errstr);
+            result = 0;
+        case 1:                /* fatal error + string */
+            fd_read_line (fd, &errstr[i], BUFSIZ - i);
+            err("%p: %S: %s: %s", host, result ? "fatal" : "error", errstr);
+            break;
     }
     return result;
 }

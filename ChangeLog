@@ -4,6 +4,10 @@
 	  remote RCP server. Remove confusing "Failed to initiate RCP protocol"
 	  error message.
 
+	* src/common/dsh.c (_rcp_response) : Remove legacy comments about
+	  pcp response codes (we never send a response prefixed with 2) and
+	  other small changes to rcp_response.
+
 2005-09-14  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/common/hostlist.c : Update to latest hostlist code which
