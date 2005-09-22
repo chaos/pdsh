@@ -1,3 +1,9 @@
+2005-09-22  Mark Grondona <mgrondona@llnl.gov>
+
+	* doc/pdsh.1.in : Add note in LIMITATIONS about inability for
+	  pdsh to guarantee remote commands are terminated after command
+	  timeout.
+
 2005-09-21  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/common/dsh.c (_rcp_response) : Print error string recvd from

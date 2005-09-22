@@ -137,7 +137,7 @@ Set the connect timeout. Default is @CONNECT_TIMEOUT@ seconds.
 .TP
 .I "-u seconds"
 Set a limit on the amount of time a remote command is allowed to execute.
-Default is no limit.
+Default is no limit. See note in LIMITATIONS if using \fI-u\fR with ssh.
 .TP
 .I "-f number"
 Set the maximum number of simultaneous remote commands to \fInumber\fR.
@@ -360,8 +360,12 @@ at LLNL.
 When using \fBssh\fR for remote execution, expect the stderr of ssh to be
 folded in with that of the remote command. When invoked by \fBpdsh\fR, it
 is not possible for \fBssh\fR to prompt for passwords if RSA/DSA keys
-are configured properly, etc.. Finally, the connect timeout is not adjustable
-when ssh is used.
+are configured properly, etc.. Additionally, the connect timeout is not 
+adjustable when ssh is used. Finally, there is no reliable way for
+\fBpdsh\fR to ensure that remote commands are actually terminated
+when using a command timeout. Thus if \fI-u\fR is used with \fBssh\fR
+commands may be left running on remote hosts by even after timeout
+has killed local \fBssh\fR processes.
 
 Output from multiple processes per node may be interspersed when using qshell
 or mqshell rcmd modules.
