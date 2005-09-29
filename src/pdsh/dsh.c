@@ -281,16 +281,13 @@ static void _int_handler_justdie(int signum)
  * Watchdog thread.  Send SIGALRM to 
  *   - threads in connecting state for too long
  *   - threads in connected state for too long (if selected on command line)
- * Sleep for two seconds between polls (actually sleep for connect_timeout
- * on the first iteration).
+ * Sleep for two seconds between polls 
  */
 static void *_wdog(void *args)
 {
     int i;
     
     _int_block();               /* block SIGINT */
-
-    sleep (connect_timeout);
 
     for (;;) {
 
@@ -811,6 +808,7 @@ static void *_rsh_thread(void *args)
                 else
                     err("%p: %S: xpoll: %m\n", a->host);
                 result = DSH_FAILED;
+                mod_rcmd_signal (a->efd, SIGTERM);
                 break;
             }
 

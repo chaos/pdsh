@@ -1,5 +1,14 @@
 2005-09-22  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/pdsh/dsh.c (_wdog) : Don't sleep for connect_timeout seconds 
+	  at beginning of watchdog poll (breaks command timeout). 
+
+	* src/pdsh/dsh.c (_rsh_thread) : Send SIGTERM to commands that have
+	  been timed out by watchdog. (for SSH, this allows us to kill
+	  the ssh process but not the remote commands)
+
+2005-09-22  Mark Grondona <mgrondona@llnl.gov>
+
 	* doc/pdsh.1.in : Add note in LIMITATIONS about inability for
 	  pdsh to guarantee remote commands are terminated after command
 	  timeout.
