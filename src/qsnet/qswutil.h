@@ -38,7 +38,7 @@
 #ifndef ELAN_MAX_RAILS
 #  define ELAN_MAX_RAILS 16
 #endif
-#define QSW_RAILMASK_MAX    (1<<ELAN_MAX_RAILS - 1)
+#define QSW_RAILMASK_MAX    ((1<<ELAN_MAX_RAILS) - 1)
 
 typedef struct {
     int prgnum;
