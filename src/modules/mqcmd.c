@@ -164,8 +164,8 @@ static int mqcmd_opt_n(opt_t *, int, char *);
 static int mqcmd_opt_r(opt_t *, int, char *);
 
 static int mqcmd_init(opt_t *);
-static int mqcmd_signal(int, int);
-static int mqcmd(char *, char *, char *, char *, char *, int, int *); 
+static int mqcmd_signal(int, void *, int);
+static int mqcmd(char *, char *, char *, char *, char *, int, int *, void **); 
 
 /* random num for all jobs in this group */
 static unsigned int randy = -1;
@@ -389,7 +389,7 @@ static int mqcmd_init(opt_t * opt)
 }
 
 static int
-mqcmd_signal(int fd, int signum)
+mqcmd_signal(int fd, void *arg, int signum)
 {
     char c;
 
@@ -488,7 +488,7 @@ static int _mqcmd_send_extra_args(int s, int nodeid, const char *ahost)
  */
 static int 
 mqcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd, 
-        int nodeid, int *fd2p)
+        int nodeid, int *fd2p, void **arg)
 {
     struct sockaddr m_socket;
     struct sockaddr_in *getp;

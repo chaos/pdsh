@@ -26,6 +26,12 @@
 #ifndef _HAVE_MOD_RCMD_H
 #define _HAVE_MOD_RCMD_H
 
+struct rcmd_info {
+    int fd;
+    int efd;
+    void *arg;
+};
+
 /*
  *  Get the default rcmd module name (e.g. "rsh" "ssh" etc.)
  */
@@ -44,13 +50,19 @@ int    mod_rcmd_init(opt_t *opt);
 /*
  *  Send a signal over the specified file descriptor
  */
-int    mod_rcmd_signal(int efd, int signum);
+int    mod_rcmd_signal(struct rcmd_info *, int signum);
 
 /*
  *  Spawn a remote command using the loaded rcmd module
  */
-int    mod_rcmd(char *ahost, char *addr, char *locuser, char *remuser,
-		char *cmd, int rank, int *fd2p);
+struct rcmd_info * mod_rcmd_create (char *ahost, char *addr, char *locuser, 
+                            char *remuser, char *cmd, int rank, bool);
+
+/*
+ *  Destroy rcmd connections
+ */
+int mod_rcmd_destroy (struct rcmd_info *);
+
 
 /*
  *  Clean up rcmd modules

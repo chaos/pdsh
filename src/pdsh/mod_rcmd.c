@@ -47,9 +47,10 @@ static char * rcmd_rank[] =
  *  Container for information specific to rcmd modules.
  */
 struct _rmodule {
-    RcmdInitF init;
-    RcmdSigF  signal;
-    RcmdF     rcmd;
+    RcmdInitF    init;
+    RcmdSigF     signal;
+    RcmdF        rcmd;
+    RcmdDestroyF rcmd_destroy;
 };
 
 /*
@@ -103,6 +104,11 @@ mod_rcmd_load(opt_t * opt)
         goto fail;
     }
 
+    /*
+     * Destroy function not required
+     */
+    rmod->rcmd_destroy = (RcmdDestroyF) mod_get_rcmd_destroy (mod);
+
     return 0;
 
   fail:
@@ -144,18 +150,47 @@ mod_rcmd_exit(void)
 }
 
 
-int mod_rcmd_signal(int efd, int signum)
+int mod_rcmd_signal(struct rcmd_info *rcmd, int signum)
 {
     assert(rmod != NULL);
-    return (*rmod->signal) (efd, signum);
+    return (*rmod->signal) (rcmd->efd, rcmd->arg, signum);
 }
 
-int
-mod_rcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
-     int nodeid, int *fd2p)
+struct rcmd_info *
+mod_rcmd_create (char *ahost, char *addr, char *locuser, char *remuser, 
+                 char *cmd, int nodeid, bool err)
 {
+    int fd, efd = -1;
+    void *arg;
+    struct rcmd_info *rcmd = NULL;
+
     assert(rmod != NULL);
-    return (*rmod->rcmd) (ahost, addr, locuser, remuser, cmd, nodeid, fd2p);
+
+    fd = (*rmod->rcmd) (ahost, addr, locuser, remuser, cmd, nodeid, 
+                        err ? &efd : NULL, &arg);
+
+    if (fd < 0)
+        return NULL;
+
+    rcmd = Malloc (sizeof (*rcmd));
+    rcmd->fd = fd;
+    rcmd->efd = efd;
+    rcmd->arg = arg;
+
+    return (rcmd);
+}
+
+int mod_rcmd_destroy (struct rcmd_info *rcmd)
+{
+    int rc = 0;
+
+    if (rcmd == NULL)
+        return (0);
+    if (rmod->rcmd_destroy != NULL)
+        rc = (*rmod->rcmd_destroy) (rcmd->arg);
+    Free ((void **) &rcmd);
+
+    return (rc);
 }
 
 

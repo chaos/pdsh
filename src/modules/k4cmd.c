@@ -102,8 +102,8 @@ extern errno;
 extern char *inet_ntoa();
 
 static int k4cmd_init(opt_t *);
-static int k4cmd_signal(int, int);
-static int k4cmd(char *, char *, char *, char *, char *, int, int *); 
+static int k4cmd_signal(int, void *, int);
+static int k4cmd(char *, char *, char *, char *, char *, int, int *, void **); 
 
 /* 
  * Export pdsh module operations structure
@@ -158,7 +158,7 @@ static int k4cmd_init(opt_t * opt)
  *      efd (IN)        file descriptor connected socket (-1 if not used)
  *      signum (IN)     signal number to send
  */
-static int k4cmd_signal(int efd, int signum)
+static int k4cmd_signal(int efd, void *arg, int signum)
 {
     char c;
 
@@ -185,7 +185,7 @@ static int k4cmd_signal(int efd, int signum)
  */
 static int
 k4cmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
-      int rank, int *fd2p)
+      int rank, int *fd2p, void **arg)
 {
     KTEXT_ST ticket;            /* kerberos IV context */
     CREDENTIALS cred;

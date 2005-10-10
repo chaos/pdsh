@@ -151,8 +151,8 @@ static char sccsid[] = "@(#)mcmd.c      Based from: 8.3 (Berkeley) 3/26/94";
 int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
 
 static int mcmd_init(opt_t *);
-static int mcmd_signal(int, int);
-static int mcmd(char *, char *, char *, char *, char *, int, int *); 
+static int mcmd_signal(int, void *, int);
+static int mcmd(char *, char *, char *, char *, char *, int, int *, void **); 
 
 /* random num for all jobs in this group */
 static unsigned int randy = -1;
@@ -171,9 +171,9 @@ struct pdsh_module_operations mcmd_module_ops = {
  *  Export rcmd module operations
  */
 struct pdsh_rcmd_operations mcmd_rcmd_ops = {
-    (RcmdInitF)  mcmd_init,
-    (RcmdSigF)   mcmd_signal,
-    (RcmdF)      mcmd,
+    (RcmdInitF)    mcmd_init,
+    (RcmdSigF)     mcmd_signal,
+    (RcmdF)        mcmd,
 };
 
 /* 
@@ -190,7 +190,7 @@ struct pdsh_module_option mcmd_module_options[] =
 struct pdsh_module pdsh_module_info = {
     "rcmd",
     "mrsh",
-    "Mike Haskell <haskell5@llnl.gov>",
+    "",
     "mrsh rcmd connect method",
     DSH | PCP, 
 
@@ -241,7 +241,7 @@ mcmd_init(opt_t * opt)
 }
 
 static int
-mcmd_signal(int fd, int signum)
+mcmd_signal(int fd, void *arg, int signum)
 {
     char c;
 
@@ -304,7 +304,7 @@ encode_localhost_string (const char *host, char *str, int maxlen)
  */
 static int 
 mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd, 
-        int rank, int *fd2p)
+        int rank, int *fd2p, void **argp)
 {
     struct sockaddr m_socket;
     struct sockaddr_in *getp;

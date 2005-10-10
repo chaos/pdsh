@@ -498,6 +498,18 @@ mod_get_rcmd(mod_t mod) {
         return NULL;
 }
 
+RcmdDestroyF
+mod_get_rcmd_destroy (mod_t mod)
+{
+    assert (mod != NULL);
+    assert (mod->pmod != NULL);
+    
+    if (mod->pmod->rcmd_ops && mod->pmod->rcmd_ops->rcmd_destroy)
+        return mod->pmod->rcmd_ops->rcmd_destroy;
+    else
+        return NULL;
+}
+
 
 int 
 mod_process_opt(opt_t *opt, int c, char *optarg)

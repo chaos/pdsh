@@ -141,8 +141,8 @@ static int qcmd_opt_n(opt_t *, int, char *);
 static int qcmd_opt_r(opt_t *, int, char *);
 
 static int qcmd_init(opt_t *);
-static int qcmd_signal(int, int);
-static int qcmd(char *, char *, char *, char *, char *, int, int *); 
+static int qcmd_signal(int, void *, int);
+static int qcmd(char *, char *, char *, char *, char *, int, int *, void **); 
 
 /*
  *  Export generic pdsh module operations
@@ -233,7 +233,7 @@ qcmd_opt_r(opt_t *pdsh_opts, int opt, char *arg)
  *      efd (IN)        file descriptor connected socket (-1 if not used)
  *      signum (IN)     signal number to send
  */
-static int qcmd_signal(int efd, int signum)
+static int qcmd_signal(int efd, void *arg, int signum)
 {
     char c;
 
@@ -399,7 +399,7 @@ static int _qcmd_send_extra_args(int s, int nodeid)
  */
 static int
 qcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
-     int nodeid, int *fd2p)
+     int nodeid, int *fd2p, void **arg)
 {
     struct sockaddr_in sin, from;
     sigset_t oldset, blockme;

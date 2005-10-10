@@ -39,6 +39,7 @@
 #include "src/common/list.h"
 #include "src/pdsh/opt.h"
 #include "src/pdsh/cbuf.h"
+#include "src/pdsh/mod_rcmd.h"
 
 #define INTR_TIME		1       /* secs */
 #define WDOG_POLL 		2       /* secs */
@@ -77,8 +78,8 @@ typedef struct thd {
     int rc;                     /* remote return code (-S) */
     int nodeid;                 /* node index */
     int nnodes;                 /* number of nodes in job */
-    int fd;                     /* stdin/stdout */
-    int efd;                    /* signal/stderr */
+    
+    struct rcmd_info *rcmd;     /* rcmd connection info */
 
     cbuf_t outbuf;              /* output buffer */
     cbuf_t errbuf;              /* stderr buffer  */

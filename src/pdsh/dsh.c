@@ -238,8 +238,8 @@ static void _fwd_signal(int signum)
     int i;
 
     for (i = 0; t[i].host != NULL; i++) {
-        if ((t[i].state == DSH_READING) && (t[i].efd >= 0)) 
-			mod_rcmd_signal(t[i].efd, signum);
+        if ((t[i].state == DSH_READING)) 
+			mod_rcmd_signal(t[i].rcmd, signum);
     }
 
 }
@@ -591,7 +591,7 @@ static void *_rcp_thread(void *args)
 {
     thd_t *a = (thd_t *) args;
     int result = DSH_DONE;      /* the desired outcome */
-    int *efdp = a->dsh_sopt ? &a->efd : NULL;
+    int rc;
 
     _int_block();               /* block SIGINT */
 
@@ -602,16 +602,17 @@ static void *_rcp_thread(void *args)
     a->start = time(NULL);
     a->state = DSH_RCMD;
 
-    a->fd = mod_rcmd(a->host, a->addr, a->luser, a->ruser, 
-                     a->cmd, a->nodeid, efdp);
-    if (a->fd == -1)
+    a->rcmd = mod_rcmd_create (a->host, a->addr, a->luser, a->ruser, 
+                               a->cmd, a->nodeid, a->dsh_sopt);
+
+    if (a->rcmd == NULL || a->rcmd->fd == -1)
         result = DSH_FAILED;
     else {
         a->connect = time(NULL);
         a->state = DSH_READING;
 
         /* 0: RECV response code */
-        if (_rcp_response(a->fd, a->host) >= 0) {
+        if (_rcp_response(a->rcmd->fd, a->host) >= 0) {
             ListIterator i;
             char *name;
 
@@ -619,13 +620,13 @@ static void *_rcp_thread(void *args)
             i = list_iterator_create(a->pcp_infiles);
             while ((name = list_next(i))) {
                 if (strcmp(name, EXIT_SUBDIR_FILENAME) == 0) {
-                    if (_rcp_sendstr(a->fd, EXIT_SUBDIR_FLAG, a->host) < 0)
+                    if (_rcp_sendstr(a->rcmd->fd, EXIT_SUBDIR_FLAG, a->host) < 0)
                         errx("%p: failed to send exit subdir flag\n");
-                    if (_rcp_response(a->fd, a->host) < 0)
+                    if (_rcp_response(a->rcmd->fd, a->host) < 0)
                         errx("%p: failed to exit subdir properly\n");
                     continue;
                 }
-                _rcp_sendfile(a->fd, name, a->host, a->pcp_popt);
+                _rcp_sendfile(a->rcmd->fd, name, a->host, a->pcp_popt);
             }
             list_iterator_destroy(i);
         } else {
@@ -634,18 +635,22 @@ static void *_rcp_thread(void *args)
              *   (ignore errors) 
              *  XXX: Is this necessary. Will there be any data on stderr?
              */
-            while (_do_output (a->efd, a->errbuf, (out_f) err, false, a) > 0)
+            while (_do_output (a->rcmd->efd, a->errbuf, (out_f) err, false, a) > 0)
                 ;
             _flush_output (a->errbuf, (out_f) err, a);
         }
 
-        close(a->fd);
+        close(a->rcmd->fd);
         if (a->dsh_sopt)
-            close(a->efd);
+            close(a->rcmd->efd);
     } 
     /* update status */
     a->state = result;
     a->finish = time(NULL);
+
+    rc = mod_rcmd_destroy (a->rcmd);
+    if ((a->rc == 0) && (rc > 0))
+        a->rc = rc;
 
     /* Signal dsh() so another thread can replace us */
     pthread_mutex_lock(&threadcount_mutex);
@@ -747,7 +752,6 @@ static void *_rsh_thread(void *args)
     thd_t *a = (thd_t *) args;
     int rv;
     int result = DSH_DONE;      /* the desired outcome */
-    int *efdp = a->dsh_sopt ? &a->efd : NULL;
     struct xpollfd xpfds[2];
     int nfds = 1;
 
@@ -764,27 +768,27 @@ static void *_rsh_thread(void *args)
     /* establish the connection */
     a->state = DSH_RCMD;
 
-    a->fd = mod_rcmd(a->host, a->addr, a->luser, a->ruser,
-                     a->cmd, a->nodeid, efdp);
+    a->rcmd = mod_rcmd_create(a->host, a->addr, a->luser, a->ruser,
+                              a->cmd, a->nodeid, a->dsh_sopt);
 
     /* 
      * Copy stdout/stderr to local stdout/stderr, 
      * appropriately tagged.
      */
-    if (a->fd == -1) {
+    if (a->rcmd == NULL || a->rcmd->fd == -1) {
         result = DSH_FAILED;    /* connect failed */
     } else {
         /* connected: update status for watchdog thread */
         a->connect = time(NULL);
         a->state = DSH_READING;
 
-        fd_set_nonblocking (a->fd);
+        fd_set_nonblocking (a->rcmd->fd);
 
         /* prep for poll call */
-        xpfds[0].fd = a->fd;
+        xpfds[0].fd = a->rcmd->fd;
         if (a->dsh_sopt) {      /* separate stderr */
-            fd_set_nonblocking (a->efd);
-            xpfds[1].fd = a->efd;
+            fd_set_nonblocking (a->rcmd->efd);
+            xpfds[1].fd = a->rcmd->efd;
             nfds++;
         }
         else
@@ -808,19 +812,19 @@ static void *_rsh_thread(void *args)
                 else
                     err("%p: %S: xpoll: %m\n", a->host);
                 result = DSH_FAILED;
-                mod_rcmd_signal (a->efd, SIGTERM);
+                mod_rcmd_signal (a->rcmd, SIGTERM);
                 break;
             }
 
             /* stdout ready or closed ? */
             if (xpfds[0].revents & (XPOLLREAD|XPOLLERR)) {
-                if (_do_output (a->fd, a->outbuf, (out_f) out, true, a) <= 0)
+                if (_do_output (a->rcmd->fd, a->outbuf, (out_f) out, true, a) <= 0)
                     xpfds[0].fd = -1;
             }
 
             /* stderr ready or closed ? */
             if (a->dsh_sopt && xpfds[1].revents & (XPOLLREAD|XPOLLERR)) {
-                if (_do_output (a->efd, a->errbuf, (out_f) err, false, a) <= 0)
+                if (_do_output (a->rcmd->efd, a->errbuf, (out_f) err, false, a) <= 0)
                     xpfds[1].fd = -1;
             }
 
@@ -830,7 +834,7 @@ static void *_rsh_thread(void *args)
 
 #if	STDIN_BCAST             /* not yet supported */
             /* stdin ready ? */
-            if (FD_ISSET(a->fd, &writefds)) {
+            if (FD_ISSET(a->rcmd->fd, &writefds)) {
             }
 #endif
         }
@@ -843,6 +847,10 @@ static void *_rsh_thread(void *args)
     /* flush any pending output */
     _flush_output (a->outbuf, (out_f) out, a);
     _flush_output (a->errbuf, (out_f) err, a);
+
+    rv = mod_rcmd_destroy (a->rcmd);
+    if ((a->rc == 0) && (rv > 0))
+        a->rc = rv;
 
     /* if a single qshell thread fails, terminate whole job */
     if (a->kill_on_fail && a->state == DSH_FAILED) {
@@ -945,6 +953,36 @@ static void _increase_nofile_limit (opt_t *opt)
     return;
 }
 
+static int _thd_init (thd_t *th, opt_t *opt, List pcp_infiles, int i)
+{ 
+    th->luser = opt->luser;        /* general */
+    th->ruser = opt->ruser;
+    th->state = DSH_NEW;
+    th->labels = opt->labels;
+    th->rcmd = NULL;
+    th->nodeid = i;
+    th->cmd = opt->cmd;
+    th->dsh_sopt = opt->separate_stderr;  /* dsh-specific */
+    th->rc = 0;
+    th->pcp_infiles = pcp_infiles;        /* pcp-specific */
+    th->pcp_outfile = opt->outfile_name;
+    th->pcp_popt = opt->preserve;
+    th->pcp_ropt = opt->recursive;
+    th->pcp_progname = opt->progname;
+    th->kill_on_fail = opt->kill_on_fail;
+    th->outbuf = cbuf_create (64, 8192);
+    th->errbuf = cbuf_create (64, 8192);
+#if	!HAVE_MTSAFE_GETHOSTBYNAME
+    /* if MT-safe, do it in parallel in rsh/rcp threads */
+    /* gethostbyname_r is not very portable so skip it */
+    if (opt->resolve_hosts)
+        _gethost(th->host, th->addr);
+#endif
+
+    return (0);
+
+}
+
 /* 
  * Run command on a list of hosts, keeping 'fanout' number of connections 
  * active concurrently.
@@ -1033,29 +1071,7 @@ int dsh(opt_t * opt)
     i = 0;
     while ((t[i].host = hostlist_next(itr))) {
         assert(i < rshcount);
-        t[i].luser = opt->luser;        /* general */
-        t[i].ruser = opt->ruser;
-        t[i].state = DSH_NEW;
-        t[i].labels = opt->labels;
-        t[i].fd = t[i].efd = -1;
-        t[i].nodeid = i;
-        t[i].cmd = opt->cmd;
-        t[i].dsh_sopt = opt->separate_stderr;  /* dsh-specific */
-        t[i].rc = 0;
-        t[i].pcp_infiles = pcp_infiles;        /* pcp-specific */
-        t[i].pcp_outfile = opt->outfile_name;
-        t[i].pcp_popt = opt->preserve;
-        t[i].pcp_ropt = opt->recursive;
-        t[i].pcp_progname = opt->progname;
-        t[i].kill_on_fail = opt->kill_on_fail;
-        t[i].outbuf = cbuf_create (64, 8192);
-        t[i].errbuf = cbuf_create (64, 8192);
-#if	!HAVE_MTSAFE_GETHOSTBYNAME
-        /* if MT-safe, do it in parallel in rsh/rcp threads */
-        /* gethostbyname_r is not very portable so skip it */
-        if (opt->resolve_hosts)
-            _gethost(t[i].host, t[i].addr);
-#endif
+        _thd_init (&t[i], opt, pcp_infiles, i);
         i++;
     }
     assert(i == rshcount);

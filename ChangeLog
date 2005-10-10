@@ -1,3 +1,29 @@
+2005-10-10  Mark Grondona <mgrondona@llnl.gov>
+	
+	* src/pdsh/mod_rcmd.h, src/pdsh/mod_rcmd.c : Replace mod_rcmd() 
+	  function with mod_rcmd_create() which returns a created struct 
+	  rcmd_info with created stdout/err file descriptors and module-specific
+	  opaque data. The created rcmd_info is freed with mod_rcmd_destroy()
+	  before each dsh thread exits.
+
+	* src/pdsh/mod.h, src/pdsh/mod.c  : Allow modules to optionally
+	  export an rcmd_destroy function for cleanup of rcmd_info structure
+	  and associated opaque data. Change rcmd_signal interface to pass
+	  struct rcmd_info instead of efd, and rcmd interface passes 
+	  pointer to void * argument (module-specific opaque data).
+
+	* src/pdsh/dsh.h, src/pdsh/dsh.c : Replace thd_t fd and efd members
+	  with pointer to struct rcmd_info created by call the 
+	  mod_rcmd_create(). Call mod_rcmd_destroy() before thread termination.
+
+	* src/modules/sshcmd.c : Remove ssh_reaper thread and collect ssh
+	  process exit status in new "rcmd_destroy" function.
+
+	* src/modules/mqcmd.c, src/modules/k4cmd.c, src/modules/xrcmd.c,
+	  src/modules/mcmd.c, src/modules/qcmd.c :
+	  Update remaining rcmd modules to reflect changes in 
+	  pdsh_rcmd_operations components.
+
 2005-09-30  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/qsnet/qswutil.h : fix compile warning against definition

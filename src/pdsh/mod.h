@@ -147,9 +147,11 @@ typedef int        (*ModPostOpF)    (opt_t *);
  *   via a pdsh_rcmd_operations structure. 
  */
 typedef int        (*RcmdInitF)     (opt_t *);
-typedef int        (*RcmdSigF)      (int, int);
+typedef int        (*RcmdSigF)      (int, void *, int);
 typedef int        (*RcmdF)         (char *, char *, char *, char *, char *,
-                                     int, int *);
+                                     int, int *, void **);
+typedef int        (*RcmdDestroyF)  (void *);
+
 /*
  *  Module accessor functions. Return module name, type, and
  *    look up additional exported symbols in given module.
@@ -157,11 +159,12 @@ typedef int        (*RcmdF)         (char *, char *, char *, char *, char *,
  *  All return a pointer to the desired value if successful, or NULL
  *    on failure.
  */
-char *    mod_get_name(mod_t mod);
-char *    mod_get_type(mod_t mod);
-RcmdInitF mod_get_rcmd_init(mod_t mod);
-RcmdSigF  mod_get_rcmd_signal(mod_t mod);
-RcmdF     mod_get_rcmd(mod_t mod);
+char *       mod_get_name(mod_t mod);
+char *       mod_get_type(mod_t mod);
+RcmdInitF    mod_get_rcmd_init(mod_t mod);
+RcmdSigF     mod_get_rcmd_signal(mod_t mod);
+RcmdF        mod_get_rcmd(mod_t mod);
+RcmdDestroyF mod_get_rcmd_destroy(mod_t mod);
 
 
 /* 
@@ -182,9 +185,10 @@ struct pdsh_module_operations {
  * Stores all rcmd operations of a module 
  */
 struct pdsh_rcmd_operations {
-    RcmdInitF  rcmd_init;
-    RcmdSigF   rcmd_signal;
-    RcmdF      rcmd;
+    RcmdInitF    rcmd_init;
+    RcmdSigF     rcmd_signal;
+    RcmdF        rcmd;
+    RcmdDestroyF rcmd_destroy;
 };
 
 /* 

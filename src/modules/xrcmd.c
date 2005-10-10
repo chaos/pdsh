@@ -120,8 +120,8 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
 
 static int xrcmd_init(opt_t *);
-static int xrcmd_signal(int, int);
-static int xrcmd(char *, char *, char *, char *, char *, int, int *); 
+static int xrcmd_signal(int, void *, int);
+static int xrcmd(char *, char *, char *, char *, char *, int, int *, void **); 
 
 /* 
  * Export pdsh module operations structure
@@ -176,7 +176,7 @@ static int xrcmd_init(opt_t * opt)
  * 	efd (IN)	file descriptor connected socket (-1 if not used)
  *	signum (IN)	signal number to send
  */
-static int xrcmd_signal(int efd, int signum)
+static int xrcmd_signal(int efd, void *arg, int signum)
 {
     char c;
 
@@ -203,7 +203,7 @@ static int xrcmd_signal(int efd, int signum)
  */
 static int
 xrcmd(char *ahost, char *addr, char *locuser, char *remuser,
-      char *cmd, int rank, int *fd2p)
+      char *cmd, int rank, int *fd2p, void **arg)
 {
     struct sockaddr_in sin, from;
     sigset_t oldset, blockme;
