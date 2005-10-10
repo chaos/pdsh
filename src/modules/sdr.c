@@ -354,9 +354,11 @@ static void _sdr_cache_hresp_line (char *buf)
 
 	nn = atoi (_list_nth (words, 0));
 	assert (nn >= 0 && nn <= MAX_SP_NODE_NUMBER);
-	assert (sdrcache[nn] != NULL);
-
-	sdrcache[nn]->host_responds = (atoi (_list_nth (words, 1)) == 1);
+    /* 
+     * Ignore host_responds for hosts without node information
+     */
+    if (sdrcache[nn] != NULL)
+        sdrcache[nn]->host_responds = (atoi (_list_nth (words, 1)) == 1);
 
 	return;
 }

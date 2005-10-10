@@ -24,6 +24,9 @@
 	  Update remaining rcmd modules to reflect changes in 
 	  pdsh_rcmd_operations components.
 
+	* src/modules/sdr.c (_sdr_cache_hresp_line) : Ignore host_responds
+	  for node ids with no node information.
+
 2005-09-30  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/qsnet/qswutil.h : fix compile warning against definition
