@@ -256,7 +256,7 @@ static int32_t _slurm_jobid (void)
     return (str2jobid (getenv ("SLURM_JOBID")));
 }
 
-static _find_id (char *jobid, uint32_t *id)
+static int _find_id (char *jobid, uint32_t *id)
 {
     return (*id == str2jobid (jobid));
 }
