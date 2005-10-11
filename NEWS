@@ -1,6 +1,21 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
+* Changes in pdsh-2.8 (2005-10-11)
+===================================
+ -- (dshgroup) Fix bug in dshgroup module which resulted in the module
+    trying to read only from ~/.dsh/group/ even if /etc/dsh/group/
+    should have been used.  (patch from Joe Ramey <ramey@it.com>)
+ -- Print error strings returned by remote RCP server instead of generic
+    "Failed to initiate RCP protocol."
+ -- Allow hostlist expressions to have suffixes (e.g. foo[0-10]-bar).
+ -- Fix for command timeout when its value is less than connect timeout.
+ -- (ssh) Remove ssh_reaper thread and instead reap child ssh processes
+    within each thread spawned by pdsh. This fixes reported problem
+    under LinuxThreads.
+ -- (sdr) Fix assertion failure if host_responds info exists in SDR
+    for a node number that doesn't exist in Node class. 
+
 * Changes in pdsh-2.7 (2005-08-15)
 ===================================
  -- Add dshgroup module which adds -g/-X groupname to utilize dsh-style

@@ -190,7 +190,7 @@ struct pdsh_module_option mcmd_module_options[] =
 struct pdsh_module pdsh_module_info = {
     "rcmd",
     "mrsh",
-    "",
+    "Al Chu <chu11@llnl.gov>",
     "mrsh rcmd connect method",
     DSH | PCP, 
 
