@@ -1,7 +1,7 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
-* Changes in pdsh-2.8 (2005-10-11)
+* Changes in pdsh-2.8 (2005-10-13)
 ===================================
  -- (dshgroup) Fix bug in dshgroup module which resulted in the module
     trying to read only from ~/.dsh/group/ even if /etc/dsh/group/
