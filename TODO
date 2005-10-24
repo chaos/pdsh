@@ -10,3 +10,9 @@
 - option to allocate all threads/mem before executing command
   - important so that if fanout is too large, commands won't
     be started and killed halfway through.
+- bproc rcmd module
+- netgroups module
+- reverse pdcp support
+  - resulting filenames add ".hostname"
+  - last entry must be directory on local machine
+- option to remove "hostname:" in front of output
