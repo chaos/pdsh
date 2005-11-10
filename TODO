@@ -16,6 +16,3 @@
   - resulting filenames add ".hostname"
   - last entry must be directory on local machine
 - option to remove "hostname:" in front of output
-- keyword that allows hostname to put replaced in the command line
-  - i.e. pdsh -w node1,node2 cat /nfsdir/file.%n
-         would put file.node1 and file.node2 into the nfsdir.
