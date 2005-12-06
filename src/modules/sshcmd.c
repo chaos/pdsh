@@ -65,7 +65,6 @@
 #include "src/common/xstring.h"
 #include "src/common/err.h"
 #include "src/common/list.h"
-#include "src/common/fd.h"
 #include "src/pdsh/dsh.h"
 #include "src/pdsh/mod.h"
 
@@ -202,6 +201,17 @@ static int sshcmd_signal(int fd, void *arg, int signum)
     return (kill (s->ssh_pid, SIGTERM));
 }
 
+static void
+closeall (int fd)
+{
+    int fdlimit = sysconf (_SC_OPEN_MAX);
+
+    while (fd < fdlimit)
+        close (fd++);
+
+    return;
+}
+
 /*
  * This is a replacement rcmd() function that uses an arbitrary
  * program in place of a direct rcmd() function call.
@@ -250,6 +260,13 @@ static int _pipecmd(char *path, char *args[], const char *ahost, int *fd2p,
             }
         }
 
+        /*
+         * Try to close all stray file descriptors before invoking ssh
+         *  to ensure that ssh stdin is closed when pdcp/pdsh close their
+         *  end of the socketpair.
+         */
+        closeall (3);
+
         setsid();
         putenv("DISPLAY=");
         execvp(path, args);
@@ -260,15 +277,9 @@ static int _pipecmd(char *path, char *args[], const char *ahost, int *fd2p,
         /* parent. close sp[1], return sp[0]. */
         (void) close(sp[1]);
 
-        /*
-         * Set close on exec for sp[0] and esp[0]
-         */
-        fd_set_close_on_exec (sp[0]);
-
         if (fd2p) {
             close(esp[1]);
             *fd2p = esp[0];
-            fd_set_close_on_exec (esp[0]);
         }
 
         *spp = ssh_info_create (cpid, ahost, esp[0]);
@@ -339,7 +350,6 @@ void ssh_info_destroy (struct ssh_info_struct *s)
 {
     if (s == NULL)
         return;
-
 
     Free ((void **)&s->target);
     Free ((void **)&s);
