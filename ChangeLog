@@ -1,3 +1,9 @@
+2005-12-06  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/opt.c : Move processing of -x (exclude hosts by name)
+	  until after mod_postop() has been called, because mod_postop()
+	  may modify the list of target hosts.
+
 2005-10-26  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/xrcmd.c : Fix typo in error message "k4cmd" -> "rcmd".
