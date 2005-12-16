@@ -203,6 +203,9 @@ AM_CONDITIONAL([WITH_SLURM], [test "$ac_have_slurm" = "yes"])
 AC_DSHGROUP
 AM_CONDITIONAL([WITH_DSHGROUP], [test "$ac_with_dshgroup" = "yes"])
 
+AC_NETGROUP
+AM_CONDITIONAL([WITH_NETGROUP], [test "$ac_with_netgroup" = "yes"])
+
 dnl
 dnl check for whether to include readline support
 dnl

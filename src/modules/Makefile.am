@@ -68,6 +68,10 @@ if WITH_DSHGROUP
 DSHGROUP_MODULE = dshgroup.la
 endif
 
+if WITH_NETGROUP
+NETGROUP_MODULE = netgroup.la
+endif
+
 if WITH_GNU_LD
 VERSION_SCRIPT = \
 	version.map
@@ -99,7 +103,8 @@ pkglib_LTLIBRARIES = \
 	$(SDR_MODULE) \
 	$(KRB4_MODULE) \
 	$(SLURM_MODULE) \
-	$(DSHGROUP_MODULE)
+	$(DSHGROUP_MODULE) \
+	$(NETGROUP_MODULE)
 
 BUILT_SOURCES = \
 	$(VERSION_SCRIPT)
@@ -125,7 +130,8 @@ EXTRA_libmods_la_SOURCES = \
 	sdr.c \
 	k4cmd.c \
 	slurm.c \
-	dshgroup.c
+	dshgroup.c \
+	netgroup.c
 
 if WITH_QSW
 QSNET_LIBS = \
@@ -171,6 +177,8 @@ slurm_la_SOURCES =        slurm.c
 slurm_la_LDFLAGS =        $(MODULE_FLAGS) $(SLURM_LIBS)
 dshgroup_la_SOURCES =     dshgroup.c 
 dshgroup_la_LDFLAGS =     $(MODULE_FLAGS) 
+netgroup_la_SOURCES =     netgroup.c 
+netgroup_la_LDFLAGS =     $(MODULE_FLAGS) 
 
 $(VERSION_SCRIPT) : 
 	(echo  "{ global:";                \

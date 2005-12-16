@@ -291,7 +291,17 @@ Target nodes in dsh group file "groupname" found in either
 ~/.dsh/group/groupname or /etc/dsh/group/groupname.
 .TP
 .I "-X groupname,..."
-Exclude node in dsh group file "groupname."
+Exclude nodes in dsh group file "groupname."
+
+.SH "netgroup module options"
+The netgroup module allows pdsh to use standard netgroup entries to
+build lists of target hosts. (/etc/netgroup or NIS)
+.TP
+.I "-g groupname,..."
+Target nodes in netgroup "groupname." 
+.TP
+.I "-X groupname,..."
+Exclude nodes in netgroup "groupname."
 
 .SH "ENVIRONMENT VARIABLES"
 .PP

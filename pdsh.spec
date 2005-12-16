@@ -57,6 +57,8 @@ Requires: pdsh-rcmd
 %{expand: %def nodeupdown without with}
 %{expand: %pdsh_with dshgroups}
 %{expand: %def dshgroups without with}
+%{expand: %pdsh_with netgroup}
+%{expand: %def netgroup without with}
 %{expand: %pdsh_with machines}
 %{expand: %def machines without with}
 %{expand: %pdsh_with slurm}
@@ -204,6 +206,13 @@ Requires:  whatsup
 Pdsh module providing dsh (Dancer's shell) style "group" file support.
 Provides -g groupname and -X groupname options to pdsh.
 
+%package   mod-netgroup
+Summary:   Provides netgroup support for pdsh.
+Group:     System Environment/Base
+Requires:  whatsup
+%description mod-netgroup
+Pdsh module providing support for targeting hosts based on netgroup.
+Provides -g groupname and -X groupname options to pdsh.
 
 %package   mod-slurm
 Summary:   Provides support for running pdsh under SLURM allocations.
@@ -249,7 +258,9 @@ from an allocated SLURM job.
     %{?_with_slurm}         \
     %{?_without_slurm}      \
     %{?_with_dshgroups}     \
-    %{?_without_dshgroups}
+    %{?_without_dshgroups}  \
+    %{?_with_netgroup}      \
+    %{?_without_netgroup} 
     
            
 if [ "$SMP" != "" ] ; then
@@ -362,6 +373,14 @@ rm -rf "$RPM_BUILD_ROOT"
 %{_libdir}/pdsh/dshgroup.*
 %endif
 ##############################################################################
+
+%if %{?_with_netgroup:1}%{!?_with_netgroup:0}
+%files mod-netgroup
+%defattr(-,root,root)
+%{_libdir}/pdsh/netgroup.*
+%endif
+##############################################################################
+
 %if %{?_with_slurm:1}%{!?_with_slurm:0}
 %files mod-slurm
 %defattr(-,root,root)

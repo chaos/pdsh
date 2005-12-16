@@ -1,3 +1,15 @@
+2005-12-15  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/modules/netgroup.c : Add netgroup module providing support
+	  for reading list of targets from /etc/netgroup file or NIS using
+	  standard setnetent/getnetent calls.
+	
+	* configure.ac, pdsh.spec, config/ac_netgroup.m4, doc/pdsh.1.in,
+	  src/modules/Makefile.am : 
+	  Build, package, and document dshgroup module.
+
+	* : Rerun ./bootstrap 
+
 2005-12-06  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/opt.c : Move processing of -x (exclude hosts by name)
