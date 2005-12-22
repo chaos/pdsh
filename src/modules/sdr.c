@@ -143,11 +143,7 @@ static hostlist_t _sdr_reliable_names (void);
 static void _sdr_getnames(bool Gopt);
 static void _sdr_getresp (bool Gopt);
 
-static List _list_split(char *sep, char *str);
 static char *_list_nth(List l, int n);
-static void _free_name(void *name);
-static char *_next_tok(char *sep, char **str);
-
 
 /*
  * module interface functions
@@ -296,7 +292,7 @@ static void _sdr_getswitchname(char *switchName, int len)
     if (f == NULL)
         errx("%p: error running %s\n", _PATH_SDRGETOBJECTS);
     while (fgets(buf, LINEBUFSIZE, f) != NULL) {
-        words = _list_split(NULL, buf);
+        words = list_split(NULL, buf);
         assert(list_count(words) == 1);
         snprintf(switchName, len, _list_nth(words, 0));
         list_destroy(words);
@@ -332,7 +328,7 @@ static char * _sdr_switch_attr (int *numswitchplanes)
     if (f == NULL)
         errx("%p: error running %s\n", _PATH_SDRGETOBJECTS);
     while (fgets(buf, LINEBUFSIZE, f) != NULL) {
-        words = _list_split(NULL, buf);
+        words = list_split(NULL, buf);
         assert(list_count(words) == 1);
         n = atoi(_list_nth(words, 0));
         list_destroy(words);
@@ -349,7 +345,7 @@ static void _sdr_cache_hresp_line (char *buf)
 	List words = NULL;
 	int  nn    = -1;
 
-	words = _list_split (NULL, buf);
+	words = list_split (NULL, buf);
 	assert(list_count (words) == 2);
 
 	nn = atoi (_list_nth (words, 0));
@@ -369,7 +365,7 @@ static void _sdr_cache_sresp_line (char *buf, int switchplanes)
 	int  nn    = -1;
 	struct sdr_info *s;
 
-	words = _list_split (NULL, buf);
+	words = list_split (NULL, buf);
 	assert(list_count (words) == (1 + switchplanes));
 
 	nn = atoi (_list_nth (words, 0));
@@ -393,7 +389,7 @@ static void _sdr_cache_name_line (char *buf)
 	int  nn     = -1; 
     char *p;
 
-	words = _list_split (NULL, buf);
+	words = list_split (NULL, buf);
 	assert (list_count(words) == 3);
 
 	nn = atoi (_list_nth (words, 0));
@@ -486,63 +482,6 @@ static hostlist_t _sdr_reliable_names ()
 	return (hl);
 }
 
-
-/* 
- * Helper function for list_split(). Extract tokens from str.  
- * Return a pointer to the next token; at the same time, advance 
- * *str to point to the next separator.  
- *   sep (IN)   string containing list of separator characters
- *   str (IN)   double-pointer to string containing tokens and separators
- *   RETURN next token
- */
-static char *_next_tok(char *sep, char **str)
-{
-    char *tok;
-
-    /* push str past any leading separators */
-    while (**str != '\0' && strchr(sep, **str) != '\0')
-        (*str)++;
-
-    if (**str == '\0')
-        return NULL;
-
-    /* assign token pointer */
-    tok = *str;
-
-    /* push str past token and leave pointing to first separator */
-    while (**str != '\0' && strchr(sep, **str) == '\0')
-        (*str)++;
-
-    /* nullify consecutive separators and push str beyond them */
-    while (**str != '\0' && strchr(sep, **str) != '\0')
-        *(*str)++ = '\0';
-
-    return tok;
-}
-
-/*
- * Given a list of separators and a string, generate a list
- *   sep (IN)   string containing separater characters
- *   str (IN)   string containing tokens and separators
- *   RETURN     new list containing all tokens
- */
-static List _list_split(char *sep, char *str)
-{
-    List new = list_create((ListDelF) _free_name);
-    char *tok;
-
-    if (sep == NULL)
-        sep = SPACES;
-
-    while ((tok = _next_tok(sep, &str)) != NULL) {
-        if (strlen(tok) > 0)
-            list_append(new, Strdup(tok));
-    }
-
-    return new;
-}
-
-
 static char *_list_nth(List l, int n)
 {
     int i = 0;
@@ -554,11 +493,6 @@ static char *_list_nth(List l, int n)
     }
     list_iterator_destroy(itr);
     return name;
-}
-
-static void _free_name(void *name)
-{
-    Free(&name);
 }
 
 static struct sdr_info * sdr_info_create (char *host, char *rhost)

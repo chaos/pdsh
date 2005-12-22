@@ -37,6 +37,7 @@
 #include "src/common/xmalloc.h"
 #include "src/common/err.h"
 #include "src/common/list.h"
+#include "src/common/split.h"
 
 #if STATIC_MODULES
 #  define pdsh_module_info dshgroup_module_info
@@ -214,69 +215,9 @@ static int dshgroup_postop (opt_t *opt)
     return 0;
 }
 
-static void _free_group (void *group)
-{
-    Free (&group);
-}
-
-/* 
- * Helper function for list_split(). Extract tokens from str.  
- * Return a pointer to the next token; at the same time, advance 
- * *str to point to the next separator.  
- *   sep (IN)   string containing list of separator characters
- *   str (IN)   double-pointer to string containing tokens and separators
- *   RETURN next token
- */
-static char *_next_tok(char *sep, char **str)
-{
-    char *tok;
-
-    /* push str past any leading separators */
-    while (**str != '\0' && strchr(sep, **str) != '\0')
-        (*str)++;
-
-    if (**str == '\0')
-        return NULL;
-
-    /* assign token pointer */
-    tok = *str;
-
-    /* push str past token and leave pointing to first separator */
-    while (**str != '\0' && strchr(sep, **str) == '\0')
-        (*str)++;
-
-    /* nullify consecutive separators and push str beyond them */
-    while (**str != '\0' && strchr(sep, **str) != '\0')
-        *(*str)++ = '\0';
-
-    return tok;
-}
-
-/*
- * Given a list of separators and a string, generate a list
- *   sep (IN)   string containing separater characters
- *   str (IN)   string containing tokens and separators
- *   RETURN     new list containing all tokens
- */
-static List _list_split(char *sep, char *str)
-{
-    List new = list_create((ListDelF) _free_group);
-    char *tok;
-
-    if (sep == NULL)
-        sep = " \t";
-
-    while ((tok = _next_tok(sep, &str)) != NULL) {
-        if (strlen(tok) > 0)
-            list_append(new, Strdup(tok));
-    }
-
-    return new;
-}
-
 static List _grouplist_append (List l, char *str)
 {
-    List tmp = _list_split (",", str);
+    List tmp = list_split (",", str);
     ListIterator i = NULL;
     char *attr = NULL;
 
