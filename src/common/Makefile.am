@@ -22,6 +22,8 @@ libcommon_la_SOURCES = \
     hostlist.h \
     list.c \
     list.h \
+	split.c \
+	split.h \
     xmalloc.c \
     xmalloc.h \
     xpoll.c \
