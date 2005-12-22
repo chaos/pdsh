@@ -1,3 +1,14 @@
+2005-12-22  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/common/split.c, src/common/split.h : Added. 
+	  Move list_split() implementation which was used in several 
+	  modules into pdsh common code.
+
+	* src/modules/genders.c, src/modules/sdr.c, src/modules/nodeattr.c,
+	  src/modules/dshgroup.c, src/modules/netgroup.c, src/modules/slurm.c :
+	  Use list_split() from src/common/split.c instead of internal
+	  _list_split() implementation.
+
 2005-12-15  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/netgroup.c : Add netgroup module providing support
