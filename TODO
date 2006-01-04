@@ -11,12 +11,7 @@
   - important so that if fanout is too large, commands won't
     be started and killed halfway through.
 - bproc rcmd module
-- netgroups module
 - reverse pdcp support
   - resulting filenames add ".hostname"
   - last entry must be directory on local machine
 - option to remove "hostname:" in front of output
-- genders attribute to automatically detect/select a rcmd module (Py W.)
-   - i.e. node0 pdshrcmd=ssh
-   - i.e. node1 pdshrcmd=mcmd
-  
