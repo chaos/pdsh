@@ -39,6 +39,7 @@
 #include "src/common/split.h"
 #include "src/pdsh/ltdl.h"
 #include "src/pdsh/mod.h"
+#include "src/pdsh/rcmd.h"
 
 #define ALL_NODES NULL
 
@@ -155,8 +156,8 @@ static hostlist_t _genders_to_altnames(genders_t g, hostlist_t hl);
 static hostlist_t _read_genders(List l);
 static void       _genders_opt_verify(opt_t *opt);
 static int        _delete_all (hostlist_t hl, hostlist_t dl);
-static void       _free_attr (void *);
 static List       _attrlist_append (List l, char *str);
+static int        register_genders_rcmd_types (opt_t *opt);
 
 
 /*
@@ -256,9 +257,6 @@ genders_postop(opt_t *opt)
     altnames = (opt_i && !(attrlist || allnodes)) 
             || (!opt_i && (attrlist || allnodes));
 
-    if (!excllist && !altnames)
-        return (0);
-
     if (gh == NULL)
         gh = _handle_create();
 
@@ -278,6 +276,8 @@ genders_postop(opt_t *opt)
         hostlist_destroy(hl);
     }
 #endif
+
+    register_genders_rcmd_types (opt);
 
     return (0);
 }
@@ -494,6 +494,69 @@ _read_genders (List attrs)
 }
 
 static int 
+attrval_by_altname (genders_t g, const char *host, const char *attr,
+                           char *val, int len)
+{   
+    char *altname = NULL;
+    char *altattr = GENDERS_ALTNAME_ATTRIBUTE;
+    int maxlen = _maxnamelen (g);
+    int rc = -1;
+
+    altname = Malloc (maxlen + 1);
+    memset (altname, 0, maxlen);
+
+    if ((rc = genders_getnodes (g, &altname, 1, altattr, host)) > 0)
+        rc = genders_testattr (g, altname, attr, val, sizeof (val));
+
+    Free ((void **) &altname);
+
+    return rc;
+}
+
+
+
+static int
+register_genders_rcmd_types (opt_t *opt)
+{
+    char *host;
+    char val[64];
+    char rcmd_attr[] = "pdsh_rcmd_type";
+    hostlist_iterator_t i = NULL;
+
+    if (!opt->wcoll) 
+        return (0);
+
+    /* 
+     *  Assume no nodes have "pdsh_rcmd_type" attr if index fails:
+     */
+    if (genders_index_attrvals (gh, rcmd_attr) < 0)
+        return (0);
+
+    i = hostlist_iterator_create (opt->wcoll);
+    while ((host = hostlist_next (i))) {
+        int rc;
+        memset (val, 0, sizeof (val));
+        rc = genders_testattr (gh, host, rcmd_attr, val, sizeof (val));
+
+        /*
+         *  If host wasn't found, try to see if "host" is the altname
+         *   for this node, then lookup with the real name
+         */
+        if (rc < 0 && (genders_errnum(gh) == GENDERS_ERR_NOTFOUND)) 
+            rc = attrval_by_altname (gh, host, rcmd_attr, val, sizeof (val));
+
+        if (rc > 0) 
+            rcmd_register_default_module (host, val);
+
+        free (host);
+    }
+
+    hostlist_iterator_destroy (i);
+            
+    return 0;
+}
+
+static int 
 _delete_all (hostlist_t hl, hostlist_t dl)
 {
     int                 rc   = 0;
@@ -506,12 +569,6 @@ _delete_all (hostlist_t hl, hostlist_t dl)
     }
     hostlist_iterator_destroy (i);
     return (rc);
-}
-
-static void
-_free_attr (void *attr)
-{
-    Free (&attr);
 }
 
 /*

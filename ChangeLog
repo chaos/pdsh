@@ -16,6 +16,10 @@
 	* src/pdsh/Makefile.am, src/pdsh/Makefile.in : 
 	  Remove mod_rcmd.[ch] and add rcmd.[ch].
 
+	* src/modules/genders.c : Add support for pdsh_rcmd_type genders 
+	  attribute which will change the default rcmd type for a given set
+	  of hosts.
+
 2005-12-22  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/common/split.c, src/common/split.h : Added. 
