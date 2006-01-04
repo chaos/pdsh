@@ -23,50 +23,51 @@
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 \*****************************************************************************/
-#ifndef _HAVE_MOD_RCMD_H
-#define _HAVE_MOD_RCMD_H
+
+#ifndef _HAVE_RCMD_H
+#define _HAVE_RCMD_H
+
+#include "opt.h"
 
 struct rcmd_info {
-    int fd;
-    int efd;
-    void *arg;
+	int fd;
+	int efd;
+	struct rcmd_module *rmod;
+	void *arg;
 };
 
 /*
- *  Get the default rcmd module name (e.g. "rsh" "ssh" etc.)
+ *  Register a new default rcmd connect module for the hosts in
+ *   string "hosts".
  */
-char * mod_rcmd_get_default_module(void);
+int rcmd_register_default_module (char *hosts, char *rcmd_type);
 
 /*
- *  Load the chosen or default rcmd module
+ *  Return default rcmd module name.
  */
-int    mod_rcmd_load(opt_t *opt);
+char * rcmd_get_default_module (void);
 
 /*
- *  Perform rcmd initialization for the loaded rcmd module
+ *  Create rcmd connect info structure for a given host
  */
-int    mod_rcmd_init(opt_t *opt);
-
-/*
- *  Send a signal over the specified file descriptor
- */
-int    mod_rcmd_signal(struct rcmd_info *, int signum);
-
-/*
- *  Spawn a remote command using the loaded rcmd module
- */
-struct rcmd_info * mod_rcmd_create (char *ahost, char *addr, char *locuser, 
-                            char *remuser, char *cmd, int rank, bool);
+struct rcmd_info * rcmd_create (char *host, char *addr, char *locuser, 
+		                        char *remuser, char *cmd, int nodeid, bool err);
 
 /*
  *  Destroy rcmd connections
  */
-int mod_rcmd_destroy (struct rcmd_info *);
-
+int rcmd_destroy (struct rcmd_info *);
 
 /*
- *  Clean up rcmd modules
+ *  Send a signal of the specified remote connection
  */
-void mod_rcmd_exit(void);
+int rcmd_signal (struct rcmd_info *, int signum);
 
-#endif /* !_HAVE_MOD_RCMD_H */
+int rcmd_init (opt_t *opt);
+
+/*
+ *  Free all rcmd module information.
+ */
+int rcmd_exit (void);
+
+#endif /* !_HAVE_RCMD_H */

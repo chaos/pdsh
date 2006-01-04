@@ -39,7 +39,7 @@
 #include "src/common/list.h"
 #include "src/pdsh/opt.h"
 #include "src/pdsh/cbuf.h"
-#include "src/pdsh/mod_rcmd.h"
+#include "src/pdsh/rcmd.h"
 
 #define INTR_TIME		1       /* secs */
 #define WDOG_POLL 		2       /* secs */

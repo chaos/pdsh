@@ -46,13 +46,14 @@
 #include "src/common/hostlist.h"
 #include "src/common/err.h"
 #include "src/common/list.h"
+#include "src/common/split.h"
 #include "src/common/xstring.h"
 #include "src/common/xmalloc.h"
 #include "dsh.h"                
 #include "opt.h"
 #include "wcoll.h"
 #include "mod.h"
-#include "mod_rcmd.h"
+#include "rcmd.h"
 
 static void _usage(opt_t * opt);
 static void _show_version(void);
@@ -365,6 +366,8 @@ void opt_env(opt_t * opt)
     }
 }
 
+static void wcoll_append (opt_t *opt, char *hosts);
+
 /*
  * Override  default/environment options with command line arguments.
  *	opt (IN/OUT)	option struct	
@@ -403,7 +406,7 @@ void opt_args(opt_t * opt, int argc, char *argv[])
             if (strcmp(optarg, "-") == 0)
                 opt->wcoll = read_wcoll(NULL, stdin);
             else
-                opt->wcoll = hostlist_create(optarg);
+               wcoll_append(opt, optarg);
             break;
         case 'x':              /* exclude node list */
             exclude_buf = Strdup(optarg);
@@ -474,9 +477,11 @@ void opt_args(opt_t * opt, int argc, char *argv[])
     }
 
     /*
-     *  Load requested (or default) rcmd module 
+     *  Load default module for all hosts (unless overridden)
      */
-    if (mod_rcmd_load(opt) < 0)
+    if (opt->rcmd_name == NULL)
+        opt->rcmd_name = Strdup(rcmd_get_default_module ());
+    if (rcmd_register_default_module(NULL, opt->rcmd_name) < 0)
         exit(1);
 
     /* DSH: build command */
@@ -735,7 +740,7 @@ void opt_free(opt_t * opt)
     if (opt->infile_names)
         list_destroy(opt->infile_names);
 
-    mod_rcmd_exit();
+    rcmd_exit();
 }
 
 /*
@@ -767,7 +772,7 @@ static char *_rcmd_module_list(char *buf, int maxlen)
         goto done;
 
     if (mod_count("rcmd") > 1) {
-        char *def = mod_rcmd_get_default_module();
+        char *def = rcmd_get_default_module();
         len2 = snprintf ( buf+len, maxlen-len, " (default: %s)",
                           def ? def : "none" );
         if (len2 < 0)
@@ -824,6 +829,64 @@ static void _show_version(void)
     Free((void **) &misc_list);
 
     exit(0);
+}
+
+/*
+ *  Take a string `hosts' possibly of form "rcmd_type:hostlist" and
+ *    place the hostlist part of the string in *hptr and the rcmd part
+ *    of the string in rptr. Returns nonzero if an rcmd_type was found,
+ *    zero otherwise (in which case rptr is not touched).
+ */
+static int get_host_rcmd_type (char *hosts, char **rptr, char **hptr)
+{
+    if (!(*hptr = strchr (hosts, ':'))) {
+        *hptr = hosts;
+        return (0);
+    }
+
+    /* 
+     *  Nullify ':' and advance hptr to host part of string
+     */
+    *(*hptr)++ = '\0';
+    *rptr = hosts;
+    return (1);
+    
+}
+
+
+static void wcoll_append (opt_t *opt, char *str)
+{
+    List l = list_split (",", str);
+    ListIterator i;
+    char *rcmd_type = NULL;
+    char *tok;
+
+    if (!l)
+        return;
+
+    if (!opt->wcoll)
+        opt->wcoll = hostlist_create (NULL);
+
+    i = list_iterator_create (l);
+
+    while ((tok = list_next (i))) {
+        char *hosts;
+
+        get_host_rcmd_type (tok, &rcmd_type, &hosts);
+
+        hostlist_push (opt->wcoll, hosts);
+
+        if (rcmd_type) {
+            if (rcmd_register_default_module (hosts, rcmd_type) < 0)
+                errx ("Failed to register rcmd module \"%s\" for hosts \"%s\"\n",
+                      rcmd_type, hosts);
+        }
+
+    }
+
+    list_destroy (l);
+
+    return;
 }
 
 

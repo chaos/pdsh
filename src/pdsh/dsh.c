@@ -111,7 +111,7 @@
 #include "dsh.h"
 #include "opt.h"
 #include "wcoll.h"
-#include "mod_rcmd.h"
+#include "rcmd.h"
 
 static int debug = 0;
 
@@ -239,7 +239,7 @@ static void _fwd_signal(int signum)
 
     for (i = 0; t[i].host != NULL; i++) {
         if ((t[i].state == DSH_READING)) 
-			mod_rcmd_signal(t[i].rcmd, signum);
+			rcmd_signal(t[i].rcmd, signum);
     }
 
 }
@@ -602,8 +602,8 @@ static void *_rcp_thread(void *args)
     a->start = time(NULL);
     a->state = DSH_RCMD;
 
-    a->rcmd = mod_rcmd_create (a->host, a->addr, a->luser, a->ruser, 
-                               a->cmd, a->nodeid, a->dsh_sopt);
+    a->rcmd = rcmd_create (a->host, a->addr, a->luser, a->ruser, 
+                           a->cmd, a->nodeid, a->dsh_sopt);
 
     if (a->rcmd == NULL || a->rcmd->fd == -1)
         result = DSH_FAILED;
@@ -648,7 +648,7 @@ static void *_rcp_thread(void *args)
     a->state = result;
     a->finish = time(NULL);
 
-    rc = mod_rcmd_destroy (a->rcmd);
+    rc = rcmd_destroy (a->rcmd);
     if ((a->rc == 0) && (rc > 0))
         a->rc = rc;
 
@@ -768,8 +768,8 @@ static void *_rsh_thread(void *args)
     /* establish the connection */
     a->state = DSH_RCMD;
 
-    a->rcmd = mod_rcmd_create(a->host, a->addr, a->luser, a->ruser,
-                              a->cmd, a->nodeid, a->dsh_sopt);
+    a->rcmd = rcmd_create(a->host, a->addr, a->luser, a->ruser,
+                          a->cmd, a->nodeid, a->dsh_sopt);
 
     /* 
      * Copy stdout/stderr to local stdout/stderr, 
@@ -812,7 +812,7 @@ static void *_rsh_thread(void *args)
                 else
                     err("%p: %S: xpoll: %m\n", a->host);
                 result = DSH_FAILED;
-                mod_rcmd_signal (a->rcmd, SIGTERM);
+                rcmd_signal (a->rcmd, SIGTERM);
                 break;
             }
 
@@ -848,7 +848,7 @@ static void *_rsh_thread(void *args)
     _flush_output (a->outbuf, (out_f) out, a);
     _flush_output (a->errbuf, (out_f) err, a);
 
-    rv = mod_rcmd_destroy (a->rcmd);
+    rv = rcmd_destroy (a->rcmd);
     if ((a->rc == 0) && (rv > 0))
         a->rc = rv;
 
@@ -1001,7 +1001,7 @@ int dsh(opt_t * opt)
     /*
      *   Initialize rcmd modules...
      */
-    if (mod_rcmd_init(opt) < 0) {
+    if (rcmd_init(opt) < 0) {
         err("%p: unable to initialize an rcmd module\n");
 		exit(1);
     }

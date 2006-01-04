@@ -37,8 +37,8 @@ PDSH_SOURCES = \
     dsh.h \
     mod.c \
     mod.h \
-    mod_rcmd.c \
-    mod_rcmd.h \
+    rcmd.c \
+    rcmd.h \
     opt.c \
     opt.h \
     pcp_server.c \
