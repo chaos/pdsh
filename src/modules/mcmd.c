@@ -205,10 +205,10 @@ mcmd_init(opt_t * opt)
     int rv, rand_fd;
 
     /*
-     * Drop elevated permissions if we have them.
+     * Drop privileges if running setuid root
      */
-    setuid(getuid());
-    setgid(getgid());
+    if ((geteuid() == 0) && (getuid() != 0))
+        setuid (getuid ());
 
     /*
      * Generate a random number to send in our package to the 
@@ -288,7 +288,7 @@ encode_localhost_string (const char *host, char *str, int maxlen)
  * Connection can time out.
  *      ahost (IN)              target hostname
  *      addr (IN)               4 byte internet address
- *      locuser (IN)            not used 
+ *      locuser (IN)            local username
  *      remuser (IN)            remote username
  *      cmd (IN)                remote command to execute under shell
  *      rank (IN)               not used 

@@ -159,20 +159,13 @@ static int mod_ssh_postop(opt_t *opt)
     return 0;
 }
 
-
-static void
-_drop_privileges()
-{
-    setuid(getuid());
-    setgid(getgid());
-}
-
 static int sshcmd_init(opt_t * opt)
 {
     /*
-     * Drop privileges if we're running setuid
+     * Drop privileges if running setuid root
      */
-    _drop_privileges();
+    if ((geteuid() == 0) && (getuid() != 0))
+        setuid (getuid ());
 
     return 0;
 }

@@ -12,6 +12,9 @@
 	* src/modules/xrcmd.c, src/modules/qcmd.c, src/modules/k4cmd.c :
 	  Use priv_rresvport() instead of rresvport().
 
+	* src/modules/mcmd.c, src/modules/sshcmd.c, src/modules/mqcmd.c :
+	  If running with effective uid 0, and real user id is not also 0,
+	  drop all privileges (as a sanity check).
 
 2006-01-04  Mark Grondona <mgrondona@llnl.gov>
 

@@ -296,13 +296,6 @@ static int mqcmd_postop(opt_t *opt)
 static int
 _mqcmd_opt_init(opt_t *opt)
 {
-
-    /*
-     * Drop elevated permissions if we have them.
-     */
-    setuid(getuid());
-    setgid(getgid());
-
     if (opt->fanout == DFLT_FANOUT && opt->wcoll != NULL)
         opt->fanout = hostlist_count(opt->wcoll);
     else {
@@ -328,6 +321,12 @@ static int mqcmd_init(opt_t * opt)
 {
     int totprocs = nprocs * hostlist_count(opt->wcoll);
     int rv, rand_fd;
+
+    /*
+     * Drop privileges if running setuid root
+     */
+    if ((geteuid() == 0) && (getuid() != 0))
+        setuid (getuid ());
 
     /*
      *  Verify constraints for running Elan jobs
