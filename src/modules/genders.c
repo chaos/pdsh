@@ -383,6 +383,8 @@ _genders_to_hostlist(genders_t gh, char **nodes, int nnodes)
             err("%p: warning: target `%s' not parsed: %m\n", nodes[i]);
     }
 
+    hostlist_uniq(hl);
+
     return hl;
 }
 

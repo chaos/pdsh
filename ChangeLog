@@ -16,6 +16,9 @@
 	  If running with effective uid 0, and real user id is not also 0,
 	  drop all privileges (as a sanity check).
 
+	* src/modules/genders.c : Add hostlist_uniq() after converting genders
+	  nodelist to hostlist format. 
+
 2006-01-04  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/rcmd.c, src/pdsh/rcmd.h : Added a new rcmd module
