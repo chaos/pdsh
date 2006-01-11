@@ -58,7 +58,7 @@ static int create_socketpair (void)
 {
 	int pfds[2];
 
-	if (socketpair (AF_LOCAL, SOCK_STREAM, 0, pfds) < 0) {
+	if (socketpair (AF_UNIX, SOCK_STREAM, 0, pfds) < 0) {
 		err ("%p: socketpair failed in privilege separation: %m\n");
 		return -1;
 	}
