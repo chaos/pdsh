@@ -1,3 +1,14 @@
+2006-01-11  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/privsep.c, src/pdsh/privsep.h, src/pdsh/main.c : 
+	  Add "privilege separation" capability to pdsh to support safely
+	  running rsh/mqshell and mrsh/ssh/etc. together in the same process.
+	  During initialization, if pdsh detects it is running setuid, 
+	  a child process is forked to retain elevated privileges, while
+	  pdsh swaps effective uid back to that of the user for the remainder
+	  of the run. The privileged process is used to bind reserved ports 
+	  on behalf of pdsh.
+
 2006-01-04  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/rcmd.c, src/pdsh/rcmd.h : Added a new rcmd module

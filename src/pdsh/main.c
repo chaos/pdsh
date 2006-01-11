@@ -51,6 +51,7 @@
 #include "opt.h"
 #include "mod.h"
 #include "pcp_server.h"
+#include "privsep.h"
 
 extern const char *pdsh_module_dir;
 
@@ -65,6 +66,12 @@ int main(int argc, char *argv[])
      * Initialize.
      */
     err_init(xbasename(argv[0]));       /* init err package */
+
+    /*
+     *  If running setuid, fork a child to handle 
+     *   all privileged operations and drop privs in this process.
+     */
+    privsep_init();
 
     /*
      * Seed options with default values:
@@ -105,6 +112,7 @@ int main(int argc, char *argv[])
     /*
      * Clean up.
      */
+    privsep_fini();
     opt_free(&opt);             /* free heap storage in opt struct */
     err_cleanup();
 
