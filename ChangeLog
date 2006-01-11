@@ -9,6 +9,10 @@
 	  of the run. The privileged process is used to bind reserved ports 
 	  on behalf of pdsh.
 
+	* src/modules/xrcmd.c, src/modules/qcmd.c, src/modules/k4cmd.c :
+	  Use priv_rresvport() instead of rresvport().
+
+
 2006-01-04  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/rcmd.c, src/pdsh/rcmd.h : Added a new rcmd module

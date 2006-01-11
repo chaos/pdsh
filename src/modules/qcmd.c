@@ -106,6 +106,7 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #include "src/common/macros.h"                /* LINEBUFSIZE */
 #include "src/common/xpoll.h"
 #include "src/pdsh/mod.h"
+#include "src/pdsh/privsep.h"
 #include "src/qsnet/qswutil.h"
 
 #define QSHELL_PORT 523
@@ -413,7 +414,7 @@ qcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     sigaddset(&blockme, SIGURG);
     pthread_sigmask(SIG_BLOCK, &blockme, &oldset);
     for (timo = 1, lport = IPPORT_RESERVED - 1;;) {
-        s = rresvport(&lport);
+        s = privsep_rresvport(&lport);
         if (s < 0) {
             if (errno == EAGAIN)
                 err("%p: %S: qcmd: socket: all ports in use\n", ahost);
@@ -452,7 +453,7 @@ qcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
         lport = 0;
     } else {
         char num[8];
-        int s2 = rresvport(&lport), s3;
+        int s2 = privsep_rresvport(&lport), s3;
         socklen_t len = sizeof(from);   /* arg to accept */
 
         if (s2 < 0)

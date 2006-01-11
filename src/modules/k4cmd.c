@@ -84,6 +84,7 @@
 #include "src/common/err.h"
 #include "src/common/list.h"
 #include "src/common/xpoll.h"
+#include "src/pdsh/privsep.h"
 
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN 64
@@ -211,7 +212,7 @@ k4cmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     sigaddset(&blockme, SIGURG);
     pthread_sigmask(SIG_BLOCK, &blockme, &oldset);
     for (;;) {
-        s = rresvport(&lport);
+        s = privsep_rresvport(&lport);
         if (s < 0) {
             if (errno == EAGAIN)
                 err("%p: %S: socket: All ports in use\n", ahost);
@@ -249,7 +250,7 @@ k4cmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
         int s2, s3;
         socklen_t len = sizeof(from);
 
-        s2 = rresvport(&lport);
+        s2 = privsep_rresvport(&lport);
         if (s2 < 0) {
             goto bad;
         }
