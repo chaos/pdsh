@@ -29,10 +29,12 @@
 #endif
 
 #include <sys/types.h>
+#if HAVE_SYS_UIO_H
+#  include <sys/uio.h>
+#endif
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <stropts.h> /* I_RECVFD */
 #include <pthread.h>
 #include <stdlib.h>
 #include <netdb.h>  /* rresvport */
@@ -211,8 +213,6 @@ static int create_privileged_child (void)
 
 int privsep_init (void)
 {
-	pid_t cpid;
-
 	if (geteuid() == getuid())
 		return 0;
 

@@ -82,7 +82,7 @@ LIBS="$PTHREAD_LIBS $LIBS"
 
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h strings.h sys/file.h unistd.h features.h \
-                  pthread.h poll.h sys/poll.h sys/sysmacros.h])
+                  pthread.h poll.h sys/poll.h sys/sysmacros.h, sys/uio.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 TYPE_SOCKLEN_T

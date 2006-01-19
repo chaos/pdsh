@@ -1,3 +1,20 @@
+2006-01-19  Mark Grondona <mgrondona@llnl.gov>
+
+	* config/libtool.m4 : Update libtool.m4 to version from 1.5.22. 
+	  Fixes some problems with dlopen and dlsym on OS X.
+	
+	* configure.ac : Test for existence of sys/uio.h.
+
+	* src/pdsh/privsep.c : Need to #include <sys/uio.h> on OS X for
+	  struct iovec declaration.
+
+	* configure, aclocal.m4, Makefile.in, scripts/Makefile.in, 
+	  src/Makefile.in, src/common/Makefile.in, src/modules/Makefile.in,
+	  src/qsnet/Makefile.in, src/pdsh/Makefile.in, testsuite/Makefile.in
+	  testsuite/pdsh.test/Makefile.in, config/Makefile.in, doc/Makefile.in,
+	  etc/Makefile.in:
+	  Rerun ./bootstrap with autoconf 2.59, automake 1.9.6, libtool 1.5.22.
+
 2006-01-11  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/privsep.c, src/pdsh/privsep.h, src/pdsh/main.c : 
