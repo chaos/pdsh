@@ -98,7 +98,7 @@ static int send_rresvport (int pipefd, int fd, int lport)
 
 	memset (&msg, 0, sizeof (msg));
 
-	iov->iov_base  = &lport;
+	iov->iov_base  = (void *) &lport;
 	iov->iov_len   = sizeof (lport);
 	msg.msg_iov    = iov;
 	msg.msg_iovlen = 1;
@@ -124,7 +124,7 @@ static int send_rresvport (int pipefd, int fd, int lport)
 	return (0);
 }
 
-static int recv_rresvport (int pipefd, int *lport)
+static int recv_rresvport (int pipefd, int *lptr)
 {
 	int            fd = -1;
 	struct iovec   iov[1];
@@ -136,7 +136,7 @@ static int recv_rresvport (int pipefd, int *lport)
 
 	memset (&msg, 0, sizeof (msg));
 
-	iov->iov_base  = lport;
+	iov->iov_base  = (void *) lptr;
 	iov->iov_len   = sizeof (int);
 	msg.msg_iov    = iov;
 	msg.msg_iovlen = 1;
@@ -150,7 +150,7 @@ static int recv_rresvport (int pipefd, int *lport)
 	if (recvmsg (pipefd, &msg, 0) < 0)
 		err ("%p: privsep: recvmsg: %m\n");
 
-	if (*lport < 0)
+	if (*lptr < 0)
 		return (-1);
 
 	fd = *(int *) CMSG_DATA (cmsg);
@@ -161,15 +161,14 @@ static int recv_rresvport (int pipefd, int *lport)
 static int privsep_server (void)
 {
 	int rc;
-	char c;
+	int lport;
 	close (client_fd);
 
 	/*
 	 * for each request on server_fd create a reserved port and
 	 *   send the created fd back to the client.
 	 */
-	while ((rc = read (server_fd, &c, 1))) {
-		int lport = -1;
+	while ((rc = read (server_fd, &lport, sizeof (lport)))) {
 		int s = rresvport (&lport);
 
 		send_rresvport (server_fd, s, lport);
@@ -244,14 +243,13 @@ int privsep_fini (void)
 int privsep_rresvport (int *lport)
 {
 	int s;
-	char c = 0;
 
 	if (client_fd < 0)
 		return (rresvport (lport));
 
 	pthread_mutex_lock (&privsep_mutex);
 
-	if (write (client_fd, &c, 1) < 0) {
+	if (write (client_fd, lport, sizeof (*lport)) < 0) {
 		err ("%p: privsep: client write: %m\n");
 		return (-1);
 	}

@@ -2,6 +2,12 @@
 
 	* src/pdsh/dsh.c (_thd_init) : Initialize th->resolve_hosts.
 
+	* src/pdsh/privsep.c (privsep_rresvport, privsep_server) :
+	  Send lport argument passed to privsep_rresvport to privsep
+	  server so it can pass this value to rresvport() unchanged.
+	  This is required because lport must be initialized on some
+	  systems.
+
 2006-01-19  Mark Grondona <mgrondona@llnl.gov>
 
 	* config/libtool.m4 : Update libtool.m4 to version from 1.5.22. 
