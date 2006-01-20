@@ -1,3 +1,7 @@
+2006-01-20  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/dsh.c (_thd_init) : Initialize th->resolve_hosts.
+
 2006-01-19  Mark Grondona <mgrondona@llnl.gov>
 
 	* config/libtool.m4 : Update libtool.m4 to version from 1.5.22. 

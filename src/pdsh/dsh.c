@@ -972,6 +972,7 @@ static int _thd_init (thd_t *th, opt_t *opt, List pcp_infiles, int i)
     th->kill_on_fail = opt->kill_on_fail;
     th->outbuf = cbuf_create (64, 8192);
     th->errbuf = cbuf_create (64, 8192);
+    th->resolve_hosts = opt->resolve_hosts;
 #if	!HAVE_MTSAFE_GETHOSTBYNAME
     /* if MT-safe, do it in parallel in rsh/rcp threads */
     /* gethostbyname_r is not very portable so skip it */
