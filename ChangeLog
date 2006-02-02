@@ -1,3 +1,7 @@
+2006-02-02  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/modules/sshcmd.c : Change ssh_pid type from int to pid_t.
+
 2006-01-20  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/dsh.c (_thd_init) : Initialize th->resolve_hosts.
