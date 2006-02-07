@@ -1,3 +1,7 @@
+2006-02-07  Mark Grondona <mgrondona@llnl.gov>
+
+	* config/ltmain.sh : Remove and regenerate ltmain.sh.
+
 2006-02-02  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/sshcmd.c : Change ssh_pid type from int to pid_t.
