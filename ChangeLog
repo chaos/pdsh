@@ -1,3 +1,28 @@
+2006-02-06  Mark Grondona <mgrondona@llnl.gov>
+
+	* : Update libtool.m4 to version supplied by libtool-1.5.22.
+	    Fixes dlopen() problems on Mac OSX.
+
+2005-12-06  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/opt.c : Move processing of -x (exclude hosts by name)
+	  until after mod_postop() has been called, because mod_postop()
+	  may modify the list of target hosts.
+
+	* src/modules/sshcmd.c (_pipecmd) : Close all file descriptors >2 
+	  before exec'ing ssh, so that one ssh process' stdin doesn't remain
+	  open in a subsequently invoked ssh. We tried to do this by setting
+	  the close-on-exec flag on the fds when the socketpair was created
+	  in pdsh, but this introduces a race between when the fd is opened
+	  to when the flag is set where an ssh in another thread can be 
+	  created. Closing all fds greater than 2 should work in all cases
+	  and is simpler.
+
+2005-10-26  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/modules/xrcmd.c : Fix typo in error message "k4cmd" -> "rcmd".
+	  Patch supplied by Joe Ramey <ramey@ti.com>.
+	  
 2005-10-13  Mark Grondona <mgrondona@llnl.gov>
 
 	* : tag pdsh-2.8.

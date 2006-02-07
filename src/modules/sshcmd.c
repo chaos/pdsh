@@ -65,7 +65,6 @@
 #include "src/common/xstring.h"
 #include "src/common/err.h"
 #include "src/common/list.h"
-#include "src/common/fd.h"
 #include "src/pdsh/dsh.h"
 #include "src/pdsh/mod.h"
 
@@ -79,7 +78,7 @@
 int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
 
 struct ssh_info_struct {
-    int ssh_pid;            /* PID of ssh command         */
+    pid_t ssh_pid;          /* PID of ssh command         */
     char *target;           /* Hostname of ssh target     */
     int fd;                 /* stderr fd to ssh command for signals  */
 };
@@ -198,8 +197,19 @@ static int sshcmd_signal(int fd, void *arg, int signum)
      *  Always send SIGTERM. SIGINT doesn't seem to get forwarded by ssh, and
      *    really termination of the connection is probably the desired result.
      */
-    err ("sending SIGTERM to ssh %s pid %d\n", s->target, s->ssh_pid);
+    err ("sending SIGTERM to ssh %s pid %d\n", s->target, (int) s->ssh_pid);
     return (kill (s->ssh_pid, SIGTERM));
+}
+
+static void
+closeall (int fd)
+{
+    int fdlimit = sysconf (_SC_OPEN_MAX);
+
+    while (fd < fdlimit)
+        close (fd++);
+
+    return;
 }
 
 /*
@@ -250,6 +260,13 @@ static int _pipecmd(char *path, char *args[], const char *ahost, int *fd2p,
             }
         }
 
+        /*
+         * Try to close all stray file descriptors before invoking ssh
+         *  to ensure that ssh stdin is closed when pdcp/pdsh close their
+         *  end of the socketpair.
+         */
+        closeall (3);
+
         setsid();
         putenv("DISPLAY=");
         execvp(path, args);
@@ -260,15 +277,9 @@ static int _pipecmd(char *path, char *args[], const char *ahost, int *fd2p,
         /* parent. close sp[1], return sp[0]. */
         (void) close(sp[1]);
 
-        /*
-         * Set close on exec for sp[0] and esp[0]
-         */
-        fd_set_close_on_exec (sp[0]);
-
         if (fd2p) {
             close(esp[1]);
             *fd2p = esp[0];
-            fd_set_close_on_exec (esp[0]);
         }
 
         *spp = ssh_info_create (cpid, ahost, esp[0]);
@@ -315,7 +326,7 @@ sshcmd_destroy (struct ssh_info_struct *s)
         return 0;
 
     if (waitpid (s->ssh_pid, &status, 0) < 0)
-        err ("%p: %S: ssh pid %ld: %m\n", s->target, s->ssh_pid);  
+        err ("%p: %S: ssh pid %ld: %m\n", s->target, (long) s->ssh_pid);  
 
     if (status != 0)
         err ("%p: %s: ssh exited with exit code %d\n", 
@@ -339,7 +350,6 @@ void ssh_info_destroy (struct ssh_info_struct *s)
 {
     if (s == NULL)
         return;
-
 
     Free ((void **)&s->target);
     Free ((void **)&s);

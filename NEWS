@@ -1,6 +1,14 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
+* Changes in pdsh-2.8.1 (2006-02-06)
+====================================
+-- Fix for occasional pdsh hang when using ssh.
+-- Update libtool.m4 to fix a dlopen() issue on Mac OSX.
+-- Typo fix in rsh module (Joe Ramey <ramey@ti.com>).
+-- Process -x only after all modules' post-option methods have been run
+   in case the working collective was changed.
+
 * Changes in pdsh-2.8 (2005-10-13)
 ===================================
  -- (dshgroup) Fix bug in dshgroup module which resulted in the module

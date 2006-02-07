@@ -57,6 +57,8 @@
 static void _usage(opt_t * opt);
 static void _show_version(void);
 
+static char *exclude_buf = NULL;
+
 #define OPT_USAGE_DSH "\
 Usage: pdsh [-options] command ...\n\
 -S                return largest of remote command return values\n"
@@ -374,7 +376,6 @@ void opt_args(opt_t * opt, int argc, char *argv[])
     int c;
     extern int optind;
     extern char *optarg;
-    char *exclude_buf = NULL;
 
 #ifdef __linux
     /* Tell glibc getopt to stop eating after the first non-option arg */
@@ -504,21 +505,6 @@ void opt_args(opt_t * opt, int argc, char *argv[])
          */
         if (mod_read_wcoll(opt) < 0)
             exit(1);
-
-        /* handle -x option */
-        if (exclude_buf != NULL && opt->wcoll) {
-            /*
-             * Delete any hosts in exclude_buf from the wcoll,  
-             *  ignoring errors (except for an invalid hostlist
-             *  in exclude_buf)
-             */
-            if (hostlist_delete(opt->wcoll, exclude_buf) <= 0) {
-                if (errno == EINVAL)
-                    errx ("%p: Invalid argument to -x \"%s\"\n", exclude_buf);
-            }
-
-            Free((void **) &exclude_buf);
-        }
     }
 }
 
@@ -535,6 +521,21 @@ bool opt_verify(opt_t * opt)
      */
     if (mod_postop(opt) > 0)
         verified = false;
+
+    /* handle -x option */
+    if (!opt->pcp_server && exclude_buf && opt->wcoll) {
+        /*
+         * Delete any hosts in exclude_buf from the wcoll,  
+         *  ignoring errors (except for an invalid hostlist
+         *  in exclude_buf)
+         */
+        if (hostlist_delete(opt->wcoll, exclude_buf) <= 0) {
+            if (errno == EINVAL)
+                errx ("%p: Invalid argument to -x \"%s\"\n", exclude_buf);
+        }
+
+        Free((void **) &exclude_buf);
+    }
 
     /* can't prompt for command if stdin was used for wcoll */
     if (personality == DSH && opt->stdin_unavailable && !opt->cmd) {

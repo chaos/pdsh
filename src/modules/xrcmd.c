@@ -275,9 +275,9 @@ xrcmd(char *ahost, char *addr, char *locuser, char *remuser,
         xpfds[0].events = xpfds[1].events = XPOLLREAD;
         if (((rv = xpoll(xpfds, 2, -1)) < 0) || rv != 1 || (xpfds[0].revents > 0)) {
           if (errno != 0)
-            err("%p: %S: k4cmd: xpoll (setting up stderr): %m\n", ahost);
+            err("%p: %S: rcmd: xpoll (setting up stderr): %m\n", ahost);
           else
-            err("%p: %S: k4cmd: xpoll: protocol failure in circuit setup\n", ahost);
+            err("%p: %S: rcmd: xpoll: protocol failure in circuit setup\n", ahost);
           (void) close(s2);
           goto bad;
         }
