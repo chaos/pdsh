@@ -1,7 +1,9 @@
 2006-02-06  Mark Grondona <mgrondona@llnl.gov>
 
-	* : Update libtool.m4 to version supplied by libtool-1.5.22.
-	    Fixes dlopen() problems on Mac OSX.
+	* config/libtool.m4 : Update libtool.m4 to version supplied by 
+	  libtool-1.5.22.  Fixes dlopen() problems on Mac OSX.
+
+	* : tag pdsh-2.8.1.
 
 2005-12-06  Mark Grondona <mgrondona@llnl.gov>
 
