@@ -398,7 +398,6 @@ static int sshcmd_args_init (void)
      *  and command string and final NULL at end.
      */
     ssh_args_len = list_count (args_list) + 6;
-    fprintf (stderr, "ssh_args_len = %d\n", ssh_args_len);
     ssh_args = Malloc (ssh_args_len *  sizeof (char *));
 
     memset (ssh_args, 0, ssh_args_len);
