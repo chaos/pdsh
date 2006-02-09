@@ -1,3 +1,9 @@
+2006-02-08  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/modules/sshcmd.c : Allow arguments to ssh command to be
+	  generated at runtime, and thus overrode or appended to by
+	  new env vars PDSH_SSH_ARGS and PDSH_SSH_ARGS_APPEND.
+
 2006-02-07  Mark Grondona <mgrondona@llnl.gov>
 
 	* config/ltmain.sh : Remove and regenerate ltmain.sh.

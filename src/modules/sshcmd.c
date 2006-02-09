@@ -65,6 +65,7 @@
 #include "src/common/xstring.h"
 #include "src/common/err.h"
 #include "src/common/list.h"
+#include "src/common/split.h"
 #include "src/pdsh/dsh.h"
 #include "src/pdsh/mod.h"
 
@@ -93,6 +94,14 @@ static int sshcmd_init(opt_t *);
 static int sshcmd_signal(int, void *arg, int);
 static int sshcmd(char *, char *, char *, char *, char *, int, int *, void **);
 static int sshcmd_destroy (struct ssh_info_struct *s);
+static int sshcmd_args_init (void);
+static char **ssh_args_create (char *host, char *user, char *cmd);
+static void ssh_args_destroy (char **);
+
+
+static char **ssh_args            = NULL;
+static int    ssh_args_len        = -1;
+static int    ssh_args_host_index = -1;
 
 
 /*
@@ -158,7 +167,6 @@ static int mod_ssh_postop(opt_t *opt)
     }
     return 0;
 }
-
 static int sshcmd_init(opt_t * opt)
 {
     /*
@@ -167,11 +175,22 @@ static int sshcmd_init(opt_t * opt)
     if ((geteuid() == 0) && (getuid() != 0))
         setuid (getuid ());
 
+    sshcmd_args_init ();
+
     return 0;
 }
 
 static int mod_ssh_exit (void)
 {
+    if (ssh_args) {
+        int i;
+        for (i = 0; i < ssh_args_len; i++) {
+            if (ssh_args[i])
+                Free ((void **) &ssh_args[i]);
+        }
+        Free ((void **) &ssh_args);
+    }
+
     return 0;
 }
 
@@ -286,15 +305,13 @@ static int
 sshcmdrw(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
        int rank, int *fd2p, struct ssh_info_struct **s)
 {
-    char *prog = "ssh"; /* xbasename(_PATH_SSH); */
-    char *args[] = { 0, "-2", "-a", "-x", "-l", 0, 0, 0, 0, 0, 0 };
+    char **args = ssh_args_create (ahost, ruser, cmd);
 
-    args[0] = prog;
-    args[5] = ruser;            /* solaris cc doesn't like non constant */
-    args[6] = ahost;            /*     initializers */
-    args[7] = cmd;
+    int rc = _pipecmd("ssh", args, ahost, fd2p, s);
 
-    return _pipecmd("ssh", args, ahost, fd2p, s);
+    ssh_args_destroy (args);
+
+    return (rc);
 }
 
 static int
@@ -349,6 +366,82 @@ void ssh_info_destroy (struct ssh_info_struct *s)
     return;
 }
 
+
+static int sshcmd_args_init (void)
+{
+    int i = 0;
+    char *val = NULL;
+    char *str = NULL;
+    List args_list = NULL;
+
+    if (!(val = getenv ("PDSH_SSH_ARGS"))) 
+        val = "-2 -a -x";
+
+    str = Strdup (val);
+    args_list = list_split (" ", str);
+    Free ((void **) &str);
+
+    if ((val = getenv ("PDSH_SSH_ARGS_APPEND"))) {
+        str = Strdup (val);
+        List l = list_split (" ", str);
+        Free ((void **) &str);
+
+        while ((str = list_pop (l)))
+            list_append (args_list, str);
+
+        list_destroy (l);
+    }
+
+    /*
+     * Allocate space in ssh_args for all args in args_list
+     *  plus space for "-l user", ssh command name in arg[0],
+     *  and command string and final NULL at end.
+     */
+    ssh_args_len = list_count (args_list) + 6;
+    fprintf (stderr, "ssh_args_len = %d\n", ssh_args_len);
+    ssh_args = Malloc (ssh_args_len *  sizeof (char *));
+
+    memset (ssh_args, 0, ssh_args_len);
+
+    ssh_args[0] = Strdup ("ssh");
+    ssh_args[1] = Strdup ("-l");
+    ssh_args[2] = NULL; /* placeholder for username */
+    
+    i = 3;
+    while ((str = list_pop (args_list)))
+        ssh_args[i++] = str;
+
+    ssh_args_host_index = i;
+
+    list_destroy (args_list);
+
+    return (0);
+}
+
+
+static char **ssh_args_create (char *host, char *user, char *cmd)
+{
+    int i;
+    char **args = Malloc (ssh_args_len * sizeof (char *));
+    /*
+     * Make thread-local copy of ssh_args, so we can modify hostname
+     *  and possibly username and command.
+     */
+
+    for (i = 0; i < ssh_args_len; i++)
+        args[i] = ssh_args[i];
+
+    args[2]                     = user;           
+    args[ssh_args_host_index]   = host;          
+    args[ssh_args_host_index+1] = cmd;
+
+    return (args);
+}
+
+static void ssh_args_destroy (char **args)
+{
+    Free ((void **) &args);
+}
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
