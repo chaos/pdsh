@@ -92,7 +92,7 @@ the first module loaded wins.
 
 .SH "Standard target nodelist options"
 .TP
-.I "-w host,host,..."
+.I "-w [rcmd_type:][user@]host,host,..."
 Target the specified list of hosts. Do not use with any other
 node selection options (e.g. \fI\-a\fR, \fI\-g\fR if they are
 available). No spaces are allowed in the comma-separated list.
@@ -100,7 +100,12 @@ A list consisting of a single `-' character causes the target
 hosts to be read from stdin, one per line. The host list may 
 contain hostlist expressions of the form ``host[1-5,7]''. For
 more information about the hostlist format, see the 
-\fBHOSTLIST EXPRESSIONS\fR section below.
+\fBHOSTLIST EXPRESSIONS\fR section below. A list of hosts
+may also be preceded by "user@" to specify a remote username
+other than the default, or "rcmd_type:" to specify an alternate
+rcmd connection type for these hosts. When used together,
+the rcmd type must be specified first, e.g. "ssh:user1@host0"
+would use ssh to connect to host0 as user "user1."
 .TP
 .I "-x host,host,..."
 Exclude the specified hosts. May be specified in conjunction with
@@ -182,6 +187,21 @@ to use both rail 1 and rail 0.
 Target all nodes from machines file.
 
 .SH "genders module options"
+.LP
+In addition to the genders options presented below, the genders 
+attribute pdsh_rcmd_type may also be used in the genders database
+to specify an alternate rcmd connect type than the pdsh default
+for hosts with this attribute. For example, the following line
+in the genders file
+.nf
+
+  host0 pdsh_rcmd_type=ssh
+
+.fi
+would cause \fBpdsh\fR to use ssh to connect to host0, even if rsh were 
+the default.  This can be overridden on the commandline with the 
+"rcmd_type:host0" syntax.
+
 .TP 
 .I "-A"
 Target all nodes in genders database. The \fI-A\fR option will target
@@ -310,6 +330,15 @@ PDSH_RCMD_TYPE
 Equivalent to the \fI-R\fR option, the value of this environment 
 variable will be used to set the default rcmd module for pdsh to
 use (e.g. ssh, rsh).
+.TP
+PDSH_SSH_ARGS
+Override the standard arguments that \fBpdsh\fR passes to the
+ssh(1) command ("-2 -a -x"). 
+.TP
+PDSH_SSH_ARGS_APPEND
+Append additional options to the ssh(1) command invoked by \fBpdsh\fR.
+For example, PDSH_SSH_ARGS_APPEND="-q" would run ssh in quiet mode,
+or "-v" would increase the verbosity of ssh.
 .TP
 WCOLL
 If no other node selection option is used, the WCOLL environment

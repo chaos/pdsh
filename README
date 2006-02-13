@@ -49,6 +49,15 @@ To configure in additional feature modules:
         database must have alternate node names listed as the value of
         the "altname" attribute. 
 
+--with-dshgroups
+		Enable support of dsh-style group files in ~/.dsh/group/groupname
+		or /etc/dsh/group/groupname. Allows use of -g/-X to target
+		or exclude hosts in dsh group files.
+
+--with-netgroup
+		Enable use of netgroups (via /etc/netgroup or NIS) to build lists
+		of target hosts using -g/-X to include/exclude hosts.
+
 --with-nodeattr=/path/to/nodeattr
         Enable support of a genders database through the nodeattr(1)
         command. This is primarily for older systems that do not yet
@@ -71,7 +80,7 @@ To configure in additional feature modules:
         authentication (authentication used by mrsh). 
 
 --with-rms
-        Support running pdsh under RMS allocation.
+	 Support running pdsh under RMS allocation.
 
 --with-slurm
 	Support running pdsh under SLURM allocation.

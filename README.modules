@@ -52,7 +52,7 @@ Requires:    qsnet, munge, pdsh-mqshd (mqshell server)
 Module:      misc/genders
 Package:     pdsh-mod-genders
 Description: Provides -a,-i,-g node selection options using libgenders.
-Conflicts:   misc/nodeattr, misc/machines
+Conflicts:   misc/nodeattr, misc/machines, misc/dshgroup, misc/netgroup
 Requires:    libgenders
 
 Module:      misc/nodeattr
@@ -88,4 +88,9 @@ Requires:    slurm
 Module:      misc/dshgroup
 Package:     pdsh-mod-dshgroup
 Description: Allows list of targets to be built from dsh-style "group" files.
-Conflictls:  misc/genders
+Conflicts:   misc/genders, misc/netgroup, misc/nodeattr
+
+Module:      misc/netgroup
+Package:     pdsh-mod-netgroup
+Description: Allows list of targets to be build from netgroups.
+Conflicts:   misc/genders, misc/dshgroup, misc/nodeattr

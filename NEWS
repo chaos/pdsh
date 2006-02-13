@@ -1,6 +1,34 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
+* Changes in pdsh-2.9 (2006-02-XX)
+===================================
+ -- Add netgroup module which provides -g/-X groupname option to read
+    list of hosts from netgroup entries (/etc/netgroup or NIS).
+ -- Add support for specifying alternate rcmd connection type and/or
+    remote username for a subset of hosts on the commandline. Format
+	is ``-w [rcmd_type:][user@]hosts...''
+ -- (genders) Add support for pdsh_rcmd_type genders attribute to set
+    the default rcmd connection type for certain hosts via the genders
+	database.
+ -- Add a trivial form of privilege separation to pdsh when pdsh or pdcp 
+    binaries are installed setuid root. This is necessary to safely support 
+	multiple rcmd connection methods in a single invocation of pdsh. 
+	Currently, the privileged process in pdsh is only used to serve reserved 
+	ports to threads that need it (e.g. rsh, qsh), while allowing all threads
+	to still run as the "user" to support ssh and mrsh. This is *not*
+	a security enhancement, and doesn't make installing pdsh setuid root 
+	any more secure.
+ -- (ssh) Allow arguments to ssh command to be overridden and augmented
+    with environment variables PDSH_SSH_ARGS and PDSH_SSH_ARGS_APPEND.
+ -- Fix for race condition in ssh support which caused occasional pdsh
+    hang, especially when running with a larger fanout.
+ -- Fix for ``-x hosts'' processing bug: occasionally hosts provided to
+    -x option would not be removed from the list of targets because the
+	list of excluded hosts was being processed too early.
+ -- Fixes for Mac OSX support: Update libtool/ltmain.sh and test for
+    and include sys/uio.h.
+
 * Changes in pdsh-2.8 (2005-10-13)
 ===================================
  -- (dshgroup) Fix bug in dshgroup module which resulted in the module
