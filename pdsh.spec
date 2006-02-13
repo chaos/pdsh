@@ -1,10 +1,11 @@
 # $Id$
 
 Name: pdsh   
-Version: 2.5
-Release: 1
+Version: See META
+Release: See META
 
-Summary: Parallel remote shell program.
+Summary: Parallel remote shell program
+URL: http://www.sourceforge.net/projects/pdsh
 
 License: GPL
 Group: System Environment/Base
@@ -17,7 +18,7 @@ Requires: pdsh-rcmd
 #  defaults:
 #  enabled:  readline, rsh, ssh
 #  disabled: rms, mrsh, qshell, mqshell, genders, nodeattr, machines,
-#            nodeupdown
+#            nodeupdown, dshgroup, netgroups
 
 #  To build the various module subpackages, pass --with <pkg> on
 #   the rpmbuild command line (if your rpm is a recent enough version)
@@ -421,3 +422,7 @@ fi
 %post
 rm -f /var/cache/man/cat1/pdsh.1.*
 rm -f /var/cache/man/cat1/pdcp.1.*
+
+%changelog
+* Wed Feb  2 2006 Ben Woodard <woodard@redhat.com>
+- Modified spec file to comply with rpmlint

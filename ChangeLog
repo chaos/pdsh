@@ -1,3 +1,10 @@
+2006-02-13  Mark Grondona <mgrondona@llnl.gov>
+
+	* pdsh.spec : Modified to comply with rpmlint 
+	  (Ben Woodard <woodard@redhat.com>).
+
+	* README, README.modules, doc/pdsh.1.in, NEWS : Update documentation.
+
 2006-02-08  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/sshcmd.c : Allow arguments to ssh command to be
