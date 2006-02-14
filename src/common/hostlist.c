@@ -3,7 +3,7 @@
  *****************************************************************************
  *  $LSDId: hostlist.c,v 1.20 2005/09/13 23:32:21 grondo Exp $
  *****************************************************************************
- *  Copyright (C) 2002 The Regents of the University of California.
+ *  Copyright (C) 2002,2006 The Regents of the University of California.
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Mark Grondona <mgrondona@llnl.gov>
  *  UCRL-CODE-2002-040.

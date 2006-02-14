@@ -1,3 +1,7 @@
+2006-02-14  Mark Grondona <mgrondona@llnl.gov>
+
+	* : Update Copyright dates.
+
 2006-02-13  Mark Grondona <mgrondona@llnl.gov>
 
 	* pdsh.spec : Modified to comply with rpmlint 

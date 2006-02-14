@@ -1,9 +1,9 @@
 /*****************************************************************************\
  *  $Id$
  *****************************************************************************
- *  Copyright (C) 2001-2002 The Regents of the University of California.
+ *  Copyright (C) 2001-2006 The Regents of the University of California.
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
- *  Written by Jim Garlick <garlick@llnl.gov>.
+ *  Written by Mark Grondona <mgrondona@llnl.gov>.
  *  UCRL-CODE-2003-005.
  *  
  *  This file is part of Pdsh, a parallel remote shell program.
