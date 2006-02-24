@@ -4,6 +4,9 @@
 	  Do not strip executables on Mac OSX, this seems to remove all access 
 	  to global dynamic symbols for loaded modules.
 
+	* src/pdsh/Makefile.am, src/pdsh/Makefile.in : 
+	  Do not install pdsh/pdcp setuid root by default anymore.
+
 2006-02-14  Mark Grondona <mgrondona@llnl.gov>
 
 	* : Update Copyright dates.
