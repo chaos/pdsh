@@ -38,7 +38,13 @@ AC_DEFUN([AC_DEBUG],
   else
     if test -z "$ac_save_CFLAGS"; then
       test "$GCC" = yes && CFLAGS="-O3 -Wall -fno-strict-aliasing" || CFLAGS="-O3"
-	  LDFLAGS="${LDFLAGS--s}"
+
+      # Do not strip binaries on Mac OS X.
+      #
+	  if echo "$host" | grep -v darwin; then
+	     LDFLAGS="${LDFLAGS--s}"
+	  fi 
+
     fi
     AC_DEFINE([NDEBUG], [1],
       [Define to 1 if you are building a production release.])

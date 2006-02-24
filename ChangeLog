@@ -1,3 +1,9 @@
+2006-02-24  Mark Grondona <mgrondona@llnl.gov>
+
+	* config/ac_debug.m4, configure : 
+	  Do not strip executables on Mac OSX, this seems to remove all access 
+	  to global dynamic symbols for loaded modules.
+
 2006-02-14  Mark Grondona <mgrondona@llnl.gov>
 
 	* : Update Copyright dates.
