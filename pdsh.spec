@@ -1,16 +1,14 @@
-# $Id$
-
 Name: pdsh   
 Version: See META
 Release: See META
 
 Summary: Parallel remote shell program
-URL: http://www.sourceforge.net/projects/pdsh
 
 License: GPL
+Url: http://sourceforge.net/projects/pdsh
 Group: System Environment/Base
-Source: 
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}
+Source: http://dl.sourceforge.net/sourceforge/pdsh/pdsh-%{version}-1.tar.gz
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires: pdsh-rcmd
 
 #
@@ -77,7 +75,6 @@ Requires: pdsh-rcmd
 #
 %if %{?_with_debug:1}%{!?_with_debug:0}
   %define _enable_debug --enable-debug
-  %define __os_install_post /usr/lib/rpm/brp-compress
 %endif
 
 
@@ -99,7 +96,7 @@ remote shell services, including standard "rsh", Kerberos IV, and ssh.
 %package qshd
 Summary: Remote shell daemon for pdsh/qshell/Elan3
 Group:   System Environment/Base
-Prereq:  xinetd
+Requires:  xinetd
 %description qshd
 Remote shell service for running Quadrics Elan3 jobs under pdsh.
 Sets up Elan capabilities and environment variables needed by Quadrics
@@ -109,7 +106,7 @@ MPICH executables.
 %package mqshd
 Summary: Remote shell daemon for pdsh/mqshell/Elan3
 Group:   System Environment/Base
-Prereq:  xinetd
+Requires:  xinetd
 %description mqshd
 Remote shell service for running Quadrics Elan3 jobs under pdsh with
 mrsh authentication.  Sets up Elan capabilities and environment variables 
@@ -120,7 +117,7 @@ needed by Quadrics MPICH executables.
 # Module packages:
 #
 %package   rcmd-rsh
-Summary:   Provides bsd rcmd capability to pdsh.
+Summary:   Provides bsd rcmd capability to pdsh
 Group:     System Environment/Base
 Provides:  pdsh-rcmd
 %description rcmd-rsh
@@ -128,14 +125,14 @@ Pdsh module for bsd rcmd functionality. Note: This module
 requires that the pdsh binary be installed setuid root.
 
 %package   rcmd-ssh
-Summary:   Provides ssh rcmd capability to pdsh.
+Summary:   Provides ssh rcmd capability to pdsh
 Group:     System Environment/Base
 Provides:  pdsh-rcmd
 %description rcmd-ssh
 Pdsh module for ssh rcmd functionality.
 
 %package   rcmd-qshell
-Summary:   Provides qshell rcmd capability to pdsh.
+Summary:   Provides qshell rcmd capability to pdsh
 Group:     System Environment/Base
 Provides:  pdsh-rcmd
 Conflicts: pdsh-rcmd-mqshell
@@ -144,14 +141,14 @@ Pdsh module for running QsNet MPI jobs. Note: This module
 requires that the pdsh binary be installed setuid root.
 
 %package   rcmd-mrsh
-Summary:   Provides mrsh rcmd capability to pdsh.
+Summary:   Provides mrsh rcmd capability to pdsh
 Group:     System Environment/Base
 Provides:  pdsh-rcmd
 %description rcmd-mrsh
 Pdsh module for mrsh rcmd functionality.
 
 %package   rcmd-mqshell
-Summary:   Provides mqshell rcmd capability to pdsh.
+Summary:   Provides mqshell rcmd capability to pdsh
 Group:     System Environment/Base
 Provides:  pdsh-rcmd
 Conflicts: pdsh-rcmd-qshell
@@ -159,7 +156,7 @@ Conflicts: pdsh-rcmd-qshell
 Pdsh module for mqshell rcmd functionality.
 
 %package   mod-genders
-Summary:   Provides libgenders support for pdsh.
+Summary:   Provides libgenders support for pdsh
 Group:     System Environment/Base
 Requires:  genders >= 1.1
 Conflicts: pdsh-mod-nodeattr
@@ -168,7 +165,7 @@ Conflicts: pdsh-mod-machines
 Pdsh module for libgenders functionality.
 
 %package   mod-nodeattr
-Summary:   Provides genders support for pdsh using the nodeattr program.
+Summary:   Provides genders support for pdsh using the nodeattr program
 Group:     System Environment/Base
 Requires:  genders 
 Conflicts: pdsh-mod-genders
@@ -177,14 +174,14 @@ Conflicts: pdsh-mod-machines
 Pdsh module for genders functionality using the nodeattr program.
 
 %package   mod-nodeupdown
-Summary:   Provides libnodeupdown support for pdsh.
+Summary:   Provides libnodeupdown support for pdsh
 Group:     System Environment/Base
 Requires:  whatsup
 %description mod-nodeupdown
 Pdsh module providing -v functionality using libnodeupdown.
 
 %package   mod-rms
-Summary:   Provides RMS support for pdsh.
+Summary:   Provides RMS support for pdsh
 Group:     System Environment/Base
 Requires:  qsrmslibs
 %description mod-rms
@@ -192,7 +189,7 @@ Pdsh module providing support for gathering the list of target nodes
 from an allocated RMS resource.
 
 %package   mod-machines
-Summary:   Pdsh module for gathering list of target nodes from a machines file.
+Summary:   Pdsh module for gathering list of target nodes from a machines file
 Group:     System Environment/Base
 Conflicts: pdsh-mod-genders
 Conflicts: pdsh-mod-nodeattr
@@ -200,7 +197,7 @@ Conflicts: pdsh-mod-nodeattr
 Pdsh module for gathering list of all target nodes from a machines file.
 
 %package   mod-dshgroup
-Summary:   Provides dsh-style group file support for pdsh.
+Summary:   Provides dsh-style group file support for pdsh
 Group:     System Environment/Base
 Requires:  whatsup
 %description mod-dshgroup
@@ -208,7 +205,7 @@ Pdsh module providing dsh (Dancer's shell) style "group" file support.
 Provides -g groupname and -X groupname options to pdsh.
 
 %package   mod-netgroup
-Summary:   Provides netgroup support for pdsh.
+Summary:   Provides netgroup support for pdsh
 Group:     System Environment/Base
 Requires:  whatsup
 %description mod-netgroup
@@ -216,7 +213,7 @@ Pdsh module providing support for targeting hosts based on netgroup.
 Provides -g groupname and -X groupname options to pdsh.
 
 %package   mod-slurm
-Summary:   Provides support for running pdsh under SLURM allocations.
+Summary:   Provides support for running pdsh under SLURM allocations
 Group:     System Environment/Base
 Requires:  slurm
 %description mod-slurm
@@ -264,12 +261,9 @@ from an allocated SLURM job.
     %{?_without_netgroup} 
     
            
-if [ "$SMP" != "" ] ; then
-  (make "MAKE=make -k -j $SMP"; exit 0)
-  make
-else
-  make
-fi
+# FIXME: build fails when trying to build with _smp_mflags if qsnet is enabled
+# make %{_smp_mflags} CFLAGS="$RPM_OPT_FLAGS"
+make CFLAGS="$RPM_OPT_FLAGS"
 ##############################################################################
 
 %install
@@ -277,11 +271,15 @@ rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT
 DESTDIR="$RPM_BUILD_ROOT" make install
 if [ -x $RPM_BUILD_ROOT/%{_sbindir}/in.qshd ]; then
-   install -D -m644 etc/qshell.xinetd $RPM_BUILD_ROOT/etc/xinetd.d/qshell
+   install -D -m644 etc/qshell.xinetd $RPM_BUILD_ROOT/%{_sysconfdir}/xinetd.d/qshell
 fi
 if [ -x $RPM_BUILD_ROOT/%{_sbindir}/in.mqshd ]; then
-   install -D -m644 etc/mqshell.xinetd $RPM_BUILD_ROOT/etc/xinetd.d/mqshell
+   install -D -m644 etc/mqshell.xinetd $RPM_BUILD_ROOT/%{_sysconfdir}/xinetd.d/mqshell
 fi
+
+# 
+# Remove all module .a's as they are not needed on any known RPM platform.
+rm $RPM_BUILD_ROOT/%{_libdir}/pdsh/*.a
 
 ##############################################################################
 
@@ -292,8 +290,8 @@ rm -rf "$RPM_BUILD_ROOT"
 %files
 %defattr(-,root,root)
 %doc README ChangeLog NEWS DISCLAIMER README.KRB4 README.modules README.QsNet
-%attr(755, root, root) %{_bindir}/pdsh
-%attr(755, root, root) %{_bindir}/pdcp
+%{_bindir}/pdsh
+%{_bindir}/pdcp
 %{_bindir}/dshbak
 %{_mandir}/man1/*
 ##############################################################################
@@ -393,13 +391,13 @@ rm -rf "$RPM_BUILD_ROOT"
 %files qshd
 %defattr(-,root,root)
 %{_sbindir}/in.qshd
-/etc/xinetd.d/qshell
+%{_sysconfdir}/xinetd.d/qshell
 
 %post qshd
 if ! grep "^qshell" /etc/services >/dev/null; then
   echo "qshell            523/tcp                  # pdsh/qshell/elan3" >>/etc/services
 fi
-/etc/init.d/xinetd reload
+%{_initrddir}/xinetd reload
 
 %endif
 ##############################################################################
@@ -408,21 +406,40 @@ fi
 %files mqshd
 %defattr(-,root,root)
 %{_sbindir}/in.mqshd
-/etc/xinetd.d/mqshell
+%{_sysconfdir}/xinetd.d/mqshell
 
 %post mqshd
 if ! grep "^mqshell" /etc/services >/dev/null; then
   echo "mqshell         21234/tcp                  # pdsh/mqshell/elan3" >>/etc/services
 fi
-/etc/init.d/xinetd reload
+%{_initrddir}/xinetd reload
 
 %endif
 ##############################################################################
 
-%post
-rm -f /var/cache/man/cat1/pdsh.1.*
-rm -f /var/cache/man/cat1/pdcp.1.*
-
 %changelog
-* Wed Feb  2 2006 Ben Woodard <woodard@redhat.com>
-- Modified spec file to comply with rpmlint
+* Fri Feb 23 2006 Ben Woodard <woodard@redhat.com> 
+- changed source location to point to main site not mirror.
+
+* Thu Feb 22 2006 Ben Woodard <woodard@redhat.com>
+- removed change of attributes of pdsh and pcp in files section
+- removed .a files from packages.
+
+* Wed Feb 22 2006 Ben Woodard <woodard@redhat.com>
+- add parameters to make
+- replace etc with _sysconfdir in most places
+- remove post section with unexplained removing of cached man pages.
+- removed dots at end of all summaries.
+
+* Wed Feb 16 2006 Ben Woodard <woodard@redhat.com
+- removed dot at end of summary
+- removed unused/broken smp build
+- changed to using initrddir macro
+- changed depricated Prereq to Requires
+
+* Thu Feb 9 2006 Ben Woodard <woodard@redhat.com> 
+- add in rpmlint fixes
+- change buildroot
+
+* Wed Feb 1 2006 Ben Woodard <woodard@redhat.com> 
+- Modified spec file to fix some problems uncovered by rpmlint

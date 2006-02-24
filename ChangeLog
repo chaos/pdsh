@@ -7,6 +7,9 @@
 	* src/pdsh/Makefile.am, src/pdsh/Makefile.in : 
 	  Do not install pdsh/pdcp setuid root by default anymore.
 
+	* pdsh.spec : Apply Ben Woodard's <woodard@redhat.com> patches
+	  for Fedora acceptance.
+
 2006-02-14  Mark Grondona <mgrondona@llnl.gov>
 
 	* : Update Copyright dates.
