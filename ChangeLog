@@ -1,3 +1,14 @@
+2006-03-14  Jim Garlick <garlick@llnl.gov>
+
+	* src/modules/xcpucmd.c, config/ac_xcpu.m4 : New (experimental).
+
+	* configure.ac, config/Makefile.am, src/modules/Makefile.am : 
+	Add xcpu module support.
+
+	* src/pdsh/rcmd.c : set precedence for xcpu module.
+
+	* README.modules, NEWS : List xcpu module.
+
 2006-02-24  Mark Grondona <mgrondona@llnl.gov>
 
 	* config/ac_debug.m4, configure : 
