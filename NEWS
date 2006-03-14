@@ -28,6 +28,7 @@ documents thos changes that are of interest to users and admins.
 	list of excluded hosts was being processed too early.
  -- Fixes for Mac OSX support: Update libtool/ltmain.sh and test for
     and include sys/uio.h.
+ -- Add support for LANL XCPU.
 
 * Changes in pdsh-2.8 (2005-10-13)
 ===================================

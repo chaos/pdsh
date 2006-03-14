@@ -44,7 +44,7 @@
  *   Warning: If none of these modules are loaded, there will be no default.
  */
 static char * rcmd_rank[] = 
-    { "mrsh", "rsh", "ssh", "krb4", "qsh", "mqsh", NULL };
+    { "mrsh", "rsh", "ssh", "krb4", "qsh", "mqsh", "xcpu", NULL };
 
 struct rcmd_module {
     char *       name;

@@ -49,6 +49,12 @@ Description: Run QsNet MPI jobs with pdsh (Munge authentication)
 Conflicts:   rcmd/qsh
 Requires:    qsnet, munge, pdsh-mqshd (mqshell server)
 
+Module:      rcmd/xcpu
+Package:     pdsh-rcmd-xcpu
+Description: Rcmd connect method using XCPU
+Conflicts:   None
+Requires:    XCPU service mounted on /mnt/xcpu/<hostname>/xcpu
+
 Module:      misc/genders
 Package:     pdsh-mod-genders
 Description: Provides -a,-i,-g node selection options using libgenders.

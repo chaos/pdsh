@@ -117,6 +117,12 @@ AC_RSH
 AM_CONDITIONAL(WITH_RSH, [test "$ac_with_rsh" = "yes"]) 
 
 #
+# Test for inclusion of standard "xcpu" module
+# 
+AC_XCPU
+AM_CONDITIONAL(WITH_XCPU, [test "$ac_with_xcpu" = "yes"]) 
+
+#
 # Test for ssh
 #
 AC_SSH

@@ -60,6 +60,10 @@ if WITH_RSH
 RSH_MODULE = xrcmd.la
 endif
 
+if WITH_XCPU
+XCPU_MODULE = xcpucmd.la
+endif
+
 if WITH_SLURM
 SLURM_MODULE = slurm.la
 endif
@@ -91,6 +95,7 @@ libmods_la_DEPENDENCIES = \
 else
 pkglib_LTLIBRARIES = \
 	$(RSH_MODULE) \
+	$(XCPU_MODULE) \
 	$(SSH_MODULE) \
 	$(MRSH_MODULE) \
 	$(MQSHELL_MODULE) \
@@ -131,7 +136,8 @@ EXTRA_libmods_la_SOURCES = \
 	k4cmd.c \
 	slurm.c \
 	dshgroup.c \
-	netgroup.c
+	netgroup.c \
+	xcpucmd.c
 
 if WITH_QSW
 QSNET_LIBS = \
@@ -148,6 +154,8 @@ libmods_la_LDFLAGS = \
 
 xrcmd_la_SOURCES =        xrcmd.c 
 xrcmd_la_LDFLAGS =        $(MODULE_FLAGS)
+xcpucmd_la_SOURCES =      xcpucmd.c 
+xcpucmd_la_LDFLAGS =      $(MODULE_FLAGS)
 sshcmd_la_SOURCES =       sshcmd.c
 sshcmd_la_LDFLAGS =       $(MODULE_FLAGS)
 qcmd_la_SOURCES =         qcmd.c 

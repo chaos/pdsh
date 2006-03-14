@@ -17,6 +17,7 @@ EXTRA_DIST = \
     ac_meta.m4 \
     ac_mqshell.m4 \
     ac_mrsh.m4 \
+    ac_xcpu.m4 \
     ac_nodeattr.m4 \
     ac_nodeupdown.m4 \
     ac_pam.m4 \
