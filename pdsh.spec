@@ -345,7 +345,7 @@ rm -rf "$RPM_BUILD_ROOT"
 %if %{?_with_xcpu:1}%{!?_with_xcpu:0}
 %files rcmd-xcpu
 %defattr(-,root,root)
-%{_libdir}/pdsh/xcpu.*
+%{_libdir}/pdsh/xcpucmd.*
 %endif
 ##############################################################################
 
