@@ -1,3 +1,9 @@
+2006-03-14  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/mod.c : Remove code which only loaded pdsh modules via
+	  *.la files. This probably doesn't save much time and didn't allow
+	  us to only install .so's on some systems.
+
 2006-03-14  Jim Garlick <garlick@llnl.gov>
 
 	* src/modules/xcpucmd.c, config/ac_xcpu.m4 : New (experimental).

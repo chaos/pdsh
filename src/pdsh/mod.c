@@ -720,13 +720,6 @@ _mod_load_dynamic_modules(const char *dir, opt_t *pdsh_opts)
 
         strcpy(p, entry->d_name);
 
-        /*
-         *  As an efficiency enhancement, only attempt to open 
-         *    libtool ".la" files.
-         */
-        if (strcmp(&p[strlen(p) - 3], ".la") != 0)
-            continue;
-
         if (stat(path, &st) < 0)
             continue; 
         if (!S_ISREG(st.st_mode))
