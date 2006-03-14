@@ -15,7 +15,7 @@ Requires: pdsh-rcmd
 # Enabling and disabling pdsh options
 #  defaults:
 #  enabled:  readline, rsh, ssh
-#  disabled: rms, mrsh, qshell, mqshell, genders, nodeattr, machines,
+#  disabled: rms, mrsh, qshell, mqshell, xcpu, genders, nodeattr, machines,
 #            nodeupdown, dshgroup, netgroups
 
 #  To build the various module subpackages, pass --with <pkg> on
@@ -48,6 +48,8 @@ Requires: pdsh-rcmd
 %{expand: %def qshell without with}
 %{expand: %pdsh_with mqshell}
 %{expand: %def mqshell without with}
+%{expand: %pdsh_with xcpu}
+%{expand: %def xcpu without with}
 %{expand: %pdsh_with genders}
 %{expand: %def genders without with}
 %{expand: %pdsh_with nodeattr}
@@ -155,6 +157,13 @@ Conflicts: pdsh-rcmd-qshell
 %description rcmd-mqshell
 Pdsh module for mqshell rcmd functionality.
 
+%package   rcmd-xcpu
+Summary:   Provides xcpu rcmd capability to pdsh
+Group:     System Environment/Base
+Provides:  pdsh-xcpu
+%description rcmd-xcpu
+Pdsh module for xcpu rcmd functionality.
+
 %package   mod-genders
 Summary:   Provides libgenders support for pdsh
 Group:     System Environment/Base
@@ -253,6 +262,8 @@ from an allocated SLURM job.
     %{?_without_mrsh}       \
     %{?_with_mqshell}       \
     %{?_without_mqshell}    \
+    %{?_with_xcpu}       \
+    %{?_without_xcpu}    \
     %{?_with_slurm}         \
     %{?_without_slurm}      \
     %{?_with_dshgroups}     \
@@ -328,6 +339,13 @@ rm -rf "$RPM_BUILD_ROOT"
 %files rcmd-mqshell
 %defattr(-,root,root)
 %{_libdir}/pdsh/mqcmd.*
+%endif
+##############################################################################
+
+%if %{?_with_xcpu:1}%{!?_with_xcpu:0}
+%files rcmd-xcpu
+%defattr(-,root,root)
+%{_libdir}/pdsh/xcpu.*
 %endif
 ##############################################################################
 
