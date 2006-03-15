@@ -109,8 +109,7 @@ struct pdsh_module pdsh_module_info = {
   "xcpu",
   "Jim Garlick <garlick@llnl.gov>",
   "XCPU connect method",
-  DSH,  /* XXX no PCP because no stdin yet */
-
+  DSH | PCP,
   &xcpucmd_module_ops,
   &xcpucmd_xcpucmd_ops,
   &xcpucmd_module_options[0],
@@ -189,11 +188,11 @@ done:
 }
 
 static int
-_xcpucmd(char *hostname, char *cmd, int *fd0p, int *fd2p)
+_xcpucmd(char *hostname, char *cmd, int *fd2p)
 {
     int sid;
     FILE *fclone = NULL;
-    int fd1 = -1;
+    int fd = -1;
     char *argstr;
 
     /* Make a copy of cmd with "xcpu" prepended as arg[0].
@@ -215,10 +214,8 @@ _xcpucmd(char *hostname, char *cmd, int *fd0p, int *fd2p)
     if (writefile(hostname, sid, "ctl", "exec") == 0)
         goto done;
 
-    fd1 = openfilefd(hostname, sid, O_RDONLY, "stdout");
-    if (fd1 >= 0) {
-        if (fd0p)
-            *fd0p = openfilefd(hostname, sid, O_WRONLY, "stdin");
+    fd = openfilefd(hostname, sid, O_RDWR, "io");
+    if (fd >= 0) {
         if (fd2p)
             *fd2p = openfilefd(hostname, sid, O_RDONLY, "stderr");
     }
@@ -228,7 +225,7 @@ done:
     if (fclone)
         fclose(fclone);
         
-    return fd1; /* session goes away when fd is closed */
+    return fd; /* session goes away when fd is closed */
 }
 
 /*
@@ -250,7 +247,7 @@ xcpucmd(char *ahost, char *addr, char *locuser, char *remuser,
         err("remote user must match local user for xcpu rcmd method\n");
         return -1;
     }
-    return _xcpucmd(ahost, cmd, NULL, fd2p);
+    return _xcpucmd(ahost, cmd, fd2p);
 }
 
 /*

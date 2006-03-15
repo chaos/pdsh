@@ -59,9 +59,12 @@ the need to allocate reserved ports. In other aspects, it acts just
 like rsh.
 .TP
 krb4
-THe krb4 module allows users to execute remote commands after
+The krb4 module allows users to execute remote commands after
 authenticating with kerberos. Of course, the remote rshd daemons
 must be kerberized.
+.TP
+xcpu
+The xcpu module uses the xcpu service to execute remote commands.
 
 .SH OPTIONS
 The list of available \fBpdcp\fR options is determined at runtime

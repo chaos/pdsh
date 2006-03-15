@@ -1,3 +1,10 @@
+2006-03-15  Jim Garlick <garlick@llnl.gov>
+
+	* src/modules/xcpucmd.c : Use io session file instead of 
+	stdout and stdin session files.  Enable pdcp support.
+
+	* doc/pdsh.1.in, doc/pdcp.1.in : Describe xcpu module.
+
 2006-03-14  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/mod.c : Remove code which only loaded pdsh modules via
