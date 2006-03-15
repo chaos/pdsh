@@ -4,6 +4,8 @@
 	  *.la files. This probably doesn't save much time and didn't allow
 	  us to only install .so's on some systems.
 
+	* src/common/split.c : Include xmalloc.h for Strdup () prototype.
+
 2006-03-14  Jim Garlick <garlick@llnl.gov>
 
 	* src/modules/xcpucmd.c, config/ac_xcpu.m4 : New (experimental).
