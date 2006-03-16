@@ -642,7 +642,10 @@ _mod_load_dynamic(const char *fq_path)
     mod->filename = Strdup(info->filename);
 
     if (_is_loaded(mod->filename)) {
-        err("%p: [%s] module already loaded\n", mod->filename);
+        /* Module already loaded. This is OK, no need for
+         *   error message. (Could have already opened a .la and
+         *   we are now opening the corresponding .so 
+         */
         goto fail;
     }
   

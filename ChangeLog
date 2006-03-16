@@ -1,3 +1,9 @@
+2006-03-15  Mark Grondona <mgrondona@llnl.gov>
+	* src/pdsh/mod.c : Remove error message when loading duplicate
+	  module in pdsh. This is OK since we removed code which
+	  only loaded .la's, we could be loading corresponding .so
+	  after the .la (or vice versa).
+
 2006-03-15  Jim Garlick <garlick@llnl.gov>
 
 	* src/modules/xcpucmd.c : Use io session file instead of 
