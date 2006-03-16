@@ -4,6 +4,8 @@
 	  only loaded .la's, we could be loading corresponding .so
 	  after the .la (or vice versa).
 
+	* pdsh.spec : Remove unneeded .la and .a files in packages.
+
 2006-03-15  Jim Garlick <garlick@llnl.gov>
 
 	* src/modules/xcpucmd.c : Use io session file instead of 

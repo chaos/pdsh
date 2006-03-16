@@ -290,7 +290,8 @@ fi
 
 # 
 # Remove all module .a's as they are not needed on any known RPM platform.
-rm $RPM_BUILD_ROOT/%{_libdir}/pdsh/*.a
+rm $RPM_BUILD_ROOT/%{_libdir}/pdsh/*.a 
+rm $RPM_BUILD_ROOT/%{_libdir}/pdsh/*.la
 
 ##############################################################################
 
