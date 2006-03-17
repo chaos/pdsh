@@ -258,7 +258,7 @@ called after all other node selection options have been processed,
 and if no nodes have been selected, the module will attempt to
 read a running jobid from the SLURM_JOBID environment variable 
 (which is set when running under a SLURM allocation). If SLURM_JOBID
-references an invlalid job, it will be silently ignored.
+references an invalid job, it will be silently ignored.
 .TP
 .I "-j jobid[,jobid,...]"
 Target list of nodes allocated to the SLURM job \fIjobid\fR. This option
