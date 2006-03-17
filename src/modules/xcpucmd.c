@@ -61,7 +61,10 @@
 #include "src/pdsh/mod.h"
 #include "src/pdsh/privsep.h"
 
-#define RSH_PORT 514
+struct xcpu_info_struct {
+    char *hostname;
+    int sid;
+};
 
 #if STATIC_MODULES
 #  define pdsh_module_info xcpucmd_module_info
@@ -72,6 +75,7 @@ int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
 
 static int xcpucmd_init(opt_t *);
 static int xcpucmd_signal(int, void *, int);
+static int xcpucmd_destroy(struct xcpu_info_struct *);
 static int xcpucmd(char *, char *, char *, char *, char *, int, int *, void **); 
 
 /* 
@@ -91,7 +95,10 @@ struct pdsh_rcmd_operations xcpucmd_xcpucmd_ops = {
     (RcmdInitF)  xcpucmd_init,
     (RcmdSigF)   xcpucmd_signal,
     (RcmdF)      xcpucmd,
+    (RcmdDestroyF) xcpucmd_destroy,
 };
+
+
 
 /* 
  * Export module options
@@ -121,14 +128,10 @@ static int xcpucmd_init(opt_t * opt)
     return 0;
 }
 
-static int xcpucmd_signal(int efd, void *arg, int signum)
-{
-    /* not implemented */
-    return 0;
-} 
+#define CLONE_TMPL      "/mnt/xcpu/%s/xcpu/clone"
+#define SESSFILE_TMPL   "/mnt/xcpu/%s/xcpu/%x/%s"
 
-#define PREFIX  "/mnt/xcpu"
-#define SCRIPT  "#!/bin/bash\nexec $*\nexit 1\n"
+#define SCRIPT          "#!/bin/bash\nexec $*\nexit 1\n"
 
 static FILE *
 openclone(char *hostname, int *sidp)
@@ -136,7 +139,7 @@ openclone(char *hostname, int *sidp)
     char path[MAXPATHLEN];
     FILE *f;
 
-    sprintf(path, "%s/%s/xcpu/clone", PREFIX, hostname);
+    sprintf(path, CLONE_TMPL, hostname);
     f = fopen(path, "r");
     if (f == NULL) 
         err("%s: %m\n", path);
@@ -155,7 +158,7 @@ openfilefd(char *hostname, int sid, mode_t mode, char *name)
     char path[MAXPATHLEN];
     int fd;
 
-    sprintf(path, "%s/%s/xcpu/%x/%s", PREFIX, hostname, sid, name);
+    sprintf(path, SESSFILE_TMPL, hostname, sid, name);
     fd = open(path, mode);
     if (fd < 0)
         err("%s: %m\n", path);
@@ -170,7 +173,7 @@ writefile(char *hostname, int sid, char *name, char *data)
     FILE *f;
     int res = 0;
 
-    sprintf(path, "%s/%s/xcpu/%x/%s", PREFIX, hostname, sid, name);
+    sprintf(path, SESSFILE_TMPL, hostname, sid, name);
     f = fopen(path, "w");
     if (f == NULL) {
         err("%s: %m\n", path);
@@ -188,7 +191,7 @@ done:
 }
 
 static int
-_xcpucmd(char *hostname, char *cmd, int *fd2p)
+_xcpucmd(char *hostname, char *cmd, int *fd2p, int *sidp)
 {
     int sid;
     FILE *fclone = NULL;
@@ -224,30 +227,57 @@ done:
         Free((void **)&argstr);
     if (fclone)
         fclose(fclone);
+    if (fd >= 0)
+        *sidp = sid;
         
     return fd; /* session goes away when fd is closed */
 }
 
-/*
- * The xcpucmd call itself.
- * 	ahost (IN)	remote hostname
- *	addr (IN)	4 byte internet address
- *	locuser (IN)	local username
- *	remuser (IN)	remote username
- *	cmd (IN)	command to execute
- *	rank (IN)	MPI rank for this process
- *	fd2p (IN/OUT)	if non-NULL, open stderr backchannel on this fd
- *	s (RETURN)	socket for stdout or -1 on failure
- */
+static int 
+xcpucmd_signal(int efd, void *arg, int signum)
+{
+    char cmd[256];
+    struct xcpu_info_struct *x = (struct xcpu_info_struct *)arg;
+
+    sprintf(cmd, "signal %d", signum);
+    (void) writefile(x->hostname, x->sid, "ctl", cmd);
+
+    return 0;
+} 
+
+static int 
+xcpucmd_destroy(struct xcpu_info_struct *x)
+{
+    if (x) {
+        if (x->hostname)
+            Free((void **)&x->hostname);
+        Free((void **)&x);
+    }
+
+    /* XXX Insert retreival of exit status here when we have a wait file. */
+
+    return 0; 
+}
+
 static int
 xcpucmd(char *ahost, char *addr, char *locuser, char *remuser,
       char *cmd, int rank, int *fd2p, void **arg)
 {
+    int sid, fd;
+    struct xcpu_info_struct *x;
+
     if (strcmp(locuser, remuser) != 0) {
         err("remote user must match local user for xcpu rcmd method\n");
         return -1;
     }
-    return _xcpucmd(ahost, cmd, fd2p);
+    fd = _xcpucmd(ahost, cmd, fd2p, &sid);
+    if (fd >= 0) {
+        x = Malloc(sizeof(struct xcpu_info_struct));
+        x->hostname = Strdup(ahost);
+        x->sid = sid;
+        *arg = x;
+    }
+    return fd;
 }
 
 /*
