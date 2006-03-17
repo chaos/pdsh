@@ -131,7 +131,7 @@ static int xcpucmd_init(opt_t * opt)
 #define CLONE_TMPL      "/mnt/xcpu/%s/xcpu/clone"
 #define SESSFILE_TMPL   "/mnt/xcpu/%s/xcpu/%x/%s"
 
-#define SCRIPT          "#!/bin/bash\nexec $*\nexit 1\n"
+#define SCRIPT          "#!/bin/bash\neval $*\nexit $?\n"
 
 static FILE *
 openclone(char *hostname, int *sidp)

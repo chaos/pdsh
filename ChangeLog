@@ -1,6 +1,7 @@
 2006-03-16  Jim Garlick <garlick@llnl.gov>
 
 	* src/modules/xcpucmd.c : Add support support for signals.
+	  Change mini shell script so -S hack will work.
 
 2006-03-15  Mark Grondona <mgrondona@llnl.gov>
 	* src/pdsh/mod.c : Remove error message when loading duplicate
