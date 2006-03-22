@@ -596,16 +596,16 @@ static void *_rcp_thread(void *args)
     _int_block();               /* block SIGINT */
 
 #if	HAVE_MTSAFE_GETHOSTBYNAME
-    if (a->resolve_hosts)
+    if (a->rcmd->opts->resolve_hosts)
         _gethost(a->host, a->addr);
 #endif
     a->start = time(NULL);
     a->state = DSH_RCMD;
 
-    a->rcmd = rcmd_create (a->host, a->addr, a->luser, a->ruser, 
-                           a->cmd, a->nodeid, a->dsh_sopt);
+    rcmd_connect (a->rcmd, a->host, a->addr, a->luser, a->ruser, 
+                  a->cmd, a->nodeid, a->dsh_sopt);
 
-    if (a->rcmd == NULL || a->rcmd->fd == -1)
+    if (a->rcmd->fd == -1)
         result = DSH_FAILED;
     else {
         a->connect = time(NULL);
@@ -760,7 +760,7 @@ static void *_rsh_thread(void *args)
     a->start = time(NULL);
 
 #if	HAVE_MTSAFE_GETHOSTBYNAME
-    if (a->resolve_hosts)
+    if (a->rcmd->opts->resolve_hosts)
         _gethost(a->host, a->addr);
 #endif
     _xsignal (SIGPIPE, SIG_BLOCK);
@@ -768,14 +768,10 @@ static void *_rsh_thread(void *args)
     /* establish the connection */
     a->state = DSH_RCMD;
 
-    a->rcmd = rcmd_create(a->host, a->addr, a->luser, a->ruser,
-                          a->cmd, a->nodeid, a->dsh_sopt);
+    rcmd_connect (a->rcmd, a->host, a->addr, a->luser, a->ruser,
+                  a->cmd, a->nodeid, a->dsh_sopt);
 
-    /* 
-     * Copy stdout/stderr to local stdout/stderr, 
-     * appropriately tagged.
-     */
-    if (a->rcmd == NULL || a->rcmd->fd == -1) {
+    if (a->rcmd->fd == -1) {
         result = DSH_FAILED;    /* connect failed */
     } else {
         /* connected: update status for watchdog thread */
@@ -959,7 +955,6 @@ static int _thd_init (thd_t *th, opt_t *opt, List pcp_infiles, int i)
     th->ruser = opt->ruser;
     th->state = DSH_NEW;
     th->labels = opt->labels;
-    th->rcmd = NULL;
     th->nodeid = i;
     th->cmd = opt->cmd;
     th->dsh_sopt = opt->separate_stderr;  /* dsh-specific */
@@ -972,11 +967,13 @@ static int _thd_init (thd_t *th, opt_t *opt, List pcp_infiles, int i)
     th->kill_on_fail = opt->kill_on_fail;
     th->outbuf = cbuf_create (64, 8192);
     th->errbuf = cbuf_create (64, 8192);
-    th->resolve_hosts = opt->resolve_hosts;
+
+    th->rcmd = rcmd_create (th->host);
+
 #if	!HAVE_MTSAFE_GETHOSTBYNAME
     /* if MT-safe, do it in parallel in rsh/rcp threads */
     /* gethostbyname_r is not very portable so skip it */
-    if (opt->resolve_hosts)
+    if (th->rcmd->opts->resolve_hosts)
         _gethost(th->host, th->addr);
 #endif
 

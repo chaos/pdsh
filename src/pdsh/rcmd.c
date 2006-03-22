@@ -30,6 +30,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #include "src/common/err.h"
 #include "src/common/xmalloc.h"
@@ -47,16 +48,18 @@ static char * rcmd_rank[] =
     { "mrsh", "rsh", "ssh", "krb4", "qsh", "mqsh", "xcpu", NULL };
 
 struct rcmd_module {
-    char *       name;
-    mod_t        mod;
-    RcmdInitF    init;
-    RcmdSigF     signal;
-    RcmdF        rcmd;
-    RcmdDestroyF rcmd_destroy;
+    char *              name;
+    mod_t               mod;
+    struct rcmd_options options;
+    RcmdInitF           init;
+    RcmdSigF            signal;
+    RcmdF               rcmd;
+    RcmdDestroyF        rcmd_destroy;
 };
 
 struct node_rcmd_info {
     char *hostname;
+    char *username;
     struct rcmd_module *rmod;
 };
 
@@ -64,9 +67,10 @@ static List host_info_list = NULL;
 static List rcmd_module_list = NULL;
 
 static struct rcmd_module *default_rcmd_module = NULL;
+static struct rcmd_module *current_rcmd_module = NULL;
 
 static struct node_rcmd_info * 
-node_rcmd_info_create (char *hostname, struct rcmd_module *module)
+node_rcmd_info_create (char *hostname, char *user, struct rcmd_module *module)
 {
     struct node_rcmd_info *n = Malloc (sizeof (*n));
 
@@ -74,6 +78,7 @@ node_rcmd_info_create (char *hostname, struct rcmd_module *module)
         return NULL;
 
     n->hostname = Strdup (hostname);
+    n->username = Strdup (user);
     n->rmod     = module;
 
     return (n);
@@ -85,6 +90,8 @@ static void node_rcmd_info_destroy (struct node_rcmd_info *n)
         return;
 
     Free ((void **)&n->hostname);
+    if (n->username)
+        Free ((void **)&n->username);
     Free ((void **)&n);
 }
 
@@ -118,6 +125,8 @@ struct rcmd_module * rcmd_module_create (mod_t mod)
      */
     rmod->rcmd_destroy = (RcmdDestroyF) mod_get_rcmd_destroy (mod);
 
+    rmod->options.resolve_hosts = 1;
+
     return (rmod);
 
   fail:
@@ -140,15 +149,12 @@ static int find_host (struct node_rcmd_info *x, char *hostname)
     return (strcmp (x->hostname, hostname) == 0);
 }
 
-static struct rcmd_module * host_rcmd_module (char *host)
+static struct node_rcmd_info * host_rcmd_info (char *host)
 {
-    struct node_rcmd_info *n = NULL;
+    if (host_info_list == NULL)
+        return (NULL);
 
-    if ( host_info_list &&
-         (n = list_find_first (host_info_list, (ListFindF) find_host, host)))
-        return (n->rmod);
-
-    return (default_rcmd_module);
+    return (list_find_first (host_info_list, (ListFindF) find_host, host));
 }
 
 static struct rcmd_module * rcmd_module_register (char *name)
@@ -182,7 +188,8 @@ static struct rcmd_module * rcmd_module_register (char *name)
     return (rmod);
 }
 
-static int hostlist_register_rcmd (const char *hosts, struct rcmd_module *rmod)
+static int hostlist_register_rcmd (const char *hosts, struct rcmd_module *rmod,
+                                   char *user)
 {
     hostlist_t hl = hostlist_create (hosts);
     char * host;
@@ -204,7 +211,7 @@ static int hostlist_register_rcmd (const char *hosts, struct rcmd_module *rmod)
         if (list_find_first (host_info_list, (ListFindF) find_host, host))
             continue;
 
-        if ((n = node_rcmd_info_create (host, rmod)) == NULL)
+        if ((n = node_rcmd_info_create (host, user, rmod)) == NULL)
             errx ("Failed to create rcmd info for host \"%s\"\n", host);
 
         list_append (host_info_list, n);
@@ -222,6 +229,7 @@ static int hostlist_register_rcmd (const char *hosts, struct rcmd_module *rmod)
 /*
  * Walk through list of default candidate modules, starting at head,
  *   and return the first module that is loaded.
+ *   Unless rcmd_default_module is already registered.
  */
 char * rcmd_get_default_module (void)
 {
@@ -229,20 +237,29 @@ char * rcmd_get_default_module (void)
     int i = 0;
     const char *name = NULL;
 
+    if (default_rcmd_module != NULL)
+        return (default_rcmd_module->name);
+
     while ((name = rcmd_rank[i++]) && !mod) 
         mod = mod_get_module ("rcmd", name);
 
     return mod ? mod_get_name (mod) : NULL;
 }
 
-int rcmd_register_default_module (char *hosts, char *rcmd_name)
+int rcmd_register_default_rcmd (char *rcmd_name)
+{
+    struct rcmd_module *rmod = NULL;
+    if (!(rmod = rcmd_module_register (rcmd_name)))
+        return (-1);
+    default_rcmd_module = rmod;
+    return (0);
+}
+
+int rcmd_register_defaults (char *hosts, char *rcmd_name, char *user)
 {
     struct rcmd_module *rmod = NULL;
 
-    if (rcmd_name == NULL)
-        rcmd_name = rcmd_get_default_module ();
-
-    if (!(rmod = rcmd_module_register (rcmd_name)))
+    if (rcmd_name && !(rmod = rcmd_module_register (rcmd_name)))
         return (-1);
 
     /*  If host list is NULL, we are registering a new global default
@@ -253,25 +270,26 @@ int rcmd_register_default_module (char *hosts, char *rcmd_name)
         return (0);
     }
 
-    if (hostlist_register_rcmd (hosts, rmod) < 0)
+    if (hostlist_register_rcmd (hosts, rmod, user) < 0)
         return (-1);
 
     return (0);
 }
 
 
-struct rcmd_info * rcmd_info_create (int fd, int efd, struct rcmd_module *rmod,
-                                     void *arg)
+struct rcmd_info * rcmd_info_create (struct rcmd_module *rmod)
 {
     struct rcmd_info *r = Malloc (sizeof (*r));
 
     if (r == NULL)
         return (NULL);
 
-    r->fd = fd;
-    r->efd = efd;
+    r->fd = -1;
+    r->efd = -1;
     r->rmod = rmod;
-    r->arg = arg;
+    r->opts = &rmod->options;
+    r->arg = NULL;
+    r->ruser = NULL;
 
     return (r);
 }
@@ -281,32 +299,47 @@ void rcmd_info_destroy (struct rcmd_info *r)
     Free ((void **) &r);
 }
 
-
-struct rcmd_info * rcmd_create (char *ahost, char *addr, char *locuser,
-                                char *remuser, char *cmd, int nodeid, 
-                                bool error_fd)
+struct rcmd_info * rcmd_create (char *host)
 {
-    int fd, efd = -1;
-    void *arg;
     struct rcmd_info *rcmd = NULL;
     struct rcmd_module *rmod = NULL;
+    struct node_rcmd_info *n = NULL;
 
-    if ((rmod = host_rcmd_module (ahost)) == NULL)
-        return (NULL);
+    if ((n = host_rcmd_info (host))) {
+        rmod = n->rmod;
+    } 
 
-    fd = (*rmod->rcmd) (ahost, addr, locuser, remuser, cmd, nodeid, 
-                        error_fd ? &efd : NULL, &arg);
-
-    if (fd < 0)
-        return (NULL);
+    /* 
+     * If no rcmd module use default
+     */
+    if (rmod == NULL)
+        rmod = default_rcmd_module;
     
-    if ((rcmd = rcmd_info_create (fd, efd, rmod, arg)) == NULL) {
-        err ("%p: Unable to create rcmd info for \"%s\"\n", ahost);
-        (*rmod->rcmd_destroy) (arg);
+    if ((rcmd = rcmd_info_create (rmod)) == NULL) {
+        err ("%p: Unable to allocate rcmd info for \"%s\"\n", host);
         return (NULL);
     }
 
+    if (n != NULL && n->username)
+        rcmd->ruser = n->username;
+
     return (rcmd);
+}
+
+
+int rcmd_connect (struct rcmd_info *rcmd, char *ahost, char *addr, 
+                  char *locuser, char *remuser, char *cmd, int nodeid, 
+                  bool error_fd)
+{
+    /*
+     *  rcmd->ruser overrides default
+     */
+    if (rcmd->ruser)
+        remuser = rcmd->ruser;
+
+    rcmd->fd = (*rcmd->rmod->rcmd) (ahost, addr, locuser, remuser, cmd, nodeid, 
+                                    error_fd ? &rcmd->efd : NULL, &rcmd->arg);
+    return (rcmd->fd);
 }
 
 int rcmd_destroy (struct rcmd_info *rcmd)
@@ -330,19 +363,25 @@ int rcmd_signal (struct rcmd_info *rcmd, int signum)
     return (*rcmd->rmod->signal) (rcmd->efd, rcmd->arg, signum);
 }
 
+
 int rcmd_init (opt_t *opt)
 {
     struct rcmd_module *r = NULL;
     ListIterator i;
 
     if (!rcmd_module_list) {
+        current_rcmd_module = default_rcmd_module;
         (*default_rcmd_module->init) (opt);
+        current_rcmd_module = NULL;
         return (0);
     }
 
     i = list_iterator_create (rcmd_module_list);
-    while ((r = list_next (i)))
+    while ((r = list_next (i))) {
+        current_rcmd_module = r;
         (*r->init) (opt);
+        current_rcmd_module = NULL;
+    }
 
     list_iterator_destroy (i);
 
@@ -355,6 +394,25 @@ int rcmd_exit (void)
         list_destroy (host_info_list);
     if (rcmd_module_list)
         list_destroy (rcmd_module_list);
+
+    return (0);
+}
+
+int rcmd_opt_set (int id, void * value)
+{
+    if (current_rcmd_module == NULL) {
+        errno = ESRCH;
+        return (-1);
+    }
+
+    switch (id) {
+        case RCMD_OPT_RESOLVE_HOSTS: 
+            current_rcmd_module->options.resolve_hosts = (int) value;
+            break;
+        default:
+            errno = EINVAL;
+            return (-1);
+    }
 
     return (0);
 }

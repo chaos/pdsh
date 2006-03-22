@@ -548,7 +548,7 @@ register_genders_rcmd_types (opt_t *opt)
             rc = attrval_by_altname (gh, host, rcmd_attr, val, sizeof (val));
 
         if (rc > 0) 
-            rcmd_register_default_module (host, val);
+            rcmd_register_defaults (host, val, NULL);
 
         free (host);
     }

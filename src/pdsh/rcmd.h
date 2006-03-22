@@ -29,29 +29,57 @@
 
 #include "opt.h"
 
-struct rcmd_info {
-	int fd;
-	int efd;
-	struct rcmd_module *rmod;
-	void *arg;
+struct rcmd_options {
+	bool resolve_hosts;
 };
 
+#define RCMD_OPT_RESOLVE_HOSTS 0x1
+
+struct rcmd_info {
+	int                   fd;
+	int                   efd;
+	struct rcmd_module   *rmod;
+	struct rcmd_options  *opts;
+	char                 *ruser;
+	void                 *arg;
+};
+
+
 /*
- *  Register a new default rcmd connect module for the hosts in
- *   string "hosts".
+ *  Register default rcmd parameters for hosts in hostlist string "hosts." 
+ *    rcmd_type - if non-NULL set default rcmd connect module for "hosts."
+ *    user      - if non-NULL set default remote username for "hosts."
+ *
+ *  The first call to this function "wins," i.e. later calls to register
+ *   will not override existing defaults. This is done because currently
+ *   in pdsh, command line options are processed *before* configuration
+ *   type files (i.e. genders) since these files are processed by pdsh
+ *   modules.
  */
-int rcmd_register_default_module (char *hosts, char *rcmd_type);
+int rcmd_register_defaults (char *hosts, char *rcmd_type, char *user);
+
+/*
+ *  Register default rcmd type
+ */
+int rcmd_register_default_rcmd (char *rcmd_name);
 
 /*
  *  Return default rcmd module name.
  */
 char * rcmd_get_default_module (void);
 
+
 /*
- *  Create rcmd connect info structure for a given host
+ *  Create and rcmd_info object for specified host
  */
-struct rcmd_info * rcmd_create (char *host, char *addr, char *locuser, 
-		                        char *remuser, char *cmd, int nodeid, bool err);
+struct rcmd_info * rcmd_create (char *host);
+
+/*
+ *  Connect using rcmd_info rcmd 
+ */
+int rcmd_connect (struct rcmd_info *rcmd, char *host, char *addr, 
+                  char *locuser, char *remuser, char *cmd, int nodeid, 
+		  bool err);
 
 /*
  *  Destroy rcmd connections
@@ -59,7 +87,7 @@ struct rcmd_info * rcmd_create (char *host, char *addr, char *locuser,
 int rcmd_destroy (struct rcmd_info *);
 
 /*
- *  Send a signal of the specified remote connection
+ *  Send a signal over the specified remote connection
  */
 int rcmd_signal (struct rcmd_info *, int signum);
 
@@ -69,5 +97,14 @@ int rcmd_init (opt_t *opt);
  *  Free all rcmd module information.
  */
 int rcmd_exit (void);
+
+/*
+ *  Called by rcmd module during "init" function to set various 
+ *   rcmd-specific options. (see rcmd_options structure above)
+ *  
+ *  Returns -1 with errno set to ESRCH if called from anywhere but
+ *   module's rcmd_init function. 
+ */
+int rcmd_opt_set (int id, void * value);
 
 #endif /* !_HAVE_RCMD_H */

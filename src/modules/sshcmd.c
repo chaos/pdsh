@@ -154,16 +154,6 @@ static int mod_ssh_postop(opt_t *opt)
             err("%p: Cannot specify -t with \"-R ssh\"\n");
             return 1;
         }
-
-        /*
-         *  Don't need hostname resolution for ssh
-         */
-        opt->resolve_hosts = false;
-
-        /*
-         * Set the signal mask for the "main" thread to block
-         *  SIGCHLD so the ssh_reaper can collect exit codes 
-         */
     }
     return 0;
 }
@@ -176,6 +166,12 @@ static int sshcmd_init(opt_t * opt)
         setuid (getuid ());
 
     sshcmd_args_init ();
+
+    /*
+     *  Do not resolve hostnames in pdsh when using ssh
+     */
+    if (rcmd_opt_set (RCMD_OPT_RESOLVE_HOSTS, 0) < 0)
+        errx ("%p: sshcmd_init: rcmd_opt_set: %m\n");
 
     return 0;
 }

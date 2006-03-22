@@ -481,7 +481,7 @@ void opt_args(opt_t * opt, int argc, char *argv[])
      */
     if (opt->rcmd_name == NULL)
         opt->rcmd_name = Strdup(rcmd_get_default_module ());
-    if (rcmd_register_default_module(NULL, opt->rcmd_name) < 0)
+    if (rcmd_register_default_rcmd(opt->rcmd_name) < 0)
         exit(1);
 
     /* DSH: build command */
@@ -629,31 +629,6 @@ bool opt_verify(opt_t * opt)
 #define ALLOCSTR(x)	(x == ALLOC_BLOCK ? "ALLOC_BLOCK" : \
 			  (x == ALLOC_CYCLIC ? "ALLOC_CYCLIC" : "<Unknown>"))
 
-static char * _list_join(const char *sep, List l)
-{
-    char *str = NULL;
-    char *result = NULL;
-    ListIterator i;
-        
-    if (list_count(l) == 0)
-        return NULL;
-        
-    i = list_iterator_create(l);
-    while ((str = list_next(i))) {
-        char buf[1024];
-        snprintf(buf, 1024, "%s%s", str, sep); 
-        xstrcat(&result, buf);
-    }
-    list_iterator_destroy(i);
-
-    /* 
-     * Delete final separator
-     */
-    result[strlen(result) - strlen(sep)] = '\0';
-
-    return result;
-}
-
 /*
  * List the current options.
  *	opt (IN)	option list
@@ -673,7 +648,7 @@ void opt_list(opt_t * opt)
         out("Command:		%s\n", STRORNULL(opt->cmd));
     } else {
         out("-- PCP-specific options --\n");
-        infile_str = _list_join(", ", opt->infile_names);
+        infile_str = list_join(", ", opt->infile_names);
         if (infile_str) {
             out("Infile(s)		%s\n", infile_str);
             Free((void **) &infile_str);
@@ -756,7 +731,7 @@ static char * _module_list_string(char *type)
         return NULL;
 
     l = mod_get_module_names(type);
-    names = _list_join(",", l);
+    names = list_join(",", l);
     list_destroy(l);
 
     return names;
@@ -832,23 +807,38 @@ static void _show_version(void)
 }
 
 /*
- *  Take a string `hosts' possibly of form "rcmd_type:hostlist" and
+ *  Take a string `hosts' possibly of form "rcmd_type:user@hostlist" and
  *    place the hostlist part of the string in *hptr and the rcmd part
  *    of the string in rptr. Returns nonzero if an rcmd_type was found,
  *    zero otherwise (in which case rptr is not touched).
  */
-static int get_host_rcmd_type (char *hosts, char **rptr, char **hptr)
+static int get_host_rcmd_type (char *hosts, char **rptr, char **hptr, 
+                               char **uptr)
 {
-    if (!(*hptr = strchr (hosts, ':'))) {
-        *hptr = hosts;
-        return (0);
+    char *p = hosts;
+    char *q;
+    *uptr = NULL;
+    *rptr = NULL;
+    *hptr = hosts;
+
+    p = strchr (hosts, ':');
+    q = strchr (hosts, '@');
+
+    if (p && q && p > q)
+        errx ("Host spec \"%s\" not of form [rcmd_type:][user@]hosts\n", hosts);
+
+    if (p) {
+        *rptr = *hptr;
+        *p++ = '\0';
+        *hptr = p;
     }
 
-    /* 
-     *  Nullify ':' and advance hptr to host part of string
-     */
-    *(*hptr)++ = '\0';
-    *rptr = hosts;
+    if (q) {
+        *uptr = *hptr;
+        *q++ = '\0';
+        *hptr = q;
+    }
+
     return (1);
     
 }
@@ -856,39 +846,34 @@ static int get_host_rcmd_type (char *hosts, char **rptr, char **hptr)
 
 static void wcoll_append (opt_t *opt, char *str)
 {
-    List l = list_split (",", str);
-    ListIterator i;
+    hostlist_t  hl = hostlist_create (str);
     char *rcmd_type = NULL;
     char *tok;
 
-    if (!l)
+    if (!hl)
         return;
 
     if (!opt->wcoll)
         opt->wcoll = hostlist_create (NULL);
 
-    i = list_iterator_create (l);
+    while ((tok = hostlist_pop (hl))) {
+        char *hosts, *user;
 
-    while ((tok = list_next (i))) {
-        char *hosts;
-
-        get_host_rcmd_type (tok, &rcmd_type, &hosts);
+        get_host_rcmd_type (tok, &rcmd_type, &hosts, &user);
 
         hostlist_push (opt->wcoll, hosts);
 
-        if (rcmd_type) {
-            if (rcmd_register_default_module (hosts, rcmd_type) < 0)
+        if (rcmd_type || user) {
+            if (rcmd_register_defaults (hosts, rcmd_type, user) < 0)
                 errx ("Failed to register rcmd module \"%s\" for hosts \"%s\"\n",
                       rcmd_type, hosts);
         }
-
     }
 
-    list_destroy (l);
+    hostlist_destroy (hl);
 
     return;
 }
-
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
