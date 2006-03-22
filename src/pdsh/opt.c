@@ -856,7 +856,7 @@ static void wcoll_append (opt_t *opt, char *str)
     if (!opt->wcoll)
         opt->wcoll = hostlist_create (NULL);
 
-    while ((tok = hostlist_pop (hl))) {
+    while ((tok = hostlist_shift (hl))) {
         char *hosts, *user;
 
         get_host_rcmd_type (tok, &rcmd_type, &hosts, &user);
