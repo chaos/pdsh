@@ -11,6 +11,8 @@
 	* testsuite/pdsh.test/pdsh.exp :
 	  Add test for "," in host range. Increase version number.
 
+	* pdsh.spec : Add COPYING to docs. Remove -n from %setup.
+
 2006-03-21  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/main.c (_interactive_dsh) : 

@@ -234,7 +234,7 @@ from an allocated SLURM job.
 ##############################################################################
 
 %prep
-%setup -n %{name}-%{version}-%{release}
+%setup
 ##############################################################################
 
 %build
@@ -301,7 +301,8 @@ rm -rf "$RPM_BUILD_ROOT"
 
 %files
 %defattr(-,root,root)
-%doc README ChangeLog NEWS DISCLAIMER README.KRB4 README.modules README.QsNet
+%doc COPYING README ChangeLog NEWS DISCLAIMER 
+%doc README.KRB4 README.modules README.QsNet
 %{_bindir}/pdsh
 %{_bindir}/pdcp
 %{_bindir}/dshbak
@@ -444,7 +445,7 @@ fi
 - removed change of attributes of pdsh and pcp in files section
 - removed .a files from packages.
 
-* Wed Feb 22 2006 Ben Woodard <woodard@redhat.com>
+* Wed Feb 22 2006 Ben Woodard <woodard@redhat.com> 
 - add parameters to make
 - replace etc with _sysconfdir in most places
 - remove post section with unexplained removing of cached man pages.
