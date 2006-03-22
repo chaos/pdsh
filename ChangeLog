@@ -1,4 +1,8 @@
 2006-03-21  Mark Grondona <mgrondona@llnl.gov>
+	* src/common/split.c, src/common/split.h, src/pdsh/opt.c : 
+	  Move list_join() from pdsh/opt.c to common/split.c.
+
+2006-03-21  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/main.c (_interactive_dsh) : 
 	  Add support for command history in interactive mode when using 

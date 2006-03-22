@@ -1,5 +1,5 @@
 /*****************************************************************************\
- *  $Id: err.c 868 2004-06-23 16:42:11Z grondo $
+ *  $Id$
  *****************************************************************************
  *  Copyright (C) 2006 The Regents of the University of California.
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
@@ -29,5 +29,7 @@
 #include "list.h"
 
 List list_split (char *sep, char *str);
+
+char * list_join (const char *sep, List l);
 
 #endif /* !_SPLIT_H */

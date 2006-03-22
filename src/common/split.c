@@ -88,3 +88,31 @@ List list_split(char *sep, char *str)
 }
 
 
+char * list_join(const char *sep, List l)
+{
+    char *str = NULL;
+    char *result = NULL;
+    ListIterator i;
+        
+    if (list_count(l) == 0)
+        return NULL;
+        
+    i = list_iterator_create(l);
+    while ((str = list_next(i))) {
+        char buf[1024];
+        snprintf(buf, 1024, "%s%s", str, sep); 
+        xstrcat(&result, buf);
+    }
+    list_iterator_destroy(i);
+
+    /* 
+     * Delete final separator
+     */
+    result[strlen(result) - strlen(sep)] = '\0';
+
+    return result;
+}
+
+/* vi: ts=4 sw=4 expandtab
+ */
+
