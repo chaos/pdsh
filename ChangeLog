@@ -1,3 +1,10 @@
+2006-03-21  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/main.c (_interactive_dsh) : 
+	  Add support for command history in interactive mode when using 
+	  readline.  History file is placed in ~/.pdsh/history. 
+	  Original patch from Sebastien Cabaniols <Sebastian.Cabaniols@hp.com>.
+
 2006-03-16  Jim Garlick <garlick@llnl.gov>
 
 	* src/modules/xcpucmd.c : Add support support for signals.

@@ -31,6 +31,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <sys/types.h>
+#include <sys/param.h>
 #if	HAVE_UNISTD_H
 #include <unistd.h>             /* setuid */
 #endif
@@ -42,6 +43,9 @@
 #if	HAVE_READLINE
 #include <readline/readline.h>
 #include <readline/history.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #endif
 
 #include "src/common/err.h"
@@ -121,18 +125,128 @@ int main(int argc, char *argv[])
 
 #if	HAVE_READLINE
 
-/* Warning: Running setuid root! */
+static int _history_file_create (char *path, size_t len)
+{
+    char *      home;
+    struct stat sbuf;
+    int         fd;
+    int         rc;
+    int         n;
+
+    memset (path, 0, len);
+
+    if (!(home = getenv ("HOME"))) {
+        err ("%p: Unable to read HOME env var\n");
+        return (-1);
+    }
+
+    n = snprintf (path, len, "%s/.pdsh", home);
+    if ((n < 0) || (n >= len)) {
+        err ("%p: Unable to open %s/.pdsh: path too long\n", home);
+        return (-1);
+    }
+
+    /*  Check for ~/.pdsh directory 
+     *    and create if it does not exist
+     */
+    if (lstat (path, &sbuf) < 0) {
+        if (errno == ENOENT) {
+            if (mkdir (path, 0700) < 0) {
+                err ("%p: Unable to create ~/.pdsh: %m\n");
+                return (-1);
+            }
+        } else {
+            err ("%p: Couldn't find ~/.pdsh: %m\n");
+            return (-1);
+        }
+    } else if (!(S_ISDIR (sbuf.st_mode))) {
+        err ("%p: ~/.pdsh exists but is not a directory\n");
+        return (-1);
+    }
+
+    /*  Now should have ~/.pdsh/,
+     *    create ~/.pdsh/history if it does not exist.
+     */
+    n = snprintf (path, len, "%s/.pdsh/history", home);
+    if ((n < 0) || (n >= len)) {
+        err ("%p: Unable to open %s/.pdsh/history: path too long\n", home);
+        return (-1);
+    }
+
+    if ((fd = open (path, O_CREAT, 00600)) < 0) {
+        err ("%p: Error: Unable to create history file \"%s\": %m\n", path);
+        return (-1);
+    }
+
+    close (fd);
+
+    if ((rc = read_history (path))) {
+        err ("%p: Warning: Unable to read history file \"%s\": %s\n", 
+                path, strerror (rc));
+        return (-1);
+    }
+
+    return (0);
+}
+
+static void _history_list (void)
+{
+    HIST_ENTRY **list;
+    int          i;
+
+    if (!(list = history_list ()))
+        return;
+
+    for (i = 0; list[i]; i++) {
+        out ("%p: %d: %s\n", i + history_base, list[i]->line);
+    }
+    return;
+}
+
+/* Warning: May be running setuid root! */
 static void _interactive_dsh(opt_t * opt)
 {
     pid_t pid;
     char prompt[64];
+    char history_filename[MAXPATHLEN];
     char *cmd = NULL;
+    int got_history_file = 1;
+    int len;
 
     snprintf(prompt, sizeof(prompt), "%s> ", opt->progname);
 
-/*rl_bind_key('\t', rl_insert); *//* disable tab filename expansion */
+    using_history ();
+
+    len = sizeof (history_filename);
+
+    if (_history_file_create (history_filename, len) < 0) {
+        got_history_file = 0;
+    } 
 
     while ((cmd = readline(prompt)) != NULL) {
+        int   errnum;
+        char *expansion;
+
+        if ((errnum = history_expand (cmd, &expansion))) {
+            err ("%p: %s\n", expansion);
+        }
+
+        free (cmd);
+
+        if ((errnum < 0) || (errnum == 2)) {
+            free (expansion);
+            continue;
+        }
+
+        cmd = expansion;
+ 
+        if (!strcmp(cmd, "history")) {
+            _history_list ();
+            continue;
+        }
+
+        add_history (cmd);
+
         if (strlen(cmd) == 0) { /* empty line */
             free(cmd);
             continue;
@@ -141,7 +255,9 @@ static void _interactive_dsh(opt_t * opt)
             free(cmd);          /* quit or exit */
             break;
         }
-        add_history(cmd);
+
+        if ((strlen(cmd) != 0) && (got_history_file)) 
+            append_history (1, history_filename);
 
         /* 
          * fork dsh so we can ignore SIGINT in prompt loop 
@@ -162,7 +278,7 @@ static void _interactive_dsh(opt_t * opt)
             break;
         }
 
-        free(cmd);
+        free (cmd);
     }
 }
 
