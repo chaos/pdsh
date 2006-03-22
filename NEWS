@@ -1,6 +1,15 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
+* Changes in pdsh-2.10 (2006-03-22)
+===================================
+ -- Fix for -w hosts parsing bug.
+ -- Fix missing support for "-w user@hosts" in pdsh-2.9.
+ -- Add support for command history in interactive mode with readline.
+    Command history file is ~/.pdsh/history.
+ -- (xcpu) Support for signals and -S.
+ 
+
 * Changes in pdsh-2.9 (2006-03-15)
 ===================================
  -- Add netgroup module which provides -g/-X groupname option to read

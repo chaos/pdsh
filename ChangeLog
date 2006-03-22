@@ -13,6 +13,8 @@
 
 	* pdsh.spec : Add COPYING to docs. Remove -n from %setup.
 
+	* : tag pdsh-2.10.
+
 2006-03-21  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/main.c (_interactive_dsh) : 
