@@ -8,6 +8,9 @@
 	  to be specified in -w host spec. Add rcmd_opt_set() to
 	  allow rcmd modules to set rcmd-specific options (e.g. resolve_hosts).
 
+	* testsuite/pdsh.test/pdsh.exp :
+	  Add test for "," in host range. Increase version number.
+
 2006-03-21  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/main.c (_interactive_dsh) : 

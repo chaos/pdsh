@@ -12,7 +12,7 @@ set pdsh "$objdir/src/pdsh/pdsh"
 set test "pdsh: version (if this fails beware that testsuite is outdated)"
 spawn $pdsh -V
 expect  {
-	-re "pdsh-2.9"		        { pass "$test" }
+	-re "pdsh-2.10"		        { pass "$test" }
 	eof				{ fail "$test" }
 }
 
@@ -46,6 +46,13 @@ expect  {
 	eof	 			{ fail "$test" }
 }
 
+set test "pdsh: hostname range expansion works with ',' embedded in range"
+spawn $pdsh -Qw foo\[0-2,4\] 
+expect  {
+	-re "foo0,foo1,foo2,foo4"	{ pass "$test" }
+	eof				{ fail "$test" }
+}
+
 set test "pdsh: -x option works"
 spawn $pdsh -Qw foo\[9-11\] -x foo10
 expect  {
@@ -66,6 +73,7 @@ expect  {
 	-re "foo0,foo1,foo3,foo4,foo5"	{ pass "$test" }
 	eof				{ fail "$test" }
 }
+
 
 set test "pdsh: ranges can be embedded in wcoll files"
 spawn $pdsh -Qw-
