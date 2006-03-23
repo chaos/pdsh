@@ -131,10 +131,8 @@ static int xcpucmd_init(opt_t * opt)
 #define CLONE_TMPL      "/mnt/xcpu/%s/xcpu/clone"
 #define SESSFILE_TMPL   "/mnt/xcpu/%s/xcpu/%x/%s"
 
-#define SCRIPT          "#!/bin/bash\neval $*\nexit $?\n"
-
 static FILE *
-openclone(char *hostname, int *sidp)
+_openclone(char *hostname, int *sidp)
 {
     char path[MAXPATHLEN];
     FILE *f;
@@ -153,7 +151,7 @@ openclone(char *hostname, int *sidp)
 }
 
 static int
-openfilefd(char *hostname, int sid, mode_t mode, char *name)
+_openfilefd(char *hostname, int sid, mode_t mode, char *name)
 {
     char path[MAXPATHLEN];
     int fd;
@@ -167,7 +165,7 @@ openfilefd(char *hostname, int sid, mode_t mode, char *name)
 }
 
 static int
-writefile(char *hostname, int sid, char *name, char *data)
+_writefile(char *hostname, int sid, char *name, char *data)
 {
     char path[MAXPATHLEN];
     FILE *f;
@@ -185,9 +183,45 @@ writefile(char *hostname, int sid, char *name, char *data)
     }
     res = 1;
 done:
-    if (f)
-        fclose(f);
+    if (f) {
+        if (fclose(f) != 0)
+            res = 0;
+    }
     return res;
+}
+
+#define QUOTE  '\''
+
+#define SHCMD_TMPL    "/bin/sh -c '%s'"
+
+static char *
+_mkshcmd(char *cmd)
+{
+    char *qcmd = Malloc(2*strlen(cmd) + 1);
+    char *p, *q, *shcmd;
+
+    /* Quote cmd string Plan 9 style: ' becomes ''.
+     */
+    for (p = cmd, q = qcmd; *p != '\0'; p++) {
+        switch (*p) {
+            case QUOTE:
+                *q++ = QUOTE;
+                *q++ = QUOTE;
+                break;
+            default:
+                *q++ = *p;
+                break;
+        }
+    }
+    *q = '\0';
+
+    /* Now embed the quoted command/script in a shell command line.
+     */
+    shcmd = Malloc(strlen(SHCMD_TMPL) + strlen(qcmd) + 1);
+    sprintf(shcmd, SHCMD_TMPL, qcmd);
+    Free((void **)&qcmd);
+
+    return shcmd;
 }
 
 static int
@@ -196,31 +230,24 @@ _xcpucmd(char *hostname, char *cmd, int *fd2p, int *sidp)
     int sid;
     FILE *fclone = NULL;
     int fd = -1;
-    char *argstr;
-
-    /* Make a copy of cmd with "xcpu" prepended as arg[0].
-     */
-    argstr = Malloc(strlen(cmd) + 6);
-    sprintf(argstr, "xcpu %s", cmd);
+    char *argstr = _mkshcmd(cmd);
 
     /* Establish a session by reading its number (sid) from the clone file.
      */
-    fclone = openclone(hostname, &sid);
+    fclone = _openclone(hostname, &sid);
     if (fclone == NULL)
         goto done;
     /* don't close it yet - this preserves session */
 
-    if (writefile(hostname, sid, "exec", SCRIPT) == 0)
+    if (_writefile(hostname, sid, "argv", argstr) == 0)
         goto done;
-    if (writefile(hostname, sid, "argv", argstr) == 0)
-        goto done;
-    if (writefile(hostname, sid, "ctl", "exec") == 0)
+    if (_writefile(hostname, sid, "ctl", "lexec") == 0)
         goto done;
 
-    fd = openfilefd(hostname, sid, O_RDWR, "io");
+    fd = _openfilefd(hostname, sid, O_RDWR, "io");
     if (fd >= 0) {
         if (fd2p)
-            *fd2p = openfilefd(hostname, sid, O_RDONLY, "stderr");
+            *fd2p = _openfilefd(hostname, sid, O_RDONLY, "stderr");
     }
 done:
     if (argstr)
@@ -240,7 +267,7 @@ xcpucmd_signal(int efd, void *arg, int signum)
     struct xcpu_info_struct *x = (struct xcpu_info_struct *)arg;
 
     sprintf(cmd, "signal %d", signum);
-    (void) writefile(x->hostname, x->sid, "ctl", cmd);
+    (void) _writefile(x->hostname, x->sid, "ctl", cmd);
 
     return 0;
 } 
