@@ -1,4 +1,8 @@
-2006-03-22  Jim garlick <garlick@llnl.gov>
+2006-03-22  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/common/split.c : Fix missing headers.
+
+2006-03-22  Jim Garlick <garlick@llnl.gov>
 
 	* src/xcpucmd.c : Use new local exec facility and set args to
 	  run /bin/sh -c 'cmd'.
