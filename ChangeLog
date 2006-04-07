@@ -1,3 +1,9 @@
+2006-04-07  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/mod.c : Report more specific errors when path to
+	pdsh modules is not secure, and include the real path to the
+	directory with the permissions problem.
+
 2006-03-22  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/common/split.c : Fix missing headers.

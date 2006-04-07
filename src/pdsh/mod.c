@@ -81,6 +81,14 @@ struct module_components {
 };
 
 
+typedef enum permission_error {
+    DIR_OK,
+    DIR_NOT_DIRECTORY,
+    DIR_BAD_OWNER,
+    DIR_WORLD_WRITABLE
+} perm_error_t;
+
+
 /* 
  *  Static function prototypes:
  */
@@ -92,8 +100,8 @@ static int  _mod_load_dynamic_modules(const char *, opt_t *);
 static int  _mod_load_dynamic(const char *);
 static int  _cmp_filenames(mod_t, char *);
 static int  _is_loaded(char *filename); 
-static bool _dir_ok(struct stat *, uid_t alt_uid);
 static bool _path_permissions_ok(const char *dir, uid_t pdsh_owner);
+static perm_error_t  _dir_permission_error(struct stat *, uid_t alt_uid);
 #endif
 static void _mod_destroy(mod_t mod);
 static bool _mod_opts_ok(mod_t mod);
@@ -774,22 +782,73 @@ _is_loaded(char *filename)
     return 0;
 }
 
+static char * 
+_perm_error_string (perm_error_t error)
+{
+    switch (error) {
+        case DIR_OK: 
+            return ("Permissions are valid");
+        case DIR_NOT_DIRECTORY:
+            return ("Not a directory");
+        case DIR_BAD_OWNER:
+            return ("Owner not root, current uid, or pdsh executable owner");
+        case DIR_WORLD_WRITABLE:
+            return ("World writable and sticky bit is not set");
+        default:
+            break;
+    }
+
+    return ("Unspecified error");
+}
+
+
 /*
- *  Return true if stat struct show ownership of root or calling user,
- *    and write permissions for user and group only (unless sticky bit 
- *    is set).
+ *  Return permissions error if stat buffer shows any of the below
+ *   1. This is not a directory.
+ *   2. Ownership something other than root, the current uid, or the
+ *      same ownership as the pdsh executable.
+ *   3. Permissions are world writable and sticky bit is not set.
  */
-static bool
-_dir_ok(struct stat *st, uid_t alt_uid)
+static perm_error_t
+_dir_permission_error(struct stat *st, uid_t alt_uid)
 {
     if (!S_ISDIR(st->st_mode))
-        return false;
+        return DIR_NOT_DIRECTORY;
     if (  (st->st_uid != 0) && (st->st_uid != getuid()) 
        && (st->st_uid != alt_uid)) 
-        return false;
+        return DIR_BAD_OWNER;
     if ((st->st_mode & S_IWOTH) && !(st->st_mode & S_ISVTX))
-        return false;
-    return true;
+        return DIR_WORLD_WRITABLE;
+    return DIR_OK;
+}
+
+/*
+ *  Temprarily chdir() to path and use getcwd to return real patch
+ *   to caller. 
+ */
+static char *
+_get_dir_name (const char *path, char *buf, size_t len)
+{
+    int pathlen = 256;
+    char * orig_path = Malloc (pathlen * sizeof (char));
+
+    while (!getcwd (orig_path, pathlen) && (pathlen < MAXPATHLEN*2))
+        Realloc ((void **) &orig_path, pathlen*=2 * sizeof (char)); 
+
+    if (chdir (path) < 0)
+        errx ("Unable to chdir() to %s: %m", path);
+
+    if (!getcwd (buf, len))
+        errx ("Unable to get working directory for module path: %s\n",
+                path);
+
+    if (chdir (orig_path) < 0)
+        err ("Unable to return to original working directory: %s: %m\n",
+                orig_path);
+
+    Free ((void **) &orig_path);
+
+    return (buf);
 }
 
 /*
@@ -810,6 +869,7 @@ _path_permissions_ok(const char *dir, uid_t pdsh_owner)
     char dirbuf[MAXPATHLEN + 1];
     dev_t rootdev;
     ino_t rootino;
+    perm_error_t error;
     int pos = 0;
 
     assert(dir != NULL);
@@ -833,8 +893,12 @@ _path_permissions_ok(const char *dir, uid_t pdsh_owner)
             return false;
         }
 
-        if (!_dir_ok(&st, pdsh_owner)) {
+        if ((error = _dir_permission_error(&st, pdsh_owner)) != DIR_OK) {
+            char buf [MAXPATHLEN];
             err("%p: module path \"%s\" insecure.\n", dir);
+            err("%p: \"%s\": %s\n", 
+                _get_dir_name (dirbuf, buf, MAXPATHLEN), 
+                _perm_error_string (error)); 
             return false;
         }
 
