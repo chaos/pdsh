@@ -1,3 +1,7 @@
+2006-06-05  Jim Garlick <garlick@llnl.gov>
+
+	* doc/pdsh.1.in : fix a few typos [Chris Pepper]
+
 2006-04-07  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/mod.c : Report more specific errors when path to

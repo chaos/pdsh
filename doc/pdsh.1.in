@@ -13,24 +13,24 @@ pdsh \- issue commands to groups of hosts in parallel
 \fBpdsh\fR is a variant of the rsh(1) command. Unlike rsh(1), which runs
 commands on a single remote host, \fBpdsh\fR can run multiple remote commands
 in parallel. \fBpdsh\fR uses a "sliding window" (or \fIfanout\fR) of threads
-to conserve resources on the the initiating host while allowing some 
+to conserve resources on the initiating host while allowing some 
 connections to time out. 
 .LP
 When \fBpdsh\fR receives SIGINT (ctrl-C), it lists the status of current 
-threads. A second SIGINT within one seconds terminates the program.
+threads. A second SIGINT within one second terminates the program.
 .LP
 If a remote command is not specified on the command line, \fBpdsh\fR
 runs interactively, prompting for commands and executing them when
 terminated with a carriage return. In interactive mode, target nodes
 that time out on the first command are not contacted for subsequent
-commands, and commands prefaced with an exclamation point will be 
+commands, and commands prefixed with an exclamation point will be 
 executed on the local system.
 .LP
 The core functionality of \fBpdsh\fR may be supplemented by dynamically
-loadable modules. The modules may provide a new connect protocol
+loadable modules. The modules may provide a new connection protocol
 (replacing the standard rcmd(3) protocol used by rsh(1)), filtering
 options (e.g. removing hosts that are "down" from the target list),
-and/or host selection options (e.g. \fI\-a\fR selects all hosts from
+and/or host selection options (e.g., \fI\-a\fR selects all hosts from
 a configuration file.). By default, \fBpdsh\fR must have at least
 one "rcmd" module loaded. See the \fBRCMD MODULES\fR section for more 
 information.
@@ -406,14 +406,14 @@ are configured properly, etc.. Additionally, the connect timeout is not
 adjustable when ssh is used. Finally, there is no reliable way for
 \fBpdsh\fR to ensure that remote commands are actually terminated
 when using a command timeout. Thus if \fI-u\fR is used with \fBssh\fR
-commands may be left running on remote hosts by even after timeout
+commands may be left running on remote hosts even after timeout
 has killed local \fBssh\fR processes.
 
 Output from multiple processes per node may be interspersed when using qshell
 or mqshell rcmd modules.
 
 Hostlist parsing assumes numerical part of hostname is at the end only, 
-e.g. specifying foo[0-5]bar will not work.
+e.g., specifying foo[0-5]bar will not work.
 
 The number of nodes that \fBpdsh\fR can simultaneously execute remote
 jobs on is limited by the maximum number of threads that can be created
