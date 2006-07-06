@@ -376,6 +376,7 @@ static void wcoll_append (opt_t *opt, char *hosts);
  */
 void opt_args(opt_t * opt, int argc, char *argv[])
 {
+    int wcoll_count = 0;
     int c;
     extern int optind;
     extern char *optarg;
@@ -405,8 +406,15 @@ void opt_args(opt_t * opt, int argc, char *argv[])
         case 'w':              /* target node list */
             if (strcmp(optarg, "-") == 0)
                 opt->wcoll = read_wcoll(NULL, stdin);
-            else
-               wcoll_append(opt, optarg);
+            else { 
+                /* Throw  away contents of WCOLL file if they exist 
+                 */
+                if (!(wcoll_count++) && opt->wcoll) {
+                    hostlist_destroy (opt->wcoll);
+                    opt->wcoll = NULL;
+                }
+                wcoll_append(opt, optarg);
+            }
             break;
         case 'x':              /* exclude node list */
             exclude_buf = Strdup(optarg);

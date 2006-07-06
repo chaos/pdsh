@@ -1,3 +1,9 @@
+2006-07-06  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/opt.c : Fix bug where WCOLL hosts were unconditionally
+	  added to list of targets. Prior behavior was to have -w override
+	  WCOLL. [Reported by Fergal McCarthy].
+
 2006-06-05  Jim Garlick <garlick@llnl.gov>
 
 	* doc/pdsh.1.in : fix a few typos [Chris Pepper]
