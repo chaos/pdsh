@@ -6,6 +6,8 @@
 
 	* doc/pdsh.1.in, doc/pdcp.1.in : Update documentation.
 
+	* : tag pdsh-2.11.
+
 2006-07-18  Mark Grondona <mgrondona@llnl.gov>
 
 	* scripts/dshbak : Add new -s option to sort output. Contributed by 
