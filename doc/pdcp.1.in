@@ -21,7 +21,11 @@ nodelist option (See the \fIOPTIONS\fR section below).  Each destination
 node listed must have \fBpdcp\fR installed for the copy to succeed.
 .LP
 When \fBpdcp\fR receives SIGINT (ctrl-C), it lists the status of current
-threads.  A second SIGINT within one second terminates the program.
+threads.  A second SIGINT within one second terminates the program. Pending
+threads may be canceled by issuing ctrl-Z within one second of ctrl-C.
+Pending threads are those that have not yet been initiated, or are still
+in the process of connecting to the remote host.
+
 .LP 
 Like pdsh(1), the functionality of \fBpdcp\fR may be supplemented by
 dynamically loadable modules. In \fBpdcp\fR, the modules may provide

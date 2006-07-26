@@ -132,11 +132,17 @@ static int threadcount = 0;
  * report which hosts are blocked.
  */
 static thd_t *t;
+static pthread_mutex_t thd_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /*
  * Timeout values, initialized in dsh(), used in _wdog().
  */
 static int connect_timeout, command_timeout;
+
+/*
+ * Terminate on a single SIGINT (batch mode)
+ */
+static int sigint_terminates = 0;
 
 /*
  *  Buffered output prototypes:
@@ -174,13 +180,15 @@ static void _alarm_handler(int dummy)
 }
 
 /* 
- * Helper function for intr_handler().  Lists the status of all connected
+ * Helper function for handle_sigint().  Lists the status of all connected
  * threads.
  */
 static void _list_slowthreads(void)
 {
     int i;
     time_t ttl;
+
+    pthread_mutex_lock(&thd_mutex);
 
     for (i = 0; t[i].host != NULL; i++) {
 
@@ -213,20 +221,29 @@ static void _list_slowthreads(void)
             if (debug)
                 err("%p: %S: [done]\n", t[i].host);
             break;
+        case DSH_CANCELED:
+            if (debug)
+                err("%p: %S: [canceled]\n", t[i].host);
+            break;
         }
     }
+
+    pthread_mutex_unlock(&thd_mutex);
 }
 
 /*
- * Block SIGINT in this thread.
+ * Block SIGINT SIGTSTP in this thread.
  */
-static void _int_block(void)
+static void _mask_signals(int how)
 {
     sigset_t blockme;
 
+    assert ((how == SIG_BLOCK) || (how == SIG_UNBLOCK));
+
     sigemptyset(&blockme);
     sigaddset(&blockme, SIGINT);
-    pthread_sigmask(SIG_BLOCK, &blockme, NULL);
+    sigaddset(&blockme, SIGTSTP);
+    pthread_sigmask(how, &blockme, NULL);
 }
 
 /*
@@ -237,44 +254,13 @@ static void _fwd_signal(int signum)
 {
     int i;
 
+    pthread_mutex_lock(&thd_mutex);
     for (i = 0; t[i].host != NULL; i++) {
         if ((t[i].state == DSH_READING)) 
 			rcmd_signal(t[i].rcmd, signum);
     }
+    pthread_mutex_unlock(&thd_mutex);
 
-}
-
-/* 
- * SIGINT handler.  The program can be terminated by two ^C's within
- * INTR_TIME seconds.  Otherwise, ^C causes a list of connected thread
- * status.  This should only be handled by the "main" thread.  We block
- * SIGINT in other threads.
- */
-static void _int_handler(int signum)
-{
-    static time_t last_intr = 0;
-
-    if (!t) return;
-
-    if (time(NULL) - last_intr > INTR_TIME) {
-        err("%p: interrupt (one more within %d sec to abort)\n",
-            INTR_TIME);
-        last_intr = time(NULL);
-        _list_slowthreads();
-    } else {
-        _fwd_signal(signum);
-        errx("%p: interrupt, aborting.\n");
-    }
-}
-
-/*
- * Simpler version of above for -b "batch mode", i.e. pdsh is run by a
- * script, and when the script dies, we should die too.
- */
-static void _int_handler_justdie(int signum)
-{
-    _fwd_signal(signum);
-    errx("%p: batch mode interrupt, aborting.\n");
 }
 
 /* 
@@ -287,8 +273,6 @@ static void *_wdog(void *args)
 {
     int i;
     
-    _int_block();               /* block SIGINT */
-
     for (;;) {
 
         if (t == NULL) /* We're done */
@@ -311,6 +295,7 @@ static void *_wdog(void *args)
             case DSH_NEW:
             case DSH_DONE:
             case DSH_FAILED:
+            case DSH_CANCELED:
                 break;
             }
         }
@@ -584,6 +569,29 @@ static void _gethost(char *name, char *addr)
 }
 
 /*
+ *  Update thread state to connecting, unless the thread
+ *   has been canceled, in which case close fds if they are open
+ *   and return DSH_CANCELED.
+ */
+static state_t _update_connect_state (thd_t *a)
+{
+    pthread_mutex_lock(&thd_mutex);
+    a->connect = time(NULL);
+    if (a->state != DSH_CANCELED)
+        a->state = DSH_READING;
+    pthread_mutex_unlock(&thd_mutex);
+
+    if (a->state == DSH_CANCELED) {
+        if (a->rcmd->fd >= 0)
+            close (a->rcmd->fd);
+        if (a->rcmd->efd >= 0)
+            close (a->rcmd->efd);
+    }
+
+    return (a->state);
+}
+
+/*
  * Rcp thread.  One per remote connection.
  * Arguments are pointer to thd_t entry defined above.
  */
@@ -593,23 +601,21 @@ static void *_rcp_thread(void *args)
     int result = DSH_DONE;      /* the desired outcome */
     int rc;
 
-    _int_block();               /* block SIGINT */
-
 #if	HAVE_MTSAFE_GETHOSTBYNAME
     if (a->rcmd->opts->resolve_hosts)
         _gethost(a->host, a->addr);
 #endif
     a->start = time(NULL);
+    pthread_mutex_lock(&thd_mutex);
     a->state = DSH_RCMD;
+    pthread_mutex_unlock(&thd_mutex);
 
     rcmd_connect (a->rcmd, a->host, a->addr, a->luser, a->ruser, 
                   a->cmd, a->nodeid, a->dsh_sopt);
 
     if (a->rcmd->fd == -1)
         result = DSH_FAILED;
-    else {
-        a->connect = time(NULL);
-        a->state = DSH_READING;
+    else if (_update_connect_state(a) != DSH_CANCELED) {
 
         /* 0: RECV response code */
         if (_rcp_response(a->rcmd->fd, a->host) >= 0) {
@@ -645,8 +651,10 @@ static void *_rcp_thread(void *args)
             close(a->rcmd->efd);
     } 
     /* update status */
+    pthread_mutex_lock(&thd_mutex);
     a->state = result;
     a->finish = time(NULL);
+    pthread_mutex_unlock(&thd_mutex);
 
     rc = rcmd_destroy (a->rcmd);
     if ((a->rc == 0) && (rc > 0))
@@ -755,8 +763,6 @@ static void *_rsh_thread(void *args)
     struct xpollfd xpfds[2];
     int nfds = 1;
 
-    _int_block();               /* block SIGINT */
-
     a->start = time(NULL);
 
 #if	HAVE_MTSAFE_GETHOSTBYNAME
@@ -766,17 +772,16 @@ static void *_rsh_thread(void *args)
     _xsignal (SIGPIPE, SIG_BLOCK);
 
     /* establish the connection */
+    pthread_mutex_lock(&thd_mutex);
     a->state = DSH_RCMD;
+    pthread_mutex_unlock(&thd_mutex);
 
     rcmd_connect (a->rcmd, a->host, a->addr, a->luser, a->ruser,
                   a->cmd, a->nodeid, a->dsh_sopt);
 
     if (a->rcmd->fd == -1) {
         result = DSH_FAILED;    /* connect failed */
-    } else {
-        /* connected: update status for watchdog thread */
-        a->connect = time(NULL);
-        a->state = DSH_READING;
+    } else if (_update_connect_state(a) != DSH_CANCELED) {
 
         fd_set_nonblocking (a->rcmd->fd);
 
@@ -837,8 +842,10 @@ static void *_rsh_thread(void *args)
     }
 
     /* update status */
+    pthread_mutex_lock(&thd_mutex);
     a->state = result;
     a->finish = time(NULL);
+    pthread_mutex_unlock(&thd_mutex);
 
     /* flush any pending output */
     _flush_output (a->outbuf, (out_f) out, a);
@@ -872,11 +879,16 @@ static void _dump_debug_stats(int rshcount)
     time_t conTot = 0, conMin = TIME_T_YEAR, conMax = 0;
     time_t cmdTot = 0, cmdMin = TIME_T_YEAR, cmdMax = 0;
     int failed = 0;
+    int canceled = 0;
     int n;
 
     for (n = 0; n < rshcount; n++) {
         if (t[n].state == DSH_FAILED) {
             failed++;
+            continue;
+        }
+        if (t[n].state == DSH_CANCELED) {
+            canceled++;
             continue;
         }
         assert(t[n].start && t[n].connect && t[n].finish);
@@ -898,6 +910,8 @@ static void _dump_debug_stats(int rshcount)
         err("Command time:  no sucesses\n");
     }
     err("Failures:      %d\n", failed);
+    if (canceled)
+        err("Canceled:      %d\n", canceled);
 }
 
 /*
@@ -981,6 +995,99 @@ static int _thd_init (thd_t *th, opt_t *opt, List pcp_infiles, int i)
 
 }
 
+static int 
+_cancel_pending_threads (void)
+{
+    int n = 0;
+    int i;
+
+    if (t == NULL) 
+        return (0);
+
+    pthread_mutex_lock (&threadcount_mutex);
+    for (i = 0; t[i].host != NULL; i++) {
+        if ((t[i].state == DSH_NEW) || (t[i].state == DSH_RCMD)) {
+            t[i].state = DSH_CANCELED;
+            ++n;
+        }
+    }
+    err ("%p: Canceled %d pending threads.\n", n);
+    pthread_mutex_unlock (&threadcount_mutex);
+
+    return (0);
+}
+
+/* 
+ *  Handle SIGNINT from signals thread. One ^C lists slow threads.
+ *   Another ^C within one second aborts the job.
+ */
+static void 
+_handle_sigint(time_t *last_intrp)
+{
+    if (!t) return;
+
+    if (sigint_terminates) {
+        _fwd_signal(SIGINT);
+        errx("%p: batch mode interrupt, aborting.\n");
+        /* NORETURN */
+    } else if (time(NULL) - *last_intrp > INTR_TIME) {
+        err("%p: interrupt (one more within %d sec to abort)\n", INTR_TIME);
+        err("%p:  (^Z within %d sec to cancel pending threads)\n", INTR_TIME);
+        *last_intrp = time(NULL);
+        _list_slowthreads();
+    } else {
+        _fwd_signal(SIGINT);
+        errx("%p: interrupt, aborting.\n");
+    }
+}
+
+/*
+ *  ^Z handler. A ^Z within one second of ^C will cancel any
+ *    threads that have not started or are still connecting.
+ *    Otherwise, ^Z has the default behavior of stopping the process.
+ */
+static void 
+_handle_sigtstp (time_t last_intr)
+{
+    if (!t) 
+        return;
+    if (time (NULL) - last_intr > INTR_TIME) 
+        raise (SIGSTOP);
+    else
+        _cancel_pending_threads ();
+}
+
+static void * 
+_signals_thread (void *arg)
+{
+    sigset_t set;
+    time_t last_intr = 0;
+    int signo;
+    int e;
+
+    sigemptyset (&set);
+    sigaddset (&set, SIGINT);
+    sigaddset (&set, SIGTSTP);
+
+    while (t != NULL) {
+        if ((e = sigwait (&set, &signo)) != 0) {
+            if (e == EINTR) continue;
+            err ("sigwait: %s\n", strerror (e));
+        }
+
+        switch (signo) {
+        case SIGINT:  
+            _handle_sigint (&last_intr); 
+            break;
+        case SIGTSTP: 
+            _handle_sigtstp (last_intr); 
+            break;
+        default:
+            err ("%p: Didn't expect to be here.\n");
+        }
+    }
+}
+
 /* 
  * Run command on a list of hosts, keeping 'fanout' number of connections 
  * active concurrently.
@@ -990,11 +1097,13 @@ int dsh(opt_t * opt)
     int i, rc = 0;
     int rv, rshcount;
     pthread_t thread_wdog;
+    pthread_t thread_sig;
     pthread_attr_t attr_wdog;
+    pthread_attr_t attr_sig;
     List pcp_infiles = NULL;
     hostlist_iterator_t itr;
-    SigFunc *old_int_handler = NULL;
 
+    _mask_signals (SIG_BLOCK);
 
     /*
      *   Initialize rcmd modules...
@@ -1008,10 +1117,9 @@ int dsh(opt_t * opt)
 
     /* install signal handlers */
     _xsignal(SIGALRM, _alarm_handler);
+
     if (opt->sigint_terminates)
-        old_int_handler = _xsignal(SIGINT, _int_handler_justdie);
-    else
-        old_int_handler = _xsignal(SIGINT, _int_handler);
+        sigint_terminates = 1;
 
     rshcount = hostlist_count(opt->wcoll);
 
@@ -1083,6 +1191,10 @@ int dsh(opt_t * opt)
     _dsh_attr_init (&attr_wdog, DSH_THREAD_STACKSIZE);
     rv = pthread_create(&thread_wdog, &attr_wdog, _wdog, (void *) t);
 
+    /* start the signals thread */
+    _dsh_attr_init (&attr_sig, DSH_THREAD_STACKSIZE);
+    rv = pthread_create(&thread_sig, &attr_sig, _signals_thread, (void *) t);
+
     /* start all the other threads (at most 'fanout' active at once) */
     for (i = 0; i < rshcount; i++) {
 
@@ -1091,6 +1203,19 @@ int dsh(opt_t * opt)
 
         if (opt->fanout == threadcount)
             pthread_cond_wait(&threadcount_cond, &threadcount_mutex);
+
+        /*
+         *  Advance past any canceled threads
+         */
+        while ((t[i].state == DSH_CANCELED) && (i < rshcount))
+            ++i;
+        /*
+         *  Abort if no more threads
+         */
+        if (i >= rshcount) {
+            pthread_mutex_unlock(&threadcount_mutex);
+            break;
+        }
 
         /* create thread */
         _dsh_attr_init (&t[i].attr, DSH_THREAD_STACKSIZE);
@@ -1120,10 +1245,10 @@ int dsh(opt_t * opt)
         _dump_debug_stats(rshcount);
 
     /*
-     * Reinstall old handler for SIGINT since _int_handler
-     *  will segfault once we start freeing thd info structures.
+     * Cancel signals thread and unblock SIGINT/SIGTSTP
      */
-    _xsignal(SIGINT, old_int_handler);
+    pthread_cancel(thread_sig);
+    _mask_signals (SIG_UNBLOCK);
 
     /* if -S, our exit value is the largest of the return codes */
     if (opt->ret_remote_rc) {

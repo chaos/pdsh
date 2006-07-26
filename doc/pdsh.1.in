@@ -17,7 +17,11 @@ to conserve resources on the initiating host while allowing some
 connections to time out. 
 .LP
 When \fBpdsh\fR receives SIGINT (ctrl-C), it lists the status of current 
-threads. A second SIGINT within one second terminates the program.
+threads. A second SIGINT within one second terminates the program. Pending
+threads may be canceled by issuing ctrl-Z within one second of ctrl-C.
+Pending threads are those that have not yet been initiated, or are still
+in the process of connecting to the remote host.
+
 .LP
 If a remote command is not specified on the command line, \fBpdsh\fR
 runs interactively, prompting for commands and executing them when

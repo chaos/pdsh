@@ -1,6 +1,20 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
+* Changes in pdsh-2.11 
+==================================
+ -- Fix for WCOLL file contents unconditionally added to host list.
+    Prior behavior was to have -w override WCOLL.
+ -- Supply more specific errors when pdsh detects that the path to
+    pdsh modules is insecure.
+ -- Fix man page typos.
+ -- Fix compile for Tru64.
+ -- (xcpu) Use lexec facility.
+ -- New dshbak -s option to sort output.
+ -- Allow users to cancel pending threads by issuing ctrl-C ctrl-Z
+    (ctrl-Z within one second of initial ctrl-C). Pending threads
+	are those threads which have not yet invoked a remote command.
+
 * Changes in pdsh-2.10 (2006-03-22)
 ===================================
  -- Fix for -w hosts parsing bug.
@@ -9,7 +23,6 @@ documents thos changes that are of interest to users and admins.
     Command history file is ~/.pdsh/history.
  -- (xcpu) Support for signals and -S.
  
-
 * Changes in pdsh-2.9 (2006-03-15)
 ===================================
  -- Add netgroup module which provides -g/-X groupname option to read

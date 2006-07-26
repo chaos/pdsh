@@ -1,3 +1,11 @@
+2006-07-26  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/dsh.h, src/pdsh/dsh.c : Allow ctrl-Z (SIGTSTP) issued
+	  within 1s of ctrl-C to cancel pending threads (those threads which
+	  have not yet begun issuing the remote command).
+
+	* doc/pdsh.1.in, doc/pdcp.1.in : Update documentation.
+
 2006-07-18  Mark Grondona <mgrondona@llnl.gov>
 
 	* scripts/dshbak : Add new -s option to sort output. Contributed by 

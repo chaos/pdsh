@@ -51,7 +51,7 @@
 #define MAX_SP_NODE_NUMBER (MAX_SP_NODES * MAX_SP_NODES_PER_FRAME - 1)
 
 typedef enum { DSH_NEW, DSH_RCMD, DSH_READING, DSH_DONE,
-        DSH_FAILED } state_t;
+        DSH_FAILED, DSH_CANCELED } state_t;
 
 typedef struct thd {
     pthread_t thread;
