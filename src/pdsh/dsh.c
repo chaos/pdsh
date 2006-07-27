@@ -95,6 +95,19 @@
 #  define PTHREAD_STACK_MIN ((size_t) sysconf (_SC_THREAD_STACK_MIN))
 #endif
 
+#define dsh_mutex_lock(pmutex)                                                \
+ do {                                                                         \
+      if ((errno = pthread_mutex_lock (pmutex)))                              \
+           errx ("%s:%d: mutex_lock: %m", __FILE__, __LINE__);                \
+  } while (0)
+
+#define dsh_mutex_unlock(pmutex)                                              \
+ do {                                                                         \
+      if ((errno = pthread_mutex_unlock (pmutex)))                            \
+           errx ("%s:%d: mutex_unlock: %m", __FILE__, __LINE__);              \
+  } while (0)
+
+
 /* set the default stacksize for threads to 128k */
 #define DSH_THREAD_STACKSIZE    128*1024
 
@@ -188,7 +201,7 @@ static void _list_slowthreads(void)
     int i;
     time_t ttl;
 
-    pthread_mutex_lock(&thd_mutex);
+    dsh_mutex_lock(&thd_mutex);
 
     for (i = 0; t[i].host != NULL; i++) {
 
@@ -228,7 +241,7 @@ static void _list_slowthreads(void)
         }
     }
 
-    pthread_mutex_unlock(&thd_mutex);
+    dsh_mutex_unlock(&thd_mutex);
 }
 
 /*
@@ -254,12 +267,12 @@ static void _fwd_signal(int signum)
 {
     int i;
 
-    pthread_mutex_lock(&thd_mutex);
+    dsh_mutex_lock(&thd_mutex);
     for (i = 0; t[i].host != NULL; i++) {
         if ((t[i].state == DSH_READING)) 
 			rcmd_signal(t[i].rcmd, signum);
     }
-    pthread_mutex_unlock(&thd_mutex);
+    dsh_mutex_unlock(&thd_mutex);
 
 }
 
@@ -575,11 +588,11 @@ static void _gethost(char *name, char *addr)
  */
 static state_t _update_connect_state (thd_t *a)
 {
-    pthread_mutex_lock(&thd_mutex);
+    dsh_mutex_lock(&thd_mutex);
     a->connect = time(NULL);
     if (a->state != DSH_CANCELED)
         a->state = DSH_READING;
-    pthread_mutex_unlock(&thd_mutex);
+    dsh_mutex_unlock(&thd_mutex);
 
     if (a->state == DSH_CANCELED) {
         if (a->rcmd->fd >= 0)
@@ -606,9 +619,9 @@ static void *_rcp_thread(void *args)
         _gethost(a->host, a->addr);
 #endif
     a->start = time(NULL);
-    pthread_mutex_lock(&thd_mutex);
+    dsh_mutex_lock(&thd_mutex);
     a->state = DSH_RCMD;
-    pthread_mutex_unlock(&thd_mutex);
+    dsh_mutex_unlock(&thd_mutex);
 
     rcmd_connect (a->rcmd, a->host, a->addr, a->luser, a->ruser, 
                   a->cmd, a->nodeid, a->dsh_sopt);
@@ -651,20 +664,20 @@ static void *_rcp_thread(void *args)
             close(a->rcmd->efd);
     } 
     /* update status */
-    pthread_mutex_lock(&thd_mutex);
+    dsh_mutex_lock(&thd_mutex);
     a->state = result;
     a->finish = time(NULL);
-    pthread_mutex_unlock(&thd_mutex);
+    dsh_mutex_unlock(&thd_mutex);
 
     rc = rcmd_destroy (a->rcmd);
     if ((a->rc == 0) && (rc > 0))
         a->rc = rc;
 
     /* Signal dsh() so another thread can replace us */
-    pthread_mutex_lock(&threadcount_mutex);
+    dsh_mutex_lock(&threadcount_mutex);
     threadcount--;
     pthread_cond_signal(&threadcount_cond);
-    pthread_mutex_unlock(&threadcount_mutex);
+    dsh_mutex_unlock(&threadcount_mutex);
 
     return NULL;
 }
@@ -772,9 +785,9 @@ static void *_rsh_thread(void *args)
     _xsignal (SIGPIPE, SIG_BLOCK);
 
     /* establish the connection */
-    pthread_mutex_lock(&thd_mutex);
+    dsh_mutex_lock(&thd_mutex);
     a->state = DSH_RCMD;
-    pthread_mutex_unlock(&thd_mutex);
+    dsh_mutex_unlock(&thd_mutex);
 
     rcmd_connect (a->rcmd, a->host, a->addr, a->luser, a->ruser,
                   a->cmd, a->nodeid, a->dsh_sopt);
@@ -842,10 +855,10 @@ static void *_rsh_thread(void *args)
     }
 
     /* update status */
-    pthread_mutex_lock(&thd_mutex);
+    dsh_mutex_lock(&thd_mutex);
     a->state = result;
     a->finish = time(NULL);
-    pthread_mutex_unlock(&thd_mutex);
+    dsh_mutex_unlock(&thd_mutex);
 
     /* flush any pending output */
     _flush_output (a->outbuf, (out_f) out, a);
@@ -862,10 +875,10 @@ static void *_rsh_thread(void *args)
     }
 
     /* Signal dsh() so another thread can replace us */
-    pthread_mutex_lock(&threadcount_mutex);
+    dsh_mutex_lock(&threadcount_mutex);
     threadcount--;
     pthread_cond_signal(&threadcount_cond);
-    pthread_mutex_unlock(&threadcount_mutex);
+    dsh_mutex_unlock(&threadcount_mutex);
     return NULL;
 }
 
@@ -1004,7 +1017,7 @@ _cancel_pending_threads (void)
     if (t == NULL) 
         return (0);
 
-    pthread_mutex_lock (&threadcount_mutex);
+    dsh_mutex_lock (&threadcount_mutex);
     for (i = 0; t[i].host != NULL; i++) {
         if ((t[i].state == DSH_NEW) || (t[i].state == DSH_RCMD)) {
             t[i].state = DSH_CANCELED;
@@ -1012,7 +1025,7 @@ _cancel_pending_threads (void)
         }
     }
     err ("%p: Canceled %d pending threads.\n", n);
-    pthread_mutex_unlock (&threadcount_mutex);
+    dsh_mutex_unlock (&threadcount_mutex);
 
     return (0);
 }
@@ -1199,7 +1212,7 @@ int dsh(opt_t * opt)
     for (i = 0; i < rshcount; i++) {
 
         /* wait until "room" for another thread */
-        pthread_mutex_lock(&threadcount_mutex);
+        dsh_mutex_lock(&threadcount_mutex);
 
         if (opt->fanout == threadcount)
             pthread_cond_wait(&threadcount_cond, &threadcount_mutex);
@@ -1213,7 +1226,7 @@ int dsh(opt_t * opt)
          *  Abort if no more threads
          */
         if (i >= rshcount) {
-            pthread_mutex_unlock(&threadcount_mutex);
+            dsh_mutex_unlock(&threadcount_mutex);
             break;
         }
 
@@ -1233,11 +1246,11 @@ int dsh(opt_t * opt)
         }
         threadcount++;
 
-        pthread_mutex_unlock(&threadcount_mutex);
+        dsh_mutex_unlock(&threadcount_mutex);
     }
 
     /* wait for termination of remaining threads */
-    pthread_mutex_lock(&threadcount_mutex);
+    dsh_mutex_lock(&threadcount_mutex);
     while (threadcount > 0)
         pthread_cond_wait(&threadcount_cond, &threadcount_mutex);
 

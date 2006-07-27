@@ -3,6 +3,9 @@
 	* src/common/hostlist.c : Update to latest rev from LSD-Tools, which
 	  fixes some bugs found by Coverity.
 
+	* src/common/dsh.c, src/common/privsep.c : Add checks for return
+	  codes from pthread_mutex_lock/unlock. (Coverity).
+
 2006-07-26  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/dsh.h, src/pdsh/dsh.c : Allow ctrl-Z (SIGTSTP) issued

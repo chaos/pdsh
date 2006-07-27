@@ -40,6 +40,7 @@
 #include <netdb.h>  /* rresvport */
 #include <assert.h>
 #include <string.h>
+#include <errno.h>
 
 #include "src/common/err.h"
 #include "src/common/fd.h"
@@ -247,7 +248,8 @@ int privsep_rresvport (int *lport)
 	if (client_fd < 0)
 		return (rresvport (lport));
 
-	pthread_mutex_lock (&privsep_mutex);
+	if ((errno = pthread_mutex_lock (&privsep_mutex)))
+		errx ("%p: %s:%d: mutex_lock: %m\n", __FILE__, __LINE__);
 
 	if (write (client_fd, lport, sizeof (*lport)) < 0) {
 		err ("%p: privsep: client write: %m\n");
@@ -256,7 +258,8 @@ int privsep_rresvport (int *lport)
 
     s = recv_rresvport (client_fd, lport);
 
-	pthread_mutex_unlock (&privsep_mutex);
+	if ((errno = pthread_mutex_unlock (&privsep_mutex)))
+		errx ("%p: %s:%d: mutex_unlock: %m\n", __FILE__, __LINE__);
 
 	return (s);
 }
