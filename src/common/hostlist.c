@@ -1,9 +1,9 @@
 /*****************************************************************************\
  *  $Id$
  *****************************************************************************
- *  $LSDId: hostlist.c,v 1.20 2005/09/13 23:32:21 grondo Exp $
+ *  $LSDId: hostlist.c,v 1.21 2006/07/27 14:48:33 grondo Exp $
  *****************************************************************************
- *  Copyright (C) 2002,2006 The Regents of the University of California.
+ *  Copyright (C) 2002 The Regents of the University of California.
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Mark Grondona <mgrondona@llnl.gov>
  *  UCRL-CODE-2002-040.
@@ -1423,6 +1423,10 @@ _push_range_list_with_suffix(hostlist_t hl, char *pfx, char *sfx,
             snprintf (host, 4096, "%s%0*lu%s", pfx, rng->width, j, sfx);
             hr = hostrange_create_single (host);
             hostlist_push_range (hl, hr);
+            /*
+             * hr is copied in hostlist_push_range. Need to free here.
+             */
+            hostrange_destroy (hr);
         }
         rng++;
     }
@@ -2264,7 +2268,8 @@ char *hostlist_next(hostlist_iterator_t i)
         snprintf (suffix, 15, "%0*lu", i->hr->width, i->hr->lo + i->depth);
 
     len = strlen (i->hr->prefix) + strlen (suffix) + 1;
-    buf = malloc (len);
+    if (!(buf = malloc (len)))
+        out_of_memory("hostlist_next");
     
     buf[0] = '\0';
     strcat (buf, i->hr->prefix);
