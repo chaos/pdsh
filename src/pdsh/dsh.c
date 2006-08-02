@@ -1099,6 +1099,7 @@ _signals_thread (void *arg)
             err ("%p: Didn't expect to be here.\n");
         }
     }
+    return NULL;
 }
 
 /* 
