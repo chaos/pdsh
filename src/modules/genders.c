@@ -515,12 +515,37 @@ attrval_by_altname (genders_t g, const char *host, const char *attr,
     return rc;
 }
 
+/*
+ *  Parse the value of "pdsh_rcmd_type" and split into user and rcmd
+ *   strings, passing rcmd name (if any) in *rp, and user name (if any)
+ *   in *up.
+ *   
+ *  Allows pdsh_rcmd_type to be set to [user@][rcmd], where user@ and 
+ *   rcmd are both optional. (i.e. you can set user or rcmd or both)
+ */
+static int rcmd_type_parse (char *val, char **rp, char **up)
+{
+    char *p;
+    *up = NULL;
+    *rp = NULL;
 
+    if ((p = strchr (val, '@'))) {
+        *(p)++ = '\0';
+        *up = val;
+        if (strlen (p) != 0)
+            *rp = p;
+    } else
+        *rp = val;
+
+    return (0);
+}
 
 static int
 register_genders_rcmd_types (opt_t *opt)
 {
     char *host;
+    char *rcmd;
+    char *user;
     char val[64];
     char rcmd_attr[] = "pdsh_rcmd_type";
     hostlist_iterator_t i = NULL;
@@ -546,9 +571,11 @@ register_genders_rcmd_types (opt_t *opt)
          */
         if (rc < 0 && (genders_errnum(gh) == GENDERS_ERR_NOTFOUND)) 
             rc = attrval_by_altname (gh, host, rcmd_attr, val, sizeof (val));
+        
+        rcmd_type_parse (val, &rcmd, &user);
 
         if (rc > 0) 
-            rcmd_register_defaults (host, val, NULL);
+            rcmd_register_defaults (host, rcmd, user);
 
         free (host);
     }

@@ -1,3 +1,8 @@
+2006-08-08  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/modules/genders.c : Allow default user name to also be 
+	  specified to pdsh_rcmd_type attr with "user@".
+
 2006-08-02  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/dsh.c (_signals_thread) : Add missing return from
