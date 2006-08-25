@@ -1,3 +1,9 @@
+2006-08-25  Mark Grondona <mgrondona@llnl.gov>
+
+	* pdsh.spec : Remove erroneous "Requires: whatsup" from netgroup
+	  and dshgroup. Remove Conflicts from machines. Build netgroup and
+	  dshgroup by default since they have no build requirements.
+
 2006-08-08  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/genders.c : Allow default user name to also be 

@@ -14,9 +14,9 @@ Requires: pdsh-rcmd
 #
 # Enabling and disabling pdsh options
 #  defaults:
-#  enabled:  readline, rsh, ssh
+#  enabled:  readline, rsh, ssh, dshgroup, netgroups
 #  disabled: rms, mrsh, qshell, mqshell, xcpu, genders, nodeattr, machines,
-#            nodeupdown, dshgroup, netgroups
+#            nodeupdown
 
 #  To build the various module subpackages, pass --with <pkg> on
 #   the rpmbuild command line (if your rpm is a recent enough version)
@@ -41,6 +41,10 @@ Requires: pdsh-rcmd
 %{expand: %def rsh with without}
 %{expand: %pdsh_with readline}
 %{expand: %def readline with without}
+%{expand: %pdsh_with dshgroups}
+%{expand: %def dshgroups with without}
+%{expand: %pdsh_with netgroup}
+%{expand: %def netgroup with without}
 
 %{expand: %pdsh_with mrsh}
 %{expand: %def mrsh without with}
@@ -56,10 +60,6 @@ Requires: pdsh-rcmd
 %{expand: %def nodeattr without with}
 %{expand: %pdsh_with nodeupdown}
 %{expand: %def nodeupdown without with}
-%{expand: %pdsh_with dshgroups}
-%{expand: %def dshgroups without with}
-%{expand: %pdsh_with netgroup}
-%{expand: %def netgroup without with}
 %{expand: %pdsh_with machines}
 %{expand: %def machines without with}
 %{expand: %pdsh_with slurm}
@@ -200,15 +200,12 @@ from an allocated RMS resource.
 %package   mod-machines
 Summary:   Pdsh module for gathering list of target nodes from a machines file
 Group:     System Environment/Base
-Conflicts: pdsh-mod-genders
-Conflicts: pdsh-mod-nodeattr
 %description mod-machines
 Pdsh module for gathering list of all target nodes from a machines file.
 
 %package   mod-dshgroup
 Summary:   Provides dsh-style group file support for pdsh
 Group:     System Environment/Base
-Requires:  whatsup
 %description mod-dshgroup
 Pdsh module providing dsh (Dancer's shell) style "group" file support.
 Provides -g groupname and -X groupname options to pdsh.
@@ -216,7 +213,6 @@ Provides -g groupname and -X groupname options to pdsh.
 %package   mod-netgroup
 Summary:   Provides netgroup support for pdsh
 Group:     System Environment/Base
-Requires:  whatsup
 %description mod-netgroup
 Pdsh module providing support for targeting hosts based on netgroup.
 Provides -g groupname and -X groupname options to pdsh.
