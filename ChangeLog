@@ -19,6 +19,11 @@
 	  testsuite/pdsh.test/Makefile.in :
 	  Re-run bootstrap.
 
+	* src/common/split.h, src/common/split.c : 
+	  Add list_split_append() to append results of string split onto 
+	  existing list.  Also, don't allocate new string in list_join().
+
+	* src/pdsh/opt.c : Update callers of list_join().
 
 2006-08-25  Mark Grondona <mgrondona@llnl.gov>
 

@@ -30,8 +30,8 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "xmalloc.h"
-#include "xstring.h"
 #include "split.h"
 
 /* 
@@ -47,7 +47,7 @@ static char *_next_tok(char *sep, char **str)
     char *tok;
 
     /* push str past any leading separators */
-    while (**str != '\0' && strchr(sep, **str) != '\0')
+    while (**str != '\0' && strchr(sep, **str) != NULL)
         (*str)++;
 
     if (**str == '\0')
@@ -57,19 +57,19 @@ static char *_next_tok(char *sep, char **str)
     tok = *str;
 
     /* push str past token and leave pointing to first separator */
-    while (**str != '\0' && strchr(sep, **str) == '\0')
+    while (**str != '\0' && strchr(sep, **str) == NULL)
         (*str)++;
 
     /* nullify consecutive separators and push str beyond them */
-    while (**str != '\0' && strchr(sep, **str) != '\0')
+    while (**str != '\0' && strchr(sep, **str) != NULL)
         *(*str)++ = '\0';
 
     return tok;
 }
 
-static void _free_f (char *str)
+static void free_f (char *str)
 {
-	Free ((void **) &str);
+    Free ((void **) &str);
 }
 
 /*
@@ -80,7 +80,7 @@ static void _free_f (char *str)
  */
 List list_split(char *sep, char *str)
 {
-    List new = list_create((ListDelF) _free_f);
+    List new = list_create((ListDelF) free_f);
     char *tok;
 
     if (sep == NULL)
@@ -94,30 +94,60 @@ List list_split(char *sep, char *str)
     return new;
 }
 
+List list_split_append (List l, char *sep, char *str)
+{
+    char *tok;
 
-char * list_join(const char *sep, List l)
+    if (sep == NULL)
+        sep = " \t";
+
+    while ((tok = _next_tok(sep, &str)) != NULL) {
+        if (strlen(tok) > 0)
+            list_append(l, Strdup(tok));
+    }
+
+    return l;
+}
+
+int list_join (char *result, size_t len, const char *sep, List l)
 {
     char *str = NULL;
-    char *result = NULL;
+    int n = 0;
+    int truncated = 0;
     ListIterator i;
+
+    memset (result, 0, len);
         
     if (list_count(l) == 0)
-        return NULL;
+        return (0);
         
     i = list_iterator_create(l);
     while ((str = list_next(i))) {
-        char buf[1024];
-        snprintf(buf, 1024, "%s%s", str, sep); 
-        xstrcat(&result, buf);
+        int count;
+            
+        if (!truncated)  {
+            count = snprintf(result + n, len - n, "%s%s", str, sep); 
+
+            if ((count >= (len - n)) || (count < 0)) 
+                truncated = 1;
+            else
+                n += count;
+        }
+        else
+            n += strlen (str) + strlen (sep);
     }
     list_iterator_destroy(i);
 
-    /* 
-     * Delete final separator
-     */
-    result[strlen(result) - strlen(sep)] = '\0';
+    if (truncated)
+        result [len - 1] = '\0';
+    else {
+        /* 
+         * Delete final separator
+         */
+        result[strlen(result) - strlen(sep)] = '\0';
+    }
 
-    return result;
+    return (n);
 }
 
 /* vi: ts=4 sw=4 expandtab

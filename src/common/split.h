@@ -29,7 +29,7 @@
 #include "list.h"
 
 List list_split (char *sep, char *str);
-
-char * list_join (const char *sep, List l);
+List list_split_append (List l, char *sep, char *str);
+int list_join (char *result, size_t len, const char *sep, List l);
 
 #endif /* !_SPLIT_H */

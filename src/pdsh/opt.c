@@ -643,7 +643,6 @@ bool opt_verify(opt_t * opt)
  */
 void opt_list(opt_t * opt)
 {
-    char *infile_str;
     char wcoll_str[1024];
     int n;
 
@@ -655,14 +654,11 @@ void opt_list(opt_t * opt)
         out("Appended to cmd         %s\n", STRORNULL(opt->getstat));
         out("Command:		%s\n", STRORNULL(opt->cmd));
     } else {
+        char infiles [4096];
         out("-- PCP-specific options --\n");
-        infile_str = list_join(", ", opt->infile_names);
-        if (infile_str) {
-            out("Infile(s)		%s\n", infile_str);
-            Free((void **) &infile_str);
-        }
-        out("Outfile			%s\n",
-            STRORNULL(opt->outfile_name));
+        if (list_join (infiles, sizeof (infiles), ", ", opt->infile_names))
+            out("Infile(s)		%s\n", infiles);
+        out("Outfile			%s\n", STRORNULL(opt->outfile_name));
         out("Recursive		%s\n", BOOLSTR(opt->recursive));
         out("Preserve mod time/mode	%s\n", BOOLSTR(opt->preserve));
         out("Full program pathname	%s\n", STRORNULL(opt->path_progname));
@@ -730,27 +726,30 @@ void opt_free(opt_t * opt)
  *  Returns a string of comma separated module names of type `type'
  *  Returns NULL if no modules of this type are loaded.
  */
-static char * _module_list_string(char *type)
+static int _module_list_string(char *type, char *buf, int len)
 {
-    List l      = NULL;
-    char *names = NULL;
+    List l = NULL;
+    int  n = 0;
 
     if (mod_count(type) == 0)
-        return NULL;
+        return (0);
 
     l = mod_get_module_names(type);
-    names = list_join(",", l);
+    n = list_join(buf, len, ",", l);
     list_destroy(l);
 
-    return names;
+    return (n);
 }
 
 static char *_rcmd_module_list(char *buf, int maxlen)
 {
     int len, len2;
-    char *rcmd_list = _module_list_string("rcmd");
+    char rbuf [1024];
+    int n;
 
-    len = snprintf(buf, maxlen, "%s", rcmd_list ? rcmd_list : "(none)");
+    n = _module_list_string ("rcmd", rbuf, sizeof (rbuf));
+
+    len = snprintf(buf, maxlen, "%s", n ? rbuf : "(none)");
     if ((len < 0) || (len >= maxlen)) 
         goto done;
 
@@ -764,11 +763,10 @@ static char *_rcmd_module_list(char *buf, int maxlen)
             len += len2;
     }
 
-   done:
+done:
     if ((len < 0) || (len > maxlen)) 
         snprintf(buf + maxlen - 12, 12, "[truncated]"); 
 
-    Free ((void **) &rcmd_list);
     buf[maxlen - 1] = '\0';
     return buf;
 }
@@ -803,13 +801,13 @@ static void _show_version(void)
 {
     char buf[1024];
     extern char *pdsh_version;
-    char *misc_list = _module_list_string("misc");
+    int n;
 
     printf("%s\n", pdsh_version);
-    printf("rcmd modules: %s\n", _rcmd_module_list(buf, 1024));
-    printf("misc modules: %s\n", misc_list ? misc_list : "(none)");
+    printf("rcmd modules: %s\n", _rcmd_module_list(buf, sizeof (buf)));
 
-    Free((void **) &misc_list);
+    n = _module_list_string("misc", buf, sizeof (buf));
+    printf("misc modules: %s\n", n ? buf : "(none)");
 
     exit(0);
 }
