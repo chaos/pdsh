@@ -1,3 +1,25 @@
+2006-12-04  Mark Grondona <mgrondona@llnl.gov>
+
+	* configure.ac : Define _POSIX_PTHREAD_SEMANTICS for Solaris
+	  to get version of sigwait(2) with two arguments.
+
+	* config/ac_msghdr_accrights.m4, configure.ac, config/Makefile.am : 
+	  Add check for msg_accrights in struct msghdr. 
+
+	* src/pdsh/privsep.c : Use msg_accrights instead of msg_control 
+	  if it exists. (Fix for compile on Solaris)
+
+	* src/pdsh/pcp_server.c : Ensure roundup is defined.
+
+	* aclocal.m4, config.h.in, configure, Makefile.in, 
+	  config/Makefile.in, doc/Makefile.in, etc/Makefile.in, 
+	  scripts/Makefile.in, src/Makefile.in, src/common/Makefile.in,
+	  src/modules/Makefile.in, src/pdsh/Makefile.in, 
+	  src/qsnet/Makefile.in, testsuite/Makefile.in, 
+	  testsuite/pdsh.test/Makefile.in :
+	  Re-run bootstrap.
+
+
 2006-08-25  Mark Grondona <mgrondona@llnl.gov>
 
 	* pdsh.spec : Remove erroneous "Requires: whatsup" from netgroup

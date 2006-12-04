@@ -61,6 +61,9 @@ else
 	 AIX_PDSH_LDFLAGS="-Wl,-bgcbypass:1000" # hack to ensure no gc in libcommon
 	 AC_DEFINE(_AIX, 1, [Define if on AIX])
    ;;
+   *-*-solaris*)
+   	 AC_DEFINE(_POSIX_PTHREAD_SEMANTICS, 1, [POSIX pthread semantics on Solaris])
+   ;;
    esac
 fi
 AC_SUBST(AIX_PDSH_LDFLAGS)
@@ -87,6 +90,7 @@ AC_CHECK_HEADERS([fcntl.h strings.h sys/file.h unistd.h features.h \
 # Checks for typedefs, structures, and compiler characteristics.
 TYPE_SOCKLEN_T
 AC_SYS_LARGEFILE
+AC_MSGHDR_ACCRIGHTS
 
 # Checks for library functions.
 dnl AC_FUNC_MALLOC

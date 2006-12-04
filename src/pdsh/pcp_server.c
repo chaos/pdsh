@@ -99,6 +99,10 @@ char rcsid[] = "$Id$";
 #include "src/common/err.h"
 #include "opt.h"
 
+#ifndef roundup
+#  define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
+#endif
+
 /* The majority of the code below is unchanged from the original
  * rcp code.  Changes include:
  * - rcp bug fix

@@ -53,6 +53,7 @@ am__aclocal_m4_deps = $(top_srcdir)/config/ac_connect_timeout.m4 \
 	$(top_srcdir)/config/ac_meta.m4 \
 	$(top_srcdir)/config/ac_mqshell.m4 \
 	$(top_srcdir)/config/ac_mrsh.m4 \
+	$(top_srcdir)/config/ac_msghdr_accrights.m4 \
 	$(top_srcdir)/config/ac_netgroup.m4 \
 	$(top_srcdir)/config/ac_nodeattr.m4 \
 	$(top_srcdir)/config/ac_nodeupdown.m4 \
@@ -301,6 +302,8 @@ EXTRA_DIST = \
     ac_rsh.m4 \
     ac_slurm.m4 \
     ac_dshgroup.m4 \
+    ac_dshgroup.m4 \
+	ac_msghdr_accrights.m4 \
     libtool.m4
 
 all: all-am

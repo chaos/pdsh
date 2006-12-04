@@ -13,6 +13,7 @@
 
 
 # serial 6 AC_LIB_LTDL
+# Debian $Rev: 214 $
 
 # AC_WITH_LTDL
 # ------------
@@ -133,7 +134,7 @@ AC_CACHE_CHECK([whether deplibs are loaded by dlopen],
     # Assuming the user has installed a libdl from somewhere, this is true
     # If you are looking for one http://www.opendarwin.org/projects/dlcompat
     libltdl_cv_sys_dlopen_deplibs=yes
-    ;;
+    ;;   
   gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
     # GNU and its variants, using gnu ld.so (Glibc)
     libltdl_cv_sys_dlopen_deplibs=yes
@@ -151,7 +152,7 @@ AC_CACHE_CHECK([whether deplibs are loaded by dlopen],
     # at 6.2 and later dlopen does load deplibs.
     libltdl_cv_sys_dlopen_deplibs=yes
     ;;
-  netbsd*)
+  netbsd* | netbsdelf*-gnu)
     libltdl_cv_sys_dlopen_deplibs=yes
     ;;
   openbsd*)
@@ -1312,6 +1313,7 @@ m4_include([config/ac_machines.m4])
 m4_include([config/ac_meta.m4])
 m4_include([config/ac_mqshell.m4])
 m4_include([config/ac_mrsh.m4])
+m4_include([config/ac_msghdr_accrights.m4])
 m4_include([config/ac_netgroup.m4])
 m4_include([config/ac_nodeattr.m4])
 m4_include([config/ac_nodeupdown.m4])

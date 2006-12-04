@@ -140,6 +140,9 @@
 /* Define if you have mrsh. */
 #undef HAVE_MRSH
 
+/* Define if struct msghdr has msg_accrights */
+#undef HAVE_MSGHDR_ACCRIGHTS
+
 /* Define to 1 if you have the <ndir.h> header file, and it defines `DIR'. */
 #undef HAVE_NDIR_H
 
@@ -395,6 +398,9 @@
 
 /* Path to SDRGetObjects */
 #undef _PATH_SDRGETOBJECTS
+
+/* POSIX pthread semantics on Solaris */
+#undef _POSIX_PTHREAD_SEMANTICS
 
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const

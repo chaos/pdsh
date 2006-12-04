@@ -52,6 +52,7 @@ am__aclocal_m4_deps = $(top_srcdir)/config/ac_connect_timeout.m4 \
 	$(top_srcdir)/config/ac_meta.m4 \
 	$(top_srcdir)/config/ac_mqshell.m4 \
 	$(top_srcdir)/config/ac_mrsh.m4 \
+	$(top_srcdir)/config/ac_msghdr_accrights.m4 \
 	$(top_srcdir)/config/ac_netgroup.m4 \
 	$(top_srcdir)/config/ac_nodeattr.m4 \
 	$(top_srcdir)/config/ac_nodeupdown.m4 \

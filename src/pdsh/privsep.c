@@ -32,6 +32,7 @@
 #if HAVE_SYS_UIO_H
 #  include <sys/uio.h>
 #endif
+
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -92,10 +93,12 @@ static int send_rresvport (int pipefd, int fd, int lport)
 {
 	struct iovec   iov[1];
 	struct msghdr  msg;
+#if !HAVE_MSGHDR_ACCRIGHTS
 	struct cmsghdr *cmsg;
 	char *         buf[CONTROLLEN];
 
 	cmsg = (struct cmsghdr *) &buf;
+#endif
 
 	memset (&msg, 0, sizeof (msg));
 
@@ -104,6 +107,15 @@ static int send_rresvport (int pipefd, int fd, int lport)
 	msg.msg_iov    = iov;
 	msg.msg_iovlen = 1;
 
+#if HAVE_MSGHDR_ACCRIGHTS
+	if (fd < 0) {
+		msg.msg_accrights = NULL;
+		msg.msg_accrightslen = 0;
+	} else {
+		msg.msg_accrights = (caddr_t) &fd;
+		msg.msg_accrightslen = sizeof (int);
+	}
+#else 
 	if (fd < 0) {
 		msg.msg_control = NULL;
 		msg.msg_controllen = 0;
@@ -116,6 +128,7 @@ static int send_rresvport (int pipefd, int fd, int lport)
 		msg.msg_controllen = CONTROLLEN;
 		* (int *) CMSG_DATA(cmsg) = fd;
 	}
+#endif
 
 	if (sendmsg (pipefd, &msg, 0) != sizeof (int)) {
 		err ("%p: privsep: sendmsg: %m\n");
@@ -130,11 +143,12 @@ static int recv_rresvport (int pipefd, int *lptr)
 	int            fd = -1;
 	struct iovec   iov[1];
 	struct msghdr  msg;
+#if !HAVE_MSGHDR_ACCRIGHTS
 	struct cmsghdr *cmsg;
 	char *         buf[CONTROLLEN];
 
 	cmsg = (struct cmsghdr *) &buf;
-
+#endif
 	memset (&msg, 0, sizeof (msg));
 
 	iov->iov_base  = (void *) lptr;
@@ -142,11 +156,16 @@ static int recv_rresvport (int pipefd, int *lptr)
 	msg.msg_iov    = iov;
 	msg.msg_iovlen = 1;
 
+#if HAVE_MSGHDR_ACCRIGHTS
+	msg.msg_accrights = (caddr_t) &fd;
+	msg.msg_accrightslen = sizeof (int);
+#else /* !HAVE_MSGHDR_ACCRIGHTS */
 	cmsg->cmsg_level   = SOL_SOCKET;
 	cmsg->cmsg_type    = SCM_RIGHTS;
 	cmsg->cmsg_len     = CONTROLLEN;
 	msg.msg_control    = (caddr_t) cmsg;
 	msg.msg_controllen = CONTROLLEN;
+#endif
 
 	if (recvmsg (pipefd, &msg, 0) < 0)
 		err ("%p: privsep: recvmsg: %m\n");
@@ -154,7 +173,9 @@ static int recv_rresvport (int pipefd, int *lptr)
 	if (*lptr < 0)
 		return (-1);
 
+#if !HAVE_MSGHDR_ACCRIGHTS
 	fd = *(int *) CMSG_DATA (cmsg);
+#endif
 
 	return (fd);
 }
@@ -256,7 +277,7 @@ int privsep_rresvport (int *lport)
 		return (-1);
 	}
 
-    s = recv_rresvport (client_fd, lport);
+    	s = recv_rresvport (client_fd, lport);
 
 	if ((errno = pthread_mutex_unlock (&privsep_mutex)))
 		errx ("%p: %s:%d: mutex_unlock: %m\n", __FILE__, __LINE__);
