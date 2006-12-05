@@ -266,7 +266,9 @@ references an invalid job, it will be silently ignored.
 .TP
 .I "-j jobid[,jobid,...]"
 Target list of nodes allocated to the SLURM job \fIjobid\fR. This option
-may be used multiple times to target multiple SLURM jobs.
+may be used multiple times to target multiple SLURM jobs. The special
+argument "all" can be used to target all nodes running SLURM jobs, e.g.
+\fI-j all\fR.
 
 .SH "rms module options"
 The \fBrms\fR module allows pdsh to target nodes based on an RMS 

@@ -3,6 +3,8 @@
 	* src/modules/slurm.c : Allow "all" argument to -j to select
 	  all nodes with SLURM jobs as targets.
 
+	* doc/pdsh.1.in : Document "all" argument to -j option.
+
 2006-12-04  Mark Grondona <mgrondona@llnl.gov>
 
 	* configure.ac : Define _POSIX_PTHREAD_SEMANTICS for Solaris
