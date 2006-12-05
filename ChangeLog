@@ -25,6 +25,10 @@
 
 	* src/pdsh/opt.c : Update callers of list_join().
 
+	* src/common/split.c : list_split_append() returns list_join() if
+	  list argument is NULL.
+	  
+
 2006-08-25  Mark Grondona <mgrondona@llnl.gov>
 
 	* pdsh.spec : Remove erroneous "Requires: whatsup" from netgroup

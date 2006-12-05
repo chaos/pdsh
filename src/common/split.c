@@ -98,6 +98,9 @@ List list_split_append (List l, char *sep, char *str)
 {
     char *tok;
 
+    if (l == NULL)
+        return (list_split (sep, str));
+
     if (sep == NULL)
         sep = " \t";
 
