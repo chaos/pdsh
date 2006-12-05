@@ -180,36 +180,76 @@ static int _find_id (char *jobid, uint32_t *id)
     return (*id == str2jobid (jobid));
 }
 
+static int _find_str (char *jobid, char *str)
+{
+    return (strcmp (jobid, str) == 0);
+}
+
+/*
+ * Return non-zero if jobid is in list of ids requested by user
+ */
+static int _jobid_requested (List l, uint32_t jobid)
+{
+    if (l == NULL)
+        return (0);
+    return (list_delete_all (l, (ListFindF)_find_id, &jobid));
+}
+
+static int _alljobids_requested (List l)
+{
+    char *all = "all";
+    if (l == NULL)
+        return (0);
+    return (list_delete_all (l, (ListFindF)_find_str, all));
+}
+
+static hostlist_t _hl_append (hostlist_t hl, char *nodes)
+{
+    if (hl == NULL)
+        return (hostlist_create (nodes));
+    else
+        hostlist_push (hl, nodes);
+    return (hl);
+}
+
 static hostlist_t _slurm_wcoll (List joblist)
 {
     int i;
     hostlist_t hl = NULL;
     job_info_msg_t * msg;
-    int32_t jobid = 0;
+    int32_t envjobid = 0;
+    int alljobids = 0;
 
-    if ((joblist == NULL) && (jobid = _slurm_jobid()) < 0)
+    if ((joblist == NULL) && (envjobid = _slurm_jobid()) < 0)
         return (NULL);
 
     if (slurm_load_jobs((time_t) NULL, &msg, 1) < 0) 
         errx ("Unable to contact slurm controller: %s\n", 
               slurm_strerror (errno));
 
+    /*
+     *  Check for "all" in joblist
+     */
+    alljobids = _alljobids_requested (joblist);
+
     for (i = 0; i < msg->record_count; i++) {
         job_info_t *j = &msg->job_array[i];
 
-        if (!joblist && (j->job_id == jobid)) {
+        if (alljobids)
+            hl = _hl_append (hl, j->nodes);
+        else if (!joblist && (j->job_id == envjobid)) {
+            /*
+             *  Only use SLURM_JOBID environment variable if user
+             *   didn't override with -j option
+             */
             hl = hostlist_create (j->nodes);
             break;
         }
-        
-        if ( joblist 
-           && list_delete_all (joblist, (ListFindF)_find_id, &j->job_id)) {
-
-            if (!hl)
-                hl = hostlist_create (j->nodes);
-            else
-                hostlist_push (hl, j->nodes);
-
+        else if (_jobid_requested (joblist, j->job_id)) {
+            hl = _hl_append (hl, j->nodes);
+            /* 
+             * Exit when there is no more jobids to search
+             */
             if (list_count (joblist) == 0)
                 break;
         }
