@@ -113,26 +113,6 @@ static int mod_slurm_init (void)
     return (0);
 }
 
-/*
- *  Split comma-separated "attrs" from str and append to list `lp'
- */
-static List _list_append (List l, char *str)
-{
-    List tmp = list_split (",", str);
-    ListIterator i = NULL;
-    char *attr = NULL;
-
-    if (l == NULL)
-        return ((l = tmp));
-
-    i = list_iterator_create (tmp);
-    while ((attr = list_next (i)))
-        list_append (l, Strdup(attr));
-    list_destroy (tmp);
-
-    return (l);
-}
-
 
 static int32_t str2jobid (char *str)
 {
@@ -156,7 +136,7 @@ slurm_process_opt(opt_t *pdsh_opts, int opt, char *arg)
 {
     switch (opt) {
     case 'j':
-        job_list = _list_append (job_list, Strdup(arg));
+        job_list = list_split_append (job_list, ",", arg);
         break;
     default:
         break;

@@ -139,8 +139,6 @@ struct pdsh_module pdsh_module_info = {
  */
 static hostlist_t _read_genders(List, int iopt);
 static int _delete_all (hostlist_t hl, hostlist_t dl);
-static List _attrlist_append (List l, char *str);
-
 
 static int
 nodeattr_process_opt(opt_t *pdsh_opts, int opt, char *arg)
@@ -148,7 +146,7 @@ nodeattr_process_opt(opt_t *pdsh_opts, int opt, char *arg)
     switch (opt) {
 #if !GENDERS_G_ONLY
     case 'a': 
-        excllist = _attrlist_append (excllist, "pdsh_all_skip");
+        excllist = list_split_append (excllist, ",", "pdsh_all_skip");
     case 'A':
         allnodes = true;
         break;
@@ -157,10 +155,10 @@ nodeattr_process_opt(opt_t *pdsh_opts, int opt, char *arg)
         break;
 #endif /* !GENDERS_G_ONLY */
     case 'g':
-		attrlist = _attrlist_append (attrlist, arg);
+		attrlist = list_split_append (attrlist, ",", arg);
         break;
     case 'X':
-		excllist = _attrlist_append (excllist, arg);
+		excllist = list_split_append (excllist, ",", arg);
         break;
     case 'F':
         gfile = Strdup (arg);
@@ -327,35 +325,6 @@ _delete_all (hostlist_t hl, hostlist_t dl)
     hostlist_iterator_destroy (i);
     return (rc);
 }
-
-static void
-_free_attr (void *attr)
-{
-    Free (&attr);
-}
-
-/*
- *  Split comma-separated "attrs" from str and append to list `lp'
- */
-static List _attrlist_append (List l, char *str)
-{
-    List tmp = list_split (",", str);
-    ListIterator i = NULL;
-    char *attr = NULL;
-
-    if (l == NULL) 
-        return ((l = tmp));
-
-    i = list_iterator_create (tmp);
-    while ((attr = list_next (i))) 
-        list_append (l, Strdup(attr));
-    list_destroy (tmp);
-
-    return (l);
-}
-
-
-
 
 /*
  * vi: tabstop=4 shiftwidth=4 expandtab

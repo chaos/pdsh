@@ -51,8 +51,6 @@ static hostlist_t read_groupfile(opt_t *opt);
 static int dshgroup_postop (opt_t *);
 static int dshgroup_process_opt(opt_t *, int, char *);
 
-static List _grouplist_append (List l, char *str);
-
 static List groups = NULL;
 static List exgroups = NULL;
 
@@ -104,10 +102,10 @@ static int dshgroup_process_opt(opt_t *pdsh_opt, int opt, char *arg)
 {
     switch (opt) {
     case 'g':
-        groups = _grouplist_append (groups, arg);
+        groups = list_split_append (groups, ",", arg);
         break;
     case 'X':
-        exgroups = _grouplist_append (exgroups, arg);
+        exgroups = list_split_append (exgroups, ",", arg);
         break;
     default:
         err ("%p: dshgroup_process_opt: invalid option `%c'\n", opt);
@@ -214,23 +212,6 @@ static int dshgroup_postop (opt_t *opt)
     _delete_all (opt->wcoll, hl);
 
     return 0;
-}
-
-static List _grouplist_append (List l, char *str)
-{
-    List tmp = list_split (",", str);
-    ListIterator i = NULL;
-    char *attr = NULL;
-
-    if (l == NULL) 
-        return ((l = tmp));
-
-    i = list_iterator_create (tmp);
-    while ((attr = list_next (i))) 
-        list_append (l, Strdup(attr));
-    list_destroy (tmp);
-
-    return (l);
 }
 
 /*

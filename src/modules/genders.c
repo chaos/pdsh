@@ -156,7 +156,6 @@ static hostlist_t _genders_to_altnames(genders_t g, hostlist_t hl);
 static hostlist_t _read_genders(List l);
 static void       _genders_opt_verify(opt_t *opt);
 static int        _delete_all (hostlist_t hl, hostlist_t dl);
-static List       _attrlist_append (List l, char *str);
 static int        register_genders_rcmd_types (opt_t *opt);
 
 
@@ -170,7 +169,7 @@ genders_process_opt(opt_t *pdsh_opts, int opt, char *arg)
 #if !GENDERS_G_ONLY
     case 'a':  
         /* For -a, exclude nodes with "pdsh_all_skip" */ 
-        excllist = _attrlist_append (excllist, "pdsh_all_skip");
+        excllist = list_split_append (excllist, ",", "pdsh_all_skip");
     case 'A':
         allnodes = true;
         break;
@@ -179,10 +178,10 @@ genders_process_opt(opt_t *pdsh_opts, int opt, char *arg)
         break;
 #endif /* !GENDERS_G_ONLY */
     case 'g':
-        attrlist = _attrlist_append (attrlist, arg);
+        attrlist = list_split_append (attrlist, ",", arg);
         break;
     case 'X':
-        excllist = _attrlist_append (excllist, arg);
+        excllist = list_split_append (excllist, ",", arg);
         break;
     case 'F':
         gfile = Strdup (arg);
@@ -599,27 +598,6 @@ _delete_all (hostlist_t hl, hostlist_t dl)
     hostlist_iterator_destroy (i);
     return (rc);
 }
-
-/*
- *  Split comma-separated "attrs" from str and append to list `lp'
- */
-static List _attrlist_append (List l, char *str)
-{
-    List tmp = list_split (",", str);
-    ListIterator i = NULL;
-    char *attr = NULL;
-
-    if (l == NULL) 
-        return ((l = tmp));
-
-    i = list_iterator_create (tmp);
-    while ((attr = list_next (i))) 
-        list_append (l, Strdup(attr));
-    list_destroy (tmp);
-
-    return (l);
-}
-
 
 /*
  * vi: tabstop=4 shiftwidth=4 expandtab

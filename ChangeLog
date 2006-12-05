@@ -28,6 +28,11 @@
 	* src/common/split.c : list_split_append() returns list_join() if
 	  list argument is NULL.
 	  
+	* src/modules/dshgroup.c, src/modules/genders.c, 
+	  src/modules/netgroup.c, src/modules/nodeattr.c,
+	  src/modules/slurm.c :
+	  Convert to use list_split_append() instead of statically defined
+	  helper functions.
 
 2006-08-25  Mark Grondona <mgrondona@llnl.gov>
 
