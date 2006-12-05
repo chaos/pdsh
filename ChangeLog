@@ -5,6 +5,8 @@
 
 	* doc/pdsh.1.in : Document "all" argument to -j option.
 
+	* config/ac_msghdr_accrights.m4 : Add missing m4 include file.
+
 2006-12-04  Mark Grondona <mgrondona@llnl.gov>
 
 	* configure.ac : Define _POSIX_PTHREAD_SEMANTICS for Solaris
