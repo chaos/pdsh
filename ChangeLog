@@ -1,3 +1,7 @@
+2006-12-06  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/dsh.c : Don't close fd in _do_output().
+
 2006-12-05  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/slurm.c : Allow "all" argument to -j to select

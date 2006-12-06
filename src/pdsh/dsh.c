@@ -654,7 +654,7 @@ static void *_rcp_thread(void *args)
              *   (ignore errors) 
              *  XXX: Is this necessary. Will there be any data on stderr?
              */
-            while (_do_output (a->rcmd->efd, a->errbuf, (out_f) err, false, a) > 0)
+            while (_handle_rcmd_stderr (a) > 0)
                 ;
             _flush_output (a->errbuf, (out_f) err, a);
         }
@@ -713,8 +713,7 @@ static int _do_output (int fd, cbuf_t cb, out_f outf, bool read_rc, thd_t *t)
             return (1);
         err ("%p: %S: read: %m\n", t->host);
         return (-1);
-    } else if (rc == 0) 
-        close (fd);
+    } 
 
     while (cbuf_read_line (cb, buf, 8192, 1) > 0) {
 
@@ -762,6 +761,30 @@ static int _die_if_signalled (thd_t *t)
 
     /* NOTREACHED */
     return (0);
+}
+
+static int _handle_rcmd_stdout (thd_t *th)
+{
+    int rc = _do_output (th->rcmd->fd, th->outbuf, (out_f) out, true, th);
+
+    if (rc <= 0) {
+        close (th->rcmd->fd);
+        th->rcmd->fd = -1;
+    }
+
+    return (rc);
+}
+
+static int _handle_rcmd_stderr (thd_t *th)
+{
+    int rc = _do_output (th->rcmd->efd, th->errbuf, (out_f) err, false, th);
+
+    if (rc <= 0) {
+        close (th->rcmd->efd);
+        th->rcmd->efd = -1;
+    }
+
+    return (rc);
 }
 
 /*
@@ -832,13 +855,13 @@ static void *_rsh_thread(void *args)
 
             /* stdout ready or closed ? */
             if (xpfds[0].revents & (XPOLLREAD|XPOLLERR)) {
-                if (_do_output (a->rcmd->fd, a->outbuf, (out_f) out, true, a) <= 0)
+                if (_handle_rcmd_stdout (a) <= 0)
                     xpfds[0].fd = -1;
             }
 
             /* stderr ready or closed ? */
             if (a->dsh_sopt && xpfds[1].revents & (XPOLLREAD|XPOLLERR)) {
-                if (_do_output (a->rcmd->efd, a->errbuf, (out_f) err, false, a) <= 0)
+                if (_handle_rcmd_stderr (a) <= 0)
                     xpfds[1].fd = -1;
             }
 
