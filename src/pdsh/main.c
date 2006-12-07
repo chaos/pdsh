@@ -54,12 +54,15 @@
 #include "dsh.h"
 #include "opt.h"
 #include "mod.h"
+#include "pcp_client.h"
 #include "pcp_server.h"
 #include "privsep.h"
 
 extern const char *pdsh_module_dir;
 
 static void _interactive_dsh(opt_t *);
+static int _pcp_remote_client (opt_t *);
+static int _pcp_remote_server (opt_t *);
 
 int main(int argc, char *argv[])
 {
@@ -101,8 +104,10 @@ int main(int argc, char *argv[])
          */
         if (opt.info_only)      /* display info only */
             opt_list(&opt);
-        else if (pdsh_personality() == PCP && opt.pcp_server)
-            retval = pcp_server(&opt);
+        else if (pdsh_personality() == PCP && opt.pcp_server) 
+            retval = (_pcp_remote_server (&opt) < 0);
+        else if (pdsh_personality() == PCP && opt.pcp_client)
+            retval = (_pcp_remote_client (&opt) < 0);
         else if (pdsh_personality() == PCP || opt.cmd != NULL)
             retval = dsh(&opt); /* single dsh/pcp command */
         else                    /* prompt loop */
@@ -370,6 +375,36 @@ static char *_getcmd(char *prompt)
 }
 
 #endif                          /* WITH_READLINE */
+
+static int _pcp_remote_server (opt_t *opt)
+{
+    struct pcp_server svr[1];
+
+    svr->infd =          STDIN_FILENO;
+    svr->outfd =         STDOUT_FILENO;
+    svr->preserve =      opt->preserve;
+    svr->target_is_dir = opt->target_is_directory;
+    svr->outfile =       opt->outfile_name;
+
+    return (pcp_server (svr));
+}
+
+static int _pcp_remote_client (opt_t *opt)
+{
+    struct pcp_client pcp[1];
+
+    pcp->infd =  STDIN_FILENO;
+    pcp->outfd = STDOUT_FILENO;
+
+    pcp->infiles = pcp_expand_dirs (opt->infile_names);
+
+    pcp->host =       opt->pcp_client_host;
+    pcp->preserve =   opt->preserve;
+    pcp->pcp_client = opt->pcp_client;
+
+    return (pcp_client (pcp));
+}
+
 
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab

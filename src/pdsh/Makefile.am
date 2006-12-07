@@ -45,6 +45,8 @@ PDSH_SOURCES = \
     privsep.h \
     pcp_server.c \
     pcp_server.h \
+    pcp_client.c \
+    pcp_client.h \
     testcase.c \
     wcoll.c \
     wcoll.h \

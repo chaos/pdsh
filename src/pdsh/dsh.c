@@ -67,9 +67,6 @@
 #include <sys/wait.h>
 #include <sys/poll.h>
 #include <sys/time.h>
-#include <sys/stat.h>
-#include <sys/param.h>
-#include <dirent.h>
 #if	HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -86,10 +83,6 @@
 #include <assert.h>
 #include <netdb.h>              /* gethostbyname */
 #include <sys/resource.h>       /* get/setrlimit */
-
-#ifndef MAXPATHNAMELEN
-#define MAXPATHNAMELEN MAXPATHLEN
-#endif
 
 #ifndef PTHREAD_STACK_MIN
 #  define PTHREAD_STACK_MIN ((size_t) sysconf (_SC_THREAD_STACK_MIN))
@@ -111,10 +104,6 @@
 /* set the default stacksize for threads to 128k */
 #define DSH_THREAD_STACKSIZE    128*1024
 
-/* define the filename flag as an impossible filename */
-#define EXIT_SUBDIR_FILENAME    "a!b@c#d$"
-#define EXIT_SUBDIR_FLAG        "E\n"
-
 #include "src/common/list.h"
 #include "src/common/xmalloc.h"
 #include "src/common/xstring.h"
@@ -123,6 +112,8 @@
 #include "src/common/fd.h"
 #include "dsh.h"
 #include "opt.h"
+#include "pcp_client.h"
+#include "pcp_server.h"
 #include "wcoll.h"
 #include "rcmd.h"
 
@@ -162,6 +153,8 @@ static int sigint_terminates = 0;
  */
 typedef void (* out_f) (const char *, ...);
 static int _do_output (int fd, cbuf_t cb, out_f outf, bool read_rc, thd_t *t);
+static int _handle_rcmd_stderr (thd_t *t);
+static int _handle_rcmd_stdout (thd_t *t);
 static void _flush_output (cbuf_t cb, out_f outf, thd_t *t);
 
 /*
@@ -317,254 +310,6 @@ static void *_wdog(void *args)
     return NULL;
 }
 
-static void _rexpand_dir(List list, char *name)
-{
-    DIR *dir;
-    struct dirent *dp;
-    struct stat sb;
-    char file[MAXPATHNAMELEN];
-
-    dir = opendir(name);
-    if (dir == NULL)
-        errx("%p: opendir: %s: %m\n", name);
-    while ((dp = readdir(dir))) {
-        if (dp->d_ino == 0)
-            continue;
-        if (!strcmp(dp->d_name, ".") || !strcmp(dp->d_name, ".."))
-            continue;
-        snprintf(file, sizeof(file), "%s/%s", name, dp->d_name);
-        if (stat(file, &sb) < 0)
-            errx("%p: can't stat %s: %m\n", file);
-        if (access(name, R_OK) < 0)
-            errx("%p: access: %s: %m\n", name);
-        if (!S_ISDIR(sb.st_mode) && !S_ISREG(sb.st_mode))
-            errx("%p: not a regular file or directory: %s\n", file);
-        list_append(list, Strdup(file));
-        if (S_ISDIR(sb.st_mode))
-            _rexpand_dir(list, file);
-    }
-    closedir(dir);
-
-    /* Since pdcp reads file names and directories only once for
-     * efficiency, we must specify a special flag so we know when
-     * to tell the server to "move up" the directory tree.
-     */
-
-    list_append(list, Strdup(EXIT_SUBDIR_FILENAME));
-}
-
-static List _expand_dirs(List infiles)
-{
-    List new = list_create(NULL);
-    struct stat sb;
-    char *name;
-    ListIterator i;
-
-    i = list_iterator_create(infiles);
-    while ((name = list_next(i))) {
-        if (access(name, R_OK) < 0)
-            errx("%p: access: %s: %m\n", name);
-        if (stat(name, &sb) < 0)
-            errx("%p: stat: %s: %m\n", name);
-        list_append(new, name);
-        /* -r option checked during command line argument checks */
-        if (S_ISDIR(sb.st_mode))
-            _rexpand_dir(new, name);
-    }
-    
-    return new;
-}
-
-/*
- * Wrapper for the write system call that handles short writes.
- * Not sure if write ever returns short in practice but we have to be sure.
- *	fd (IN)		file descriptor to write to 
- *	buf (IN)	data to write
- *	size (IN)	size of buf
- *	RETURN		-1 on failure, size on success
- */
-static int _rcp_write(int fd, char *buf, int size)
-{
-    char *bufp = buf;
-    int towrite = size;
-    int outbytes;
-
-    while (towrite > 0) {
-        outbytes = write(fd, bufp, towrite);
-        if (outbytes <= 0) {
-            assert(outbytes != 0);
-            return -1;
-        }
-        towrite -= outbytes;
-        bufp += outbytes;
-    }
-    return size;
-}
-
-/*
- * Write the contents of the named file to the specified file descriptor.
- *	outfd (IN)	file descriptor to write to 
- *	filename (IN)	name of file
- *	host (IN)	name of remote host for error messages
- *	RETURN		-1 on failure, 0 on success.
- */
-static int _rcp_send_file_data(int outfd, char *filename, char *host)
-{
-    int infd, inbytes, total = 0;
-    char tmpbuf[BUFSIZ];
-
-    infd = open(filename, O_RDONLY);
-    /* checked ahead of time - shouldn't happen */
-    if (infd < 0) {
-        err("%S: _rcp_send_file_data: open %s: %m\n", host, filename);
-        return -1;
-    }
-    do {
-        inbytes = read(infd, tmpbuf, BUFSIZ);
-        if (inbytes < 0) {
-            err("%S: _rcp_send_file_data: read %s: %m\n", host, filename);
-            return -1;
-        }
-        if (inbytes > 0) {
-            total += inbytes;
-            if (_rcp_write(outfd, tmpbuf, inbytes) < 0) {
-                err("%S: _rcp_send_file_data: write: %m\n", host);
-                return -1;
-            }
-        }
-    } while (inbytes > 0);      /* until EOF */
-    close(infd);
-    return 0;
-}
-
-/*
- * Send string to the specified file descriptor.  Do not send trailing '\0'
- * as RCP terminates strings with newlines.
- *	fd (IN)		file descriptor to write to
- *	str (IN)	string to write
- *	host (IN)	name of remote host for error messages
- *	RETURN 		-1 on failure, 0 on success
- */
-static int _rcp_sendstr(int fd, char *str, char *host)
-{
-    int n;
-    assert(strlen(str) > 0);
-    assert(str[strlen(str) - 1] == '\n');
-
-    if ((n = _rcp_write(fd, str, strlen(str))) < 0) 
-        return -1;
-
-    assert(n == strlen(str));
-    return 0;
-}
-
-/*
- * Receive an RCP response code and possibly error message.
- *	fd (IN)		file desciptor to read from
- *	host (IN)	hostname for error messages
- *	RETURN		-1 on fatal error, 0 otherwise
- */
-static int _rcp_response(int fd, char *host)
-{
-    char resp;
-    int i = 0, result = -1;
-    int n;
-    char errstr[BUFSIZ];
-
-    if ((n = read(fd, &resp, sizeof(resp))) != sizeof(resp)) 
-        return (-1);
-
-    switch (resp) {
-        case 0:                /* ok */
-            result = 0;
-            break;
-        default:               /* just error string */
-            errstr[i++] = resp;
-            result = 0;
-        case 1:                /* fatal error + string */
-            fd_read_line (fd, &errstr[i], BUFSIZ - i);
-            err("%p: %S: %s: %s", host, result ? "fatal" : "error", errstr);
-            break;
-    }
-    return result;
-}
-
-#define RCP_MODEMASK (S_ISUID|S_ISGID|S_ISVTX|S_IRWXU|S_IRWXG|S_IRWXO)
-
-static int _rcp_sendfile(int fd, char *file, char *host, bool popt)
-{
-    int result = 0;
-    char tmpstr[BUFSIZ], *template;
-    struct stat sb;
-
-    /*err("%S: %s\n", host, file); */
-
-    if (stat(file, &sb) < 0) {
-        err("%S: %s: %m\n", host, file);
-        goto fail;
-    }
-
-    if (popt) {
-        /* 
-         * 1: SEND stat time: "T%ld %ld %ld %ld\n" 
-         *    (st_mtime, st_mtime_usec, st_atime, st_atime_usec)
-         */
-        snprintf(tmpstr, sizeof(tmpstr), "T%ld %ld %ld %ld\n",
-                 (long) sb.st_mtime, 0L, sb.st_atime, 0L);
-        if (_rcp_sendstr(fd, tmpstr, host) < 0)
-            goto fail;
-
-        /* 2: RECV response code */
-        if (_rcp_response(fd, host) < 0)
-            goto fail;
-    }
-
-    if (S_ISDIR(sb.st_mode)) {
-        /* 
-         * 3a: SEND directory mode: "D%04o %d %s\n"
-         *     (st_mode & RCP_MODEMASK, 0, name)
-         */
-        snprintf(tmpstr, sizeof(tmpstr), "D%04o %d %s\n",
-                 sb.st_mode & RCP_MODEMASK, 0, xbasename(file));
-        if (_rcp_sendstr(fd, tmpstr, host) < 0)
-            goto fail;
-    } else {
-        /* 
-         * 3b: SEND file mode: "C%04o %lld %s\n" or "C%04o %ld %s\n"
-         *    (st_mode & MODE_MASK, st_size, basename(filename))
-         *    Use second template if sizeof(st_size) > sizeof(long).
-         */
-        template = (sizeof(sb.st_size) > sizeof(long)
-                    ? "C%04o %lld %s\n" : "C%04o %ld %s\n");
-        snprintf(tmpstr, sizeof(tmpstr), template,
-                 sb.st_mode & RCP_MODEMASK, sb.st_size, xbasename(file));
-        if (_rcp_sendstr(fd, tmpstr, host) < 0)
-            goto fail;
-    }
-
-    /* 4: RECV response code */
-    if (_rcp_response(fd, host) < 0)
-        goto fail;
-
-    if (S_ISREG(sb.st_mode)) {
-        /* 5: SEND data */
-        if (_rcp_send_file_data(fd, file, host) < 0)
-            goto fail;
-
-        /* 6: SEND NULL byte */
-        if (_rcp_write(fd, "", 1) < 0)
-            goto fail;
-
-        /* 7: RECV response code */
-        if (_rcp_response(fd, host) < 0)
-            goto fail;
-    }
-
-    result = 1;                 /* indicate success */
-  fail:
-    return result;
-}
-
 /*
  * Return the h_addr of a hostname, exiting if there is a lookup failure.
  *	name (IN)	hostname
@@ -604,6 +349,85 @@ static state_t _update_connect_state (thd_t *a)
     return (a->state);
 }
 
+static int _pcp_server (thd_t *th)
+{
+    struct pcp_server svr[1];
+
+    svr->infd =          th->rcmd->fd;
+    svr->outfd =         svr->infd;
+    svr->preserve =      th->pcp_popt;
+    svr->target_is_dir = th->pcp_yopt;
+    svr->outfile =       th->outfile_name;
+
+    return (pcp_server (svr));
+}
+
+static int _pcp_client (thd_t *th)
+{
+    struct pcp_client pcp[1];
+
+    pcp->infd =       th->rcmd->fd;
+    pcp->outfd =      pcp->infd;
+
+    pcp->preserve =   th->pcp_popt;
+    pcp->pcp_client = th->pcp_Zopt;
+    pcp->host =       th->host;
+    pcp->infiles =    th->pcp_infiles;
+
+    return (pcp_client (pcp));
+}
+
+static int _parallel_copy (thd_t *th)
+{
+    int rv = 0;
+    /* 
+     * Run threaded pcp server or client
+     */
+    if (th->pcp_Popt)
+        rv = _pcp_server (th);
+    else
+        rv = _pcp_client (th);
+
+    if ((!th->pcp_Popt && rv < 0) || (th->pcp_Popt)) {
+        /* 
+         *  Copy any pending stderr to user 
+         *   (ignore errors) 
+         *
+         *  Notes: 
+         *
+         *  If the pcp_client was executed, stderr is unlikely b/c
+         *  the pcp_server does not write to stderr and all
+         *  pdsh/pdcp option parameters have been checked for
+         *  correctness.  However, under a disaster situation,
+         *  pdsh/pdcp core code itself could have an error and
+         *  write to stderr.  This call should only be executed if
+         *  there is an error with the pcp_client.  Since the
+         *  client is responsible for closing/finishing the
+         *  connection the below could spin if an error wasn't
+         *  available for reading.
+         *
+         *  If the pcp_server was executed, stderr output could
+         *  come from the pdsh/pdcp core code.  For example, if a
+         *  file has a permission denied error, it would be caught
+         *  in the options checks and output to stderr.  Even if
+         *  there is no stderr, the below cannot spin b/c the
+         *  pcp_client on the remote node will close the
+         *  connection when the copy (or error output) is
+         *  complete.
+         */
+        while (_handle_rcmd_stderr (th) > 0)
+            ;
+        _flush_output (th->errbuf, (out_f) err, th);
+
+    }
+
+    close(th->rcmd->fd);
+    if (th->dsh_sopt)
+        close(th->rcmd->efd);
+
+    return (rv);
+}
+
 /*
  * Rcp thread.  One per remote connection.
  * Arguments are pointer to thd_t entry defined above.
@@ -613,6 +437,7 @@ static void *_rcp_thread(void *args)
     thd_t *a = (thd_t *) args;
     int result = DSH_DONE;      /* the desired outcome */
     int rc;
+    char *rcpycmd = NULL;
 
 #if	HAVE_MTSAFE_GETHOSTBYNAME
     if (a->rcmd->opts->resolve_hosts)
@@ -623,46 +448,24 @@ static void *_rcp_thread(void *args)
     a->state = DSH_RCMD;
     dsh_mutex_unlock(&thd_mutex);
 
+    /* For reverse copy, the host needs to be appended to the end of the command */
+    if (a->pcp_Popt) {
+        xstrcat(&rcpycmd, a->cmd);
+        xstrcat(&rcpycmd, " ");
+        xstrcat(&rcpycmd, a->host);
+    }
+
     rcmd_connect (a->rcmd, a->host, a->addr, a->luser, a->ruser, 
-                  a->cmd, a->nodeid, a->dsh_sopt);
+                  (rcpycmd) ? rcpycmd : a->cmd, a->nodeid, a->dsh_sopt);
+
+    if (rcpycmd)
+        Free((void **) &rcpycmd);
 
     if (a->rcmd->fd == -1)
         result = DSH_FAILED;
-    else if (_update_connect_state(a) != DSH_CANCELED) {
+    else if (_update_connect_state(a) != DSH_CANCELED) 
+        _parallel_copy(a);
 
-        /* 0: RECV response code */
-        if (_rcp_response(a->rcmd->fd, a->host) >= 0) {
-            ListIterator i;
-            char *name;
-
-            /* Send the files */
-            i = list_iterator_create(a->pcp_infiles);
-            while ((name = list_next(i))) {
-                if (strcmp(name, EXIT_SUBDIR_FILENAME) == 0) {
-                    if (_rcp_sendstr(a->rcmd->fd, EXIT_SUBDIR_FLAG, a->host) < 0)
-                        errx("%p: failed to send exit subdir flag\n");
-                    if (_rcp_response(a->rcmd->fd, a->host) < 0)
-                        errx("%p: failed to exit subdir properly\n");
-                    continue;
-                }
-                _rcp_sendfile(a->rcmd->fd, name, a->host, a->pcp_popt);
-            }
-            list_iterator_destroy(i);
-        } else {
-            /* 
-             *  Copy any pending stderr to user 
-             *   (ignore errors) 
-             *  XXX: Is this necessary. Will there be any data on stderr?
-             */
-            while (_handle_rcmd_stderr (a) > 0)
-                ;
-            _flush_output (a->errbuf, (out_f) err, a);
-        }
-
-        close(a->rcmd->fd);
-        if (a->dsh_sopt)
-            close(a->rcmd->efd);
-    } 
     /* update status */
     dsh_mutex_lock(&thd_mutex);
     a->state = result;
@@ -746,7 +549,6 @@ static void _flush_output (cbuf_t cb, out_f outf, thd_t *t)
 
     return;
 }
-
 
 static int _die_if_signalled (thd_t *t)
 {
@@ -1013,7 +815,11 @@ static int _thd_init (thd_t *th, opt_t *opt, List pcp_infiles, int i)
     th->pcp_outfile = opt->outfile_name;
     th->pcp_popt = opt->preserve;
     th->pcp_ropt = opt->recursive;
+    th->pcp_yopt = opt->target_is_directory;
+    th->pcp_Popt = opt->reverse_copy;
+    th->pcp_Zopt = opt->pcp_client;
     th->pcp_progname = opt->progname;
+    th->outfile_name = opt->outfile_name;
     th->kill_on_fail = opt->kill_on_fail;
     th->outbuf = cbuf_create (64, 8192);
     th->errbuf = cbuf_create (64, 8192);
@@ -1183,11 +989,14 @@ int dsh(opt_t * opt)
     }
 
     /* build PCP command */
-    if (pdsh_personality() == PCP) {
+    if (pdsh_personality() == PCP && !opt->reverse_copy) {
         char *cmd = NULL;
 
         /* expand directories, if any, and verify access for all files */
-        pcp_infiles = _expand_dirs(opt->infile_names);
+        if (!(pcp_infiles = pcp_expand_dirs(opt->infile_names))) {
+            err("%p: unable to build file copy list\n");
+            exit(1);
+        }
 
         xstrcat(&cmd, opt->path_progname); 
         if (opt->recursive)
@@ -1199,6 +1008,30 @@ int dsh(opt_t * opt)
         xstrcat(&cmd, " -z ");               /* invoke pcp server */
         xstrcat(&cmd, opt->outfile_name);    /* outfile is remote target */
 
+        opt->cmd = cmd;
+    }
+
+    if (pdsh_personality() == PCP && opt->reverse_copy) {
+        char *cmd = NULL;
+        char *filename;
+        ListIterator i;
+
+        xstrcat(&cmd, opt->path_progname); 
+
+        if (opt->recursive)
+            xstrcat(&cmd, " -r");
+        if (opt->preserve)
+            xstrcat(&cmd, " -p");
+        xstrcat(&cmd, " -Z ");               /* invoke pcp client */
+
+        i = list_iterator_create(opt->infile_names);
+        while ((filename = list_next(i))) {
+            xstrcat(&cmd, " ");
+            xstrcat(&cmd, filename);
+        }
+        list_iterator_destroy(i);
+
+        /* The 'host' will be appended to the cmd in _rcp_thread */
         opt->cmd = cmd;
     }
 

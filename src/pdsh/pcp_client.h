@@ -24,8 +24,8 @@
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 \*****************************************************************************/
 
-#ifndef _PCP_SERVER_H
-#define _PCP_SERVER_H
+#ifndef _PCP_CLIENT_H
+#define _PCP_CLIENT_H
 
 #if HAVE_CONFIG_H
 #  include <config.h>
@@ -33,14 +33,35 @@
 
 #include "src/pdsh/opt.h"
 
-struct pcp_server {
+#include "src/common/list.h"
+
+/* define the filename flag as an impossible filename */
+#define EXIT_SUBDIR_FILENAME    "a!b@c#d$"
+#define EXIT_SUBDIR_FLAG        "E\n"
+
+/* Store the file that should be copied and if it was a
+ * file specified by the user or if it is a file found due to
+ * recursively moving down a directory (-r option).  This flag
+ * is needed so the right output filename can be determined
+ * on reverse copies.
+ */
+struct pcp_filename {
+    char *filename;
+    int file_specified_by_user;
+};
+
+/* expand directories, if any, and verify access for all files */
+List pcp_expand_dirs (List infile_names);
+
+struct pcp_client {
 	int infd;
 	int outfd;
 	bool preserve;
-	bool target_is_dir;
-	char *outfile;
+	bool pcp_client;
+	char *host;
+	List infiles;
 };
 
-int pcp_server (struct pcp_server *s);
+int pcp_client (struct pcp_client *cli);
 
-#endif /* _PCP_SERVER_H */
+#endif /* _PCP_CLIENT_H */

@@ -1,3 +1,35 @@
+2006-12-07  Albert Chu <chu11@llnl.gov>
+
+	Support a Reverse pdcp option.
+
+	* src/pdsh/pcp_server.c : Remove global infd and outfd file descriptors.
+	  Set and pass them around via a structure.  End server gracefully
+	  rather than through exit().  Adjust API for more flexible use.
+
+	* src/pdsh/main.c (main) : Support new pcp_server() API.
+	
+	* src/pdsh/pcp_client.h, src/pdsh/pcp_client.c : New files.
+
+	* src/pdsh/dsh.c (_rexpand_dir, _expand_dir, _rcp_write,
+	  _rcp_send_file_data, _rcp_sendstr, _rcp_response, _rcp_sendfile) :
+	  Removed due to new common functions in pcp_client files.
+
+	* src/pdsh/dsh.c (dsh, _rcp_thread) : Use new pcp_client functions.
+
+	* src/pdsh/opt.c (_infile_names_check) : New function.
+	
+	* src/pdsh/opt.h, src/pdsh/opt.c : Add support for reverse copy (rpdcp)
+	  and pcp client (-Z) options and checks. Use _infile_names_check for 
+	  common checks.
+
+	* src/pdsh/dsh.c (dsh, _rcp_thread), src/pdsh/main.c (main) :
+	  Support reverse copy.
+
+	* src/pdsh/pcp_server.c (pcp_server) : Remove setuid call.
+	  Unnecessary for pdsh/pdcp, a remnant from old rcp code.
+
+	* doc/pdcp.1.in : Update appropriately.
+
 2006-12-06  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/dsh.c : Don't close fd in _do_output().
@@ -47,6 +79,7 @@
 	  Convert to use list_split_append() instead of statically defined
 	  helper functions.
 
+>>>>>>> .merge-right.r1101
 2006-08-25  Mark Grondona <mgrondona@llnl.gov>
 
 	* pdsh.spec : Remove erroneous "Requires: whatsup" from netgroup

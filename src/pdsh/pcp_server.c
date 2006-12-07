@@ -97,6 +97,7 @@ char rcsid[] = "$Id$";
 #include <stdio.h>
 
 #include "src/common/err.h"
+#include "pcp_server.h"
 #include "opt.h"
 
 #ifndef roundup
@@ -110,52 +111,51 @@ char rcsid[] = "$Id$";
  * - update error messages to use pdcp error functions
  * - minor changes to enhance readability and fit style to rest
  *   of pdsh/pdcp code. 
+ * - pass infd/outfd through structure rather than global
+ * - don't exit on error, just return
  */
-
-int infd = STDIN_FILENO;  
-int outfd = STDOUT_FILENO;
 
 typedef struct _buf {
     int	   cnt;
     char  *buf;
 } BUF;
 
-static void _verifydir(const char *cp);
-static int  _response(void);
-static BUF *_allocbuf(BUF *bp, int fd, int blksize);
-static void _error(const char *fmt, ...);
-static void _sink(opt_t *opt, char *targ);
+static int  _verifydir(struct pcp_server *s, const char *cp);
+static int  _response(struct pcp_server *s);
+static BUF *_allocbuf(struct pcp_server *s, BUF *bp, int fd, int blksize);
+static void _error(struct pcp_server *s, const char *fmt, ...);
+static void _sink(struct pcp_server *s, char *targ, BUF *bufp);
 
-static void
-_verifydir(const char *cp)
+static int
+_verifydir(struct pcp_server *s, const char *cp)
 {
     struct stat stb;
 
     if (stat(cp, &stb) >= 0) {
         if ((stb.st_mode & S_IFMT) == S_IFDIR)
-            return;
+            return 0;
         errno = ENOTDIR;
     }
-    _error("%s not a directory\n", cp);
-    exit(1);
+    _error(s, "%s not a directory\n", cp);
+    return -1;
 }
 
 static int
-_response(void)
+_response(struct pcp_server *s)
 {
     char resp;
 
-    if (read(infd, &resp, sizeof(resp)) != sizeof(resp)) {
-        _error("lost connection\n");
-        exit(1);
+    if (read(s->infd, &resp, sizeof(resp)) != sizeof(resp)) {
+        _error(s, "lost connection\n");
+        return -1;
     }
 
     switch(resp) {
         case 0:			/* ok */
             return 0;
         default:
-            _error("invalid response received\n");
-            exit(1);
+            _error(s, "invalid response received\n");
+            return -1;
     }
 
     /*NOTREACHED*/
@@ -163,13 +163,13 @@ _response(void)
 }
 
 static BUF *
-_allocbuf(BUF *bp, int fd, int blksize)
+_allocbuf(struct pcp_server *s, BUF *bp, int fd, int blksize)
 {
     struct stat stb;
     int size;
 
     if (fstat(fd, &stb) < 0) {
-        _error("fstat: %m\n");
+        _error(s, "fstat: %m\n");
         return NULL;
     }
 
@@ -181,7 +181,7 @@ _allocbuf(BUF *bp, int fd, int blksize)
             free(bp->buf);
         bp->buf = malloc(size);
         if (!bp->buf) {
-            _error("malloc: out of memory\n");
+            _error(s, "malloc: out of memory\n");
             return NULL;
         }
     }
@@ -190,14 +190,14 @@ _allocbuf(BUF *bp, int fd, int blksize)
 }
 
 static void
-_error(const char *fmt, ...)
+_error(struct pcp_server *s, const char *fmt, ...)
 {
     static FILE *fp = NULL;
     char newfmt[1000];
     va_list ap;
     int save_errno = errno;   /* errno could be changed by fopen */
 
-    if (!fp && !(fp = fdopen(outfd, "w")))
+    if (!(fp = fdopen(s->outfd, "w")))
         return;
 
     va_start(ap, fmt);
@@ -211,10 +211,9 @@ _error(const char *fmt, ...)
     fflush(fp);
 }
 
-static void 
-_sink(opt_t *opt, char *targ) {
+static void
+_sink(struct pcp_server *svr, char *targ, BUF *bufp) {
     register char *cp;
-    static BUF buffer;
     struct stat stb;
     struct timeval tv[2];
     enum { YES, NO, DISPLAYED } wrerr;
@@ -232,20 +231,22 @@ _sink(opt_t *opt, char *targ) {
 
     setimes = targisdir = 0;
     mask = umask(0);
-    if (!opt->preserve)
+    if (!svr->preserve)
         (void)umask(mask);
 
-    if (opt->target_is_directory)
-        _verifydir(opt->outfile_name);
+    if (svr->target_is_dir) {
+        if (_verifydir(svr, svr->outfile) < 0)
+            return;
+    }
 
-    (void)write(outfd, "", 1);
+    (void)write(svr->outfd, "", 1);
     if (stat(targ, &stb) == 0 && (stb.st_mode & S_IFMT) == S_IFDIR)
         targisdir = 1;
 
     for (first = 1;; first = 0) {
 		int rc;
         cp = buf;
-        if ((rc = read(infd, cp, 1)) <= 0) {
+        if ((rc = read(svr->infd, cp, 1)) <= 0) {
             if (namebuf)
                 free(namebuf);
             return;
@@ -254,7 +255,7 @@ _sink(opt_t *opt, char *targ) {
             SCREWUP("unexpected <newline>");
 
         do {
-            if (read(infd, &ch, sizeof(ch)) != sizeof(ch))
+            if (read(svr->infd, &ch, sizeof(ch)) != sizeof(ch))
                 SCREWUP("lost connection");
             *cp++ = ch;
         } while (cp < &buf[BUFSIZ - 1] && ch != '\n');
@@ -262,12 +263,12 @@ _sink(opt_t *opt, char *targ) {
 
         if (buf[0] == '\01' || buf[0] == '\02') {
             if (buf[0] == '\02')
-                exit(1);
+                goto end_server;
             continue;
         }
 
         if (buf[0] == 'E') {
-            (void)write(outfd, "", 1);
+            (void)write(svr->outfd, "", 1);
             if (namebuf)
                 free(namebuf);
             return;
@@ -293,7 +294,7 @@ _sink(opt_t *opt, char *targ) {
             getnum(atime.tv_usec);
             if (*cp++ != '\0')
                 SCREWUP("atime.usec not delimited");
-            (void)write(outfd, "", 1);
+            (void)write(svr->outfd, "", 1);
             continue;
         }
         if (*cp != 'C' && *cp != 'D')
@@ -333,7 +334,7 @@ _sink(opt_t *opt, char *targ) {
                     free(namebuf);
               
                 if (!(namebuf = malloc(need))) { 
-                    _error("out of memory\n");
+                    _error(svr, "out of memory\n");
 
                     /* original rcp may not work with a continue here,
                      * but it will work with pdcp protocol.
@@ -357,31 +358,32 @@ _sink(opt_t *opt, char *targ) {
                     errno = ENOTDIR;
                     goto bad;
                 }
-                if (opt->preserve)
+                if (svr->preserve)
                     (void)chmod(np, mode);
             } else if (mkdir(np, mode) < 0)
                 goto bad;
 
             /* recursively go down a directory */
-            _sink(opt, np);
+            _sink(svr, np, bufp);
+
             if (setimes) {
                 setimes = 0;
                 if (utimes(np, tv) < 0)
-                    _error("can't set times on %s: %m\n", np);
+                    _error(svr, "can't set times on %s: %m\n", np);
             }
             continue;
         }
 
         if ((ofd = open(np, O_WRONLY|O_CREAT, mode)) < 0) {
 bad:	     
-            _error("%s: %m\n", np);
+            _error(svr, "%s: %m\n", np);
             continue;
         }
-        if (exists && opt->preserve)
+        if (exists && svr->preserve)
             (void)fchmod(ofd, mode);
 
-        (void)write(outfd, "", 1);
-        if ((bp = _allocbuf(&buffer, ofd, BUFSIZ)) == NULL) {
+        (void)write(svr->outfd, "", 1);
+        if ((bp = _allocbuf(svr, bufp, ofd, BUFSIZ)) == NULL) {
             (void)close(ofd);
             continue;
         }
@@ -394,10 +396,10 @@ bad:
                 amt = size - i;
             count += amt;
             do {
-                j = read(infd, cp, amt);
+                j = read(svr->infd, cp, amt);
                 if (j <= 0) {
-                    _error("%m\n");
-                    exit(1);
+                    _error(svr, "%m\n");
+                    goto end_server;
                 }
                 amt -= j;
                 cp += j;
@@ -412,24 +414,25 @@ bad:
         if (count != 0 && wrerr == NO && write(ofd, bp->buf, count) != count)
             wrerr = YES;
         if (ftruncate(ofd, size)) {
-            _error("can't truncate %s: %m\n", np);
+            _error(svr, "can't truncate %s: %m\n", np);
             wrerr = DISPLAYED;
         }
         (void)close(ofd);
-        (void)_response();
+        if (_response(svr) < 0)
+            goto end_server;
         if (setimes && wrerr == NO) {
             setimes = 0;
             if (utimes(np, tv) < 0) {
-                _error("can't set times on %s: %m\n", np);
+                _error(svr, "can't set times on %s: %m\n", np);
                 wrerr = DISPLAYED;
             }
         }
         switch(wrerr) {
             case YES:
-                _error("%s: %m\n", np);
+                _error(svr, "%s: %m\n", np);
                 break;
             case NO:
-                (void)write(outfd, "", 1);
+                (void)write(svr->outfd, "", 1);
                 break;
             case DISPLAYED:
                 break;
@@ -439,22 +442,21 @@ bad:
     return;
 
 screwup:
-    _error("protocol screwup: %s\n", why);
-    exit(1);
+    _error(svr, "protocol screwup: %s\n", why);
 
-    /*NOTREACHED*/
+end_server:
     return;
 }
 
-int pcp_server(opt_t *opt) {
-    uid_t userid;
+int pcp_server(struct pcp_server *svr) 
+{
+	BUF buffer;
+	memset (&buffer, 0, sizeof (buffer));
 
-    if (setuid(userid = getuid())) {
-        _error("failed to setuid: %m\n");
-        return -1;
-    }
+    /* If reverse copy, outfile is always a directory. */
+    _sink (svr, svr->outfile, &buffer);
 
-    _sink(opt, opt->outfile_name);
-
+	if (buffer.buf)
+		free (buffer.buf);
     return 0;
 }

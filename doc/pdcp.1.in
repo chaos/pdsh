@@ -6,9 +6,13 @@
 
 .SH NAME
 pdcp \- copy files to groups of hosts in parallel
+.br
+rpdcp \- (reverse pdcp) copy files from a group of hosts in parallel 
 
 .SH SYNOPSIS
 \fBpdcp\fR [\fIoptions\fR]... src [src2...] dest
+.br
+\fBrpdcp\fR [\fIoptions\fR]... src [src2...] dir
 
 .SH DESCRIPTION
 \fBpdcp\fR is a variant of the rcp(1) command.  Unlike rcp(1), which
@@ -25,7 +29,6 @@ threads.  A second SIGINT within one second terminates the program. Pending
 threads may be canceled by issuing ctrl-Z within one second of ctrl-C.
 Pending threads are those that have not yet been initiated, or are still
 in the process of connecting to the remote host.
-
 .LP 
 Like pdsh(1), the functionality of \fBpdcp\fR may be supplemented by
 dynamically loadable modules. In \fBpdcp\fR, the modules may provide
@@ -34,6 +37,16 @@ options (e.g. excluding hosts that are down), and/or host selection
 options (e.g. \fI-a\fR selects all nodes from a local config file). 
 By default, \fBpdcp\fR requires at least one "rcmd" module to be
 loaded (to provide the channel for remote copy).
+
+.SH "REVERSE PDCP"
+\fBrpdcp\fR performs a reverse parallel copy.  Rather than copying files 
+to remote hosts, files are retrieved from remote hosts and stored locally.  
+All directories or files retrieved will be stored with their remote
+hostname appended to the filename.  The destination file must be a
+directory when this option is used. 
+.LP
+In other respects, \fBrpdcp\fR is exactly like \fBpdcp\fR, and further 
+statements regarding \fBpdcp\fR in this manual also apply to \fBrpdcp\fR.
 
 .SH "RCMD MODULES"
 The method by which \fBpdcp\fR connects to remote hosts may be

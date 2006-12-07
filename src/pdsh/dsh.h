@@ -74,7 +74,11 @@ typedef struct thd {
     char *pcp_outfile;          /* name of output file/dir */
     bool pcp_popt;              /* preserve mtime/mode */
     bool pcp_ropt;              /* recursive */
+    bool pcp_yopt;              /* target is directory */
+    bool pcp_Popt;              /* reverse copy */
+    bool pcp_Zopt;              /* pcp client */
     char *pcp_progname;         /* program name */
+    char *outfile_name;         /* outfile name */
     int rc;                     /* remote return code (-S) */
     int nodeid;                 /* node index */
     int nnodes;                 /* number of nodes in job */

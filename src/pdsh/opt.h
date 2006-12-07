@@ -87,7 +87,10 @@ typedef struct {
     char *outfile_name;         /* pcp dest spec */
     bool pcp_server;            /* undocument pdcp server option */
     bool target_is_directory;   /* undocumented pdcp is target a directory */
+    bool pcp_client;            /* undocumented pdcp client option */
+    char *pcp_client_host;      /* hostname used to execute client */
     char *path_progname;        /* absolute path to program name */
+    bool reverse_copy;          /* rpdcp: reverse copy */
 } opt_t;
 
 

@@ -88,12 +88,12 @@ binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 am__pdsh_SOURCES_DIST = main.c dsh.c dsh.h mod.c mod.h rcmd.c rcmd.h \
 	opt.c opt.h privsep.c privsep.h pcp_server.c pcp_server.h \
-	testcase.c wcoll.c wcoll.h cbuf.c cbuf.h xpopen.c xpopen.h \
-	ltdl.h ltdl.c
+	pcp_client.c pcp_client.h testcase.c wcoll.c wcoll.h cbuf.c \
+	cbuf.h xpopen.c xpopen.h ltdl.h ltdl.c
 am__objects_1 = main.$(OBJEXT) dsh.$(OBJEXT) mod.$(OBJEXT) \
 	rcmd.$(OBJEXT) opt.$(OBJEXT) privsep.$(OBJEXT) \
-	pcp_server.$(OBJEXT) testcase.$(OBJEXT) wcoll.$(OBJEXT) \
-	cbuf.$(OBJEXT) xpopen.$(OBJEXT)
+	pcp_server.$(OBJEXT) pcp_client.$(OBJEXT) testcase.$(OBJEXT) \
+	wcoll.$(OBJEXT) cbuf.$(OBJEXT) xpopen.$(OBJEXT)
 @WITH_STATIC_MODULES_FALSE@am__objects_2 = ltdl.$(OBJEXT)
 am_pdsh_OBJECTS = $(am__objects_1) $(am__objects_2)
 nodist_pdsh_OBJECTS = testconfig.$(OBJEXT)
@@ -103,8 +103,8 @@ am__DEPENDENCIES_1 =
 pdsh_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_2)
 am__pdsh_inst_SOURCES_DIST = main.c dsh.c dsh.h mod.c mod.h rcmd.c \
 	rcmd.h opt.c opt.h privsep.c privsep.h pcp_server.c \
-	pcp_server.h testcase.c wcoll.c wcoll.h cbuf.c cbuf.h xpopen.c \
-	xpopen.h ltdl.h ltdl.c
+	pcp_server.h pcp_client.c pcp_client.h testcase.c wcoll.c \
+	wcoll.h cbuf.c cbuf.h xpopen.c xpopen.h ltdl.h ltdl.c
 am__objects_3 = $(am__objects_1) $(am__objects_2)
 am_pdsh_inst_OBJECTS = $(am__objects_3)
 nodist_pdsh_inst_OBJECTS = config.$(OBJEXT)
@@ -352,6 +352,8 @@ PDSH_SOURCES = \
     privsep.h \
     pcp_server.c \
     pcp_server.h \
+    pcp_client.c \
+    pcp_client.h \
     testcase.c \
     wcoll.c \
     wcoll.h \
@@ -452,6 +454,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mod.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/opt.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pcp_client.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pcp_server.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/privsep.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rcmd.Po@am__quote@

@@ -77,6 +77,15 @@ Usage: pdcp [-options] src [src2...] dest\n\
 -p                preserve modification time and modes\n"
 /* undocumented "-y"  target must be directory option */
 /* undocumented "-z"  run pdcp server option */
+/* undocumented "-Z"  run pdcp client option */
+
+#define OPT_USAGE_RPCP "\
+Usage: rpdcp [-options] src [src2...] dir\n\
+-r                recursively copy files\n\
+-p                preserve modification time and modes\n"
+/* undocumented "-y"  target must be directory option */
+/* undocumented "-z"  run pdcp server option */
+/* undocumented "-Z"  run pdcp client option */
 
 #define OPT_USAGE_COMMON "\
 -h                output usage menu and quit\n\
@@ -99,9 +108,9 @@ Usage: pdcp [-options] src [src2...] dest\n\
 #if	HAVE_MAGIC_RSHELL_CLEANUP
 #define DSH_ARGS	"sS"
 #else
-#define DSH_ARGS        "S"
+#define DSH_ARGS    "S"
 #endif
-#define PCP_ARGS	"pryz"
+#define PCP_ARGS	"pryzZ"
 #define GEN_ARGS	"hLR:t:cqf:w:x:l:u:bI:deVT:Q"
 
 /*
@@ -260,14 +269,19 @@ void opt_default(opt_t * opt, char *argv0)
 
     opt->progname = xbasename(argv0);
 
+    opt->reverse_copy = false;
+
     if (!strcmp(opt->progname, "pdsh") || !strcmp(opt->progname, "dsh"))
         personality = DSH;
     else if (!strcmp(opt->progname, "pdcp") 
             || !strcmp(opt->progname, "dcp")
             || !strcmp(opt->progname, "pcp") )
         personality = PCP;
-    else
-        errx("%p: program must be named pdsh/dsh/pdcp/dcp/pcp\n");
+    else if (!strcmp(opt->progname, "rpdcp")) {
+        personality = PCP;
+        opt->reverse_copy = true;
+    } else
+        errx("%p: program must be named pdsh/dsh/pdcp/dcp/pcp/rpdcp\n");
 
     if (pdsh_options == NULL)
         _init_pdsh_options();
@@ -325,6 +339,8 @@ void opt_default(opt_t * opt, char *argv0)
     opt->preserve = false;
     opt->pcp_server = false;
     opt->target_is_directory = false;
+    opt->pcp_client = false;
+    opt->pcp_client_host = NULL;
 
     return;
 }
@@ -478,6 +494,12 @@ void opt_args(opt_t * opt, int argc, char *argv[])
             else
                 goto test_module_option;
             break;
+        case 'Z':
+            if (pdsh_personality() == PCP)
+                opt->pcp_client = true;          /* run PDCP client */
+            else
+                goto test_module_option;
+            break;
         default: test_module_option:
             if (mod_process_opt(opt, c, optarg) < 0)
                _usage(opt);
@@ -503,10 +525,19 @@ void opt_args(opt_t * opt, int argc, char *argv[])
     } else {
         if (!opt->infile_names)
             opt->infile_names = list_create(NULL);
+        
         for (; optind < argc - 1; optind++)
             list_append(opt->infile_names, argv[optind]);
-        if (optind < argc)
-            xstrcat(&opt->outfile_name, argv[optind]);
+        if (optind < argc) {
+            /* If this is the initial pdcp call, the last argument is
+             * the output file/dir.  If this is the pcp_client, the
+             * last argument is the hostname used for connecting.
+             */
+            if (opt->pcp_client)
+                xstrcat(&opt->pcp_client_host, argv[optind]);
+            else
+                xstrcat(&opt->outfile_name, argv[optind]);
+        }
     }
 
     /* ignore wcoll & -x option if we are running pcp server */
@@ -519,6 +550,39 @@ void opt_args(opt_t * opt, int argc, char *argv[])
         if (mod_read_wcoll(opt) < 0)
             exit(1);
     }
+}
+
+/* 
+ * Check if infile_names are legit.
+ */
+static int
+_infile_names_check(opt_t * opt)
+{
+    bool verified = true;
+    ListIterator i;
+    char *name;
+
+    i = list_iterator_create(opt->infile_names);
+    while ((name = list_next(i))) {
+        struct stat sb;
+        if (stat(name, &sb) < 0) {
+            err("%p: can't stat %s\n", name);
+            verified = false;
+            continue;
+        }
+        if (!S_ISREG(sb.st_mode) && !S_ISDIR(sb.st_mode)) {
+            err("%p: not a regular file or directory: %s\n", name);
+            verified = false;
+            break;
+        }
+        if (S_ISDIR(sb.st_mode) && !opt->recursive) {
+            err("%p: use -r to copy directories: %s\n", name);
+            verified = false;
+            break;
+        }
+    }
+    list_iterator_destroy(i);
+    return verified;
 }
 
 /*
@@ -556,7 +620,7 @@ bool opt_verify(opt_t * opt)
         verified = false;
     }
 
-    if (!opt->pcp_server) { 
+    if (!opt->pcp_server && !opt->pcp_client) { 
         /* wcoll is required */
         if (opt->wcoll == NULL || hostlist_count(opt->wcoll) == 0) {
             err("%p: no remote hosts specified\n");
@@ -575,10 +639,7 @@ bool opt_verify(opt_t * opt)
     }
 
     /* PCP: must have source and destination filename(s) */
-    if (personality == PCP && !opt->pcp_server) {
-        ListIterator i;
-        char *name;
-
+    if (personality == PCP && !opt->pcp_server && !opt->pcp_client) {
         if (!opt->outfile_name || list_is_empty(opt->infile_names)) {
             err("%p: pcp requires source and dest filenames\n");
             verified = false;
@@ -589,26 +650,32 @@ bool opt_verify(opt_t * opt)
             verified = false;
         }
 
-        i = list_iterator_create(opt->infile_names);
-        while ((name = list_next(i))) {
-            struct stat sb;
-            if (stat(name, &sb) < 0) {
-                err("%p: can't stat %s\n", name);
+        /* If reverse copy, the infiles need not exist locally */
+        if (!opt->reverse_copy) {
+            if (!_infile_names_check(opt))
                 verified = false;
-                continue;
+        }
+
+        /* If reverse copy, the destination must be a directory */
+        if (opt->reverse_copy) {
+            struct stat statbuf;
+
+            if (stat(opt->outfile_name, &statbuf) < 0) {
+                err("%p: can't stat %s\n", opt->outfile_name);
+                verified = false;
             }
-            if (!S_ISREG(sb.st_mode) && !S_ISDIR(sb.st_mode)) {
-                err("%p: not a regular file or directory: %s\n", name);
+
+            if (!S_ISDIR(statbuf.st_mode)) {
+                err("%p: reverse copy dest must be a directory\n");
                 verified = false;
-                break;
-            }
-            if (S_ISDIR(sb.st_mode) && !opt->recursive) {
-                err("%p: use -r to copy directories: %s\n", name);
-                verified = false;
-                break;
             }
         }
-        list_iterator_destroy(i);
+    }
+
+    /* PCP: server and client sanity check */
+    if (personality == PCP && opt->pcp_server && opt->pcp_client) {
+        err("%p: pcp server and pcp client cannot both be set\n");
+        verified = false;
     }
 
     /* PCP: verify options when -z option specified */
@@ -622,6 +689,41 @@ bool opt_verify(opt_t * opt)
             err("%p: output file must be specified with pcp server\n");
             verified = false;
         }
+
+        if (opt->pcp_client_host) {
+            err("%p: pcp client host should not be specified with pcp server\n");
+            verified = false;
+        }
+
+        if (opt->reverse_copy) {
+            err("%p: reverse copy cannot be specified with pcp server\n");
+            verified = false;
+        }
+    }
+
+    /* PCP: verify options when -Z option specified */
+    if (personality == PCP  && opt->pcp_client) {
+
+        opt->reverse_copy = false;
+
+        if (!opt->infile_names || list_is_empty(opt->infile_names)) {
+            err("%p: list source files required for pcp client\n");
+            verified = false;
+        }
+
+        if (opt->outfile_name) {
+            err("%p: output file should not be specified with pcp client\n");
+            verified = false;
+        }
+
+        if (!opt->pcp_client_host) {
+            err("%p: pcp client host must be specified with pcp client\n");
+            verified = false;
+        }
+
+        /* If reverse copy the infiles should exist locally */
+        if (!_infile_names_check(opt))
+            verified = false;
     }
 
     return verified;
@@ -784,8 +886,10 @@ static void _usage(opt_t * opt)
 #if	HAVE_MAGIC_RSHELL_CLEANUP
         err(OPT_USAGE_STDERR);
 #endif
-    } else                      /* PCP */
+    } else if (!opt->reverse_copy) /* PCP */
         err(OPT_USAGE_PCP);
+    else 
+        err(OPT_USAGE_RPCP);
 
     err(OPT_USAGE_COMMON);
 
