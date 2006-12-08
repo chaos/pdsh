@@ -945,6 +945,8 @@ int dsh(opt_t * opt)
     pthread_attr_t attr_sig;
     List pcp_infiles = NULL;
     hostlist_iterator_t itr;
+    const char *domain = NULL;
+    bool domain_in_label = false;
 
     _mask_signals (SIG_BLOCK);
 
@@ -1046,12 +1048,30 @@ int dsh(opt_t * opt)
         errx("%p: hostlist_iterator_create failed\n");
     i = 0;
     while ((t[i].host = hostlist_next(itr))) {
+        char *d;
+        
         assert(i < rshcount);
+
         _thd_init (&t[i], opt, pcp_infiles, i);
+
+        /*
+         * Require domain names in labels if hosts have 
+         *  different domains
+         */
+        if (!domain_in_label && (d = strchr (t[i].host, '.'))) {
+            if (domain == NULL)
+                domain = d;
+            else if (strcmp (d, domain) != 0)
+                domain_in_label = true;
+        }
+
         i++;
     }
     assert(i == rshcount);
     hostlist_iterator_destroy(itr);
+
+    if (domain_in_label)
+        err_no_strip_domain ();
 
     /* set timeout values for _wdog() */
     connect_timeout = opt->connect_timeout;

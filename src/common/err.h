@@ -31,6 +31,7 @@
 #include <stdarg.h>
 
 void err_init(char *);
+void err_no_strip_domain();
 void err(char *, ...);
 void out(char *, ...);
 void errx(char *, ...);

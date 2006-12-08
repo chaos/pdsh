@@ -50,6 +50,11 @@ static char *prog = NULL;
 static char *host = NULL;
 
 /*
+ * Optionally leave domain on hostnames with _verr's %S
+ */
+static bool keep_host_domain = false;
+
+/*
  * Call this before calling err() or errx().  Sets hostname and program name 
  * for %H, %p, and %P.
  *   str (IN)	program name
@@ -64,6 +69,11 @@ void err_init(char *str)
         *p = '\0';
     host = Strdup(thishost);
     prog = Strdup(str);
+}
+
+void err_no_strip_domain ()
+{
+    keep_host_domain = true;
 }
 
 /*
@@ -105,8 +115,9 @@ static void _verr(FILE * stream, char *format, va_list ap)
                 xstrcat(&buf, va_arg(ap, char *));
             } else if (*format == 'S') {        /* %S - string, trunc */
                 snprintf(tmpstr, sizeof(tmpstr), "%s", va_arg(ap, char *));
-                if (!isdigit(*tmpstr)
-                    && (q = strchr(tmpstr, '.')))
+                if (  !isdigit(*tmpstr) 
+                   && !keep_host_domain 
+                   && (q = strchr(tmpstr, '.')))
                     *q = '\0';
                 xstrcat(&buf, tmpstr);
             } else if (*format == 'z') {        /* %z - same as %.3d */
