@@ -1,3 +1,9 @@
+2006-12-07  Mark Grondona <mgrondona@llnl.gov>
+
+	* pdsh.spec, doc/Makefile.am, doc/Makefile.in,
+	  src/pdsh/Makefile.am, src/pdsh/Makefile.in : 
+	  Install and package rpdcp and its man page.
+
 2006-12-07  Albert Chu <chu11@llnl.gov>
 
 	Support a Reverse pdcp option.

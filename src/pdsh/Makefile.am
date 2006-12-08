@@ -73,9 +73,12 @@ install-exec-hook:
          echo "Unable to chown pdsh to root"
 	@cp -p $(DESTDIR)$(bindir)/pdsh $(DESTDIR)$(bindir)/pdcp ||\
          echo "Unable to copy pdsh to pdcp"
+	@cp -p $(DESTDIR)$(bindir)/pdsh $(DESTDIR)$(bindir)/rpdcp ||\
+         echo "Unable to copy pdsh to rpdcp"
 
 uninstall-local:
 	$(RM) $(DESTDIR)$(bindir)/pdcp
+	$(RM) $(DESTDIR)$(bindir)/rpdcp
 
 MOSTLYCLEANFILES = \
     config.c \

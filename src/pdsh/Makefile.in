@@ -704,9 +704,12 @@ install-exec-hook:
          echo "Unable to chown pdsh to root"
 	@cp -p $(DESTDIR)$(bindir)/pdsh $(DESTDIR)$(bindir)/pdcp ||\
          echo "Unable to copy pdsh to pdcp"
+	@cp -p $(DESTDIR)$(bindir)/pdsh $(DESTDIR)$(bindir)/rpdcp ||\
+         echo "Unable to copy pdsh to rpdcp"
 
 uninstall-local:
 	$(RM) $(DESTDIR)$(bindir)/pdcp
+	$(RM) $(DESTDIR)$(bindir)/rpdcp
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

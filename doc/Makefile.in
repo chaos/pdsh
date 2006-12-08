@@ -452,7 +452,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-man
+install-data-am: install-data-local install-man
 
 install-exec-am:
 
@@ -485,14 +485,18 @@ uninstall-man: uninstall-man1
 .PHONY: all all-am check check-am clean clean-generic clean-libtool \
 	distclean distclean-generic distclean-libtool distdir dvi \
 	dvi-am html html-am info info-am install install-am \
-	install-data install-data-am install-exec install-exec-am \
-	install-info install-info-am install-man install-man1 \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	uninstall uninstall-am uninstall-info-am uninstall-man \
-	uninstall-man1
+	install-data install-data-am install-data-local install-exec \
+	install-exec-am install-info install-info-am install-man \
+	install-man1 install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-generic mostlyclean-libtool pdf pdf-am \
+	ps ps-am uninstall uninstall-am uninstall-info-am \
+	uninstall-man uninstall-man1
 
+
+install-data-local:
+	$(INSTALL) -d -m 0755 "$(DESTDIR)$(mandir)/man1"
+	ln -f -s pdcp.1 "$(DESTDIR)$(mandir)/man1/rpdcp.1"
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

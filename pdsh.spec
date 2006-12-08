@@ -301,6 +301,7 @@ rm -rf "$RPM_BUILD_ROOT"
 %doc README.KRB4 README.modules README.QsNet
 %{_bindir}/pdsh
 %{_bindir}/pdcp
+%{_bindir}/rpdcp
 %{_bindir}/dshbak
 %{_mandir}/man1/*
 ##############################################################################
@@ -434,6 +435,9 @@ fi
 ##############################################################################
 
 %changelog
+* Thu Dec  7 2006 Mark Grondona <mgrondona@llnl.gov>
+- Package new rpdcp command.
+
 * Fri Feb 23 2006 Ben Woodard <woodard@redhat.com> 
 - changed source location to point to main site not mirror.
 
