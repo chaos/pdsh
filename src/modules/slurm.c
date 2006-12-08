@@ -86,7 +86,8 @@ struct pdsh_module_operations slurm_module_ops = {
  */
 struct pdsh_module_option slurm_module_options[] = 
  { 
-   { 'j', "jobid", "Run on nodes allocated to SLURM job.",
+   { 'j', "jobid,...", 
+     "Run on nodes allocated to SLURM job(s) (\"all\" = all jobs)",
      DSH | PCP, (optFunc) slurm_process_opt
    },
    PDSH_OPT_TABLE_END

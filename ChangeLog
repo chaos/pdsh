@@ -11,6 +11,9 @@
 	* src/common/dsh.c : If any two targets have differing domains,
 	  do not strip the domain in output labels.
 
+	* src/modules/slurm.c : Modify help string to indicate that "all"
+	  is a valid parameter to -j option.
+
 2006-12-07  Albert Chu <chu11@llnl.gov>
 
 	Support a Reverse pdcp option.
@@ -92,7 +95,6 @@
 	  Convert to use list_split_append() instead of statically defined
 	  helper functions.
 
->>>>>>> .merge-right.r1101
 2006-08-25  Mark Grondona <mgrondona@llnl.gov>
 
 	* pdsh.spec : Remove erroneous "Requires: whatsup" from netgroup
