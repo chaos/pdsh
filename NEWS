@@ -1,8 +1,20 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
-* Changes in pdsh-2.11 
-==================================
+* Changes in pdsh-2.12 (2006-12-08)
+===================================
+ -- Fix Solaris build.
+ -- New command rpdcp(1) ("reverse" pdcp) copies files from remote
+    hosts to the local machine (with remote hostname appended).
+ -- Do not truncate host domain in output labels if any domains differ.
+ -- (genders) Default user name may be specified to pdsh_rcmd_type attr
+    by prepending "user@".
+ -- (slurm) `-j' "all" parameter to target all nodes running SLURM jobs.
+ -- Minor code cleanup.
+ -- Minor RPM spec file cleanup.
+
+* Changes in pdsh-2.11 (2006-07-26)
+===================================
  -- Fix for WCOLL file contents unconditionally added to host list.
     Prior behavior was to have -w override WCOLL.
  -- Supply more specific errors when pdsh detects that the path to
