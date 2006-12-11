@@ -435,6 +435,16 @@ mod_list_module_info(void)
 }
 
 
+static int
+_mod_description_match (mod_t m, const char *type, const char *name)
+{
+    if (  (strcmp(m->pmod->type, type) == 0)
+       && (strcmp(m->pmod->name, name) == 0) )
+        return (1);
+    return (0);
+}
+
+
 mod_t
 mod_get_module(const char *type, const char *name)
 {
@@ -445,9 +455,8 @@ mod_get_module(const char *type, const char *name)
 
     list_iterator_reset(module_itr);
     while ((mod = list_next(module_itr))) {
-        if ( (strncmp(mod->pmod->type, type, strlen(type)) == 0)
-             && (strncmp(mod->pmod->name, name, strlen(name)) == 0) ) 
-          return mod;
+        if (_mod_description_match (mod, type, name))
+            return mod;
     }
     return NULL;
 }
@@ -547,16 +556,44 @@ _mod_find_opt(mod_t mod, int opt)
   return NULL;
 }
 
+static int 
+_mod_delete (const char *type, const char *name)
+{
+    ListIterator i = list_iterator_create (module_list);
+    mod_t m;
+
+    while ((m = list_next (i))) {
+        if (_mod_description_match (m, type, name))
+            list_delete (i);
+    }
+    return (0);
+}
+
 
 static int 
 _mod_install(mod_t mod, const char *name)
 {
+    mod_t prev;
     /* 
      *  Must have atleast a name and type 
      */
     if (!mod->pmod->type || !mod->pmod->name) {
         err("%p:[%s] type or name not specified in module\n", name);
         return -1;
+    }
+
+    /*
+     *  Check for existing module of the same type and name
+     *   Delete previous module if its priority is higher.
+     */
+    if ((prev = mod_get_module (mod->pmod->type, mod->pmod->name))) {
+        err("%p: %s: [%s/%s] already loaded from [%s]\n", 
+                mod->filename, mod->pmod->type, mod->pmod->name, 
+                prev->filename);
+        if (mod->priority > prev->priority)
+            _mod_delete (mod->pmod->type, mod->pmod->name);
+        else
+            return (-1);
     }
 
     /* 
