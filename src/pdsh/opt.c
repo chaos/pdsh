@@ -103,7 +103,7 @@ Usage: rpdcp [-options] src [src2...] dir\n\
 -L                list info on all loaded modules and exit\n"
 /* undocumented "-T testcase" option */
 /* undocumented "-Q" option */
-
+/* undocumented "-K" option -  keep domain name in output */
 
 #if	HAVE_MAGIC_RSHELL_CLEANUP
 #define DSH_ARGS	"sS"
@@ -111,7 +111,7 @@ Usage: rpdcp [-options] src [src2...] dir\n\
 #define DSH_ARGS    "S"
 #endif
 #define PCP_ARGS	"pryzZ"
-#define GEN_ARGS	"hLR:t:cqf:w:x:l:u:bI:deVT:Q"
+#define GEN_ARGS	"hLKR:t:cqf:w:x:l:u:bI:deVT:Q"
 
 /*
  *  Pdsh options string (for getopt) -- initialized
@@ -481,6 +481,9 @@ void opt_args(opt_t * opt, int argc, char *argv[])
             break;
         case 'h':              /* display usage message */
             _usage(opt);
+            break;
+        case 'K':              /* don't strip host domain in output */
+            err_no_strip_domain (); 
             break;
         case 'y':
             if (pdsh_personality() == PCP)
