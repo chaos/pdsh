@@ -3,6 +3,8 @@
 	* src/pdsh/opt.c : Undocumented -K option to explicitly keep 
 	  domain names in output labels.
 
+	* : tag pdsh-2.12.
+
 2006-12-10  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/mod.c : Issue warning if module type/name is loaded
