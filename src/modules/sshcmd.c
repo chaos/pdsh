@@ -378,8 +378,9 @@ static int sshcmd_args_init (void)
     Free ((void **) &str);
 
     if ((val = getenv ("PDSH_SSH_ARGS_APPEND"))) {
+        List l;
         str = Strdup (val);
-        List l = list_split (" ", str);
+        l = list_split (" ", str);
         Free ((void **) &str);
 
         while ((str = list_pop (l)))
