@@ -79,6 +79,7 @@ install-exec-hook:
 uninstall-local:
 	$(RM) $(DESTDIR)$(bindir)/pdcp
 	$(RM) $(DESTDIR)$(bindir)/rpdcp
+	$(RM) $(DESTDIR)$(bindir)/pdsh
 
 MOSTLYCLEANFILES = \
     config.c \

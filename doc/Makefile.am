@@ -10,3 +10,6 @@ EXTRA_DIST =      dshbak.1
 install-data-local:
 	$(INSTALL) -d -m 0755 "$(DESTDIR)$(mandir)/man1"
 	ln -f -s pdcp.1 "$(DESTDIR)$(mandir)/man1/rpdcp.1"
+
+uninstall-local:
+	$(RM) "$(DESTDIR)$(mandir)/man1/rpdcp.1"

@@ -19,6 +19,18 @@ distclean-local::
 	-rm -fr autom4te*.cache autoscan.*
 	-rm -rf $(PACKAGE)-*
 
+uninstall-local:
+	@rmdir $(DESTDIR)$(pkglibdir); \
+	 if [ -d  $(DESTDIR)$(pkglibdir) ]; then \
+		echo >&2;\
+		echo " Warning: The pdsh module directory $(DESTDIR)$(pkglibdir)" >&2;\
+		echo " is not empty after 'make uninstall.' There may be modules" >&2;\
+		echo " from a previous invocation of 'make install' that need" >&2;\
+		echo " to be removed for a clean uninstall." >&2;\
+		echo >&2;\
+	 fi
+
+
 MAINTAINERCLEANFILES = \
     aclocal.m4 \
     config.h.in \
