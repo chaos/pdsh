@@ -238,7 +238,7 @@ static void _list_slowthreads(void)
 }
 
 /*
- * Block SIGINT SIGTSTP in this thread.
+ * Block SIGINT SIGTSTP SIGCHLD n this thread.
  */
 static void _mask_signals(int how)
 {
@@ -249,6 +249,7 @@ static void _mask_signals(int how)
     sigemptyset(&blockme);
     sigaddset(&blockme, SIGINT);
     sigaddset(&blockme, SIGTSTP);
+    sigaddset(&blockme, SIGCHLD);
     pthread_sigmask(how, &blockme, NULL);
 }
 

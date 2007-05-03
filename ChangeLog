@@ -1,3 +1,10 @@
+2007-05-03  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/dsh.c : Block SIGCHLD in pdsh threads. Fixes case
+	  where SIGCHLD (from use of ssh module) is delivered to
+	  unexpected thread causing the thread to think it has been
+	  timed out by wdog thread.
+
 2007-01-15  Mark Grondona <mgrondona@llnl.gov>
 
 	* Makefile.am, src/pdsh/Makefile.am, doc/Makefile.am,
