@@ -1,3 +1,9 @@
+2007-05-07  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/dsh.c : Check for command timeout when rsh thread
+	  poll is interrupted to avoid erroneous timeouts by stray
+	  signal interruptions.
+
 2007-05-03  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/dsh.c : Block SIGCHLD in pdsh threads. Fixes case

@@ -270,6 +270,24 @@ static void _fwd_signal(int signum)
 
 }
 
+static int _thd_connect_timeout (thd_t *t)
+{
+    if ((connect_timeout > 0) && (t->start != ((time_t) -1))) {
+        if (t->start + connect_timeout < time (NULL))
+            return (1);
+    }
+    return (0);
+}
+
+static int _thd_command_timeout (thd_t *t)
+{
+    if ((command_timeout > 0) && (t->connect != ((time_t) -1))) {
+        if (t->connect + command_timeout < time (NULL))
+            return (1);
+    }
+    return (0);
+}
+
 /* 
  * Watchdog thread.  Send SIGALRM to 
  *   - threads in connecting state for too long
@@ -288,16 +306,12 @@ static void *_wdog(void *args)
         for (i = 0; t[i].host != NULL; i++) {
             switch (t[i].state) {
             case DSH_RCMD:
-                if ((connect_timeout > 0) && (t[i].start != ((time_t) -1))) {
-                    if (t[i].start + connect_timeout < time(NULL))
+                if (_thd_connect_timeout (&t[i]))
                         pthread_kill(t[i].thread, SIGALRM);
-                }
                 break;
             case DSH_READING:
-                if ((command_timeout > 0) && (t[i].connect != ((time_t) -1))) {
-                    if (t[i].connect + command_timeout < time(NULL))
+                if (_thd_command_timeout (&t[i]))
                         pthread_kill(t[i].thread, SIGALRM);
-                }
                 break;
             case DSH_NEW:
             case DSH_DONE:
@@ -647,10 +661,13 @@ static void *_rsh_thread(void *args)
             /* poll (possibility for SIGALRM) */
             rv = xpoll(xpfds, nfds, -1);
             if (rv == -1) {
-                if (errno == EINTR)
+                if (errno != EINTR) 
+                    err("%p: %S: xpoll: %m\n", a->host);
+                else if (_thd_command_timeout (a))
                     err("%p: %S: command timeout\n", a->host);
                 else
-                    err("%p: %S: xpoll: %m\n", a->host);
+                    continue; /* interrupted by spurious signal */
+
                 result = DSH_FAILED;
                 rcmd_signal (a->rcmd, SIGTERM);
                 break;
