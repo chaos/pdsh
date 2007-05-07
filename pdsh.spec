@@ -68,6 +68,8 @@ Requires: pdsh-rcmd
 %{expand: %def rms without with}
 %{expand: %pdsh_with debug}
 %{expand: %def debug without with}
+%{expand: %pdsh_with pam}
+%{expand: %def pam without with}
 
 #
 # If "--with debug" is set compile with --enable-debug
@@ -85,6 +87,7 @@ Requires: pdsh-rcmd
 %{?_with_readline:BuildRequires: readline-devel}
 %{?_with_nodeupdown:BuildRequires: whatsup}
 %{?_with_genders:BuildRequires: genders > 1.0}
+%{?_with_pam:BuildRequires: pam-devel}
 
 ##############################################################################
 # Pdsh description
@@ -96,21 +99,21 @@ remote shell services, including standard "rsh", Kerberos IV, and ssh.
 ##############################################################################
 
 %package qshd
-Summary: Remote shell daemon for pdsh/qshell/Elan3
+Summary: Remote shell daemon for pdsh/qshell/Quadrics QsNet
 Group:   System Environment/Base
 Requires:  xinetd
 %description qshd
-Remote shell service for running Quadrics Elan3 jobs under pdsh.
+Remote shell service for running Quadrics QsNet jobs under pdsh.
 Sets up Elan capabilities and environment variables needed by Quadrics
 MPICH executables.
 ##############################################################################
 
 %package mqshd
-Summary: Remote shell daemon for pdsh/mqshell/Elan3
+Summary: Remote shell daemon for pdsh/mqshell/Quadrics QsNet
 Group:   System Environment/Base
 Requires:  xinetd
 %description mqshd
-Remote shell service for running Quadrics Elan3 jobs under pdsh with
+Remote shell service for running Quadrics QsNet jobs under pdsh with
 mrsh authentication.  Sets up Elan capabilities and environment variables 
 needed by Quadrics MPICH executables.
 ##############################################################################
@@ -236,7 +239,9 @@ from an allocated SLURM job.
 %build
 %configure --program-prefix=%{?_program_prefix:%{_program_prefix}} \
     %{?_enable_debug}       \
-        %{?_with_rsh}           \
+    %{?_with_pam}           \
+    %{?_without_pam}        \
+    %{?_with_rsh}           \
     %{?_without_rsh}        \
     %{?_with_ssh}           \
     %{?_without_ssh}        \
@@ -412,7 +417,7 @@ rm -rf "$RPM_BUILD_ROOT"
 
 %post qshd
 if ! grep "^qshell" /etc/services >/dev/null; then
-  echo "qshell            523/tcp                  # pdsh/qshell/elan3" >>/etc/services
+  echo "qshell            523/tcp                  # pdsh/qshell/Quadrics QsNet" >>/etc/services
 fi
 %{_initrddir}/xinetd reload
 
@@ -427,7 +432,7 @@ fi
 
 %post mqshd
 if ! grep "^mqshell" /etc/services >/dev/null; then
-  echo "mqshell         21234/tcp                  # pdsh/mqshell/elan3" >>/etc/services
+  echo "mqshell         21234/tcp                  # pdsh/mqshell/Quadrics QsNet" >>/etc/services
 fi
 %{_initrddir}/xinetd reload
 
@@ -435,6 +440,10 @@ fi
 ##############################################################################
 
 %changelog
+* Thu Feb 22 2007 Daniel J Blueman <daniel@quadrics.com>
+- added 'rpmbuild ... --without pam' option passthrough
+- generalised 'elan3' to 'Quadrics QsNet'
+
 * Thu Dec  7 2006 Mark Grondona <mgrondona@llnl.gov>
 - Package new rpdcp command.
 
