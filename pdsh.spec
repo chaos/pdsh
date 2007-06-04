@@ -167,6 +167,19 @@ Provides:  pdsh-xcpu
 %description rcmd-xcpu
 Pdsh module for xcpu rcmd functionality.
 
+%package   rcmd-exec
+Summary:   Provides arbitrary command execution "rcmd" method to pdsh
+Group:     System Environment/Base
+Provides:  pdsh-rcmd
+%description rcmd-exec
+Pdsh module for generic exec capability. This module allows
+execution of an arbitrary command line for each target host in
+place of a more specific rcmd connect method (i.e. ssh, rsh, etc.).
+The command executed for each host is built from the pdsh
+"remote" command line: The first remote argument is the command
+to execute, followed by any arguments including "%h", "%u", and
+"%n", which are the remote target, username, and rank respectively.
+
 %package   mod-genders
 Summary:   Provides libgenders support for pdsh
 Group:     System Environment/Base
@@ -311,6 +324,11 @@ rm -rf "$RPM_BUILD_ROOT"
 %{_mandir}/man1/*
 ##############################################################################
 
+%files rcmd-exec
+%defattr(-,root,root)
+%{_libdir}/pdsh/execcmd.*
+##############################################################################
+
 %if %{?_with_rsh:1}%{!?_with_rsh:0}
 %files rcmd-rsh
 %defattr(-,root,root)
@@ -440,6 +458,9 @@ fi
 ##############################################################################
 
 %changelog
+* Mon Jun  4 2007 Mark Grondona <mgrondona@llnl.gov>
+- added rcmd-exec subpackage.
+
 * Thu Feb 22 2007 Daniel J Blueman <daniel@quadrics.com>
 - added 'rpmbuild ... --without pam' option passthrough
 - generalised 'elan3' to 'Quadrics QsNet'

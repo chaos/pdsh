@@ -108,6 +108,16 @@ pers_t pdsh_personality(void);
 
 
 /*
+ *  Return a list of the original remote args
+ */
+char ** pdsh_remote_argv (void);
+
+/*
+ *  Return a list of the original remote arg count
+ */
+int pdsh_remote_argc (void);
+
+/*
  * Structure for pdsh modules to export new options. 
  * 
  * Module should define a table of options as:

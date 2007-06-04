@@ -43,6 +43,8 @@
 #include "src/common/err.h"
 #include "src/common/xmalloc.h"
 #include "src/common/xstring.h"
+#include "src/common/pipecmd.h"
+#include "src/common/fd.h"
 #include "dsh.h"
 
 typedef enum { FAIL, PASS } testresult_t;
@@ -53,9 +55,11 @@ typedef struct {
 } testcase_t;
 
 static testresult_t _test_xstrerrorcat(void);
+static testresult_t _test_pipecmd(void);
 
 static testcase_t testcases[] = {
     /* 0 */ {"xstrerrorcat", &_test_xstrerrorcat},
+    /* 1 */ {"pipecmd",      &_test_pipecmd},
 };
 
 static void _testmsg(int testnum, testresult_t result)
@@ -83,6 +87,34 @@ static testresult_t _test_xstrerrorcat(void)
         Free((void **) &s1);
     }
     return result;
+}
+
+static testresult_t _test_pipecmd(void)
+{
+    const char expected[] = "host=foo0 user=foouser n=0";
+    const char *args[] = { "host=%h", "user=%u", "n=%n", NULL };
+
+    int n;
+    char buf [1024];
+    pipecmd_t p;
+
+    if (!(p = pipecmd ("/bin/echo", args, "foo0", "foouser", 0)))
+        return FAIL;
+
+    if ((n = fd_read_n (pipecmd_stdoutfd (p), buf, sizeof (buf))) < 0)
+        return FAIL;
+
+    buf [n-1] = '\0';
+
+    if (strcmp (expected, buf)) {
+        err ("testcase: pipecmd: expected \"%s\" got \"%s\"\n", expected, buf);
+        return FAIL;
+    }
+
+    pipecmd_wait (p, NULL);
+    pipecmd_destroy (p);
+
+    return PASS;
 }
 
 void testcase(int testnum)

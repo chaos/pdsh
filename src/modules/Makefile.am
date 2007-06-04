@@ -83,6 +83,8 @@ OTHER_FLAGS = \
 	-Wl,--version-script=$(VERSION_SCRIPT)
 endif
 
+EXEC_MODULE = execcmd.la
+
 if WITH_STATIC_MODULES
 noinst_LTLIBRARIES = \
 	libmods.la
@@ -109,7 +111,8 @@ pkglib_LTLIBRARIES = \
 	$(KRB4_MODULE) \
 	$(SLURM_MODULE) \
 	$(DSHGROUP_MODULE) \
-	$(NETGROUP_MODULE)
+	$(NETGROUP_MODULE) \
+	$(EXEC_MODULE)
 
 BUILT_SOURCES = \
 	$(VERSION_SCRIPT)
@@ -137,7 +140,8 @@ EXTRA_libmods_la_SOURCES = \
 	slurm.c \
 	dshgroup.c \
 	netgroup.c \
-	xcpucmd.c
+	xcpucmd.c \
+	execcmd.c 
 
 if WITH_QSW
 QSNET_LIBS = \
@@ -168,6 +172,8 @@ mqcmd_la_LDFLAGS =        $(MODULE_FLAGS) $(MRSH_LIBS)
 mqcmd_la_LIBADD =         $(top_builddir)/src/qsnet/libqsw.la
 k4cmd_la_SOURCES =        k4cmd.c 
 k4cmd_la_LDFLAGS =        $(MODULE_FLAGS) $(KRB_LIBS)
+execcmd_la_SOURCES =      execcmd.c
+execcmd_la_LDFLAGS =      $(MODULE_FLAGS)
 
 machines_la_SOURCES =     machines.c 
 machines_la_LDFLAGS =     $(MODULE_FLAGS)

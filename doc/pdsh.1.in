@@ -56,6 +56,29 @@ rsh
 Uses an internal, thread-safe implementation of BSD rcmd(3)
 to run commands using the standard rsh(1) protocol.
 .TP
+exec
+Executes an arbitrary command for each target host. The first
+of the \fBpdsh\fR remote arguments is the local command
+to execute, followed by any further arguments. Some simple
+parameters are substitued on the command line, including
+\fI%h\fR for the target hostname, \fI%u\fR for the remote
+username, and \fI%n\fR for the remote rank [0-n] (To get
+a literal \fI%\fR use \fI%%\fR).  For example,
+the following would duplicate using the \fBssh\fR module to
+run \fBhostname\fR(1) across the hosts foo[0-10]:
+
+.nf
+   pdsh -R exec -w foo[0-10] ssh -x -l %u %h hostname
+.fi
+
+and this command line would run \fBgrep\fR(1) in parallel 
+across the files console.foo[0-10]:
+
+.nf
+   pdsh -R exec -w foo[0-10] grep BUG console.%h
+.fi
+
+.TP
 ssh
 Uses a variant of popen(3) to run multiple copies of the ssh(1)
 command.
@@ -163,6 +186,9 @@ The default will be listed with \fI-h\fR or \fI-V\fI.
 .TP
 .I "-L"
 List info on all loaded \fBpdsh\fR modules and quit.
+.TP
+.I "-N"
+Disable hostname: prefix on lines of output.
 .TP
 .I "-d"
 Include more complete thread status when SIGINT is received, and display

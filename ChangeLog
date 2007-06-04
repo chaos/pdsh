@@ -1,3 +1,40 @@
+2007-06-04  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/common/pipecmd.c, src/common/pipecmd.h :
+	  Add new "pipecmd" API for executing arbitrary commands.
+
+	* src/modules/execcmd.c : 
+	  Add new "exec" rcmd module which uses pipecmd to execute
+	  arbitrary process in place of rcmd connect method. First
+	  pdsh "remote" arg is the command to execute, followed
+	  by any arguments. "%h", "%u", and "%n" are expanded to
+	  the target host, remote username, and rank [0-N] respectively.
+
+	* src/pdsh/opt.h, src/pdsh/opt.c :
+	  Save remote argv array for later possible use. This is more
+	  useful for the 'exec' rcmd module that the opt->cmd string,
+	  because it preserves the shell's argument parsing. Functions
+	  for grabbing the remote argv and argc were added to opt.h.
+
+	* configure.ac, src/common/Makefile.am, src/modules/Makefile.am :
+	  Build the execcmd module by default with pdsh. 
+
+	* src/pdsh/testcase.c : 
+	  Add a testcase entry for pipecmd. There is an ulterior motive
+	  here: Without this testcase, pdsh would never call pipecmd 
+	  functions, and thus the symbols would not be available to
+	  modules (e.g. execcmd and later sshcmd).
+
+	* doc/pdsh.1.in :
+	  Add documentation for the exec rcmd module.
+
+	* configure, src/common/Makefile.in, src/modules/Makefile.in :
+	  Rerun ./bootstrap.
+
+	* src/pdsh/opt.c, doc/pdsh.1.in :
+	  Add "-N" option to disable hostname: prefix on lines of
+	  output.
+	  
 2007-05-07  Daniel J. Blueman  <daniel@quadrics.com>
 
 	* pdsh.spec : Add rpmbuild "--without pam" option passthrough.

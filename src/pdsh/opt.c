@@ -60,6 +60,7 @@ static void _show_version(void);
 
 static char *exclude_buf = NULL;
 
+
 #define OPT_USAGE_DSH "\
 Usage: pdsh [-options] command ...\n\
 -S                return largest of remote command return values\n"
@@ -100,6 +101,7 @@ Usage: rpdcp [-options] src [src2...] dir\n\
 -w host,host,...  set target node list on command line\n\
 -x host,host,...  set node exclusion list on command line\n\
 -R name           set rcmd module to name\n\
+-N                disable hostname: labels on output lines\n\
 -L                list info on all loaded modules and exit\n"
 /* undocumented "-T testcase" option */
 /* undocumented "-Q" option */
@@ -111,7 +113,7 @@ Usage: rpdcp [-options] src [src2...] dir\n\
 #define DSH_ARGS    "S"
 #endif
 #define PCP_ARGS	"pryzZ"
-#define GEN_ARGS	"hLKR:t:cqf:w:x:l:u:bI:deVT:Q"
+#define GEN_ARGS	"hLNKR:t:cqf:w:x:l:u:bI:deVT:Q"
 
 /*
  *  Pdsh options string (for getopt) -- initialized
@@ -133,6 +135,21 @@ pers_t pdsh_personality(void)
     return personality;
 }
 
+/*
+ *  Remote argv array
+ */
+static char **remote_argv;
+static int    remote_argc;
+
+char **pdsh_remote_argv (void)
+{
+    return remote_argv;
+}
+
+int pdsh_remote_argc (void)
+{
+    return remote_argc;
+}
 
 static void
 _init_pdsh_options()
@@ -403,6 +420,9 @@ void opt_args(opt_t * opt, int argc, char *argv[])
 #endif
     while ((c = getopt(argc, argv, pdsh_options)) != EOF) {
         switch (c) {
+        case 'N':
+            opt->labels = false;
+            break;
         case 'L':
             mod_list_module_info();
             exit(0);
@@ -516,6 +536,15 @@ void opt_args(opt_t * opt, int argc, char *argv[])
         opt->rcmd_name = Strdup(rcmd_get_default_module ());
     if (rcmd_register_default_rcmd(opt->rcmd_name) < 0)
         exit(1);
+
+
+    /* 
+     *  Save beginning of remote argv in case something needs
+     *   to view the unadulterated version (after shell quoting
+     *   applied, etc.)
+     */
+    remote_argc = argc - optind;
+    remote_argv = argv + optind;
 
     /* DSH: build command */
     if (personality == DSH) {

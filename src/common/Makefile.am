@@ -29,4 +29,6 @@ libcommon_la_SOURCES = \
     xpoll.c \
     xpoll.h \
     xstring.c \
-    xstring.h
+    xstring.h \
+    pipecmd.c \
+    pipecmd.h
