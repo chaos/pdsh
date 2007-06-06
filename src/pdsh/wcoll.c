@@ -73,7 +73,7 @@ hostlist_t read_wcoll(char *file, FILE * f)
             *p = '\0';
         xstrcln(buf, NULL);
 
-        if (hostlist_push(new, buf) == 0)
+        if ((buf[0] != '\0') && (hostlist_push(new, buf) == 0))
             err("%p: warning: target '%s' not parsed\n", buf);
     }
     if (f == NULL)

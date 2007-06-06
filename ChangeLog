@@ -1,3 +1,9 @@
+2007-06-06  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/wcoll.c : 
+	  Ignore blank and comment lines in WCOLL file instead of
+	  generating warning.
+
 2007-06-04  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/common/pipecmd.c, src/common/pipecmd.h :
