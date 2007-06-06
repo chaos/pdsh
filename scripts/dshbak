@@ -89,6 +89,29 @@ sub usage
 
 sub compress 
 {
+	my %suffixes = ();
+	my @list = ();
+ 
+	#   Each suffix key points to a list of hostnames with corresponding
+	#    suffix stripped off.
+	push (@{$suffixes{$$_[1]}}, $$_[0]) 
+	   for map { [/(.*?\d*)(\D*)$/] } sortn (@_);
+
+	#
+	#   For each suffix, run compress on hostnames without suffix, then
+	#    reapply suffix name.
+	for my $suffix (keys %suffixes) {
+	    map { push (@list, "$_$suffix") } 
+	        compress_inner (@{$suffixes{$suffix}}); 
+	}
+
+	local $"=",";
+	return wantarray ?  @list : "@list";
+}
+
+
+sub compress_inner
+{
 	my %rng = comp(@_);
 	my @list = ();
 
