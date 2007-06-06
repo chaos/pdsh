@@ -4,6 +4,9 @@
 	  Ignore blank and comment lines in WCOLL file instead of
 	  generating warning.
 
+	* src/pdsh/rcmd.c :
+	  Add "exec" rcmd method to list of default rcmd modules.
+
 2007-06-04  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/common/pipecmd.c, src/common/pipecmd.h :
