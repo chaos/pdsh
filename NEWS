@@ -1,6 +1,18 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
+* Changes in pdsh-2.13 (2007-06-06)
+===================================
+ -- New "exec" rcmd module for executing arbitrary commands. 
+    (Thanks to Christopher Maestas <cdmaest at sandia dot gov> 
+    for the idea.)
+ -- New -N option to disable hostname: prefix on lines of output.
+ -- dshbak: Allow host range compression for numerically keyed hosts
+    which have non-numeric suffix.
+ -- Fix for compilation problem on some machines for sshcmd.c.
+ -- Fix for erroneous command timeouts with ssh due to stray signals.
+ -- Fix handling of empty lines when parsing WCOLL files.
+
 * Changes in pdsh-2.12 (2006-12-11)
 ===================================
  -- Fix Solaris build.
@@ -26,7 +38,7 @@ documents thos changes that are of interest to users and admins.
  -- New dshbak -s option to sort output.
  -- Allow users to cancel pending threads by issuing ctrl-C ctrl-Z
     (ctrl-Z within one second of initial ctrl-C). Pending threads
-	are those threads which have not yet invoked a remote command.
+    are those threads which have not yet invoked a remote command.
 
 * Changes in pdsh-2.10 (2006-03-22)
 ===================================
@@ -89,7 +101,7 @@ documents thos changes that are of interest to users and admins.
  -- Close pdsh file descriptors opened to ssh commands before invoking 
     subsequent ssh connections to fix possible pdsh hang with -Rssh.
  -- Replace setenv() & seteuid() with putenv() & setuid() for portability.
- -- Module path elements now considered secure if they have same ownership	
+ -- Module path elements now considered secure if they have same ownership
     as pdsh binary (as well as either root or current user). Allows pdsh
     to be installed with other than root ownership.
 
@@ -103,8 +115,8 @@ documents thos changes that are of interest to users and admins.
 ===================================
  -- (ssh) Added ssh "reaper" thread to collect exit status of ssh commands
     invoked by pdsh. At the end of the pdsh or pdcp run, any non-zero
-	exit status from ssh will be written to stderr instead of silently 
-	ignored.
+    exit status from ssh will be written to stderr instead of silently 
+    ignored.
  -- (genders) Added genders "query" support for genders versions that
     support this functionality. (Al Chu <chu11@llnl.gov>)
  -- (ssh) Fix for a possible pdsh hang when running with ssh on Mac OS X.

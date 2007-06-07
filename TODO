@@ -11,4 +11,4 @@
   - important so that if fanout is too large, commands won't
     be started and killed halfway through.
 - bproc rcmd module
-- option to remove "hostname:" in front of output
+- ssh module should use pipecmd
