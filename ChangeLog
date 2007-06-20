@@ -3,6 +3,12 @@
 	* src/modules/slurm.c : Include SLURM headers after all pdsh
 	  includes to avoid redefinition of bool type.
 
+	* configure.ac, config/ac_exec.m4, pdsh.spec, 
+	  src/modules/Makefile.am, config/Makefile.am :
+	  Allow conditional and static build of "exec" module.
+
+	* : Re-run ./bootstrap.
+	  
 2007-06-07  Mark Grondona <mgrondona@llnl.gov>
 
 	* : tag pdsh-2.13.

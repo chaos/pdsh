@@ -1,4 +1,4 @@
-# generated automatically by aclocal 1.9.5 -*- Autoconf -*-
+# generated automatically by aclocal 1.9.6 -*- Autoconf -*-
 
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
 # 2005  Free Software Foundation, Inc.
@@ -12,8 +12,7 @@
 # PARTICULAR PURPOSE.
 
 
-# serial 6 AC_LIB_LTDL
-# Debian $Rev: 214 $
+# serial 7 AC_LIB_LTDL
 
 # AC_WITH_LTDL
 # ------------
@@ -50,7 +49,7 @@ fi
 if test "x$with_included_ltdl" = xno; then
   # If the included ltdl is not to be used. then Use the
   # preinstalled libltdl we found.
-  AC_DEFINE([HAVE_LTDL], 1,
+  AC_DEFINE([HAVE_LTDL], [1],
     [Define this if a modern libltdl is already installed])
   LIBLTDL=-lltdl
 fi
@@ -107,7 +106,7 @@ AC_DEFUN([AC_LTDL_ENABLE_INSTALL],
 
 AM_CONDITIONAL(INSTALL_LTDL, test x"${enable_ltdl_install-no}" != xno)
 AM_CONDITIONAL(CONVENIENCE_LTDL, test x"${enable_ltdl_convenience-no}" != xno)
-])])# AC_LTDL_ENABLE_INSTALL
+])# AC_LTDL_ENABLE_INSTALL
 
 
 # AC_LTDL_SYS_DLOPEN_DEPLIBS
@@ -134,12 +133,15 @@ AC_CACHE_CHECK([whether deplibs are loaded by dlopen],
     # Assuming the user has installed a libdl from somewhere, this is true
     # If you are looking for one http://www.opendarwin.org/projects/dlcompat
     libltdl_cv_sys_dlopen_deplibs=yes
-    ;;   
+    ;;
   gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
     # GNU and its variants, using gnu ld.so (Glibc)
     libltdl_cv_sys_dlopen_deplibs=yes
     ;;
   hpux10*|hpux11*)
+    libltdl_cv_sys_dlopen_deplibs=yes
+    ;;
+  interix*)
     libltdl_cv_sys_dlopen_deplibs=yes
     ;;
   irix[[12345]]*|irix6.[[01]]*)
@@ -183,6 +185,9 @@ AC_CACHE_CHECK([whether deplibs are loaded by dlopen],
   solaris*)
     libltdl_cv_sys_dlopen_deplibs=yes
     ;;
+  sysv5* | sco3.2v5* | sco5v6* | unixware* | OpenUNIX* | sysv4*uw2*)
+    libltdl_cv_sys_dlopen_deplibs=yes
+    ;;
   esac
   ])
 if test "$libltdl_cv_sys_dlopen_deplibs" != yes; then
@@ -203,7 +208,7 @@ module=yes
 eval libltdl_cv_shlibext=$shrext_cmds
   ])
 if test -n "$libltdl_cv_shlibext"; then
-  AC_DEFINE_UNQUOTED(LTDL_SHLIB_EXT, "$libltdl_cv_shlibext",
+  AC_DEFINE_UNQUOTED([LTDL_SHLIB_EXT], ["$libltdl_cv_shlibext"],
     [Define to the extension used for shared libraries, say, ".so".])
 fi
 ])# AC_LTDL_SHLIBEXT
@@ -216,7 +221,7 @@ AC_DEFUN([AC_LTDL_SHLIBPATH],
 AC_CACHE_CHECK([which variable specifies run-time library path],
   [libltdl_cv_shlibpath_var], [libltdl_cv_shlibpath_var="$shlibpath_var"])
 if test -n "$libltdl_cv_shlibpath_var"; then
-  AC_DEFINE_UNQUOTED(LTDL_SHLIBPATH_VAR, "$libltdl_cv_shlibpath_var",
+  AC_DEFINE_UNQUOTED([LTDL_SHLIBPATH_VAR], ["$libltdl_cv_shlibpath_var"],
     [Define to the name of the environment variable that determines the dynamic library search path.])
 fi
 ])# AC_LTDL_SHLIBPATH
@@ -238,7 +243,7 @@ if test -n "$libltdl_cv_sys_search_path"; then
       sys_search_path="$sys_search_path$PATH_SEPARATOR$dir"
     fi
   done
-  AC_DEFINE_UNQUOTED(LTDL_SYSSEARCHPATH, "$sys_search_path",
+  AC_DEFINE_UNQUOTED([LTDL_SYSSEARCHPATH], ["$sys_search_path"],
     [Define to the system default library search path.])
 fi
 ])# AC_LTDL_SYSSEARCHPATH
@@ -264,7 +269,7 @@ AC_DEFUN([AC_LTDL_OBJDIR],
   rmdir .libs 2>/dev/null
   fi
   ])
-AC_DEFINE_UNQUOTED(LTDL_OBJDIR, "$libltdl_cv_objdir/",
+AC_DEFINE_UNQUOTED([LTDL_OBJDIR], ["$libltdl_cv_objdir/"],
   [Define to the sub-directory in which libtool stores uninstalled libraries.])
 ])# AC_LTDL_OBJDIR
 
@@ -282,7 +287,7 @@ AC_CACHE_CHECK([whether libtool supports -dlopen/-dlpreopen],
   fi
   ])
 if test x"$libltdl_cv_preloaded_symbols" = xyes; then
-  AC_DEFINE(HAVE_PRELOADED_SYMBOLS, 1,
+  AC_DEFINE([HAVE_PRELOADED_SYMBOLS], [1],
     [Define if libtool can extract symbol lists from object files.])
 fi
 ])# AC_LTDL_DLPREOPEN
@@ -401,7 +406,7 @@ if test x"$ac_cv_sys_symbol_underscore" = xyes; then
 fi
 
 if test x"$libltdl_cv_need_uscore" = xyes; then
-  AC_DEFINE(NEED_USCORE, 1,
+  AC_DEFINE([NEED_USCORE], [1],
     [Define if dlsym() requires a leading underscore in symbol names.])
 fi
 ])# AC_LTDL_DLSYM_USCORE
@@ -439,7 +444,7 @@ AC_DEFUN([AM_AUTOMAKE_VERSION], [am__api_version="1.9"])
 # Call AM_AUTOMAKE_VERSION so it can be traced.
 # This function is AC_REQUIREd by AC_INIT_AUTOMAKE.
 AC_DEFUN([AM_SET_CURRENT_AUTOMAKE_VERSION],
-	 [AM_AUTOMAKE_VERSION([1.9.5])])
+	 [AM_AUTOMAKE_VERSION([1.9.6])])
 
 # AM_AUX_DIR_EXPAND                                         -*- Autoconf -*-
 
@@ -1305,6 +1310,7 @@ m4_include([config/ac_debug.m4])
 m4_include([config/ac_dmalloc.m4])
 m4_include([config/ac_dshgroup.m4])
 m4_include([config/ac_elan.m4])
+m4_include([config/ac_exec.m4])
 m4_include([config/ac_fanout.m4])
 m4_include([config/ac_genders.m4])
 m4_include([config/ac_gpl_licensed.m4])

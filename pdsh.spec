@@ -14,7 +14,7 @@ Requires: pdsh-rcmd
 #
 # Enabling and disabling pdsh options
 #  defaults:
-#  enabled:  readline, rsh, ssh, dshgroup, netgroups
+#  enabled:  readline, rsh, ssh, dshgroup, netgroups, exec
 #  disabled: rms, mrsh, qshell, mqshell, xcpu, genders, nodeattr, machines,
 #            nodeupdown
 
@@ -35,6 +35,8 @@ Requires: pdsh-rcmd
 %{expand: %%define pdsh_with() %%((%{check with})||(%{check without}))%%{nil}}
 %define def() %%{!?_%{2}_%1: %%{!?_%{3}_%1: %%global _%{2}_%1 --%{2}-%1}}
 
+%{expand: %pdsh_with exec}
+%{expand: %def exec with without}
 %{expand: %pdsh_with ssh}
 %{expand: %def ssh with without}
 %{expand: %pdsh_with rsh}
@@ -88,6 +90,7 @@ Requires: pdsh-rcmd
 %{?_with_nodeupdown:BuildRequires: whatsup}
 %{?_with_genders:BuildRequires: genders > 1.0}
 %{?_with_pam:BuildRequires: pam-devel}
+%{?_with_slurm:BuildRequires: slurm-devel}
 
 ##############################################################################
 # Pdsh description
@@ -258,6 +261,8 @@ from an allocated SLURM job.
     %{?_without_rsh}        \
     %{?_with_ssh}           \
     %{?_without_ssh}        \
+    %{?_with_exec}          \
+    %{?_without_exec}       \
     %{?_with_qshell}        \
     %{?_without_qshell}     \
     %{?_with_readline}      \
@@ -324,9 +329,11 @@ rm -rf "$RPM_BUILD_ROOT"
 %{_mandir}/man1/*
 ##############################################################################
 
+%if %{?_with_exec:1}%{!?_with_exec:0}
 %files rcmd-exec
 %defattr(-,root,root)
 %{_libdir}/pdsh/execcmd.*
+%endif
 ##############################################################################
 
 %if %{?_with_rsh:1}%{!?_with_rsh:0}

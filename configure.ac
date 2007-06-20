@@ -133,6 +133,13 @@ AC_SSH
 AM_CONDITIONAL(WITH_SSH, test  "$ac_have_ssh"   =  "yes")
 
 #
+# Test for exec
+#
+AC_EXEC
+AM_CONDITIONAL(WITH_EXEC, test  "$ac_have_exec"   =  "yes")
+
+
+#
 # Test for kerberos
 #
 AC_KRB4

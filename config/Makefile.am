@@ -28,6 +28,7 @@ EXTRA_DIST = \
     ac_sdr.m4 \
     ac_socklen_t.m4 \
     ac_ssh.m4 \
+    ac_exec.m4 \
     ac_static_modules.m4 \
     acx_pthread.m4 \
     ac_elan.m4 \

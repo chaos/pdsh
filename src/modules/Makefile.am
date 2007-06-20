@@ -76,14 +76,16 @@ if WITH_NETGROUP
 NETGROUP_MODULE = netgroup.la
 endif
 
+if WITH_EXEC
+EXEC_MODULE = execcmd.la
+endif
+
 if WITH_GNU_LD
 VERSION_SCRIPT = \
 	version.map
 OTHER_FLAGS = \
 	-Wl,--version-script=$(VERSION_SCRIPT)
 endif
-
-EXEC_MODULE = execcmd.la
 
 if WITH_STATIC_MODULES
 noinst_LTLIBRARIES = \

@@ -220,7 +220,7 @@
    typedef int socklen_t;
 #endif
 
-/* Define if you have ssh. */
+/* Define if you have exec. */
 #undef HAVE_SSH
 
 /* Define to 1 if you have the <stdint.h> header file. */
