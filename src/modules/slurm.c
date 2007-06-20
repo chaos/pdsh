@@ -1,7 +1,7 @@
 /*****************************************************************************\
  *  $Id$
  *****************************************************************************
- *  Copyright (C) 2001-2006 The Regents of the University of California.
+ *  Copyright (C) 2001-2007 The Regents of the University of California.
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Mark Grondona <mgrondona@llnl.gov>.
  *  UCRL-CODE-2003-005.
@@ -33,9 +33,6 @@
 #include <string.h>
 #include <assert.h>
 
-#include <slurm/slurm.h>
-#include <slurm/slurm_errno.h>
-
 #include "src/common/hostlist.h"
 #include "src/common/split.h"
 #include "src/common/err.h"
@@ -45,6 +42,13 @@
 #include "src/pdsh/ltdl.h"
 #include "src/pdsh/mod.h"
 #include "src/pdsh/opt.h"
+
+/*
+ * SLURM headers need to be included after pdsh header files to
+ *  avoid possibly conflicts with the definition of "bool"
+ */
+#include <slurm/slurm.h>
+#include <slurm/slurm_errno.h>
 
 #if STATIC_MODULES
 #  define pdsh_module_info slurm_module_info
