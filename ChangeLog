@@ -9,6 +9,9 @@
 
 	* : Re-run ./bootstrap.
 	  
+	* src/pdsh/mod.c : Don't exclude filename member of module 
+	  struct when building static modules. Fix for compile error.
+
 2007-06-07  Mark Grondona <mgrondona@llnl.gov>
 
 	* : tag pdsh-2.13.

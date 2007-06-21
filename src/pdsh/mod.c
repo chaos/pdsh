@@ -72,8 +72,8 @@ struct module_components {
 
 #if !STATIC_MODULES
     lt_dlhandle handle;
-    char *filename;
 #endif
+    char *filename;
 
     int priority;
  
@@ -233,8 +233,9 @@ mod_create(void)
     mod_t mod = Malloc(sizeof(*mod));
 #if !STATIC_MODULES
     mod->handle = NULL;
-    mod->filename = NULL;
 #endif
+    mod->filename = NULL;
+
     mod->priority = DEFAULT_MODULE_PRIORITY;
     assert(mod->magic = MOD_MAGIC);
     
@@ -254,11 +255,11 @@ _mod_destroy(mod_t mod)
         if (mod->pmod->mod_ops && mod->pmod->mod_ops->exit)
             (*mod->pmod->mod_ops->exit)();
     }
-    
-#if !STATIC_MODULES
+
     if (mod->filename)
         Free((void **) &mod->filename);
-
+    
+#if !STATIC_MODULES
 #  if !PREVENT_DLCLOSE_BUG
     if (mod->handle)
         lt_dlclose(mod->handle);
@@ -634,6 +635,7 @@ _mod_load_static(int idx)
 
     mod->pmod = static_mods[idx];
     mod->priority = *priority[idx];
+    mod->filename = Strdup("static");
 
     if (_mod_install(mod, static_mod_names[idx]) < 0) {
         _mod_destroy(mod);
