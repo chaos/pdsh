@@ -30,7 +30,7 @@ AC_DEFUN([AC_EXEC],
       esac
     ]
   )
-  AC_MSG_RESULT([${ac_with_exec=no}])
+  AC_MSG_RESULT([${ac_with_exec=yes}])
    
   if test "$ac_with_exec" = "yes"; then
      ac_have_exec=yes

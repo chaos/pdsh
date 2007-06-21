@@ -1054,7 +1054,7 @@ Optional Packages:
   --without-rsh           Do not include the standard rsh module
   --with-xcpu             Build xcpu module
   --with-ssh              Build ssh module
-  --with-exec             Build exec module
+  --without-exec          Do not build 'exec' rcmd module
   --without-pam           Do not build qshell/mqshell with pam support
   --with-qshell           Build qsh module and qshd daemon
   --with-machines(=PATH)  Specify a flat file list of all nodes
@@ -23954,8 +23954,8 @@ echo "$as_me: error: bad value \"$withval\" for --with-exec" >&2;}
 
 
 fi;
-  echo "$as_me:$LINENO: result: ${ac_with_exec=no}" >&5
-echo "${ECHO_T}${ac_with_exec=no}" >&6
+  echo "$as_me:$LINENO: result: ${ac_with_exec=yes}" >&5
+echo "${ECHO_T}${ac_with_exec=yes}" >&6
 
   if test "$ac_with_exec" = "yes"; then
      ac_have_exec=yes
