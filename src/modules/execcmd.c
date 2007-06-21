@@ -58,8 +58,8 @@
 #include "src/common/err.h"
 
 #if STATIC_MODULES
-#  define pdsh_module_info exec_module_info
-#  define pdsh_module_priority exec_module_priority
+#  define pdsh_module_info execcmd_module_info
+#  define pdsh_module_priority execcmd_module_priority
 #endif    
 
 int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
