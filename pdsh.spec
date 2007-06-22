@@ -35,8 +35,8 @@ Requires: pdsh-rcmd
 %define _defaults ssh exec readline pam 
 
 #   LLNL system defaults
-%if %{?chaos:1}%{!?chaos:0}
-%define _default_with %{_defaults} mrsh mqshell nodeupdown genders slurm 
+%if 0%{?chaos}
+%define _default_with %{_defaults} mrsh nodeupdown genders slurm 
 %else
 #   All other defaults
 %define _default_with %{_defaults} dshgroups netgroup machines 
@@ -106,6 +106,7 @@ Requires: pdsh-rcmd
 %endif
 
 
+%{?_with_mrsh:BuildRequires: munge-devel}
 %{?_with_qshell:BuildRequires: qsnetlibs}
 %{?_with_mqshell:BuildRequires: qsnetlibs}
 %{?_with_readline:BuildRequires: readline-devel}
