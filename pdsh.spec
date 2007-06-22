@@ -48,7 +48,7 @@ Requires: pdsh-rcmd
 %define _env_without ${PDSH_WITHOUT_OPTIONS}
 %define _env_with    ${PDSH_WITH_OPTIONS} 
 
-#   Shortcut for %global expansion
+#   Shortcut for % global expansion
 %define dstr "%%%%"global
 
 #    Check with/out env variables for any options
