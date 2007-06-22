@@ -3,6 +3,8 @@
 	* pdsh.spec : Redesign of specfile conditionals to allow
 	  easier modification of defaults.
 
+	* : tag pdsh-2.14.
+
 2007-06-20  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/slurm.c : Include SLURM headers after all pdsh

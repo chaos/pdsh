@@ -1,6 +1,13 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
+* Changes in pdsh-2.14 (2007-06-22)
+===================================
+ -- Fix compile error in src/pdsh/mod.c when using --enable-static-modules.
+ -- Allow conditional and static build of "exec" rcmd module.
+ -- (slurm) Re-order headers in slurm module to avoid redefinition 
+    of pdsh bool type.
+
 * Changes in pdsh-2.13 (2007-06-06)
 ===================================
  -- New "exec" rcmd module for executing arbitrary commands. 
