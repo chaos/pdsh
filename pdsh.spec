@@ -1,6 +1,6 @@
-Name: pdsh   
-Version: See META
-Release: See META
+Name: pdsh
+Version: 
+Release: 
 
 Summary: Parallel remote shell program
 
@@ -28,50 +28,72 @@ Requires: pdsh-rcmd
 #   the environment variables PDSH_WITH_OPTIONS and PDSH_WITHOUT_OPTIONS.
 #   e.g. PDSH_WITH_OPTIONS="qshell genders" rpmbuild ....
 #
-%define _without_env ${PDSH_WITHOUT_OPTIONS}
-%define _with_env ${PDSH_WITH_OPTIONS} 
-%define dstr "%%%%"define
-%define check() echo %_%{1}_env|grep -qw %%1 && echo %dstr _%{1}_%%1 --%{1}-%%1
-%{expand: %%define pdsh_with() %%((%{check with})||(%{check without}))%%{nil}}
-%define def() %%{!?_%{2}_%1: %%{!?_%{3}_%1: %%global _%{2}_%1 --%{2}-%1}}
 
-%{expand: %pdsh_with exec}
-%{expand: %def exec with without}
-%{expand: %pdsh_with ssh}
-%{expand: %def ssh with without}
-%{expand: %pdsh_with rsh}
-%{expand: %def rsh with without}
-%{expand: %pdsh_with readline}
-%{expand: %def readline with without}
-%{expand: %pdsh_with dshgroups}
-%{expand: %def dshgroups with without}
-%{expand: %pdsh_with netgroup}
-%{expand: %def netgroup with without}
+#
+#  Definition of default packages to build on various platforms:
+# 
+%define _defaults ssh exec readline pam 
 
-%{expand: %pdsh_with mrsh}
-%{expand: %def mrsh without with}
-%{expand: %pdsh_with qshell}
-%{expand: %def qshell without with}
-%{expand: %pdsh_with mqshell}
-%{expand: %def mqshell without with}
-%{expand: %pdsh_with xcpu}
-%{expand: %def xcpu without with}
-%{expand: %pdsh_with genders}
-%{expand: %def genders without with}
-%{expand: %pdsh_with nodeattr}
-%{expand: %def nodeattr without with}
-%{expand: %pdsh_with nodeupdown}
-%{expand: %def nodeupdown without with}
-%{expand: %pdsh_with machines}
-%{expand: %def machines without with}
-%{expand: %pdsh_with slurm}
-%{expand: %def slurm without with}
-%{expand: %pdsh_with rms}
-%{expand: %def rms without with}
-%{expand: %pdsh_with debug}
-%{expand: %def debug without with}
-%{expand: %pdsh_with pam}
-%{expand: %def pam without with}
+#   LLNL system defaults
+%if %{?chaos:1}%{!?chaos:0}
+%define _default_with %{_defaults} mrsh mqshell nodeupdown genders slurm 
+%else
+#   All other defaults
+%define _default_with %{_defaults} dshgroups netgroup machines 
+%endif
+
+#
+#   Environment variables can be used to override defaults above:
+#
+%define _env_without ${PDSH_WITHOUT_OPTIONS}
+%define _env_with    ${PDSH_WITH_OPTIONS} 
+
+#   Shortcut for %global expansion
+%define dstr "%%%%"global
+
+#    Check with/out env variables for any options
+%define env() echo %_env_%{1}|grep -qw %%1 && echo %dstr _%{1}_%%1 --%{1}-%%1
+#    Check defaults
+%define def() echo %_default_with | grep -qw %%1 || w=out; echo %dstr _with${w}_%%1 --with${w}-%%1
+
+#    Check env variables first. If they are not set use defaults.
+%{expand: %%define pdsh_with() %%((%{env with})||(%{env without})||(%{def}))}
+
+#    Only check environment and defaults if a --with or --without wasn't
+#     used from the rpmbuild command line.
+#
+%define pdsh_opt() %%{!?_with_%1: %%{!?_without_%1: %%{expand: %%pdsh_with %1}}}
+
+
+#
+# Rcmd modules:
+#
+%{expand: %pdsh_opt exec}
+%{expand: %pdsh_opt ssh}
+%{expand: %pdsh_opt rsh}
+%{expand: %pdsh_opt mrsh}
+%{expand: %pdsh_opt qshell}
+%{expand: %pdsh_opt mqshell}
+%{expand: %pdsh_opt xcpu}
+
+#
+# Misc modules:
+#
+%{expand: %pdsh_opt netgroup}
+%{expand: %pdsh_opt dshgroups}
+%{expand: %pdsh_opt genders}
+%{expand: %pdsh_opt nodeattr}
+%{expand: %pdsh_opt nodeupdown}
+%{expand: %pdsh_opt machines}
+%{expand: %pdsh_opt slurm}
+%{expand: %pdsh_opt rms}
+
+#
+# Other options:
+#
+%{expand: %pdsh_opt readline}
+%{expand: %pdsh_opt debug}
+%{expand: %pdsh_opt pam}
 
 #
 # If "--with debug" is set compile with --enable-debug
@@ -91,6 +113,7 @@ Requires: pdsh-rcmd
 %{?_with_genders:BuildRequires: genders > 1.0}
 %{?_with_pam:BuildRequires: pam-devel}
 %{?_with_slurm:BuildRequires: slurm-devel}
+
 
 ##############################################################################
 # Pdsh description
@@ -249,7 +272,7 @@ from an allocated SLURM job.
 ##############################################################################
 
 %prep
-%setup
+%setup 
 ##############################################################################
 
 %build
@@ -465,6 +488,9 @@ fi
 ##############################################################################
 
 %changelog
+* Fri Jun 22 2007 Mark Grondona <mgrondona@llnl.gov>
+- reworked specfile conditionals to allow easy change of defaults
+
 * Mon Jun  4 2007 Mark Grondona <mgrondona@llnl.gov>
 - added rcmd-exec subpackage.
 
