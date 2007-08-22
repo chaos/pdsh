@@ -1,3 +1,8 @@
+2007-08-22  Albert Chu <chu11@llnl.gov>
+
+	* src/pdsh/pcp_client.c, src/pdsh/pcp_server.c : Remove
+	advertising clause per letter from Berkeley.
+
 2007-06-22  Mark Grondona <mgrondona@llnl.gov>
 
 	* pdsh.spec : Redesign of specfile conditionals to allow
