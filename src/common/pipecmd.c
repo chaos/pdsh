@@ -237,6 +237,11 @@ int pipecmd_wait (pipecmd_t p, int *pstatus)
     return (0);
 }
 
+const char * pipecmd_target (pipecmd_t p)
+{
+    return (p->target);
+}
+
 
 static void closeall (int fd)
 {

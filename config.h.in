@@ -357,6 +357,12 @@
    your system. */
 #undef PTHREAD_CREATE_JOINABLE
 
+/* Define to SSH connect timeout option */
+#undef SSH_CONNECT_TIMEOUT_OPTION
+
+/* Define if SSH supports a connect timeout option. */
+#undef SSH_HAS_CONNECT_TIMEOUT
+
 /* Use Static Modules */
 #undef STATIC_MODULES
 

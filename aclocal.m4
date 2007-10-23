@@ -154,7 +154,7 @@ AC_CACHE_CHECK([whether deplibs are loaded by dlopen],
     # at 6.2 and later dlopen does load deplibs.
     libltdl_cv_sys_dlopen_deplibs=yes
     ;;
-  netbsd* | netbsdelf*-gnu)
+  netbsd*)
     libltdl_cv_sys_dlopen_deplibs=yes
     ;;
   openbsd*)

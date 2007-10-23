@@ -63,6 +63,11 @@ int pipecmd_signal (pipecmd_t p, int signo);
  */
 int pipecmd_wait (pipecmd_t p, int *status);
 
+/*
+ *  Return target name of pipecmd process (i.e. target host)
+ */
+const char * pipecmd_target (pipecmd_t p);
+
 #endif /* !_HAVE_PIPECMD_H */
 
 /*

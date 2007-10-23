@@ -3,6 +3,20 @@
 	* pdsh.spec : Add ncurses-devel to BuildRequires if building with
 	  readline support.
 
+	* src/common/pipecmd.h, src/common/pipecmd.c :
+	  Added pipecmd_target function to return target hostname from
+	  pipecmd object.
+
+	* src/modules/sshcmd.c : Refactor ssh module to use pipecmd.c. 
+
+	* src/modules/sshcmd.c : Add support for connect timeout (-t)
+	  to ssh module for openssh using -oConnectTimeout=%d by default.
+
+	* config/ac_ssh.m4 : Add --with-ssh-connect-timeout-option=STRING
+	  to ./configure. Allows setting SSH's connect timeout option,
+	  "-oConnectTimeout=%d by default", or disabling connect timeout
+	  alltogether for SSH with "none".
+
 2007-08-22  Albert Chu <chu11@llnl.gov>
 
 	* src/pdsh/pcp_client.c, src/pdsh/pcp_server.c : Remove
