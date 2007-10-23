@@ -110,6 +110,7 @@ Requires: pdsh-rcmd
 %{?_with_qshell:BuildRequires: qsnetlibs}
 %{?_with_mqshell:BuildRequires: qsnetlibs}
 %{?_with_readline:BuildRequires: readline-devel}
+%{?_with_readline:BuildRequires: ncurses-devel}
 %{?_with_nodeupdown:BuildRequires: whatsup}
 %{?_with_genders:BuildRequires: genders > 1.0}
 %{?_with_pam:BuildRequires: pam-devel}
