@@ -1,3 +1,9 @@
+2007-10-24  Mark Grondona <mgrondona@llnl.gov>
+
+	* doc/pdcp.1.in, doc/pdsh.1.in : Update documentation to reflect
+	  support for connect timeout for some SSH implementations, and
+	  ability to use suffixes on hostlist expressions.
+
 2007-10-23  Mark Grondona <mgrondona@llnl.gov>
 
 	* pdsh.spec : Add ncurses-devel to BuildRequires if building with
