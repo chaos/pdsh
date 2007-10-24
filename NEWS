@@ -1,6 +1,20 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
+* Changes in pdsh-2.15 (2007-10-24)
+===================================
+ -- Refactor ssh module to use built in "pipecmd" support
+    (same code as the "exec" module)
+ -- Add connect timeout support for ssh implementations which support it.
+    Be default, the OpenSSH "-oConnectTimeout=%d" option is used. This
+	can be overridden at configure time using 
+
+	 --with-ssh-connect-timeout-option="OPTION"
+
+	where OPTION should contain one %d which will be expanded to the
+	actual timeout value specified on the command line.
+ -- Add ncurses-devel to pdsh.spec BuildRequires.
+
 * Changes in pdsh-2.14 (2007-06-22)
 ===================================
  -- Fix compile error in src/pdsh/mod.c when using --enable-static-modules.
