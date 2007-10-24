@@ -6,7 +6,7 @@ documents thos changes that are of interest to users and admins.
  -- Refactor ssh module to use built in "pipecmd" support
     (same code as the "exec" module)
  -- Add connect timeout support for ssh implementations which support it.
-    Be default, the OpenSSH "-oConnectTimeout=%d" option is used. This
+    By default, the OpenSSH "-oConnectTimeout=%d" option is used. This
 	can be overridden at configure time using 
 
 	 --with-ssh-connect-timeout-option="OPTION"
