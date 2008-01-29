@@ -1,3 +1,8 @@
+2008-01-29  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/common/hostlist.h, src/common/hostlist.c :
+	  Update to the latest hostlist code from LSD-Tools.
+
 2007-10-24  Mark Grondona <mgrondona@llnl.gov>
 
 	* doc/pdcp.1.in, doc/pdsh.1.in : Update documentation to reflect
