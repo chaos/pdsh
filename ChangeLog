@@ -1,5 +1,9 @@
 2008-01-29  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/modules/mcmcd.c, src/modules/xrcmd.c, src/pdsh/dsh.c, 
+	  src/pdsh/mod.c, src/pdsh/opt.c :
+	  Fix minor defects as reported by Coverity.
+
 	* src/common/hostlist.h, src/common/hostlist.c :
 	  Update to the latest hostlist code from LSD-Tools.
 

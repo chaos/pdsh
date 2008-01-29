@@ -213,6 +213,8 @@ xrcmd(char *ahost, char *addr, char *locuser, char *remuser,
     char c;
     struct xpollfd xpfds[2];
 
+    memset (xpdfds, 0, sizeof (xpfds));
+
     pid = getpid();
 
     sigemptyset(&blockme);
@@ -229,6 +231,7 @@ xrcmd(char *ahost, char *addr, char *locuser, char *remuser,
             return (-1);
         }
         fcntl(s, F_SETOWN, pid);
+        memset (&sin, 0, sizeof (sin));
         sin.sin_family = AF_INET;
         memcpy(&sin.sin_addr, addr, IP_ADDR_LEN);
         sin.sin_port = htons(RSH_PORT);

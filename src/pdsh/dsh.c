@@ -538,7 +538,7 @@ static int _do_output (int fd, cbuf_t cb, out_f outf, bool read_rc, thd_t *t)
         if (read_rc)
             t->rc = _extract_rc (buf);
 
-        if ((buf != NULL) && (strlen (buf) > 0)) {
+        if (strlen (buf) > 0) {
             if (t->labels)
                 outf ("%S: %s", t->host, buf);
             else
@@ -637,6 +637,8 @@ static void *_rsh_thread(void *args)
     } else if (_update_connect_state(a) != DSH_CANCELED) {
 
         fd_set_nonblocking (a->rcmd->fd);
+
+        memset (xpfds, 0, sizeof (xpfds));
 
         /* prep for poll call */
         xpfds[0].fd = a->rcmd->fd;

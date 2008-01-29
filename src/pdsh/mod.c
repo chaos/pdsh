@@ -384,7 +384,6 @@ _cmp_type(mod_t mod, char *type)
 int
 mod_count(char *type)
 {
-    mod_t mod;
     int i = 0;
 
     assert(module_list != NULL);
@@ -393,7 +392,7 @@ mod_count(char *type)
         return list_count(module_list);
 
     list_iterator_reset(module_itr);
-    while ((mod = list_find(module_itr, (ListFindF) _cmp_type, type))) 
+    while (list_find(module_itr, (ListFindF) _cmp_type, type)) 
         i++;
 
     return i;

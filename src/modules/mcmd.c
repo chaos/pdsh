@@ -329,6 +329,9 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     munge_ctx_t ctx;
     struct xpollfd xpfds[2];
 
+    memset (xpfds, 0, sizeof (xpfds));
+    memset (&sin, 0, sizeof (sin));
+
     sigemptyset(&blockme);
     sigaddset(&blockme, SIGURG);
     sigaddset(&blockme, SIGPIPE);
@@ -498,7 +501,8 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     if ((rv = munge_encode(&m,ctx,mbuf,mcount)) != EMUNGE_SUCCESS) {
         err("%p: %S: mcmd: munge_encode: %s\n", ahost, munge_ctx_strerror(ctx));
         munge_ctx_destroy(ctx);
-        close(s2);
+        if (s2 >= 0) 
+            close(s2);
         free(tmbuf);
         goto bad;
     }

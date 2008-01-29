@@ -689,7 +689,7 @@ bool opt_verify(opt_t * opt)
         }
 
         /* If reverse copy, the destination must be a directory */
-        if (opt->reverse_copy) {
+        if (opt->reverse_copy && opt->outfile_name) {
             struct stat statbuf;
 
             if (stat(opt->outfile_name, &statbuf) < 0) {
@@ -754,7 +754,7 @@ bool opt_verify(opt_t * opt)
         }
 
         /* If reverse copy the infiles should exist locally */
-        if (!_infile_names_check(opt))
+        if (opt->infile_names && !_infile_names_check(opt))
             verified = false;
     }
 
