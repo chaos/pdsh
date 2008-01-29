@@ -213,7 +213,7 @@ xrcmd(char *ahost, char *addr, char *locuser, char *remuser,
     char c;
     struct xpollfd xpfds[2];
 
-    memset (xpdfds, 0, sizeof (xpfds));
+    memset (xpfds, 0, sizeof (xpfds));
 
     pid = getpid();
 
