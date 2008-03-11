@@ -362,6 +362,21 @@ void opt_default(opt_t * opt, char *argv0)
     return;
 }
 
+static int string_to_int (const char *val, int *p2int)
+{
+    char *p;
+    long n;
+
+    errno = 0;
+    n = strtoul (val, &p, 10);
+    if (errno || (*p != '\0'))
+        return (-1);
+
+    *p2int = (int) n;
+
+    return (0);
+}
+
 /*
  * Override default options with environment variables.
  *	opt (IN/OUT)	option struct	
@@ -371,7 +386,8 @@ void opt_env(opt_t * opt)
     char *rhs;
 
     if ((rhs = getenv("FANOUT")) != NULL)
-        opt->fanout = atoi(rhs);
+        if (string_to_int (rhs, &opt->fanout) < 0)
+            errx ("%p: Invalid environment variable FANOUT=%s\n", rhs);
 
     if ((rhs = getenv("PDSH_RCMD_TYPE")) != NULL)
         opt->rcmd_name = Strdup(rhs);
@@ -433,7 +449,8 @@ void opt_args(opt_t * opt, int argc, char *argv[])
             opt->debug = true;
             break;
         case 'f':              /* fanout */
-            opt->fanout = atoi(optarg);
+            if (string_to_int (optarg, &opt->fanout) < 0)
+                errx ("%p: Invalid fanout `%s' passed to -f.\n", optarg);
             break;
         case 'w':              /* target node list */
             if (strcmp(optarg, "-") == 0)

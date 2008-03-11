@@ -1,5 +1,8 @@
 2008-03-11  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/pdsh/opt.c : 
+	  Check validity of user-supplied fanout.
+
 	* src/pdsh/opt.c :
 	  Avoid unecessary error message about missing WCOLL file by
 	  only reading that file if no other node selection options
