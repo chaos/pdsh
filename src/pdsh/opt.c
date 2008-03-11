@@ -370,9 +370,6 @@ void opt_env(opt_t * opt)
 {
     char *rhs;
 
-    if ((rhs = getenv("WCOLL")) != NULL)
-        opt->wcoll = read_wcoll(rhs, NULL);
-
     if ((rhs = getenv("FANOUT")) != NULL)
         opt->fanout = atoi(rhs);
 
@@ -409,7 +406,6 @@ static void wcoll_append (opt_t *opt, char *hosts);
  */
 void opt_args(opt_t * opt, int argc, char *argv[])
 {
-    int wcoll_count = 0;
     int c;
     extern int optind;
     extern char *optarg;
@@ -442,15 +438,8 @@ void opt_args(opt_t * opt, int argc, char *argv[])
         case 'w':              /* target node list */
             if (strcmp(optarg, "-") == 0)
                 opt->wcoll = read_wcoll(NULL, stdin);
-            else { 
-                /* Throw  away contents of WCOLL file if they exist 
-                 */
-                if (!(wcoll_count++) && opt->wcoll) {
-                    hostlist_destroy (opt->wcoll);
-                    opt->wcoll = NULL;
-                }
+            else 
                 wcoll_append(opt, optarg);
-            }
             break;
         case 'x':              /* exclude node list */
             exclude_buf = Strdup(optarg);
@@ -573,14 +562,23 @@ void opt_args(opt_t * opt, int argc, char *argv[])
     }
 
     /* ignore wcoll & -x option if we are running pcp server */
-    if (!opt->pcp_server) {
+    if (opt->pcp_server) 
+        return;
 
-        /*
-         *  Attempt to grab wcoll from modules stack unless
-         *    wcoll was set from -w.
-         */
-        if (mod_read_wcoll(opt) < 0)
-            exit(1);
+    /*
+     *  Attempt to grab wcoll from modules stack unless
+     *    wcoll was set from -w.
+     */
+    if (mod_read_wcoll(opt) < 0)
+        exit(1);
+
+    /*
+     *  If wcoll is still empty, try WCOLL environment variable.
+     */
+    if (!opt->wcoll) {
+        char *val;
+        if ((val = getenv("WCOLL")) != NULL)
+            opt->wcoll = read_wcoll(val, NULL);
     }
 }
 

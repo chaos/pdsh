@@ -1,3 +1,10 @@
+2008-03-11  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/opt.c :
+	  Avoid unecessary error message about missing WCOLL file by
+	  only reading that file if no other node selection options
+	  have been specified.
+
 2008-01-29  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/mcmcd.c, src/modules/xrcmd.c, src/pdsh/dsh.c, 
