@@ -256,6 +256,13 @@ genders_postop(opt_t *opt)
     altnames = (opt_i && !(attrlist || allnodes)) 
             || (!opt_i && (attrlist || allnodes));
 
+    /*
+     *  Return early if no genders options specified.
+     *   This way genders file is not opened unless necessary.
+     */
+    if (!attrlist && !allnodes && !excllist && !opt_i)
+        return (0);
+
     if (gh == NULL)
         gh = _handle_create();
 

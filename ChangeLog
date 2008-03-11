@@ -1,5 +1,8 @@
 2008-03-11  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/modules/genders.c :
+	  Don't read genders file if no genders options were specified.
+
 	* src/pdsh/opt.c : 
 	  Check validity of user-supplied fanout.
 
