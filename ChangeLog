@@ -1,5 +1,9 @@
 2008-03-19  Mark Grondona <mgrondona@llnl.gov>
 
+	* scripts/dshbak : 
+	  Do not include leading space in output lines (which is added
+	  by pdsh) to data printed by dshbak.
+
 	* scripts/dshbak :
 	  Remove -s (sort) option to dshbak. Always sort output instead.
 
