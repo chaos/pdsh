@@ -1,6 +1,21 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
+* Changes in pdsh-2.16 (2008-03-19)
+===================================
+ -- Don't attempt to read WCOLL file unless no other host
+     selection method is utilized.
+ -- (genders) Don't attempt to read a genders file if no genders 
+     options are used.
+ -- When specifying rcmd_type via -w (i.e. [rcmd_type:][user@]host)
+     have rcmd_type apply across all hosts until the next rcmd
+     specification. That is ssh:host1,host2 now uses ssh for both
+     host1 and host2. Prior to this change, ssh would only be used
+     to contact host1. Same change for [user].
+ -- Check for valid fanout specified to -f option.
+ -- Always sort output of dshbak, and remove dshbak -s option.
+ -- Strip leading space (added by pdsh) from dsbak output.
+
 * Changes in pdsh-2.15 (2007-10-24)
 ===================================
  -- Refactor ssh module to use built in "pipecmd" support
