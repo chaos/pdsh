@@ -1,5 +1,7 @@
 2008-03-19  Mark Grondona <mgrondona@llnl.gov>
 
+	* : tag pdsh-2.16
+
 	* scripts/dshbak : 
 	  Do not include leading space in output lines (which is added
 	  by pdsh) to data printed by dshbak.
@@ -37,6 +39,8 @@
 	  Update to the latest hostlist code from LSD-Tools.
 
 2007-10-24  Mark Grondona <mgrondona@llnl.gov>
+
+	* : tag pdsh-2.15
 
 	* doc/pdcp.1.in, doc/pdsh.1.in : Update documentation to reflect
 	  support for connect timeout for some SSH implementations, and
