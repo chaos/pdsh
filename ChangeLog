@@ -1,5 +1,12 @@
 2008-03-11  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/pdsh/opt.c : 
+	  When specifying rcmd_type via -w (i.e. [rcmd_type:][user@]host)
+	  have rcmd_type apply across all hosts until the next rcmd
+	  specification. That is ssh:host1,host2 now uses ssh for both
+	  host1 and host2. Prior to this change, ssh would only be used
+	  to contact host1. (Same change for user)
+
 	* src/modules/genders.c :
 	  Don't read genders file if no genders options were specified.
 

@@ -974,8 +974,6 @@ static int get_host_rcmd_type (char *hosts, char **rptr, char **hptr,
 {
     char *p = hosts;
     char *q;
-    *uptr = NULL;
-    *rptr = NULL;
     *hptr = hosts;
 
     p = strchr (hosts, ':');
@@ -1014,7 +1012,7 @@ static void wcoll_append (opt_t *opt, char *str)
         opt->wcoll = hostlist_create (NULL);
 
     while ((tok = hostlist_shift (hl))) {
-        char *hosts, *user;
+        char *hosts, *user = NULL;
 
         get_host_rcmd_type (tok, &rcmd_type, &hosts, &user);
 
