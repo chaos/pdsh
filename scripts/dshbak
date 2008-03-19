@@ -7,7 +7,7 @@ require 5.003;
 
 use Getopt::Std;
 
-getopts('cs') or usage();
+getopts('c') or usage();
 
 #
 # Stdin consists of lines of the form "hostname: output...".
@@ -23,7 +23,7 @@ while (<>) {
 # of hosts followed by one copy of the output.
 #
 if ($opt_c) {
-	foreach $tag (sort_if_requested(keys %lines)) {			# look thru each host
+	foreach $tag (sortn(keys %lines)) {		# look thru each host
 		next if (!defined($lines{$tag}));	# skip deleted keys
 		@identical = ();			# init list of matches
 		foreach $tag2 (keys %lines) {	
@@ -46,7 +46,7 @@ if ($opt_c) {
 #
 } else {
 
-	foreach $tag (sort_if_requested(keys %lines)) {
+	foreach $tag (sortn(keys %lines)) {
 		print("----------------\n");		# header: one host
 		print("$tag\n");
 		print("----------------\n");
@@ -83,7 +83,7 @@ sub cmp_list
 
 sub usage
 {
-	printf STDERR ("Usage: dshbak [-c] [-s]\n");
+	printf STDERR ("Usage: dshbak [-c]\n");
 }
 
 
@@ -160,10 +160,4 @@ sub comp
 sub sortn
 {
 	map {$$_[0]} sort {($$a[1]||0)<=>($$b[1]||0)} map {[$_,/(\d*)$/]} @_;
-}
-
-
-sub sort_if_requested
-{
-	return ($opt_s ? sortn(@_) : @_);
 }

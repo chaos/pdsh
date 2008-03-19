@@ -1,3 +1,8 @@
+2008-03-19  Mark Grondona <mgrondona@llnl.gov>
+
+	* scripts/dshbak :
+	  Remove -s (sort) option to dshbak. Always sort output instead.
+
 2008-03-11  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/opt.c : 
