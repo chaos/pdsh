@@ -1,10 +1,16 @@
+2008-04-01  Mark Grondona <mgrondona@llnl.gov>
+
+	* scripts/dshbak : Allow for ':' in pdsh output lines. 
+	  Thanks to Ashley Pittman for the patch.
+
 2008-03-19  Mark Grondona <mgrondona@llnl.gov>
 
 	* : tag pdsh-2.16
 
 	* scripts/dshbak : 
 	  Do not include leading space in output lines (which is added
-	  by pdsh) to data printed by dshbak.
+	  by pdsh) to data printed by dshbak. Thanks to Ashley Pittman
+	  for the patch.
 
 	* scripts/dshbak :
 	  Remove -s (sort) option to dshbak. Always sort output instead.

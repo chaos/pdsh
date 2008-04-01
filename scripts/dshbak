@@ -14,7 +14,7 @@ getopts('c') or usage();
 # Store these in a hash, keyed by hostname, of lists of lines.
 #
 while (<>) {
-	($tag, $data) = m/^\s*(\S+)\s*: ?(.*\n)$/;
+	($tag, $data) = m/^\s*(\S+?)\s*: ?(.*\n)$/;
 	push(@{$lines{$tag}}, $data);
 }
 
