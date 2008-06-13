@@ -1,3 +1,11 @@
+2008-06-13  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/common/hostlist.h : 
+	  Update to latest hostlist.h from LSD-Tools project.
+	  This version includes unistd.h (patch by Ashley Pittman).
+	  Issue was rediscovered Jeff Quaintance when I forgot to
+	  include Ashley's patch in the last version of pdsh. D'oh!
+
 2008-04-01  Mark Grondona <mgrondona@llnl.gov>
 
 	* scripts/dshbak : Allow for ':' in pdsh output lines. 
