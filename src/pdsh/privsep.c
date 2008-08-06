@@ -190,7 +190,7 @@ static int privsep_server (void)
 	 * for each request on server_fd create a reserved port and
 	 *   send the created fd back to the client.
 	 */
-	while ((rc = read (server_fd, &lport, sizeof (lport)))) {
+	while ((rc = read (server_fd, &lport, sizeof (lport))) > 0) {
 		int s = rresvport (&lport);
 
 		send_rresvport (server_fd, s, lport);

@@ -1,3 +1,8 @@
+2008-08-06  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/privsep.c (privsep_server) :
+	  Fix handling of read() return code as found by Coverity.
+
 2008-06-13  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/common/hostlist.h : 
