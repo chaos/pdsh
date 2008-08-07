@@ -1,5 +1,8 @@
 2008-08-06  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/common/hostlist.c : 
+	  Update to latest hostlist code from LSD-Tools.
+
 	* src/pdsh/privsep.c (privsep_server) :
 	  Fix handling of read() return code as found by Coverity.
 
