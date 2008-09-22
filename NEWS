@@ -1,6 +1,20 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
+* Changes in pdsh-2.17 (2008-09-23)
+===================================
+ -- Ignore multiple consecutive ':' characters in host list argument to
+     -w option. Only a single ':' by itself will be interpreted as the
+	 special "rcmd_type:hosts" syntax.
+ -- dshbak: Allow for ':' in pdsh output lines. 
+     (patch from Ashley Pittman)
+ -- Fix for compile against glibc 2.8, which no longer defines ARG_MAX 
+     (patch from Tom 'spot' Callaway via sf.net).
+ -- Include missing unistd.h in hostlist.h.
+     (patch from Ashley Pittman)
+ -- Fix compile on Solaris by updating to latest ACX_PTHREAD autoconf
+     macro from autoconf-archive.cryp.to.
+
 * Changes in pdsh-2.16 (2008-03-19)
 ===================================
  -- Don't attempt to read WCOLL file unless no other host

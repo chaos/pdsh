@@ -1,5 +1,7 @@
 2008-09-22  Mark Grondona <mgrondona@llnl.gov>
 
+	* : tag pdsh-2.17.
+
 	* config/ac_ssh.m4, configure :
 	  Don't use -q option to grep.
 
