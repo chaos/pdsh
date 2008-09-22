@@ -1,3 +1,9 @@
+2008-09-03  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/xpopen.c : glibc 2.8 no longer defines ARG_MAX.
+	  Use sysconf (_SC_ARG_MAX) instead if it is available.
+	  Fix provided by Tom 'spot' Callaway via sf.net.
+
 2008-08-06  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/common/hostlist.c : 

@@ -28,12 +28,19 @@
 #include "config.h"
 #endif
 
-#if	HAVE_UNISTD_H
-#include <unistd.h>             /* for R_OK, access() */
-#endif
-
 #include <stdio.h>
 #include <limits.h>             /* ARG_MAX */
+
+#if	HAVE_UNISTD_H
+#include <unistd.h>             /* for R_OK, access() */
+# if defined(_SC_ARG_MAX)
+#  if defined(ARG_MAX)
+#     undef ARG_MAX
+#  endif
+#  define ARG_MAX sysconf (_SC_ARG_MAX)
+# endif
+#endif
+
 #include <sys/wait.h>           /* waitpid() */
 #include <string.h>             /* strcmp() */
 #include <stdlib.h>
