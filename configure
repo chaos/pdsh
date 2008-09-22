@@ -24007,7 +24007,7 @@ if test "${with_ssh_connect_timeout_option+set}" = set; then
   x_ac_ssh_connect_timeout_option=$withval
 fi;
 
-  if ! echo "$x_ac_ssh_connect_timeout_option" | grep -qi ^none; then
+  if ! echo "$x_ac_ssh_connect_timeout_option" | grep -i ^none 2>/dev/null; then
 
 cat >>confdefs.h <<\_ACEOF
 #define SSH_HAS_CONNECT_TIMEOUT 1

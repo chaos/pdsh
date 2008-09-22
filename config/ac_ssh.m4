@@ -47,7 +47,7 @@ AC_DEFUN([AC_SSH],
 		           SSH option for connect timeout),
 	[x_ac_ssh_connect_timeout_option=$withval])
 	  
-  if ! echo "$x_ac_ssh_connect_timeout_option" | grep -qi ^none; then
+  if ! echo "$x_ac_ssh_connect_timeout_option" | grep -i ^none 2>/dev/null; then
     AC_DEFINE([SSH_HAS_CONNECT_TIMEOUT], [1], 
               [Define if SSH supports a connect timeout option.])
     AC_DEFINE_UNQUOTED(

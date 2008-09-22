@@ -1,5 +1,8 @@
 2008-09-22  Mark Grondona <mgrondona@llnl.gov>
 
+	* config/ac_ssh.m4, configure :
+	  Don't use -q option to grep.
+
 	* Makefile.in, config.h.in, config/Makefile.in,
 	  configure, doc/Makefile.in, etc/Makefile.in,
 	  scripts/Makefile.in, src/Makefile.in, src/common/Makefile.in,
