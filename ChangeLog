@@ -1,3 +1,14 @@
+2008-09-18  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/opt.c :
+	  Ignore multiple consecutive colons in host list supplied to -w and
+	  other target host input methods. Thus foo::bar is no longer treated
+	  as rcmd_type = foo, and target host = :bar. Instead the target host
+	  is just foo::bar. This behavior is probably more correct and least
+	  surprising to users (who probably rarely use the rcmd_type:hosts
+	  syntax). Plus, there is at least one user making use of proxy::hosts
+	  to handle automatic proxying of ssh connections.
+
 2008-09-03  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/xpopen.c : glibc 2.8 no longer defines ARG_MAX.

@@ -982,12 +982,23 @@ static int get_host_rcmd_type (char *hosts, char **rptr, char **hptr,
     if (p && q && p > q)
         errx ("Host spec \"%s\" not of form [rcmd_type:][user@]hosts\n", hosts);
 
-    if (p) {
+    /*
+     *  If we found a single ':' character, then everything
+     *   preceeding that is the rcmd type.  Otherwise, we ignore
+     *   presence of all colons. This can be done b/c even if there
+     *   were another colon later in the string, the string preceeding
+     *   it can not be an rcmd type since colon is not extant in rcmd
+     *   type names.
+     */
+    if (p && (*(p+1) != ':')) {
         *rptr = *hptr;
         *p++ = '\0';
         *hptr = p;
     }
 
+    /*
+     *  If we found a '@' char then what precedes it is username.
+     */
     if (q) {
         *uptr = *hptr;
         *q++ = '\0';
