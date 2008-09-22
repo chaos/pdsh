@@ -1,5 +1,13 @@
 2008-09-22  Mark Grondona <mgrondona@llnl.gov>
 
+	* Makefile.in, config.h.in, config/Makefile.in,
+	  configure, doc/Makefile.in, etc/Makefile.in,
+	  scripts/Makefile.in, src/Makefile.in, src/common/Makefile.in,
+	  src/modules/Makefile.in, src/pdsh/Makefile.in, 
+	  src/qsnet/Makefile.in, testsuite/Makefile.in, 
+	  testsuite/pdsh.test/Makefile.in :
+	  Re-run ./bootstrap.
+
 	* config/acx_pthread.m4 :
 	  Update to latest version of ACX_PTHREAD macro from 
 	  autoconf-archive.cryp.to/acx_pthread.html.

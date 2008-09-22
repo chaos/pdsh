@@ -464,7 +464,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS META_NAME META_VERSION META_RELEASE META_ALIAS META_DATE META_AUTHOR META_LT_CURRENT META_LT_REVISION META_LT_AGE build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE LN_S EGREP ECHO AR ac_ct_AR RANLIB ac_ct_RANLIB CPP CXX CXXFLAGS ac_ct_CXX CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE CXXCPP F77 FFLAGS ac_ct_F77 LIBTOOL INSTALL_LTDL_TRUE INSTALL_LTDL_FALSE CONVENIENCE_LTDL_TRUE CONVENIENCE_LTDL_FALSE LIBADD_DL WITH_GNU_LD_TRUE WITH_GNU_LD_FALSE WITH_STATIC_MODULES_TRUE WITH_STATIC_MODULES_FALSE AIX_PDSH_LDFLAGS PTHREAD_CC PTHREAD_LIBS PTHREAD_CFLAGS FANOUT CONNECT_TIMEOUT SDRGETOBJECTS HAVE_SDR WITH_SDR_TRUE WITH_SDR_FALSE WITH_RSH_TRUE WITH_RSH_FALSE HAVE_XCPU WITH_XCPU_TRUE WITH_XCPU_FALSE HAVE_SSH WITH_SSH_TRUE WITH_SSH_FALSE WITH_EXEC_TRUE WITH_EXEC_FALSE WITH_KRB4_TRUE WITH_KRB4_FALSE KRB_LIBS ELAN_LIBS HAVE_QSHELL PROG_QSHD QSHELL_LIBS WITH_QSHELL_TRUE WITH_QSHELL_FALSE WITH_QSW_TRUE WITH_QSW_FALSE HAVE_MACHINES MACHINES WITH_MACHINES_TRUE WITH_MACHINES_FALSE NODEATTR HAVE_NODEATTR WITH_NODEATTR_TRUE WITH_NODEATTR_FALSE HAVE_LIBGENDERS GENDERS_LIBS WITH_LIBGENDERS_TRUE WITH_LIBGENDERS_FALSE HAVE_LIBNODEUPDOWN NODEUPDOWN_LIBS WITH_NODEUPDOWN_TRUE WITH_NODEUPDOWN_FALSE HAVE_MRSH MRSH_LIBS WITH_LIBMUNGE_TRUE WITH_LIBMUNGE_FALSE WITH_MRSH_TRUE WITH_MRSH_FALSE PROG_MQSHD HAVE_MQSHELL WITH_MQSHELL_TRUE WITH_MQSHELL_FALSE RMSQUERY HAVE_RMSQUERY WITH_RMS_TRUE WITH_RMS_FALSE HAVE_SLURM SLURM_LIBS WITH_SLURM_TRUE WITH_SLURM_FALSE WITH_DSHGROUP_TRUE WITH_DSHGROUP_FALSE WITH_NETGROUP_TRUE WITH_NETGROUP_FALSE READLINE_LIBS WITH_READLINE_TRUE WITH_READLINE_FALSE LIBMODS_OBJS PDSH_VERSION PDSH_VERSION_FULL LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS META_NAME META_VERSION META_RELEASE META_ALIAS META_DATE META_AUTHOR META_LT_CURRENT META_LT_REVISION META_LT_AGE build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE LN_S EGREP ECHO AR ac_ct_AR RANLIB ac_ct_RANLIB CPP CXX CXXFLAGS ac_ct_CXX CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE CXXCPP F77 FFLAGS ac_ct_F77 LIBTOOL INSTALL_LTDL_TRUE INSTALL_LTDL_FALSE CONVENIENCE_LTDL_TRUE CONVENIENCE_LTDL_FALSE LIBADD_DL WITH_GNU_LD_TRUE WITH_GNU_LD_FALSE WITH_STATIC_MODULES_TRUE WITH_STATIC_MODULES_FALSE AIX_PDSH_LDFLAGS acx_pthread_config PTHREAD_CC PTHREAD_LIBS PTHREAD_CFLAGS FANOUT CONNECT_TIMEOUT SDRGETOBJECTS HAVE_SDR WITH_SDR_TRUE WITH_SDR_FALSE WITH_RSH_TRUE WITH_RSH_FALSE HAVE_XCPU WITH_XCPU_TRUE WITH_XCPU_FALSE HAVE_SSH WITH_SSH_TRUE WITH_SSH_FALSE WITH_EXEC_TRUE WITH_EXEC_FALSE WITH_KRB4_TRUE WITH_KRB4_FALSE KRB_LIBS ELAN_LIBS HAVE_QSHELL PROG_QSHD QSHELL_LIBS WITH_QSHELL_TRUE WITH_QSHELL_FALSE WITH_QSW_TRUE WITH_QSW_FALSE HAVE_MACHINES MACHINES WITH_MACHINES_TRUE WITH_MACHINES_FALSE NODEATTR HAVE_NODEATTR WITH_NODEATTR_TRUE WITH_NODEATTR_FALSE HAVE_LIBGENDERS GENDERS_LIBS WITH_LIBGENDERS_TRUE WITH_LIBGENDERS_FALSE HAVE_LIBNODEUPDOWN NODEUPDOWN_LIBS WITH_NODEUPDOWN_TRUE WITH_NODEUPDOWN_FALSE HAVE_MRSH MRSH_LIBS WITH_LIBMUNGE_TRUE WITH_LIBMUNGE_FALSE WITH_MRSH_TRUE WITH_MRSH_FALSE PROG_MQSHD HAVE_MQSHELL WITH_MQSHELL_TRUE WITH_MQSHELL_FALSE RMSQUERY HAVE_RMSQUERY WITH_RMS_TRUE WITH_RMS_FALSE HAVE_SLURM SLURM_LIBS WITH_SLURM_TRUE WITH_SLURM_FALSE WITH_DSHGROUP_TRUE WITH_DSHGROUP_FALSE WITH_NETGROUP_TRUE WITH_NETGROUP_FALSE READLINE_LIBS WITH_READLINE_TRUE WITH_READLINE_FALSE LIBMODS_OBJS PDSH_VERSION PDSH_VERSION_FULL LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -22090,9 +22090,10 @@ fi
 
 # Create a list of thread flags to try.  Items starting with a "-" are
 # C compiler flags, and other items are library names, except for "none"
-# which indicates that we try without any flags at all.
+# which indicates that we try without any flags at all, and "pthread-config"
+# which is a program returning the flags for the Pth emulation library.
 
-acx_pthread_flags="pthreads none -Kthread -kthread lthread -pthread -pthreads -mthreads pthread --thread-safe -mt"
+acx_pthread_flags="pthreads none -Kthread -kthread lthread -pthread -pthreads -mthreads pthread --thread-safe -mt pthread-config"
 
 # The ordering *is* (sometimes) important.  Some notes on the
 # individual items follow:
@@ -22109,21 +22110,23 @@ acx_pthread_flags="pthreads none -Kthread -kthread lthread -pthread -pthreads -m
 # -mt: Sun Workshop C (may only link SunOS threads [-lthread], but it
 #      doesn't hurt to check since this sometimes defines pthreads too;
 #      also defines -D_REENTRANT)
+#      ... -mt is also the pthreads flag for HP/aCC
 # pthread: Linux, etcetera
 # --thread-safe: KAI C++
+# pthread-config: use pthread-config program (for GNU Pth library)
 
 case "${host_cpu}-${host_os}" in
         *solaris*)
 
         # On Solaris (at least, for some versions), libc contains stubbed
         # (non-functional) versions of the pthreads routines, so link-based
-        # tests will erroneously succeed.  (We need to link with -pthread or
+        # tests will erroneously succeed.  (We need to link with -pthreads/-mt/
         # -lpthread.)  (The stubs are missing pthread_cleanup_push, or rather
         # a function called by this macro, so we could check for that, but
         # who knows whether they'll stub that too in a future libc.)  So,
         # we'll just look for -pthreads and -lpthread first:
 
-        acx_pthread_flags="-pthread -pthreads pthread -mt $acx_pthread_flags"
+        acx_pthread_flags="-pthreads pthread -mt -pthread $acx_pthread_flags"
         ;;
 esac
 
@@ -22141,6 +22144,48 @@ echo $ECHO_N "checking whether pthreads work without any flags... $ECHO_C" >&6
 echo $ECHO_N "checking whether pthreads work with $flag... $ECHO_C" >&6
                 PTHREAD_CFLAGS="$flag"
                 ;;
+
+		pthread-config)
+		# Extract the first word of "pthread-config", so it can be a program name with args.
+set dummy pthread-config; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_prog_acx_pthread_config+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$acx_pthread_config"; then
+  ac_cv_prog_acx_pthread_config="$acx_pthread_config" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_acx_pthread_config="yes"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+  test -z "$ac_cv_prog_acx_pthread_config" && ac_cv_prog_acx_pthread_config="no"
+fi
+fi
+acx_pthread_config=$ac_cv_prog_acx_pthread_config
+if test -n "$acx_pthread_config"; then
+  echo "$as_me:$LINENO: result: $acx_pthread_config" >&5
+echo "${ECHO_T}$acx_pthread_config" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+		if test x"$acx_pthread_config" = xno; then continue; fi
+		PTHREAD_CFLAGS="`pthread-config --cflags`"
+		PTHREAD_LIBS="`pthread-config --ldflags` `pthread-config --libs`"
+		;;
 
                 *)
                 echo "$as_me:$LINENO: checking for the pthreads library -l$flag" >&5
@@ -22232,11 +22277,12 @@ if test "x$acx_pthread_ok" = xyes; then
         save_CFLAGS="$CFLAGS"
         CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
 
-        # Detect AIX lossage: threads are created detached by default
-        # and the JOINABLE attribute has a nonstandard name (UNDETACHED).
-        echo "$as_me:$LINENO: checking for joinable pthread attribute" >&5
+        # Detect AIX lossage: JOINABLE attribute is called UNDETACHED.
+	echo "$as_me:$LINENO: checking for joinable pthread attribute" >&5
 echo $ECHO_N "checking for joinable pthread attribute... $ECHO_C" >&6
-        cat >conftest.$ac_ext <<_ACEOF
+	attr_name=unknown
+	for attr in PTHREAD_CREATE_JOINABLE PTHREAD_CREATE_UNDETACHED; do
+	    cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
@@ -22246,7 +22292,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 int
 main ()
 {
-int attr=PTHREAD_CREATE_JOINABLE;
+int attr=$attr; return attr;
   ;
   return 0;
 }
@@ -22273,96 +22319,47 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ok=PTHREAD_CREATE_JOINABLE
+  attr_name=$attr; break
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-ok=unknown
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
-        if test x"$ok" = xunknown; then
-                cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <pthread.h>
-int
-main ()
-{
-int attr=PTHREAD_CREATE_UNDETACHED;
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ok=PTHREAD_CREATE_UNDETACHED
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
+	done
+        echo "$as_me:$LINENO: result: $attr_name" >&5
+echo "${ECHO_T}$attr_name" >&6
+        if test "$attr_name" != PTHREAD_CREATE_JOINABLE; then
 
-ok=unknown
-fi
-rm -f conftest.err conftest.$ac_objext \
-      conftest$ac_exeext conftest.$ac_ext
-        fi
-        if test x"$ok" != xPTHREAD_CREATE_JOINABLE; then
-
-cat >>confdefs.h <<\_ACEOF
-#define PTHREAD_CREATE_JOINABLE $ok
+cat >>confdefs.h <<_ACEOF
+#define PTHREAD_CREATE_JOINABLE $attr_name
 _ACEOF
 
-        fi
-        echo "$as_me:$LINENO: result: ${ok}" >&5
-echo "${ECHO_T}${ok}" >&6
-        if test x"$ok" = xunknown; then
-                { echo "$as_me:$LINENO: WARNING: we do not know how to create joinable pthreads" >&5
-echo "$as_me: WARNING: we do not know how to create joinable pthreads" >&2;}
         fi
 
         echo "$as_me:$LINENO: checking if more special flags are required for pthreads" >&5
 echo $ECHO_N "checking if more special flags are required for pthreads... $ECHO_C" >&6
         flag=no
         case "${host_cpu}-${host_os}" in
-                *-aix* | *-freebsd*)     flag="-D_THREAD_SAFE";;
-                *solaris* | alpha*-osf*) flag="-D_REENTRANT";;
+            *-aix* | *-freebsd* | *-darwin*) flag="-D_THREAD_SAFE";;
+            *solaris* | *-osf* | *-hpux*) flag="-D_REENTRANT";;
         esac
         echo "$as_me:$LINENO: result: ${flag}" >&5
 echo "${ECHO_T}${flag}" >&6
         if test "x$flag" != xno; then
-                PTHREAD_CFLAGS="$flag $PTHREAD_CFLAGS"
+            PTHREAD_CFLAGS="$flag $PTHREAD_CFLAGS"
         fi
 
         LIBS="$save_LIBS"
         CFLAGS="$save_CFLAGS"
 
-        # More AIX lossage: must compile with cc_r
-        # Extract the first word of "cc_r", so it can be a program name with args.
-set dummy cc_r; ac_word=$2
+        # More AIX lossage: must compile with xlc_r or cc_r
+	if test x"$GCC" != xyes; then
+          for ac_prog in xlc_r cc_r
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
 echo "$as_me:$LINENO: checking for $ac_word" >&5
 echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
 if test "${ac_cv_prog_PTHREAD_CC+set}" = set; then
@@ -22378,14 +22375,13 @@ do
   test -z "$as_dir" && as_dir=.
   for ac_exec_ext in '' $ac_executable_extensions; do
   if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_PTHREAD_CC="cc_r"
+    ac_cv_prog_PTHREAD_CC="$ac_prog"
     echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
 done
 done
 
-  test -z "$ac_cv_prog_PTHREAD_CC" && ac_cv_prog_PTHREAD_CC="${CC}"
 fi
 fi
 PTHREAD_CC=$ac_cv_prog_PTHREAD_CC
@@ -22397,6 +22393,13 @@ else
 echo "${ECHO_T}no" >&6
 fi
 
+  test -n "$PTHREAD_CC" && break
+done
+test -n "$PTHREAD_CC" || PTHREAD_CC="${CC}"
+
+        else
+          PTHREAD_CC=$CC
+	fi
 else
         PTHREAD_CC="$CC"
 fi
@@ -27819,6 +27822,7 @@ s,@WITH_GNU_LD_FALSE@,$WITH_GNU_LD_FALSE,;t t
 s,@WITH_STATIC_MODULES_TRUE@,$WITH_STATIC_MODULES_TRUE,;t t
 s,@WITH_STATIC_MODULES_FALSE@,$WITH_STATIC_MODULES_FALSE,;t t
 s,@AIX_PDSH_LDFLAGS@,$AIX_PDSH_LDFLAGS,;t t
+s,@acx_pthread_config@,$acx_pthread_config,;t t
 s,@PTHREAD_CC@,$PTHREAD_CC,;t t
 s,@PTHREAD_LIBS@,$PTHREAD_LIBS,;t t
 s,@PTHREAD_CFLAGS@,$PTHREAD_CFLAGS,;t t
