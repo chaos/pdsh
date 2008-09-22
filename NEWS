@@ -5,7 +5,7 @@ documents thos changes that are of interest to users and admins.
 ===================================
  -- Ignore multiple consecutive ':' characters in host list argument to
      -w option. Only a single ':' by itself will be interpreted as the
-	 special "rcmd_type:hosts" syntax.
+     special "rcmd_type:hosts" syntax.
  -- dshbak: Allow for ':' in pdsh output lines. 
      (patch from Ashley Pittman)
  -- Fix for compile against glibc 2.8, which no longer defines ARG_MAX 
@@ -36,12 +36,12 @@ documents thos changes that are of interest to users and admins.
     (same code as the "exec" module)
  -- Add connect timeout support for ssh implementations which support it.
     By default, the OpenSSH "-oConnectTimeout=%d" option is used. This
-	can be overridden at configure time using 
+    can be overridden at configure time using 
 
-	 --with-ssh-connect-timeout-option="OPTION"
+     --with-ssh-connect-timeout-option="OPTION"
 
-	where OPTION should contain one %d which will be expanded to the
-	actual timeout value specified on the command line.
+    where OPTION should contain one %d which will be expanded to the
+    actual timeout value specified on the command line.
  -- Add ncurses-devel to pdsh.spec BuildRequires.
 
 * Changes in pdsh-2.14 (2007-06-22)
