@@ -1,3 +1,9 @@
+2008-09-22  Mark Grondona <mgrondona@llnl.gov>
+
+	* config/acx_pthread.m4 :
+	  Update to latest version of ACX_PTHREAD macro from 
+	  autoconf-archive.cryp.to/acx_pthread.html.
+
 2008-09-18  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/opt.c :
