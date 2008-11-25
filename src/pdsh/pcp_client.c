@@ -371,7 +371,7 @@ static int _pcp_sendfile (struct pcp_filename *pf, struct pcp_client *pcp)
 			errx("%p: failed to send exit subdir flag\n");
 		if (pcp_response(pcp->infd, pcp->host) < 0)
 			errx("%p: failed to exit subdir properly\n");
-		return (-1);
+		return (0);
 	}
 
 	/* during a reverse copy, the hostname has to be attached

@@ -1,3 +1,9 @@
+2008-10-21  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/pcp_client.c (_pcp_sendfile) :
+	  Do not return -1 from _pcp_sendfile as this causes early abort from 
+	  list_for_each. Return 0 instead to fix recursive pdcp.
+
 2008-09-26  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/opt.c, doc/pdcp.1.in : 
