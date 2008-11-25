@@ -75,7 +75,8 @@ Usage: pdsh [-options] command ...\n\
 #define OPT_USAGE_PCP "\
 Usage: pdcp [-options] src [src2...] dest\n\
 -r                recursively copy files\n\
--p                preserve modification time and modes\n"
+-p                preserve modification time and modes\n\
+-e PATH           specify the path to pdcp on the remote machine\n"
 /* undocumented "-y"  target must be directory option */
 /* undocumented "-z"  run pdcp server option */
 /* undocumented "-Z"  run pdcp client option */
@@ -112,8 +113,8 @@ Usage: rpdcp [-options] src [src2...] dir\n\
 #else
 #define DSH_ARGS    "S"
 #endif
-#define PCP_ARGS	"pryzZ"
-#define GEN_ARGS	"hLNKR:t:cqf:w:x:l:u:bI:deVT:Q"
+#define PCP_ARGS	"pryzZe:"
+#define GEN_ARGS	"hLNKR:t:cqf:w:x:l:u:bI:dVT:Q"
 
 /*
  *  Pdsh options string (for getopt) -- initialized
@@ -492,6 +493,14 @@ void opt_args(opt_t * opt, int argc, char *argv[])
         case 'p':              /* rcp: preserve permissions */
             if (pdsh_personality() == PCP)
                 opt->preserve = true;
+            else
+                goto test_module_option;
+            break;
+        case 'e':
+            if (pdsh_personality() == PCP) {
+                Free ((void **) &opt->path_progname);
+                opt->path_progname = Strdup(optarg);
+            } 
             else
                 goto test_module_option;
             break;

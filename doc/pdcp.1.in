@@ -128,6 +128,10 @@ Copy directories recursively.
 .I "-p"
 Preserve modification time and modes.
 .TP
+.I "-e PATH"
+Explicitly specify path to remote \fBpdcp\fR binary
+instead of using the locally executed path.
+.TP
 .I "-l user"
 This option may be used to copy files as another user, subject to
 authorization. For BSD rcmd, this means the invoking user and system must
