@@ -1,3 +1,10 @@
+2008-11-25  Mark Grondona <mgrondona@llnl.gov>
+
+	* config/ac_ssh.m4, configure :
+	  Allow --without-ssh-connect-timeout-option (passed to ./configure) 
+	  to disable SSH connect timeout option in addition to 
+	  --with-ssh-connect-timeout=none.
+
 2008-10-21  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/pcp_client.c (_pcp_sendfile) :

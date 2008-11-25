@@ -23995,11 +23995,11 @@ cat >>confdefs.h <<\_ACEOF
 #define HAVE_SSH 1
 _ACEOF
 
-  fi
 
+     x_ac_ssh_connect_timeout_option="-oConnectTimeout=%d"
 
-  x_ac_ssh_connect_timeout_option="-oConnectTimeout=%d"
-
+     echo "$as_me:$LINENO: checking for ssh connect timeout option" >&5
+echo $ECHO_N "checking for ssh connect timeout option... $ECHO_C" >&6
 
 # Check whether --with-ssh-connect-timeout-option or --without-ssh-connect-timeout-option was given.
 if test "${with_ssh_connect_timeout_option+set}" = set; then
@@ -24007,7 +24007,11 @@ if test "${with_ssh_connect_timeout_option+set}" = set; then
   x_ac_ssh_connect_timeout_option=$withval
 fi;
 
-  if ! echo "$x_ac_ssh_connect_timeout_option" | grep -i ^none 2>/dev/null; then
+
+     if ! echo "$x_ac_ssh_connect_timeout_option" | grep -i '^no$' 2>/dev/null \
+	  && ! echo "$x_ac_ssh_connect_timeout_option" | grep -i '^none$' 2>/dev/null; then
+	   echo "$as_me:$LINENO: result: ${x_ac_ssh_connect_timeout_option}" >&5
+echo "${ECHO_T}${x_ac_ssh_connect_timeout_option}" >&6
 
 cat >>confdefs.h <<\_ACEOF
 #define SSH_HAS_CONNECT_TIMEOUT 1
@@ -24018,7 +24022,9 @@ cat >>confdefs.h <<_ACEOF
 #define SSH_CONNECT_TIMEOUT_OPTION "$x_ac_ssh_connect_timeout_option"
 _ACEOF
 
+    fi
   fi
+
 
 
 
