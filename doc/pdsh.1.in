@@ -335,7 +335,11 @@ via the nodeattr(1) command. See the \fBgenders\fR section above
 for a list of support options with this module. The option usage
 with the \fBnodeattr\fR module is the same as \fBgenders\fR, above,
 with the exception that the \fI-i\fR option may only be used
-with \fI-a\fR or \fI-g\fR.
+with \fI-a\fR or \fI-g\fR. \fBNOTE\fR: This module will only
+work with very old releases of genders where the \fBnodeattr\fR(1)
+command supports the \fI-r\fR option, and before the libgenders
+API was available. Users running newer versions of genders
+will need to use the \fBgenders\fR module instead.
 
 .SH "dshgroup module options"
 The dshgroup module allows pdsh to use dsh (or Dancer's shell) style
