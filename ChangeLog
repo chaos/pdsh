@@ -1,5 +1,9 @@
 2009-03-24  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/modules/sshcmd.c :
+	  Avoid printing sshcmd errors twice. Patch from
+	  Paul D. Smith <psmith at users.sourceforge.net>.
+
 	* doc/pdsh.1.in : 
 	  Add more detail to pdsh manpage about nodeattr module.
 

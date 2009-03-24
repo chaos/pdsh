@@ -254,10 +254,6 @@ sshcmd_destroy (pipecmd_t p)
     if (pipecmd_wait (p, &status) < 0)
         err ("%p: %S: wait on ssh cmd: %m\n", pipecmd_target (p));  
 
-    if (status != 0)
-        err ("%p: %s: ssh exited with exit code %d\n", 
-             pipecmd_target (p), WEXITSTATUS (status));
-
     pipecmd_destroy (p);
 
     return WEXITSTATUS (status);
