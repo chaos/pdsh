@@ -1,5 +1,7 @@
 2009-03-24  Mark Grondona <mgrondona@llnl.gov>
 
+	* : tag pdsh-2.18.
+
 	* src/modules/sshcmd.c :
 	  Avoid printing sshcmd errors twice. Patch from
 	  Paul D. Smith <psmith at users.sourceforge.net>.

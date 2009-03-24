@@ -1,6 +1,19 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
+* Changes in pdsh-2.18 (2009-03-24)
+===================================
+ -- Fix duplicate error output from ssh module. 
+    (Patch from Paul D Smith <psmith at users.sourceforge.net>)
+ -- Add -e option to pdcp to explicitly specify remote execution path.
+    This is necessary if pdcp is installed in a different path locally
+    than on the target hosts.
+ -- Fix recursive pdcp (-r) which has been broken since pdsh-2.12.
+ -- Support --without-ssh-connect-timeout-option for ./configure.
+ -- Add note to pdsh(1) manpage that only very old versions of
+    the genders nodeattr script are supported by the pdsh nodeattr
+    module. The genders module is the preferred interface to genders.
+
 * Changes in pdsh-2.17 (2008-09-23)
 ===================================
  -- Ignore multiple consecutive ':' characters in host list argument to

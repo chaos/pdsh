@@ -12,7 +12,7 @@ set pdsh "$objdir/src/pdsh/pdsh"
 set test "pdsh: version (if this fails beware that testsuite is outdated)"
 spawn $pdsh -V
 expect  {
-	-re "pdsh-2.13"		        { pass "$test" }
+	-re "pdsh-2.18"		        { pass "$test" }
 	eof				{ fail "$test" }
 }
 
