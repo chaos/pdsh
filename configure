@@ -26881,6 +26881,11 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
 
+cat >>confdefs.h <<\_ACEOF
+#define WITH_LSD_NOMEM_FUNC 1
+_ACEOF
+
+
 
 
 

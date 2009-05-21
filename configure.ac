@@ -273,6 +273,7 @@ AC_SUBST(PDSH_VERSION_FULL)
 
 
 AC_DEFINE(WITH_LSD_FATAL_ERROR_FUNC, 1, [Have definition of lsd_fatal_error])
+AC_DEFINE(WITH_LSD_NOMEM_FUNC, 1, [Have definition of lsd_nomem_error])
 
 
 AH_BOTTOM(
