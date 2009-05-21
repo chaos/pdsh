@@ -110,19 +110,17 @@ static void _print_option_help(struct pdsh_module_option *p, int col);
 static struct pdsh_module_option * _mod_find_opt(mod_t mod, int opt);
 
 /*
- *  Static list of loaded modules and persistent iterator
+ *  Static list of loaded modules
  */
 static List module_list;
-static ListIterator module_itr;
 static bool initialized = false;
 
 int
 mod_init(void)
 {
     if (!initialized) {
-        if ( !(module_list = list_create((ListDelF) _mod_destroy))
-           || !(module_itr = list_iterator_create(module_list))  ) {
-            err("Unable to create module list and iterator\n");
+        if (!(module_list = list_create((ListDelF) _mod_destroy))) {
+            err("Unable to create module list\n");
             return -1;
         }
         initialized = true;
@@ -145,7 +143,6 @@ mod_exit(void)
      *  list_destroy() will call module destructor on each 
      *    element in list
      */
-    list_iterator_destroy(module_itr);
     list_destroy(module_list);
     
 #if STATIC_MODULES || PREVENT_DLCLOSE_BUG
@@ -189,11 +186,16 @@ int
 mod_read_wcoll(opt_t *opt)
 {
     mod_t mod;
+    ListIterator module_itr;
 
     if (!initialized)
         mod_init();
 
-    list_iterator_reset(module_itr);
+    if (!(module_itr = list_iterator_create(module_list))) {
+        err("Unable to create module list iterator\n");
+        return -1;
+    }
+
     while ((mod = list_next(module_itr))) {
         hostlist_t hl = NULL;
 
@@ -207,6 +209,8 @@ mod_read_wcoll(opt_t *opt)
             opt->wcoll = hl;
     }
 
+    list_iterator_destroy(module_itr);
+
     return 0;
 }
 
@@ -215,13 +219,20 @@ mod_postop(opt_t *pdsh_opts)
 {
     mod_t mod;
     int errors = 0;
+    ListIterator module_itr;
 
     if (!initialized)
         mod_init();
 
-    list_iterator_reset(module_itr);
+    if (!(module_itr = list_iterator_create(module_list))) {
+        err("Unable to create module list iterator\n");
+        return 1;
+    }
+
     while ((mod = list_next(module_itr)))
         errors += _mod_postop(mod, pdsh_opts);
+
+    list_iterator_destroy(module_itr);
 
     return errors;
 }
@@ -385,15 +396,22 @@ int
 mod_count(char *type)
 {
     int i = 0;
+    ListIterator module_itr;
 
     assert(module_list != NULL);
 
     if (type == NULL)
         return list_count(module_list);
 
-    list_iterator_reset(module_itr);
+    if (!(module_itr = list_iterator_create(module_list))) {
+        err("Unable to create module list iterator\n");
+        return -1;
+    }
+
     while (list_find(module_itr, (ListFindF) _cmp_type, type)) 
         i++;
+
+    list_iterator_destroy(module_itr);
 
     return i;
 }
@@ -403,21 +421,30 @@ mod_get_module_names(char *type)
 {
     List l;
     mod_t mod;
+    ListIterator module_itr;
 
     assert(module_list != NULL);
 
     l = list_create(NULL);
-    list_iterator_reset(module_itr);
+
+    if (!(module_itr = list_iterator_create(module_list))) {
+        err("Unable to create module list iterator\n");
+        list_destroy(l);
+        return NULL;
+    }
 
     if (type == NULL) {
         while((mod = list_next(module_itr)))
             list_push(l, mod->pmod->name);
+        list_iterator_destroy(module_itr);
         return l;
     }
 
     while ((mod = list_find(module_itr, (ListFindF) _cmp_type, type))) {
         list_push(l, mod->pmod->name);
     }
+
+    list_iterator_destroy(module_itr);
 
     return l;
 }
@@ -449,16 +476,24 @@ mod_t
 mod_get_module(const char *type, const char *name)
 {
     mod_t mod;
+    ListIterator module_itr;
 
     assert(type != NULL);
     assert(name != NULL);
 
-    list_iterator_reset(module_itr);
+    if (!(module_itr = list_iterator_create(module_list))) {
+        err("Unable to create module list iterator\n");
+        return NULL;
+    }
+
     while ((mod = list_next(module_itr))) {
         if (_mod_description_match (mod, type, name))
-            return mod;
+            break;
     }
-    return NULL;
+
+    list_iterator_destroy(module_itr);
+
+    return mod;
 }
 
 char *
@@ -533,12 +568,22 @@ mod_process_opt(opt_t *opt, int c, char *optarg)
 {
     mod_t mod;
     struct pdsh_module_option *p = NULL;
+    ListIterator module_itr;
 
-    list_iterator_reset(module_itr);
-    while ((mod = list_next(module_itr))) {
-        if ((p = _mod_find_opt(mod, c)))
-            return p->f(opt, c, optarg);
+    if (!(module_itr = list_iterator_create(module_list))) {
+        err("Unable to create module list iterator\n");
+        return -1;
     }
+
+    while ((mod = list_next(module_itr))) {
+        if ((p = _mod_find_opt(mod, c))) {
+            list_iterator_destroy(module_itr);
+            return p->f(opt, c, optarg);
+        }
+    }
+
+    list_iterator_destroy(module_itr);
+
     return -1;
 }
 
