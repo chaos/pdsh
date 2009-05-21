@@ -45,7 +45,11 @@
  *   Warning: If none of these modules are loaded, there will be no default.
  */
 static char * rcmd_rank[] = 
+#if defined(RCMD_RANK_LIST)
+    { RCMD_RANK_LIST, NULL };
+#else
     { "mrsh", "rsh", "ssh", "krb4", "qsh", "mqsh", "exec", "xcpu", NULL };
+#endif /* RCMD_RANK_LIST */
 
 struct rcmd_module {
     char *              name;

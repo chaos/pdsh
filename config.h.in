@@ -357,6 +357,9 @@
    your system. */
 #undef PTHREAD_CREATE_JOINABLE
 
+/* Define to quoted, comma-separated, priority-ordered list of rcmd types */
+#undef RCMD_RANK_LIST
+
 /* Define to SSH connect timeout option */
 #undef SSH_CONNECT_TIMEOUT_OPTION
 
