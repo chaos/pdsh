@@ -1,3 +1,36 @@
+2009-05-21  Mark Grondona <mgrondona@llnl.gov>
+
+	* : tag pdsh-2.19.
+
+	* configure.ac, config/ac_rcmd_rank_list.m4 :
+	  Add new configure option --with-rcmd-rank-list= which may be
+	  used to override default pdsh rcmd rank list (ordered list
+	  of preferred rcmd connect modules).
+
+	* src/modules/genders.c :
+	  Always apply pdsh_rcmd_type genders attribute, even if no
+	  genders options are used.
+
+	* src/pdsh/mod.c :
+	  Make pdsh module code reentrant safe. This fixes a bug where
+	  pdsh was not translating names to alternates with the genders
+	  module, because the global list iterator was being reset by
+	  reentrant calling of module code.
+	  Patch from Pythagoras Watson <py at llnl dot gov>.
+
+	* src/common/error.c :
+	  Add lsd_nomem_error function to better handle fatal errors
+	  from LSD-Tools functions when out of memory.
+
+
+	* src/pdsh/dsh.c, src/pdsh/opt.c, src/pdsh/rcmd.c :
+	  Avoid pdsh core dump when no rcmd modules are found.
+	  Patch from Pythagoras Watson <py at llnl dot gov>.
+
+	* pdsh.spec :
+	  %{_libdir}/pdsh should be owned by pdsh rpm.
+	  Patch from Pythagoras Watson <py at llnl dot gov>.
+
 2009-03-24  Mark Grondona <mgrondona@llnl.gov>
 
 	* : tag pdsh-2.18.

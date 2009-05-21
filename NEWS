@@ -1,6 +1,21 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
+* Changes in pdsh-2.19 (2009-05-21)
+===================================
+ -- New pdsh configure option --with-rcmd-rank-list allows
+     the default pdsh rcmd module priority list to be overridden
+	 at compile time.
+ -- genders: Always read genders file in case there are any
+     pdsh_rcmd_type attributes to apply to the target hosts.
+ -- genders: Fix bug where altnames were not used by default
+     in some cases due to a bug in generic module loading code.
+	 (patch from Py Watson)
+ -- Fix for coredump when no rcmd module is loaded.
+     (patch from Py Watson)
+ -- %{_libdir}/pdsh should be owned by pdsh RPM.
+     (patch from Py Watson)
+
 * Changes in pdsh-2.18 (2009-03-24)
 ===================================
  -- Fix duplicate error output from ssh module. 
