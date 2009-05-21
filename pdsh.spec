@@ -351,6 +351,7 @@ rm -rf "$RPM_BUILD_ROOT"
 %{_bindir}/pdcp
 %{_bindir}/rpdcp
 %{_bindir}/dshbak
+%dir %{_libdir}/pdsh
 %{_mandir}/man1/*
 ##############################################################################
 
