@@ -43,6 +43,7 @@ AC_LIB_LTDL
 
 AM_CONDITIONAL(WITH_GNU_LD, test "$with_gnu_ld" = "yes")
 
+
 #
 # Do we want static modules?
 #
@@ -234,6 +235,11 @@ dnl check for inclusion of Dmalloc.
 dnl Note: this macro defines WITH_DMALLOC for us.
 dnl 
 AC_DMALLOC
+
+#
+#  Check for alternate rcmd rank list:
+#
+AC_RCMD_RANK_LIST
 
 if test "$ac_static_modules" = "yes" ; then
    AC_STATIC_MODULES_EXIT
