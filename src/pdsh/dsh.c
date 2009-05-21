@@ -844,7 +844,10 @@ static int _thd_init (thd_t *th, opt_t *opt, List pcp_infiles, int i)
     th->outbuf = cbuf_create (64, 8192);
     th->errbuf = cbuf_create (64, 8192);
 
-    th->rcmd = rcmd_create (th->host);
+    if (!(th->rcmd = rcmd_create (th->host))) {
+        th->state = DSH_CANCELED;
+        return (-1);
+    }
 
 #if	!HAVE_MTSAFE_GETHOSTBYNAME
     /* if MT-safe, do it in parallel in rsh/rcp threads */

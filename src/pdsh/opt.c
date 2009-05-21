@@ -549,8 +549,9 @@ void opt_args(opt_t * opt, int argc, char *argv[])
      */
     if (opt->rcmd_name == NULL)
         opt->rcmd_name = Strdup(rcmd_get_default_module ());
-    if (rcmd_register_default_rcmd(opt->rcmd_name) < 0)
-        exit(1);
+    if (opt->rcmd_name != NULL)
+        if (rcmd_register_default_rcmd(opt->rcmd_name) < 0)
+            exit(1);
 
 
     /* 
@@ -832,7 +833,7 @@ void opt_list(opt_t * opt)
         out("Local username		%s\n", opt->luser);
         out("Local uid     		%d\n", opt->luid);
         out("Remote username		%s\n", opt->ruser);
-        out("Rcmd type		%s\n", opt->rcmd_name);
+        out("Rcmd type		%s\n", STRORNULL(opt->rcmd_name));
         out("one ^C will kill pdsh   %s\n", BOOLSTR(opt->sigint_terminates));
         out("Connect timeout (secs)	%d\n", opt->connect_timeout);
         out("Command timeout (secs)	%d\n", opt->command_timeout);

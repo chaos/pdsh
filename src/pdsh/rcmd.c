@@ -312,8 +312,12 @@ struct rcmd_info * rcmd_create (char *host)
     /* 
      * If no rcmd module use default
      */
-    if (rmod == NULL)
-        rmod = default_rcmd_module;
+    if (rmod == NULL) {
+        if ((rmod = default_rcmd_module) == NULL) {
+            err ("%p: No rcmd module for \"%s\"\n", host);
+            return (NULL);
+        }
+    }
     
     if ((rcmd = rcmd_info_create (rmod)) == NULL) {
         err ("%p: Unable to allocate rcmd info for \"%s\"\n", host);
@@ -370,6 +374,8 @@ int rcmd_init (opt_t *opt)
     ListIterator i;
 
     if (!rcmd_module_list) {
+        if (default_rcmd_module == NULL)
+            return (-1);
         current_rcmd_module = default_rcmd_module;
         (*default_rcmd_module->init) (opt);
         current_rcmd_module = NULL;
