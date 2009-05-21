@@ -192,7 +192,12 @@ void errf(FILE *stream, char *format, va_list ap)
 
 void lsd_fatal_error(char *file, int line, char *mesg)
 {
-    err ("%p: %s:%d: %s\n", file, line, mesg);
+    errx ("%p: %s:%d: %s\n", file, line, mesg);
+}
+
+void lsd_nomem_error(char *file, int line, char *mesg)
+{
+    errx ("%p: %s:%d: %s: Out of memory\n", file, line, mesg);
 }
 
 /*
