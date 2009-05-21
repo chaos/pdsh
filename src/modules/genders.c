@@ -244,23 +244,8 @@ static int
 genders_postop(opt_t *opt)
 {
     hostlist_t hl = NULL;
-    bool altnames = false;
 
     if (!opt->wcoll)
-        return (0);
-
-    /*
-     *  Grab altnames if gend_attr or allnodes given and !opt_i,
-     *   or if opt_i and neither gend_attr or allnodes given.
-     */
-    altnames = (opt_i && !(attrlist || allnodes)) 
-            || (!opt_i && (attrlist || allnodes));
-
-    /*
-     *  Return early if no genders options specified.
-     *   This way genders file is not opened unless necessary.
-     */
-    if (!attrlist && !allnodes && !excllist && !opt_i)
         return (0);
 
     if (gh == NULL)
@@ -276,13 +261,22 @@ genders_postop(opt_t *opt)
     }
 
 #if !GENDERS_G_ONLY
-    if (altnames) {
+    /*
+     *  Grab altnames if gend_attr or allnodes given and !opt_i,
+     *   or if opt_i and neither gend_attr or allnodes given.
+     */
+    if ( (opt_i && !(attrlist || allnodes)) 
+      || (!opt_i && (attrlist || allnodes))) {
         hostlist_t hl = opt->wcoll;
         opt->wcoll = _genders_to_altnames(gh, hl);
         hostlist_destroy(hl);
     }
 #endif
 
+    /*
+     *  Apply any pdsh_rcmd_type setting from genders file
+     *   based on current opt->wcoll.
+     */
     register_genders_rcmd_types (opt);
 
     return (0);
