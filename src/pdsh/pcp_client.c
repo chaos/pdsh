@@ -393,8 +393,11 @@ int pcp_client(struct pcp_client *pcp)
 {
     /* 0: RECV response code */
     if (pcp_response(pcp->infd, pcp->host) >= 0) {
-        /* Send the files */
-		list_for_each (pcp->infiles, (ListForF) _pcp_sendfile, pcp);
+        struct pcp_filename *pf;
+        ListIterator i = list_iterator_create (pcp->infiles);
+        while ((pf = list_next (i)))
+            _pcp_sendfile (pf, pcp);
+        list_iterator_destroy (i);
         return 0;
     }
     return -1;

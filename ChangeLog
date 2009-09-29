@@ -1,3 +1,9 @@
+2009-09-29  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/pcp_client.c (pcp_client) :
+	  Switch use of list_for_each to explicit list iterator to avoid
+	  serialization fo pdcp.
+
 2009-05-21  Mark Grondona <mgrondona@llnl.gov>
 
 	* : tag pdsh-2.19.
