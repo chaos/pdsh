@@ -1,6 +1,11 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
+* Changes in pdsh-2.20 (2009-09-29)
+===================================
+ -- Fix bug in pdcp which serialized copy of files to nodes
+     regardless of fanout.
+
 * Changes in pdsh-2.19 (2009-05-21)
 ===================================
  -- New pdsh configure option --with-rcmd-rank-list allows
