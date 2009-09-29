@@ -1,5 +1,9 @@
 2009-09-29  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/pdsh/testcase.c (_test_xstrerrorcat) :
+	  Ensure that the same strerror* function is used by the test
+	  as is used in xstrerrorcat(), to avoid false test failures..
+
 	* src/pdsh/pcp_client.c (pcp_client) :
 	  Switch use of list_for_each to explicit list iterator to avoid
 	  serialization fo pdcp.
