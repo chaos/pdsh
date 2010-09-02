@@ -91,6 +91,11 @@ int main(int argc, char *argv[])
     opt_env(&opt);
 
     /*
+     * Process any options that need to be handled early:
+     */
+    opt_args_early(&opt, argc, argv);
+
+    /*
      *  Load static or dynamic pdsh modules
      */
     mod_init();

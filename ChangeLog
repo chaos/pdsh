@@ -1,5 +1,9 @@
 2010-09-01  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/pdsh/opt.c, src/pdsh/opt.h, src/pdsh/main.c :
+	  Add opt_args_early function to process options that
+	  need to be handled before module loading.
+
 	* src/pdsh/opt.c, src/pdsh/mod.c :
 	  New environment variable PDSH_MISC_MODULES may be used to
 	  force-initialize a list of misc modules before the others,

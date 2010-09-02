@@ -420,6 +420,31 @@ void opt_env(opt_t * opt)
 static void wcoll_append (opt_t *opt, char *hosts);
 
 /*
+ *  Process any options that need to be handled early, i.e.
+ *   before modules are loaded.
+ */
+void opt_args_early (opt_t * opt, int argc, char *argv[])
+{
+    int c;
+    extern int optind;
+    extern char *optarg;
+    extern int opterr;
+
+    /*
+     *  Disable error reporting from getopt during early processing,
+     *   since we won't have access to all the options provided by
+     *   dlopened modules.
+     */
+    opterr = 0;
+
+    while ((c = getopt(argc, argv, pdsh_options)) != EOF) {
+        switch (c) {
+            /*  Handle early options here ... */
+        }
+    }
+}
+
+/*
  * Override  default/environment options with command line arguments.
  *	opt (IN/OUT)	option struct	
  * 	argc (IN)	arg count passed in from main
@@ -430,6 +455,11 @@ void opt_args(opt_t * opt, int argc, char *argv[])
     int c;
     extern int optind;
     extern char *optarg;
+
+    /*
+     *  Reset optind after opt_args_early.
+     */
+    optind = 1;
 
 #ifdef __linux
     /* Tell glibc getopt to stop eating after the first non-option arg */

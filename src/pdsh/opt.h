@@ -97,6 +97,7 @@ typedef struct {
 
 void opt_default(opt_t *, char *argv0);
 void opt_env(opt_t *);
+void opt_args_early(opt_t *, int, char **);
 void opt_args(opt_t *, int, char **);
 bool opt_verify(opt_t *);
 void opt_list(opt_t *);
