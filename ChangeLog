@@ -1,5 +1,8 @@
 2010-09-02  Mark Grondona <mgrondona@llnl.gov>
 
+	* doc/pdsh.1.in :
+	  Document PDSH_GENDERS_DIR and PDSH_GENDERS_FILE.
+
 	* src/common/xstring.c :
 	  Handle errors from XSI-compliant version of strerror_r()
 	  in xstrerrorcat() implementation.

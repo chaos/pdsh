@@ -282,7 +282,11 @@ Request translation between canonical and alternate hostnames.
 .TP
 .I "-F filename"
 Read genders information from \fIfilename\fR instead of the system
-default genders file. 
+default genders file. If \fIfilename\fR doesn't specify an absolute
+path then it is taken to be relative to the directory specified by the
+\fIPDSH_GENDERS_DIR\fB environment variable (/etc by default). An
+alternate genders file may also be specified via the \fIPDSH_GENDERS_FILE\fR
+environment variable.
 
 .SH "nodeupdown module options"
 .TP
