@@ -1,5 +1,10 @@
 2010-09-01  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/pdsh/mod.c :
+	  Don't generate an error message when module options
+	  conflict, since there is now a way to override which
+	  module is loaded over another.
+
 	* src/pdsh/opt.c, src/pdsh/opt.h, src/pdsh/main.c :
 	  Add opt_args_early function to process options that
 	  need to be handled before module loading.

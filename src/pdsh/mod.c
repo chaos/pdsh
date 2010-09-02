@@ -703,11 +703,8 @@ static int _mod_register (mod_t mod, const char *name)
 
 static int _mod_initialize (mod_t mod, void *arg)
 {
-    if (!_mod_opts_ok(mod)) {
-        err("failed to install module options for \"%s/%s\"\n", 
-            mod->pmod->type, mod->pmod->name);
+    if (!_mod_opts_ok(mod))
         return -1;
-    }
 
     if (mod->pmod->mod_ops && 
         mod->pmod->mod_ops->init && 
