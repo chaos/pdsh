@@ -37,6 +37,7 @@
 #include "src/common/err.h"
 #include "src/common/xmalloc.h"
 #include "src/common/split.h"
+#include "src/common/xstring.h"
 #include "src/pdsh/ltdl.h"
 #include "src/pdsh/mod.h"
 #include "src/pdsh/rcmd.h"
@@ -395,16 +396,41 @@ _genders_to_hostlist(genders_t gh, char **nodes, int nnodes)
     return hl;
 }
 
+static char * genders_filename_create (char *file)
+{
+    char *genders_file;
+    const char *gdir = getenv ("PDSH_GENDERS_DIR");
+
+    /*
+     *  Return a copy of filename if user specified an absolute path:
+     */
+    if (file[0] == '/')
+        return Strdup (file);
+
+    /*
+     *  Otherwise, append filename to
+     *   PDSH_GENDERS_DIR (or /etc by default)
+     */
+    genders_file = gdir ? Strdup (gdir) : Strdup ("/etc");
+    xstrcatchar (&genders_file, '/');
+    xstrcat (&genders_file, file);
+
+    return (genders_file);
+}
+
 static genders_t _handle_create()
 {
+    char *genders_file = NULL;
     genders_t gh = NULL;
 
     if ((gh = genders_handle_create()) == NULL)
         errx("%p: Unable to create genders handle: %m\n");
 
-    /* assumes genders file in default location */
-    if (genders_load_data(gh, gfile) < 0)
-        errx("%p: Unable to open genders file: %s\n", genders_errormsg(gh));
+    if (gfile)
+        genders_file = genders_filename_create (gfile);
+
+    if (genders_load_data(gh, genders_file) < 0)
+        errx("%p: %s: %s\n", genders_file, genders_errormsg(gh));
 
     return gh;
 }

@@ -1,6 +1,11 @@
 2010-08-31  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/genders.c :
+	  Don't require genders filename specified to -F to be an absolute  
+	  path. Instead, open genders file relative to PDSH_GENDERS_DIR,
+	  which is /etc by default.
+
+	* src/modules/genders.c :
 	  Allow alternate genders file to be specified with the env
 	  var PDSH_GENDERS_FILE.
 
