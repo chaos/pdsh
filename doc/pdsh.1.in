@@ -184,6 +184,14 @@ PDSH_RCMD_TYPE environment variable. A list of available rcmd
 modules may be obtained via the \fI-h\fR, \fI-V\fR, or \fI-L\fR options. 
 The default will be listed with \fI-h\fR or \fI-V\fI.
 .TP
+.I "-M name,..."
+When multiple \fBmisc\fR modules provide the same options to \fBpdsh\fR,
+the first module initialized "wins" and subsequent modules are not loaded.
+The \fI-M\fR option allows a list of modules to be specified that will be
+force-initialized before all others, in-effect ensuring that they load
+without conflict (unless they conflict with eachother). This option may
+also be set via the PDSH_MISC_MODULES environment variable.
+.TP
 .I "-L"
 List info on all loaded \fBpdsh\fR modules and quit.
 .TP

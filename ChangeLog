@@ -1,5 +1,8 @@
 2010-09-01  Mark Grondona <mgrondona@llnl.gov>
 
+	* README.modules, doc/pdcp.1.in, doc/pdsh.1.in :
+	  Update documentation: adding -M and PDSH_MISC_MODULES.
+
 	* src/pdsh/opt.c :
 	  Add new option -M to allow named misc modules to be
 	  pre-initialized before others, thus overriding which

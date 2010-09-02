@@ -13,8 +13,10 @@ the environment variable PDSH_RCMD_TYPE.
 When pdsh initializes it reads all available modules from the
 `pkglibdir' (typically /usr/lib/pdsh or /usr/local/lib/pdsh). If
 conflicting modules are installed, they are loaded on a first-come
-first-serve basis (i.e. the first module loaded wins). There
-is no guarantee as to which module will be loaded first.
+first-serve basis (i.e. the first module loaded wins). Modules
+may be force-initialized by specifying them to the '-M' pdsh/pdcp
+option, or via the PDSH_MISC_MODULES environment variable.
+
 
 PDSH MODULES:
 =============
