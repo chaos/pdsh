@@ -67,6 +67,7 @@ typedef struct {
     int command_timeout;
 
     char *rcmd_name;            /* -R name   */
+    char *misc_modules;         /* Explicit list of misc modules to load */ 
     bool resolve_hosts;         /* Set optionally by rcmd modules */
 
     bool kill_on_fail;          

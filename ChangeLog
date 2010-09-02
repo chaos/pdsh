@@ -1,5 +1,10 @@
 2010-09-01  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/pdsh/opt.c, src/pdsh/mod.c :
+	  New environment variable PDSH_MISC_MODULES may be used to
+	  force-initialize a list of misc modules before the others,
+	  thus allowing a choice between conflicting modules.
+
 	* src/pdsh/main.c :
 	  Call opt_env() before loading modules.
 

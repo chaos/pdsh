@@ -326,6 +326,7 @@ void opt_default(opt_t * opt, char *argv0)
     opt->labels = true;
 
     opt->rcmd_name = NULL;
+    opt->misc_modules = NULL;
 
     /*
      *  Resolve hostnames by default
@@ -392,6 +393,9 @@ void opt_env(opt_t * opt)
 
     if ((rhs = getenv("PDSH_RCMD_TYPE")) != NULL)
         opt->rcmd_name = Strdup(rhs);
+
+    if ((rhs = getenv("PDSH_MISC_MODULES")) != NULL)
+        opt->misc_modules = Strdup(rhs);
 
     if ((rhs = getenv("DSHPATH")) != NULL) {
         struct passwd *pw = getpwnam(opt->luser);
@@ -869,6 +873,8 @@ void opt_free(opt_t * opt)
         Free((void **) &opt->cmd);
     if (opt->rcmd_name != NULL)
         Free((void **) &opt->rcmd_name);
+    if (opt->misc_modules != NULL)
+        Free((void **) &opt->misc_modules);
     if (pdsh_options)
         Free((void **) &pdsh_options);
     if (opt->dshpath)

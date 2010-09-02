@@ -49,6 +49,7 @@
 #include "src/common/xstring.h"
 #include "src/common/hostlist.h"
 #include "src/common/list.h"
+#include "src/common/split.h"
 #include "mod.h"
 
 /*
@@ -304,8 +305,40 @@ _cmp_f (mod_t x, mod_t y)
     return (y->priority - x->priority);
 }
 
-int 
-mod_load_modules(const char *dir, opt_t *opt)
+
+static int
+_mod_find_misc (mod_t mod, const char *name)
+{
+    if (strcmp (mod->pmod->type, "misc") != 0)
+        return 0;
+    if (strcmp (mod->pmod->name, name) != 0)
+        return 0;
+    return 1;
+}
+
+static int
+_mod_initialize_by_name (char *name, List l)
+{
+    mod_t mod = list_find_first (l, (ListFindF) _mod_find_misc, name);
+    if (mod != NULL)
+        _mod_initialize (mod, NULL);
+    return (0);
+}
+
+
+static int _mod_initialize_modules_by_name (char *names, List m)
+{
+    List l;
+
+    if (names == NULL)
+        return (0);
+
+    l = list_split (",", names);
+    list_for_each (l, (ListForF) _mod_initialize_by_name, m);
+    return (0);
+}
+
+int mod_load_modules(const char *dir, opt_t *opt)
 {
     int rc = 0;
 #if STATIC_MODULES
@@ -317,7 +350,12 @@ mod_load_modules(const char *dir, opt_t *opt)
     list_sort(module_list, (ListCmpF) _cmp_f);
 
     /*
-     *  Initialize all modules in modules_list:
+     *  Initialize misc modules by name
+     */
+    _mod_initialize_modules_by_name (opt->misc_modules, module_list);
+
+    /*
+     *  Initialize remaining modules in modules_list:
      */
     list_for_each (module_list, (ListForF) _mod_initialize, NULL);
 
