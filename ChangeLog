@@ -1,6 +1,12 @@
 2010-09-01  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/mod.c :
+	  Split module registration and initialization into two
+	  separate functions. First register all modules, then try
+	  to initialize them later. This will allow for better filtering
+	  of conflicting modules.
+
+	* src/pdsh/mod.c :
 	  Add an initialization member to module structure to
 	  track whether a loaded module has been fully initialized.
 

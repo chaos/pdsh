@@ -99,6 +99,7 @@ static int  _mod_load_static(int);
 #else
 static int  _mod_load_dynamic_modules(const char *, opt_t *);
 static int  _mod_load_dynamic(const char *);
+static int  _mod_initialize(mod_t mod, void *arg);
 static int  _cmp_filenames(mod_t, char *);
 static int  _is_loaded(char *filename); 
 static bool _path_permissions_ok(const char *dir, uid_t pdsh_owner);
@@ -314,6 +315,11 @@ mod_load_modules(const char *dir, opt_t *opt)
 #endif
 
     list_sort(module_list, (ListCmpF) _cmp_f);
+
+    /*
+     *  Initialize all modules in modules_list:
+     */
+    list_for_each (module_list, (ListForF) _mod_initialize, NULL);
 
     return(rc);
 }
@@ -620,8 +626,7 @@ _mod_delete (const char *type, const char *name)
 }
 
 
-static int 
-_mod_install(mod_t mod, const char *name)
+static int _mod_register (mod_t mod, const char *name)
 {
     mod_t prev;
     /* 
@@ -652,6 +657,13 @@ _mod_install(mod_t mod, const char *name)
     if (!(mod->pmod->personality & pdsh_personality()))
         return -1;
 
+    list_prepend(module_list, mod);
+
+    return 0;
+}
+
+static int _mod_initialize (mod_t mod, void *arg)
+{
     if (!_mod_opts_ok(mod)) {
         err("failed to install module options for \"%s/%s\"\n", 
             mod->pmod->type, mod->pmod->name);
@@ -667,8 +679,6 @@ _mod_install(mod_t mod, const char *name)
     }
 
     mod->initialized = 1;
-
-    list_prepend(module_list, mod);
 
     return 0;
 }
@@ -688,10 +698,7 @@ _mod_load_static(int idx)
     mod->priority = *priority[idx];
     mod->filename = Strdup("static");
 
-    if (_mod_install(mod, static_mod_names[idx]) < 0) {
-        _mod_destroy(mod);
-        return -1;
-    }
+    _mod_register(mod, static_mod_names[idx]);
 
     return 0;
 }
@@ -755,8 +762,8 @@ _mod_load_dynamic(const char *fq_path)
 
     if ((priority = lt_dlsym(mod->handle, "pdsh_module_priority"))) 
         mod->priority = *priority;
-        
-    if (_mod_install(mod, mod->filename) < 0)
+
+    if (_mod_register(mod, mod->filename) < 0)
         goto fail;
 
     return 0;
