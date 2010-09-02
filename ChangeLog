@@ -1,5 +1,8 @@
 2010-09-01  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/pdsh/main.c :
+	  Call opt_env() before loading modules.
+
 	* src/pdsh/mod.c :
 	  Only print module options if the module has been initialized.
 

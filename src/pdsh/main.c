@@ -86,6 +86,11 @@ int main(int argc, char *argv[])
     opt_default(&opt, argv[0]);
 
     /*
+     * Override defaults with environment
+     */
+    opt_env(&opt);
+
+    /*
      *  Load static or dynamic pdsh modules
      */
     mod_init();
@@ -95,7 +100,6 @@ int main(int argc, char *argv[])
     /*
      * Handle options.
      */
-    opt_env(&opt);              /* override defaults with env variables */
     opt_args(&opt, argc, argv); /* override with command line           */
 
     if (opt_verify(&opt)) {     /* verify options, print errors         */
