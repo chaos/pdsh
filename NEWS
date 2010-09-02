@@ -1,6 +1,27 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
+* Changes in pdsh-2.21 (2010-09-10)
+===================================
+ -- New option -M name,... forces load of misc modules by
+     name, thus allowing users to select between conflicting
+	 modules. (PDSH_MISC_MODULES environment variable may
+	 also be used)
+ -- Due to above, an error is no longer printed when module
+     options conflict.
+ -- genders: Support PDSH_GENDERS_FILE environment variable to
+     override default genders file name (default = "genders")
+ -- genders: Support PDSH_GENDERS_DIR environment variable to
+     override default directory for genders files (default = /etc).
+ -- genders: Allow non-absolute path to be specified to -F option.
+ -- Fix parsing of hostlist expressions with multiple brackets 
+     (from SF.net user don.fanucci)
+ -- Fix compile error on platforms where setnetgrent() doesn't 
+     return an int.
+ -- Allow path to dshgroup files to be specified to ./configure
+     with --with-dshgroups=PATH.
+ -- Update libltdl 
+
 * Changes in pdsh-2.20 (2009-09-29)
 ===================================
  -- Fix bug in pdcp which serialized copy of files to nodes

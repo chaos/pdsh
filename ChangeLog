@@ -1,5 +1,7 @@
 2010-09-02  Mark Grondona <mgrondona@llnl.gov>
 
+	* : tag pdsh-2.21.
+
 	* doc/pdsh.1.in :
 	  Document PDSH_GENDERS_DIR and PDSH_GENDERS_FILE.
 
