@@ -75,22 +75,7 @@ static testresult_t _test_xstrerrorcat(void)
 
     for (e = 1; e < 100; e++) {
         char *s1 = NULL;
-
-#if HAVE_STRERROR_R
-#  if HAVE_WORKING_STRERROR_R || STRERROR_R_CHAR_P
-        char errbuf[64] = "";
-        char *s2 = strerror_r(e, errbuf, 64);
-#  else /* !STRERROR_R_CHAR_P */
-        char s2[64] = "";
-        strerror_r(e, s2, 64);
-#  endif /*  HAVE_WORKING_STRERROR_R || STRERROR_R_CHAR_P */
-#elif HAVE_STRERROR
         char *s2 = strerror(e);
-#else /* !HAVE_STRERROR */
-        extern char *sys_errlist[];
-        char *s2 = sys_errlist[e];
-#endif /* HAVE_STRERROR_R */
-
         errno = e;
         xstrerrorcat(&s1);
         if (strcmp(s1, s2) != 0) {
