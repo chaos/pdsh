@@ -110,7 +110,7 @@ pers_t pdsh_personality(void);
 /*
  *  Return a list of the original remote args
  */
-char ** pdsh_remote_argv (void);
+const char ** pdsh_remote_argv (void);
 
 /*
  *  Return a list of the original remote arg count

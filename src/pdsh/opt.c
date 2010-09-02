@@ -142,7 +142,7 @@ pers_t pdsh_personality(void)
 static char **remote_argv;
 static int    remote_argc;
 
-char **pdsh_remote_argv (void)
+const char **pdsh_remote_argv (void)
 {
     return remote_argv;
 }
