@@ -1,3 +1,9 @@
+2010-08-31  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/common/hostlist.c :
+	  Update to latest hostlist.c from LSD-Tools project with fix for 
+	  multiple brackets in hostlists from sf.net user don-fanucci.
+
 2010-03-16  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/ltdl.c, src/pdsh/ltdl.h :

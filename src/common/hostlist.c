@@ -1,7 +1,7 @@
 /*****************************************************************************\
- *  $Id$
+ *  $Id: hostlist.c 9950 2010-08-31 21:57:35Z grondo $
  *****************************************************************************
- *  $LSDId: hostlist.c 7685 2008-08-07 00:05:52Z grondo $
+ *  $LSDId: hostlist.c 9950 2010-08-31 21:57:35Z grondo $
  *****************************************************************************
  *  Copyright (C) 2002 The Regents of the University of California.
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
@@ -352,24 +352,9 @@ static void _error(char *file, int line, char *msg, ...)
     return;
 }
 
-static int _advance_past_brackets (char *tok, char **str)
-{
-    /* if _single_ opening bracket exists b/w tok and str, push str
-     * past first closing bracket to next seperator */
-    if (   memchr(tok, '[', *str - tok) != NULL
-        && memchr(tok, ']', *str - tok) == NULL ) {
-        char *q = strchr(*str, ']');
-        if (q && memchr(*str, '[', q - *str) == NULL) {
-            *str = q + 1;
-            return (1);
-        }
-    }
 
-    return 0;
-}
-
-/* 
- * Helper function for host list string parsing routines 
+/*
+ * Helper function for host list string parsing routines
  * Returns a pointer to the next token; additionally advance *str
  * to the next separator.
  *
@@ -377,10 +362,13 @@ static int _advance_past_brackets (char *tok, char **str)
  * (with modifications to support bracketed hostlists, i.e.:
  *  xxx[xx,xx,xx] is a single token)
  *
+ * _next_tok now handles multiple brackets within the same token,
+ * e.g.  node[01-30]-[1-2,6].
  */
 static char * _next_tok(char *sep, char **str)
 {
     char *tok;
+    int level = 0;
 
     /* push str past any leading separators */
     while (**str != '\0' && strchr(sep, **str) != '\0')
@@ -392,16 +380,12 @@ static char * _next_tok(char *sep, char **str)
     /* assign token ptr */
     tok = *str;
 
-    /*
-     * Advance str past any separators, but if a separator occurs between
-     *  brackets, e.g. foo[0-3,5], then advance str past closing brackets and
-     *  try again.
-     */
-    do {
-        /* push str past token and leave pointing to first separator */
-        while (**str != '\0' && strchr(sep, **str) == '\0')
-            (*str)++;
-    } while (_advance_past_brackets (tok, str));
+    while ( **str != '\0' &&
+	    (level != 0 || strchr(sep, **str) == NULL) ) {
+      if ( **str == '[' ) level++;
+      else if ( **str == ']' ) level--;
+      (*str)++;
+    }
 
    /* nullify consecutive separators and push str beyond them */
     while (**str != '\0' && strchr(sep, **str) != '\0')
@@ -481,21 +465,15 @@ static int host_prefix_end(const char *hostname)
     return idx;
 }
 
-/* 
- * create a hostname_t object from a string hostname
- */
-static hostname_t hostname_create(const char *hostname)
+static hostname_t hostname_create_with_suffix (const char *hostname, int idx)
 {
     hostname_t hn = NULL;
     char *p = '\0';
-    int idx = 0;
 
     assert(hostname != NULL);
 
     if (!(hn = (hostname_t) malloc(sizeof(*hn))))
         out_of_memory("hostname create");
-
-    idx = host_prefix_end(hostname);
 
     if (!(hn->hostname = strdup(hostname))) {
         free(hn);
@@ -533,6 +511,17 @@ static hostname_t hostname_create(const char *hostname)
     }
 
     return hn;
+
+}
+
+
+/* 
+ * create a hostname_t object from a string hostname
+ */
+static hostname_t hostname_create(const char *hostname)
+{
+    int idx = host_prefix_end (hostname);
+    return hostname_create_with_suffix (hostname, idx);
 }
 
 /* free a hostname object
@@ -903,53 +892,94 @@ static hostrange_t hostrange_intersect(hostrange_t h1, hostrange_t h2)
     return new;
 }
 
-/* return 1 if hostname hn is within the hostrange hr
- *        0 if not.
+/* return offset of hn if it is in the hostlist or
+ *        -1 if not.
  */
 static int hostrange_hn_within(hostrange_t hr, hostname_t hn)
 {
+    int len_hr;
+    int len_hn;
+    int width;
+
     if (hr->singlehost) {
-        /*  
-         *  If the current hostrange [hr] is a `singlehost' (no valid 
+        /*
+         *  If the current hostrange [hr] is a `singlehost' (no valid
          *   numeric suffix (lo and hi)), then the hostrange [hr]
          *   stores just one host with name == hr->prefix.
-         *  
+         *
          *  Thus the full hostname in [hn] must match hr->prefix, in
-         *   which case we return true. Otherwise, there is no 
+         *   which case we return true. Otherwise, there is no
          *   possibility that [hn] matches [hr].
          */
         if (strcmp (hn->hostname, hr->prefix) == 0)
-            return 1;
-        else 
             return 0;
+        else
+            return -1;
     }
 
     /*
      *  Now we know [hr] is not a "singlehost", so hostname
-     *   better have a valid numeric suffix, or there is no 
+     *   better have a valid numeric suffix, or there is no
      *   way we can match
      */
     if (!hostname_suffix_is_valid (hn))
-        return 0;
+        return -1;
+
+    len_hn = strlen (hn->prefix);
 
     /*
-     *  If hostrange and hostname prefixes don't match, then
-     *   there is no way the hostname falls within the range [hr].
+     *  If hostrange and hostname prefixes don't match to at least
+     *   the length of the hostname object (which will have the min
+     *   possible prefix length), then there is no way the hostname
+     *   falls within the range [hr].
      */
-    if (strcmp(hr->prefix, hn->prefix) != 0) 
-        return 0;
+    if (strncmp (hr->prefix, hn->prefix, len_hn) != 0)
+        return -1;
+
+    /*
+     *  Now we know hostrange and hostname prefixes match up to the
+     *   length of the hostname prefix.  If the hostrange and hostname
+     *   prefix lengths do not match (specifically if the hostname prefix
+     *   length is less than the hostrange prefix length) and the
+     *   hostrange prefix contains trailing digits, then it might be
+     *   the case that the hostrange was created by forcing the prefix
+     *   to contain digits a la f00[1-2]. So we try adjusting the
+     *   hostname with the longer prefix and calling this function
+     *   again with the new hostname. (Yes, this is ugly, sorry)
+     */
+    len_hr = strlen (hr->prefix);
+    width = hostname_suffix_width (hn);
+
+    if ((len_hn < len_hr)
+         && (width > 1)
+         && (isdigit (hr->prefix [len_hr - 1]))
+         && (hr->prefix [len_hn] == hn->suffix[0]) ) {
+        int rc;
+        /*
+         *  Create new hostname object with its prefix offset by one
+         */
+        hostname_t h = hostname_create_with_suffix (hn->hostname, len_hn);
+        /*
+         *  Recursive call :-o
+         */
+        rc = hostrange_hn_within (hr, h);
+        hostname_destroy (h);
+        return rc;
+    }
+
 
     /*
      *  Finally, check whether [hn], with a valid numeric suffix,
      *   falls within the range of [hr].
      */
     if (hn->num <= hr->hi && hn->num >= hr->lo) {
-        int width = hostname_suffix_width(hn);
-        int num = hn->num;
-        return (_width_equiv(hr->lo, &hr->width, num, &width));
+        int width = hostname_suffix_width (hn);
+        if (!_width_equiv(hr->lo, &hr->width, hn->num, &width))
+            return -1;
+        return (hn->num - hr->lo);
     }
 
-    return 0;
+    return -1;
 }
 
 
@@ -1891,17 +1921,15 @@ int hostlist_find(hostlist_t hl, const char *hostname)
     LOCK_HOSTLIST(hl);
 
     for (i = 0, count = 0; i < hl->nranges; i++) {
-        if (hostrange_hn_within(hl->hr[i], hn)) {
-            if (hostname_suffix_is_valid(hn) && !hl->hr[i]->singlehost)
-                ret = count + hn->num - hl->hr[i]->lo;
-            else
-                ret = count;
-            goto done;
-        } else
+        int offset = hostrange_hn_within(hl->hr[i], hn);
+        if (offset >= 0) {
+            ret = count + offset;
+            break;
+        }
+        else
             count += hostrange_count(hl->hr[i]);
     }
 
-  done:
     UNLOCK_HOSTLIST(hl);
     hostname_destroy(hn);
     return ret;
@@ -2481,7 +2509,7 @@ static int hostset_find_host(hostset_t set, const char *host)
     LOCK_HOSTLIST(set->hl);
     hn = hostname_create(host);
     for (i = 0; i < set->hl->nranges; i++) {
-        if (hostrange_hn_within(set->hl->hr[i], hn)) {
+        if (hostrange_hn_within(set->hl->hr[i], hn) >= 0) {
             retval = 1;
             goto done;
         }
