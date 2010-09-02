@@ -386,7 +386,8 @@ _mod_print_info(mod_t mod)
 
 static int _opt_print(mod_t mod, int *col)
 {
-    mod_print_options(mod, *col);
+    if (mod->initialized)
+        mod_print_options(mod, *col);
     return 0;
 }
 

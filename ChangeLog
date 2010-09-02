@@ -1,6 +1,9 @@
 2010-09-01  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/mod.c :
+	  Only print module options if the module has been initialized.
+
+	* src/pdsh/mod.c :
 	  Split module registration and initialization into two
 	  separate functions. First register all modules, then try
 	  to initialize them later. This will allow for better filtering
