@@ -84,7 +84,7 @@ struct pdsh_module_option netgroup_module_options[] =
    PDSH_OPT_TABLE_END
  };
 
-/* 
+/*
  * Machines module info 
  */
 struct pdsh_module pdsh_module_info = {
@@ -122,10 +122,7 @@ static hostlist_t _read_netgroup (const char *group)
 	char buf[4096];
     int rc;
 
-	if (setnetgrent (group) < 0) {
-		err ("%p: netgroup \"%s\": %m\n");
-		return NULL;
-	}
+	setnetgrent (group);
 
 	while (rc = getnetgrent_r (&host, &user, &domain, buf, sizeof (buf))) {
 		if (hl == NULL)
@@ -133,7 +130,7 @@ static hostlist_t _read_netgroup (const char *group)
 		else
 			hostlist_push (hl, host);
 	}
-	
+
 	endnetgrent ();
 
 	return (hl);
