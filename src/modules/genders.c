@@ -197,10 +197,17 @@ genders_process_opt(opt_t *pdsh_opts, int opt, char *arg)
 static int
 genders_init(void)
 {
+
     if (!(dlh = lt_dlopen(NULL)))
         errx("%p: Error loading self: %s\n", lt_dlerror());
 
     g_query_addr = lt_dlsym(dlh, "genders_query");
+
+    /*
+     *  Allow default genders file location to be overridden with
+     *   PDSH_GENDERS_FILE environment variable.
+     */
+    gfile = getenv ("PDSH_GENDERS_FILE");
 
     return 0;
 }
