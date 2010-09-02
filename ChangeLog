@@ -1,3 +1,8 @@
+2010-03-16  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/ltdl.c, src/pdsh/ltdl.h :
+	  Update libltdl from latest RHEL5.4 libtool.
+
 2009-09-29  Mark Grondona <mgrondona@llnl.gov>
 
 	* : tag pdsh-2.20.
