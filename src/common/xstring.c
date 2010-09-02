@@ -151,7 +151,12 @@ void xstrerrorcat(char **buf)
     char *err = strerror_r(errno, errbuf, 64);
 #  else
     char err[64];
-    strerror_r(errno, err, 64);
+    int e = errno;
+    if (strerror_r(e, err, 64) < 0) {
+        if (errno == EINVAL)
+	    snprintf (err, 64, "Unknown error %d", e);
+	err[63] = '\0';
+    }
 #  endif
 #elif HAVE_STRERROR
     char *err = strerror(errno);
