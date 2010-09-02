@@ -1,3 +1,9 @@
+2010-09-01  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/mod.c :
+	  Add an initialization member to module structure to
+	  track whether a loaded module has been fully initialized.
+
 2010-08-31  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/genders.c :

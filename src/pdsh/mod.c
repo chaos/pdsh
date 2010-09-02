@@ -76,7 +76,8 @@ struct module_components {
     char *filename;
 
     int priority;
- 
+    int initialized;
+
     struct pdsh_module *pmod;
 };
 
@@ -248,8 +249,8 @@ mod_create(void)
     mod->filename = NULL;
 
     mod->priority = DEFAULT_MODULE_PRIORITY;
+    mod->initialized = 0;
     assert(mod->magic = MOD_MAGIC);
-    
     return mod;
 }
 
@@ -263,7 +264,11 @@ _mod_destroy(mod_t mod)
         mod->pmod->type = NULL;
         mod->pmod->name = NULL;
 
-        if (mod->pmod->mod_ops && mod->pmod->mod_ops->exit)
+        /*
+         *  Only run exit function if module was initialized
+         */
+        if (mod->initialized &&
+            mod->pmod->mod_ops && mod->pmod->mod_ops->exit)
             (*mod->pmod->mod_ops->exit)();
     }
 
@@ -660,6 +665,8 @@ _mod_install(mod_t mod, const char *name)
             mod->pmod->type, mod->pmod->name);
         return -1;
     }
+
+    mod->initialized = 1;
 
     list_prepend(module_list, mod);
 
