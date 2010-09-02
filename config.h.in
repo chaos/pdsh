@@ -6,6 +6,9 @@
 /* Define to default pdsh fanout. */
 #undef DFLT_FANOUT
 
+/* Path to dshgroup files */
+#undef DSHGROUP_PATH
+
 /* Define to 1 if licensed under terms of the GNU General Public License. */
 #undef GPL_LICENSED
 

@@ -20,20 +20,22 @@ AC_DEFUN([AC_DSHGROUP],
   # Check for whether to include the dshgroup module
   #
   AC_MSG_CHECKING([for whether to build dshgroup module])
+  ac_dshgroup_path="/etc/dshgroup";
+
   AC_ARG_WITH([dshgroups],
-    AC_HELP_STRING([--with-dshgroups], 
-	  [Build dshgroup module for dsh group file support]),
+    AC_HELP_STRING([--with-dshgroups=PATH] 
+	  [Build dshgroup module for dsh group file support (with optional PATH)]),
     [ case "$withval" in
         no)  ac_with_dshgroup=no ;;
-        yes) ac_with_dshgroup=yes ;;
-        *)   AC_MSG_RESULT([doh!])
-             AC_MSG_ERROR([bad value "$withval" for --with-dshgroups]) ;;
+        *) ac_with_dshgroup=yes; ac_dshgroup_path="$withval" ;;
       esac
     ]
   )
   AC_MSG_RESULT([${ac_with_dshgroup=no}])
-   
+
   if test "$ac_with_dshgroup" = "yes"; then
       AC_ADD_STATIC_MODULE("dshgroup")
+	  AC_DEFINE_UNQUOTED(DSHGROUP_PATH, "$ac_dshgroup_path",
+			             [Path to dshgroup files])
   fi
 ])

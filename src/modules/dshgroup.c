@@ -28,6 +28,10 @@
 #  include "config.h"
 #endif
 
+#ifndef DSHGROUP_PATH
+#define DSHGROUP_PATH "/etc/dshgroup"
+#endif
+
 #include <unistd.h> /* access */
 #include <stdlib.h> /* getenv */
 #include <string.h>
