@@ -1,5 +1,10 @@
 2010-09-01  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/pdsh/opt.c :
+	  Add new option -M to allow named misc modules to be
+	  pre-initialized before others, thus overriding which
+	  module is loaded when there is a conflict.
+
 	* src/pdsh/mod.c :
 	  Don't generate an error message when module options
 	  conflict, since there is now a way to override which

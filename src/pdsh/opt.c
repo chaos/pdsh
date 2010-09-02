@@ -102,6 +102,7 @@ Usage: rpdcp [-options] src [src2...] dir\n\
 -w host,host,...  set target node list on command line\n\
 -x host,host,...  set node exclusion list on command line\n\
 -R name           set rcmd module to name\n\
+-M name,...       select one or more misc modules to initialize first\n\
 -N                disable hostname: labels on output lines\n\
 -L                list info on all loaded modules and exit\n"
 /* undocumented "-T testcase" option */
@@ -114,7 +115,7 @@ Usage: rpdcp [-options] src [src2...] dir\n\
 #define DSH_ARGS    "S"
 #endif
 #define PCP_ARGS	"pryzZe:"
-#define GEN_ARGS	"hLNKR:t:cqf:w:x:l:u:bI:dVT:Q"
+#define GEN_ARGS	"hLNKR:M:t:cqf:w:x:l:u:bI:dVT:Q"
 
 /*
  *  Pdsh options string (for getopt) -- initialized
@@ -439,7 +440,11 @@ void opt_args_early (opt_t * opt, int argc, char *argv[])
 
     while ((c = getopt(argc, argv, pdsh_options)) != EOF) {
         switch (c) {
-            /*  Handle early options here ... */
+            case 'M':
+                if (opt->misc_modules)
+                    Free ((void **) &opt->misc_modules);
+                opt->misc_modules = Strdup (optarg);
+                break;
         }
     }
 }
