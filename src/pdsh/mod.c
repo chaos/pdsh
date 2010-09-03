@@ -100,7 +100,8 @@ static int  _mod_load_static(int);
 #else
 static int  _mod_load_dynamic_modules(const char *, opt_t *);
 static int  _mod_load_dynamic(const char *);
-static int  _mod_initialize(mod_t mod, void *arg);
+static int  _mod_initialize(mod_t mod);
+static int  _mod_init_list_safe(mod_t mod, void *arg);
 static int  _cmp_filenames(mod_t, char *);
 static int  _is_loaded(char *filename); 
 static bool _path_permissions_ok(const char *dir, uid_t pdsh_owner);
@@ -322,8 +323,9 @@ static int
 _mod_initialize_by_name (char *name, List l)
 {
     mod_t mod = list_find_first (l, (ListFindF) _mod_find_misc, name);
-    if (mod != NULL)
-        _mod_initialize (mod, NULL);
+    if (mod != NULL && _mod_initialize (mod) < 0)
+        err("%p: Warning: Failed to initialize requested module \"%s/%s\"\n",
+                mod->pmod->type, mod->pmod->name);
     return (0);
 }
 
@@ -373,7 +375,7 @@ int mod_load_modules(const char *dir, opt_t *opt)
     /*
      *  Initialize remaining modules in modules_list:
      */
-    list_for_each (module_list, (ListForF) _mod_initialize, NULL);
+    list_for_each (module_list, (ListForF) _mod_init_list_safe, NULL);
 
     /*
      *  Remove all uninitialized modules
@@ -722,21 +724,31 @@ static int _mod_register (mod_t mod, const char *name)
     return 0;
 }
 
-static int _mod_initialize (mod_t mod, void *arg)
+static int _mod_initialize (mod_t mod)
 {
     if (!_mod_opts_ok(mod))
-        return 0;
+        return -1;
 
     if (mod->pmod->mod_ops && 
         mod->pmod->mod_ops->init && 
         ((*mod->pmod->mod_ops->init)() < 0)) {
         err("%p: error: %s/%s failed to initialize.\n", 
             mod->pmod->type, mod->pmod->name);
-        return 0;
+        return -1;
     }
 
     mod->initialized = 1;
 
+    return 0;
+}
+
+/*
+ *  Version of _mod_initialize that always returns zero
+ *   for use with list_for_each.
+ */
+static int _mod_init_list_safe (mod_t mod, void *arg)
+{
+    _mod_initialize (mod);
     return 0;
 }
 

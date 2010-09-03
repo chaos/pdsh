@@ -1,6 +1,9 @@
 2010-09-03  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/mod.c :
+	  Print an error if requested modules fail to initialize.
+
+	* src/pdsh/mod.c :
 	  Delete any uninitialized modules after all modules that can
 	  successfully be initialized have been.
 
