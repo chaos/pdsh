@@ -464,11 +464,17 @@ void opt_args(opt_t * opt, int argc, char *argv[])
     int c;
     extern int optind;
     extern char *optarg;
+    extern int opterr;
 
     /*
      *  Reset optind after opt_args_early.
      */
     optind = 1;
+
+    /*
+     * Reinstate getopt error reporting
+     */
+    opterr = 1;
 
     while ((c = getopt(argc, argv, pdsh_options)) != EOF) {
         switch (c) {
