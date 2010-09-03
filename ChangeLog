@@ -1,5 +1,10 @@
 2010-09-03  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/pdsh/mod.c :
+	  Ensure functions used by list_for_each always return 0
+	  so that the list traversal isn't short-circuited by
+	  recoverable errors.
+
 	* src/modules/genders.c :
 	  Don't let genders_file be NULL. Instead manually set
 	  to "/etc/genders" for improved error message, and to

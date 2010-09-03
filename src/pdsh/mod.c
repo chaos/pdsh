@@ -704,14 +704,14 @@ static int _mod_register (mod_t mod, const char *name)
 static int _mod_initialize (mod_t mod, void *arg)
 {
     if (!_mod_opts_ok(mod))
-        return -1;
+        return 0;
 
     if (mod->pmod->mod_ops && 
         mod->pmod->mod_ops->init && 
         ((*mod->pmod->mod_ops->init)() < 0)) {
         err("%p: error: %s/%s failed to initialize.\n", 
             mod->pmod->type, mod->pmod->name);
-        return -1;
+        return 0;
     }
 
     mod->initialized = 1;
