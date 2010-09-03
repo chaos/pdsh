@@ -472,6 +472,15 @@ void opt_args(opt_t * opt, int argc, char *argv[])
 #endif
     while ((c = getopt(argc, argv, pdsh_options)) != EOF) {
         switch (c) {
+
+        /*
+         *  The following options were handled in opt_args_early() :
+         */
+        case 'M':
+            break;
+
+        /*  Continue processing regular options...
+         */
         case 'N':
             opt->labels = false;
             break;

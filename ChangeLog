@@ -1,5 +1,8 @@
 2010-09-03  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/pdsh/opt.c :
+	  Fix error in opt_args() when -M is used.
+
 	* src/pdsh/mod.c :
 	  Ensure functions used by list_for_each always return 0
 	  so that the list traversal isn't short-circuited by
