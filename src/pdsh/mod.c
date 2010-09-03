@@ -302,6 +302,8 @@ _mod_opts_ok(mod_t mod)
 static int
 _cmp_f (mod_t x, mod_t y)
 {
+    if (x->priority == y->priority)
+        return strcmp (x->pmod->name, y->pmod->name);
     return (y->priority - x->priority);
 }
 

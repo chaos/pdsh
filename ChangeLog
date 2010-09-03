@@ -1,5 +1,10 @@
 2010-09-03  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/pdsh/mod.c :
+	  Sort loaded modules first by priority, then by module name.
+	  This will allow modules to be listed and initialized in
+	  a reproducible order, instead of an arbitrary order.
+
 	* src/pdsh/opt.c :
 	  Move POSIXLY_CORRECT=1 into opt_args_early().
 
