@@ -426,11 +426,12 @@ static genders_t _handle_create()
     if ((gh = genders_handle_create()) == NULL)
         errx("%p: Unable to create genders handle: %m\n");
 
-    if (gfile)
-        genders_file = genders_filename_create (gfile);
+    if (!gfile)
+        gfile = "genders";
+    genders_file = genders_filename_create (gfile);
 
     if (genders_load_data(gh, genders_file) < 0)
-        errx("%p: %s: %s\n", genders_file, genders_errormsg(gh));
+        err("%p: %s: %s\n", genders_file, genders_errormsg(gh));
 
     return gh;
 }

@@ -1,3 +1,10 @@
+2010-09-03  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/modules/genders.c :
+	  Don't let genders_file be NULL. Instead manually set
+	  to "/etc/genders" for improved error message, and to
+	  avoid segfault when printing error message.
+
 2010-09-02  Mark Grondona <mgrondona@llnl.gov>
 
 	* : tag pdsh-2.21.
