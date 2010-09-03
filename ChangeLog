@@ -1,6 +1,10 @@
 2010-09-03  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/mod.c :
+	  Delete any uninitialized modules after all modules that can
+	  successfully be initialized have been.
+
+	* src/pdsh/mod.c :
 	  Sort loaded modules first by priority, then by module name.
 	  This will allow modules to be listed and initialized in
 	  a reproducible order, instead of an arbitrary order.

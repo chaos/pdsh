@@ -340,6 +340,20 @@ static int _mod_initialize_modules_by_name (char *names, List m)
     return (0);
 }
 
+static void _mod_delete_uninitialized (List l)
+{
+    mod_t mod;
+    ListIterator i = list_iterator_create (l);
+
+    while ((mod = list_next (i))) {
+        if (!mod->initialized)
+            list_delete (i);
+    }
+
+    list_iterator_destroy (i);
+}
+
+
 int mod_load_modules(const char *dir, opt_t *opt)
 {
     int rc = 0;
@@ -360,6 +374,11 @@ int mod_load_modules(const char *dir, opt_t *opt)
      *  Initialize remaining modules in modules_list:
      */
     list_for_each (module_list, (ListForF) _mod_initialize, NULL);
+
+    /*
+     *  Remove all uninitialized modules
+     */
+    _mod_delete_uninitialized (module_list);
 
     return(rc);
 }
