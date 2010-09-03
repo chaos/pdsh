@@ -5,8 +5,8 @@ documents thos changes that are of interest to users and admins.
 ===================================
  -- New option -M name,... forces load of misc modules by
      name, thus allowing users to select between conflicting
-	 modules. (PDSH_MISC_MODULES environment variable may
-	 also be used)
+     modules. (PDSH_MISC_MODULES environment variable may
+     also be used)
  -- Due to above, an error is no longer printed when module
      options conflict.
  -- genders: Support PDSH_GENDERS_FILE environment variable to
@@ -31,12 +31,12 @@ documents thos changes that are of interest to users and admins.
 ===================================
  -- New pdsh configure option --with-rcmd-rank-list allows
      the default pdsh rcmd module priority list to be overridden
-	 at compile time.
+     at compile time.
  -- genders: Always read genders file in case there are any
      pdsh_rcmd_type attributes to apply to the target hosts.
  -- genders: Fix bug where altnames were not used by default
      in some cases due to a bug in generic module loading code.
-	 (patch from Py Watson)
+     (patch from Py Watson)
  -- Fix for coredump when no rcmd module is loaded.
      (patch from Py Watson)
  -- %{_libdir}/pdsh should be owned by pdsh RPM.
