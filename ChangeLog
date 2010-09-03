@@ -1,5 +1,7 @@
 2010-09-03  Mark Grondona <mgrondona@llnl.gov>
 
+	* : tag pdsh-2.22.
+
 	* src/pdsh/mod.c :
 	  Print an error if requested modules fail to initialize.
 

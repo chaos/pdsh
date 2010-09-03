@@ -1,7 +1,16 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
-* Changes in pdsh-2.21 (2010-09-10)
+* Changes in pdsh-2.22 (2010-09-03)
+===================================
+ -- Fixes several bugs introduced in pdsh-2.21, Including:
+   - genders: segfault when genders file doesn't exist
+   - Failure to initialize some modules if others conflict
+   - -M option doesn't work in some cases
+ -- Sort modules by name before initialization so that modules
+     initialize in a reproducible order.
+
+* Changes in pdsh-2.21 (2010-09-02)
 ===================================
  -- New option -M name,... forces load of misc modules by
      name, thus allowing users to select between conflicting
