@@ -438,6 +438,10 @@ void opt_args_early (opt_t * opt, int argc, char *argv[])
      */
     opterr = 0;
 
+#ifdef __linux
+    /* Tell glibc getopt to stop eating after the first non-option arg */
+    putenv("POSIXLY_CORRECT=1");
+#endif
     while ((c = getopt(argc, argv, pdsh_options)) != EOF) {
         switch (c) {
             case 'M':
@@ -466,10 +470,6 @@ void opt_args(opt_t * opt, int argc, char *argv[])
      */
     optind = 1;
 
-#ifdef __linux
-    /* Tell glibc getopt to stop eating after the first non-option arg */
-    putenv("POSIXLY_CORRECT=1");
-#endif
     while ((c = getopt(argc, argv, pdsh_options)) != EOF) {
         switch (c) {
 

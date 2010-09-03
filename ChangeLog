@@ -1,6 +1,9 @@
 2010-09-03  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/opt.c :
+	  Move POSIXLY_CORRECT=1 into opt_args_early().
+
+	* src/pdsh/opt.c :
 	  Fix error in opt_args() when -M is used.
 
 	* src/pdsh/mod.c :
