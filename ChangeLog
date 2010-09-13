@@ -1,3 +1,8 @@
+2010-09-13  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/rcmd.c, src/pdsh/opt.c :
+	  Fix a couple of compiler warnings.
+
 2010-09-10  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/Makefile.am, src/modules/Makefile.in :

@@ -145,7 +145,7 @@ static int    remote_argc;
 
 const char **pdsh_remote_argv (void)
 {
-    return remote_argv;
+    return (const char **) remote_argv;
 }
 
 int pdsh_remote_argc (void)

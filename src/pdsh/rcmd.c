@@ -417,7 +417,7 @@ int rcmd_opt_set (int id, void * value)
 
     switch (id) {
         case RCMD_OPT_RESOLVE_HOSTS: 
-            current_rcmd_module->options.resolve_hosts = (int) value;
+            current_rcmd_module->options.resolve_hosts = (long int) value;
             break;
         default:
             errno = EINVAL;
