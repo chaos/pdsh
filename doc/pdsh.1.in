@@ -308,6 +308,19 @@ may be used multiple times to target multiple SLURM jobs. The special
 argument "all" can be used to target all nodes running SLURM jobs, e.g.
 \fI-j all\fR.
 
+.SH "torque module options"
+The \fBtorque\fI module allows \fBpdsh\fR to target nodes based on
+currently running Torque/PBS jobs. Similar to the slurm module, the
+\fBtorque\fR module is typically called after all other node
+selection options have been processed, and if no nodes have been
+selected, the module will attempt to read a running jobid from
+the PBS_JOBID environment variable (which is set when running under
+a Torque allocation).
+.TP
+.I "-j jobid[,jobid,...]"
+Target list of nodes allocated to the Torque job \fIjobid\fR. This option
+may be used multiple times to target multiple Torque jobs.
+
 .SH "rms module options"
 The \fBrms\fR module allows pdsh to target nodes based on an RMS 
 resource. The \fBrms\fR module is typically called after all other

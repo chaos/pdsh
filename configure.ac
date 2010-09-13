@@ -215,6 +215,12 @@ AC_SLURM
 AM_CONDITIONAL([WITH_SLURM], [test "$ac_have_slurm" = "yes"])
 
 #
+# Determine whether to to build Torque mudule (support running under Torque jobid)
+#
+AC_TORQUE
+AM_CONDITIONAL([WITH_TORQUE], [test "$ac_have_torque" = "yes"])
+
+#
 # Determine whether to build dshgroup module 
 # (support dsh-style /etc/dsh/group/%s ~/.dsh/group/%s files)
 #

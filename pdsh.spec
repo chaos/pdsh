@@ -86,6 +86,7 @@ Requires: pdsh-rcmd
 %{expand: %pdsh_opt nodeupdown}
 %{expand: %pdsh_opt machines}
 %{expand: %pdsh_opt slurm}
+%{expand: %pdsh_opt torque}
 %{expand: %pdsh_opt rms}
 
 #
@@ -115,6 +116,7 @@ Requires: pdsh-rcmd
 %{?_with_genders:BuildRequires: genders > 1.0}
 %{?_with_pam:BuildRequires: pam-devel}
 %{?_with_slurm:BuildRequires: slurm-devel}
+%{?_with_slurm:BuildRequires: torque-devel}
 
 
 ##############################################################################
@@ -269,6 +271,14 @@ Requires:  slurm
 Pdsh module providing support for gathering the list of target nodes
 from an allocated SLURM job.
 
+%package   mod-torque
+Summary:   Provides support for running pdsh under Torque allocations
+Group:     System Environment/Base
+Requires:  torque
+%description mod-torque
+Pdsh module providing support for gathering the list of target nodes
+from an allocated Torque job.
+
 
 
 ##############################################################################
@@ -310,6 +320,8 @@ from an allocated SLURM job.
     %{?_without_xcpu}    \
     %{?_with_slurm}         \
     %{?_without_slurm}      \
+    %{?_with_torque}        \
+    %{?_without_torque}     \
     %{?_with_dshgroups}     \
     %{?_without_dshgroups}  \
     %{?_with_netgroup}      \
@@ -457,6 +469,13 @@ rm -rf "$RPM_BUILD_ROOT"
 %files mod-slurm
 %defattr(-,root,root)
 %{_libdir}/pdsh/slurm.*
+%endif
+##############################################################################
+
+%if %{?_with_torque:1}%{!?_with_torque:0}
+%files mod-torque
+%defattr(-,root,root)
+%{_libdir}/pdsh/torque.*
 %endif
 ##############################################################################
 

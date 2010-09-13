@@ -1,3 +1,9 @@
+2010-09-10  Mark Grondona <mgrondona@llnl.gov>
+
+	* config/ac_torque.m4, configure.ac, doc/pdsh.1.in,
+	  pdsh.spec, src/modules/Makefile.am, src/modules/torque.c :
+	  Add new Torque/PBS module from Mattias Slabanja.
+
 2010-09-03  Mark Grondona <mgrondona@llnl.gov>
 
 	* : tag pdsh-2.22.

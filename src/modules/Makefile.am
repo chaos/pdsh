@@ -68,6 +68,11 @@ if WITH_SLURM
 SLURM_MODULE = slurm.la
 endif
 
+if WITH_TORQUE
+TORQUE_MODULE = torque.la
+AM_CPPFLAGS = $(TORQUE_CPPFLAGS)
+endif
+
 if WITH_DSHGROUP
 DSHGROUP_MODULE = dshgroup.la
 endif
@@ -112,6 +117,7 @@ pkglib_LTLIBRARIES = \
 	$(SDR_MODULE) \
 	$(KRB4_MODULE) \
 	$(SLURM_MODULE) \
+	$(TORQUE_MODULE) \
 	$(DSHGROUP_MODULE) \
 	$(NETGROUP_MODULE) \
 	$(EXEC_MODULE)
@@ -156,7 +162,9 @@ libmods_la_LDFLAGS = \
 	$(NODEUPDOWN_LIBS) \
 	$(KRB_LIBS) \
 	$(GENDERS_LIBS) \
-	$(SLURM_LIBS)
+	$(SLURM_LIBS) \
+	$(TORQUE_LIBS)
+
 
 xrcmd_la_SOURCES =        xrcmd.c 
 xrcmd_la_LDFLAGS =        $(MODULE_FLAGS)
@@ -191,6 +199,8 @@ sdr_la_SOURCES =          sdr.c
 sdr_la_LDFLAGS =          $(MODULE_FLAGS)
 slurm_la_SOURCES =        slurm.c 
 slurm_la_LDFLAGS =        $(MODULE_FLAGS) $(SLURM_LIBS)
+torque_la_SOURCES =       torque.c
+torque_la_LDFLAGS =       $(MODULE_FLAGS) $(TORQUE_LIBS)
 dshgroup_la_SOURCES =     dshgroup.c 
 dshgroup_la_LDFLAGS =     $(MODULE_FLAGS) 
 netgroup_la_SOURCES =     netgroup.c 
