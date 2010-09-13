@@ -1,6 +1,9 @@
 2010-09-10  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/torque.c :
+	  Error in pbs_disconnect() shouldn't be fatal.
+
+	* src/modules/torque.c :
 	  Fix segfault with no default PBS server.
 
 	* src/modules/torque.c :

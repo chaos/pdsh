@@ -341,7 +341,7 @@ static hostlist_t _torque_wcoll (List joblist)
     }
 
     if( pbs_disconnect(connect) ){
-        errx("%p: Failed to disconnect from torque server %s: (%d) %s\n",
+        err("%p: Failed to disconnect from torque server %s: (%d) %s\n",
              pbs_server, pbs_errno, pbs_strerror(pbs_errno));
     }
 
