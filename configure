@@ -464,7 +464,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS META_NAME META_VERSION META_RELEASE META_ALIAS META_DATE META_AUTHOR META_LT_CURRENT META_LT_REVISION META_LT_AGE build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE LN_S EGREP ECHO AR ac_ct_AR RANLIB ac_ct_RANLIB CPP CXX CXXFLAGS ac_ct_CXX CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE CXXCPP F77 FFLAGS ac_ct_F77 LIBTOOL INSTALL_LTDL_TRUE INSTALL_LTDL_FALSE CONVENIENCE_LTDL_TRUE CONVENIENCE_LTDL_FALSE LIBADD_DL WITH_GNU_LD_TRUE WITH_GNU_LD_FALSE WITH_STATIC_MODULES_TRUE WITH_STATIC_MODULES_FALSE AIX_PDSH_LDFLAGS acx_pthread_config PTHREAD_CC PTHREAD_LIBS PTHREAD_CFLAGS FANOUT CONNECT_TIMEOUT SDRGETOBJECTS HAVE_SDR WITH_SDR_TRUE WITH_SDR_FALSE WITH_RSH_TRUE WITH_RSH_FALSE HAVE_XCPU WITH_XCPU_TRUE WITH_XCPU_FALSE HAVE_SSH WITH_SSH_TRUE WITH_SSH_FALSE WITH_EXEC_TRUE WITH_EXEC_FALSE WITH_KRB4_TRUE WITH_KRB4_FALSE KRB_LIBS ELAN_LIBS HAVE_QSHELL PROG_QSHD QSHELL_LIBS WITH_QSHELL_TRUE WITH_QSHELL_FALSE WITH_QSW_TRUE WITH_QSW_FALSE HAVE_MACHINES MACHINES WITH_MACHINES_TRUE WITH_MACHINES_FALSE NODEATTR HAVE_NODEATTR WITH_NODEATTR_TRUE WITH_NODEATTR_FALSE HAVE_LIBGENDERS GENDERS_LIBS WITH_LIBGENDERS_TRUE WITH_LIBGENDERS_FALSE HAVE_LIBNODEUPDOWN NODEUPDOWN_LIBS WITH_NODEUPDOWN_TRUE WITH_NODEUPDOWN_FALSE HAVE_MRSH MRSH_LIBS WITH_LIBMUNGE_TRUE WITH_LIBMUNGE_FALSE WITH_MRSH_TRUE WITH_MRSH_FALSE PROG_MQSHD HAVE_MQSHELL WITH_MQSHELL_TRUE WITH_MQSHELL_FALSE RMSQUERY HAVE_RMSQUERY WITH_RMS_TRUE WITH_RMS_FALSE HAVE_SLURM SLURM_LIBS WITH_SLURM_TRUE WITH_SLURM_FALSE WITH_DSHGROUP_TRUE WITH_DSHGROUP_FALSE WITH_NETGROUP_TRUE WITH_NETGROUP_FALSE READLINE_LIBS WITH_READLINE_TRUE WITH_READLINE_FALSE LIBMODS_OBJS PDSH_VERSION PDSH_VERSION_FULL LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS META_NAME META_VERSION META_RELEASE META_ALIAS META_DATE META_AUTHOR META_LT_CURRENT META_LT_REVISION META_LT_AGE build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE LN_S EGREP ECHO AR ac_ct_AR RANLIB ac_ct_RANLIB CPP CXX CXXFLAGS ac_ct_CXX CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE CXXCPP F77 FFLAGS ac_ct_F77 LIBTOOL INSTALL_LTDL_TRUE INSTALL_LTDL_FALSE CONVENIENCE_LTDL_TRUE CONVENIENCE_LTDL_FALSE LIBADD_DL WITH_GNU_LD_TRUE WITH_GNU_LD_FALSE WITH_STATIC_MODULES_TRUE WITH_STATIC_MODULES_FALSE AIX_PDSH_LDFLAGS acx_pthread_config PTHREAD_CC PTHREAD_LIBS PTHREAD_CFLAGS FANOUT CONNECT_TIMEOUT SDRGETOBJECTS HAVE_SDR WITH_SDR_TRUE WITH_SDR_FALSE WITH_RSH_TRUE WITH_RSH_FALSE HAVE_XCPU WITH_XCPU_TRUE WITH_XCPU_FALSE HAVE_SSH WITH_SSH_TRUE WITH_SSH_FALSE WITH_EXEC_TRUE WITH_EXEC_FALSE WITH_KRB4_TRUE WITH_KRB4_FALSE KRB_LIBS ELAN_LIBS HAVE_QSHELL PROG_QSHD QSHELL_LIBS WITH_QSHELL_TRUE WITH_QSHELL_FALSE WITH_QSW_TRUE WITH_QSW_FALSE HAVE_MACHINES MACHINES WITH_MACHINES_TRUE WITH_MACHINES_FALSE NODEATTR HAVE_NODEATTR WITH_NODEATTR_TRUE WITH_NODEATTR_FALSE HAVE_LIBGENDERS GENDERS_LIBS WITH_LIBGENDERS_TRUE WITH_LIBGENDERS_FALSE HAVE_LIBNODEUPDOWN NODEUPDOWN_LIBS WITH_NODEUPDOWN_TRUE WITH_NODEUPDOWN_FALSE HAVE_MRSH MRSH_LIBS WITH_LIBMUNGE_TRUE WITH_LIBMUNGE_FALSE WITH_MRSH_TRUE WITH_MRSH_FALSE PROG_MQSHD HAVE_MQSHELL WITH_MQSHELL_TRUE WITH_MQSHELL_FALSE RMSQUERY HAVE_RMSQUERY WITH_RMS_TRUE WITH_RMS_FALSE HAVE_SLURM SLURM_LIBS WITH_SLURM_TRUE WITH_SLURM_FALSE HAVE_TORQUE TORQUE_LIBS TORQUE_CPPFLAGS WITH_TORQUE_TRUE WITH_TORQUE_FALSE WITH_DSHGROUP_TRUE WITH_DSHGROUP_FALSE WITH_NETGROUP_TRUE WITH_NETGROUP_FALSE READLINE_LIBS WITH_READLINE_TRUE WITH_READLINE_FALSE LIBMODS_OBJS PDSH_VERSION PDSH_VERSION_FULL LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -1067,6 +1067,7 @@ Optional Packages:
   --with-mqshell          Build mqshell module and mqshd daemon
   --with-rms              support running pdsh under RMS allocation
   --with-slurm            support running pdsh under SLURM allocation
+  --with-torque           support running pdsh under Torque allocation
   --with-dshgroups=PATH
 	  Build dshgroup module for dsh group file support (with optional PATH)
 
@@ -4088,7 +4089,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4091 "configure"' > conftest.$ac_ext
+  echo '#line 4092 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -5687,7 +5688,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:5690:" \
+echo "$as_me:5691:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
@@ -6754,11 +6755,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:6757: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:6758: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:6761: \$? = $ac_status" >&5
+   echo "$as_me:6762: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -7022,11 +7023,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7025: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7026: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7029: \$? = $ac_status" >&5
+   echo "$as_me:7030: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -7126,11 +7127,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7129: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7130: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:7133: \$? = $ac_status" >&5
+   echo "$as_me:7134: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -9493,7 +9494,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 9496 "configure"
+#line 9497 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -9593,7 +9594,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 9596 "configure"
+#line 9597 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11937,11 +11938,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:11940: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:11941: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:11944: \$? = $ac_status" >&5
+   echo "$as_me:11945: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -12041,11 +12042,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:12044: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:12045: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:12048: \$? = $ac_status" >&5
+   echo "$as_me:12049: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -13629,11 +13630,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:13632: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:13633: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:13636: \$? = $ac_status" >&5
+   echo "$as_me:13637: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -13733,11 +13734,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:13736: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:13737: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:13740: \$? = $ac_status" >&5
+   echo "$as_me:13741: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -15962,11 +15963,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15965: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15966: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:15969: \$? = $ac_status" >&5
+   echo "$as_me:15970: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -16230,11 +16231,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16233: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16234: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:16237: \$? = $ac_status" >&5
+   echo "$as_me:16238: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -16334,11 +16335,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16337: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16338: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:16341: \$? = $ac_status" >&5
+   echo "$as_me:16342: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -20344,7 +20345,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 20347 "configure"
+#line 20348 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -26374,6 +26375,148 @@ fi
 
 
 #
+# Determine whether to to build Torque mudule (support running under Torque jobid)
+#
+
+  #
+  # Check for whether to build torque module
+  #
+
+  echo "$as_me:$LINENO: checking for whether to build torque module" >&5
+echo $ECHO_N "checking for whether to build torque module... $ECHO_C" >&6
+
+
+# Check whether --with-torque or --without-torque was given.
+if test "${with_torque+set}" = set; then
+  withval="$with_torque"
+   case "$withval" in
+          yes) ac_with_torque=yes ;;
+          no)  ac_with_torque=no ;;
+          *)   echo "$as_me:$LINENO: result: doh!" >&5
+echo "${ECHO_T}doh!" >&6
+               { { echo "$as_me:$LINENO: error: bad value \"$withval\" for --with-torque" >&5
+echo "$as_me: error: bad value \"$withval\" for --with-torque" >&2;}
+   { (exit 1); exit 1; }; } ;;
+        esac
+
+
+fi;
+  echo "$as_me:$LINENO: result: ${ac_with_torque=no}" >&5
+echo "${ECHO_T}${ac_with_torque=no}" >&6
+
+  if test "$ac_with_torque" = "yes"; then
+    if pbs-config 1>/dev/null 2>&1; then
+      TORQUE_LIBS=$(pbs-config --libs)
+      TORQUE_CPPFLAGS=$(pbs-config --cflags)
+      saveLIBS="$LIBS"
+      LIBS="$TORQUE_LIBS $LIBS"
+      echo "$as_me:$LINENO: checking for pbs_connect in -ltorque" >&5
+echo $ECHO_N "checking for pbs_connect in -ltorque... $ECHO_C" >&6
+if test "${ac_cv_lib_torque_pbs_connect+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-ltorque  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char pbs_connect ();
+int
+main ()
+{
+pbs_connect ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_torque_pbs_connect=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_torque_pbs_connect=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_torque_pbs_connect" >&5
+echo "${ECHO_T}$ac_cv_lib_torque_pbs_connect" >&6
+if test $ac_cv_lib_torque_pbs_connect = yes; then
+  ac_have_libtorque=yes
+fi
+
+      LIBS="$saveLIBS"
+      if test "$ac_have_libtorque" != "yes"; then
+        { echo "$as_me:$LINENO: Cannot support torque without libtorque." >&5
+echo "$as_me: Cannot support torque without libtorque." >&6;}
+      else
+	ac_have_torque=yes
+
+  if test "$ac_static_modules" = "yes" ; then
+     MODULES="$MODULES "torque""
+  fi
+
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_TORQUE 1
+_ACEOF
+
+      fi
+    else
+      { echo "$as_me:$LINENO: Cannot find pbs-config. Torque module will not be build." >&5
+echo "$as_me: Cannot find pbs-config. Torque module will not be build." >&6;}
+    fi
+  fi
+
+
+
+
+
+
+
+if test "$ac_have_torque" = "yes"; then
+  WITH_TORQUE_TRUE=
+  WITH_TORQUE_FALSE='#'
+else
+  WITH_TORQUE_TRUE='#'
+  WITH_TORQUE_FALSE=
+fi
+
+
+#
 # Determine whether to build dshgroup module
 # (support dsh-style /etc/dsh/group/%s ~/.dsh/group/%s files)
 #
@@ -27222,6 +27365,13 @@ echo "$as_me: error: conditional \"WITH_SLURM\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
+if test -z "${WITH_TORQUE_TRUE}" && test -z "${WITH_TORQUE_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"WITH_TORQUE\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"WITH_TORQUE\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
 if test -z "${WITH_DSHGROUP_TRUE}" && test -z "${WITH_DSHGROUP_FALSE}"; then
   { { echo "$as_me:$LINENO: error: conditional \"WITH_DSHGROUP\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
@@ -27944,6 +28094,11 @@ s,@HAVE_SLURM@,$HAVE_SLURM,;t t
 s,@SLURM_LIBS@,$SLURM_LIBS,;t t
 s,@WITH_SLURM_TRUE@,$WITH_SLURM_TRUE,;t t
 s,@WITH_SLURM_FALSE@,$WITH_SLURM_FALSE,;t t
+s,@HAVE_TORQUE@,$HAVE_TORQUE,;t t
+s,@TORQUE_LIBS@,$TORQUE_LIBS,;t t
+s,@TORQUE_CPPFLAGS@,$TORQUE_CPPFLAGS,;t t
+s,@WITH_TORQUE_TRUE@,$WITH_TORQUE_TRUE,;t t
+s,@WITH_TORQUE_FALSE@,$WITH_TORQUE_FALSE,;t t
 s,@WITH_DSHGROUP_TRUE@,$WITH_DSHGROUP_TRUE,;t t
 s,@WITH_DSHGROUP_FALSE@,$WITH_DSHGROUP_FALSE,;t t
 s,@WITH_NETGROUP_TRUE@,$WITH_NETGROUP_TRUE,;t t

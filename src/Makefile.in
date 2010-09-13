@@ -72,6 +72,7 @@ am__aclocal_m4_deps = $(top_srcdir)/config/ac_connect_timeout.m4 \
 	$(top_srcdir)/config/ac_socklen_t.m4 \
 	$(top_srcdir)/config/ac_ssh.m4 \
 	$(top_srcdir)/config/ac_static_modules.m4 \
+	$(top_srcdir)/config/ac_torque.m4 \
 	$(top_srcdir)/config/ac_xcpu.m4 \
 	$(top_srcdir)/config/acx_pthread.m4 \
 	$(top_srcdir)/config/libtool.m4 $(top_srcdir)/configure.ac
@@ -139,6 +140,7 @@ HAVE_RMSQUERY = @HAVE_RMSQUERY@
 HAVE_SDR = @HAVE_SDR@
 HAVE_SLURM = @HAVE_SLURM@
 HAVE_SSH = @HAVE_SSH@
+HAVE_TORQUE = @HAVE_TORQUE@
 HAVE_XCPU = @HAVE_XCPU@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_LTDL_FALSE = @INSTALL_LTDL_FALSE@
@@ -196,6 +198,8 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 SLURM_LIBS = @SLURM_LIBS@
 STRIP = @STRIP@
+TORQUE_CPPFLAGS = @TORQUE_CPPFLAGS@
+TORQUE_LIBS = @TORQUE_LIBS@
 VERSION = @VERSION@
 WITH_DSHGROUP_FALSE = @WITH_DSHGROUP_FALSE@
 WITH_DSHGROUP_TRUE = @WITH_DSHGROUP_TRUE@
@@ -239,6 +243,8 @@ WITH_SSH_FALSE = @WITH_SSH_FALSE@
 WITH_SSH_TRUE = @WITH_SSH_TRUE@
 WITH_STATIC_MODULES_FALSE = @WITH_STATIC_MODULES_FALSE@
 WITH_STATIC_MODULES_TRUE = @WITH_STATIC_MODULES_TRUE@
+WITH_TORQUE_FALSE = @WITH_TORQUE_FALSE@
+WITH_TORQUE_TRUE = @WITH_TORQUE_TRUE@
 WITH_XCPU_FALSE = @WITH_XCPU_FALSE@
 WITH_XCPU_TRUE = @WITH_XCPU_TRUE@
 ac_ct_AR = @ac_ct_AR@

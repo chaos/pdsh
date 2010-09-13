@@ -73,6 +73,7 @@ am__aclocal_m4_deps = $(top_srcdir)/config/ac_connect_timeout.m4 \
 	$(top_srcdir)/config/ac_socklen_t.m4 \
 	$(top_srcdir)/config/ac_ssh.m4 \
 	$(top_srcdir)/config/ac_static_modules.m4 \
+	$(top_srcdir)/config/ac_torque.m4 \
 	$(top_srcdir)/config/ac_xcpu.m4 \
 	$(top_srcdir)/config/acx_pthread.m4 \
 	$(top_srcdir)/config/libtool.m4 $(top_srcdir)/configure.ac
@@ -178,6 +179,12 @@ am_sshcmd_la_OBJECTS = sshcmd.lo
 sshcmd_la_OBJECTS = $(am_sshcmd_la_OBJECTS)
 @WITH_SSH_TRUE@@WITH_STATIC_MODULES_FALSE@am_sshcmd_la_rpath = -rpath \
 @WITH_SSH_TRUE@@WITH_STATIC_MODULES_FALSE@	$(pkglibdir)
+torque_la_LIBADD =
+am_torque_la_OBJECTS = torque.lo
+torque_la_OBJECTS = $(am_torque_la_OBJECTS)
+@WITH_STATIC_MODULES_FALSE@@WITH_TORQUE_TRUE@am_torque_la_rpath =  \
+@WITH_STATIC_MODULES_FALSE@@WITH_TORQUE_TRUE@	-rpath \
+@WITH_STATIC_MODULES_FALSE@@WITH_TORQUE_TRUE@	$(pkglibdir)
 xcpucmd_la_LIBADD =
 am_xcpucmd_la_OBJECTS = xcpucmd.lo
 xcpucmd_la_OBJECTS = $(am_xcpucmd_la_OBJECTS)
@@ -206,15 +213,15 @@ SOURCES = $(dshgroup_la_SOURCES) $(execcmd_la_SOURCES) \
 	$(netgroup_la_SOURCES) $(nodeattr_la_SOURCES) \
 	$(nodeupdown_la_SOURCES) $(qcmd_la_SOURCES) $(rms_la_SOURCES) \
 	$(sdr_la_SOURCES) $(slurm_la_SOURCES) $(sshcmd_la_SOURCES) \
-	$(xcpucmd_la_SOURCES) $(xrcmd_la_SOURCES)
+	$(torque_la_SOURCES) $(xcpucmd_la_SOURCES) $(xrcmd_la_SOURCES)
 DIST_SOURCES = $(dshgroup_la_SOURCES) $(execcmd_la_SOURCES) \
 	$(genders_la_SOURCES) $(k4cmd_la_SOURCES) \
 	$(EXTRA_libmods_la_SOURCES) $(machines_la_SOURCES) \
 	$(mcmd_la_SOURCES) $(mqcmd_la_SOURCES) $(netgroup_la_SOURCES) \
 	$(nodeattr_la_SOURCES) $(nodeupdown_la_SOURCES) \
 	$(qcmd_la_SOURCES) $(rms_la_SOURCES) $(sdr_la_SOURCES) \
-	$(slurm_la_SOURCES) $(sshcmd_la_SOURCES) $(xcpucmd_la_SOURCES) \
-	$(xrcmd_la_SOURCES)
+	$(slurm_la_SOURCES) $(sshcmd_la_SOURCES) $(torque_la_SOURCES) \
+	$(xcpucmd_la_SOURCES) $(xrcmd_la_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -265,6 +272,7 @@ HAVE_RMSQUERY = @HAVE_RMSQUERY@
 HAVE_SDR = @HAVE_SDR@
 HAVE_SLURM = @HAVE_SLURM@
 HAVE_SSH = @HAVE_SSH@
+HAVE_TORQUE = @HAVE_TORQUE@
 HAVE_XCPU = @HAVE_XCPU@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_LTDL_FALSE = @INSTALL_LTDL_FALSE@
@@ -322,6 +330,8 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 SLURM_LIBS = @SLURM_LIBS@
 STRIP = @STRIP@
+TORQUE_CPPFLAGS = @TORQUE_CPPFLAGS@
+TORQUE_LIBS = @TORQUE_LIBS@
 VERSION = @VERSION@
 WITH_DSHGROUP_FALSE = @WITH_DSHGROUP_FALSE@
 WITH_DSHGROUP_TRUE = @WITH_DSHGROUP_TRUE@
@@ -365,6 +375,8 @@ WITH_SSH_FALSE = @WITH_SSH_FALSE@
 WITH_SSH_TRUE = @WITH_SSH_TRUE@
 WITH_STATIC_MODULES_FALSE = @WITH_STATIC_MODULES_FALSE@
 WITH_STATIC_MODULES_TRUE = @WITH_STATIC_MODULES_TRUE@
+WITH_TORQUE_FALSE = @WITH_TORQUE_FALSE@
+WITH_TORQUE_TRUE = @WITH_TORQUE_TRUE@
 WITH_XCPU_FALSE = @WITH_XCPU_FALSE@
 WITH_XCPU_TRUE = @WITH_XCPU_TRUE@
 ac_ct_AR = @ac_ct_AR@
@@ -426,12 +438,14 @@ INCLUDES = -I$(top_srcdir)
 @WITH_MACHINES_TRUE@MACHINES_MODULE = machines.la
 @WITH_SDR_TRUE@SDR_MODULE = sdr.la
 @WITH_SDR_TRUE@AM_CPPFLAGS = -DGENDERS_G_ONLY
+@WITH_TORQUE_TRUE@AM_CPPFLAGS = $(TORQUE_CPPFLAGS)
 @WITH_MRSH_TRUE@MRSH_MODULE = mcmd.la
 @WITH_MQSHELL_TRUE@MQSHELL_MODULE = mqcmd.la
 @WITH_KRB4_TRUE@KRB4_MODULE = k4cmd.la
 @WITH_RSH_TRUE@RSH_MODULE = xrcmd.la
 @WITH_XCPU_TRUE@XCPU_MODULE = xcpucmd.la
 @WITH_SLURM_TRUE@SLURM_MODULE = slurm.la
+@WITH_TORQUE_TRUE@TORQUE_MODULE = torque.la
 @WITH_DSHGROUP_TRUE@DSHGROUP_MODULE = dshgroup.la
 @WITH_NETGROUP_TRUE@NETGROUP_MODULE = netgroup.la
 @WITH_EXEC_TRUE@EXEC_MODULE = execcmd.la
@@ -465,6 +479,7 @@ INCLUDES = -I$(top_srcdir)
 @WITH_STATIC_MODULES_FALSE@	$(SDR_MODULE) \
 @WITH_STATIC_MODULES_FALSE@	$(KRB4_MODULE) \
 @WITH_STATIC_MODULES_FALSE@	$(SLURM_MODULE) \
+@WITH_STATIC_MODULES_FALSE@	$(TORQUE_MODULE) \
 @WITH_STATIC_MODULES_FALSE@	$(DSHGROUP_MODULE) \
 @WITH_STATIC_MODULES_FALSE@	$(NETGROUP_MODULE) \
 @WITH_STATIC_MODULES_FALSE@	$(EXEC_MODULE)
@@ -506,7 +521,8 @@ libmods_la_LDFLAGS = \
 	$(NODEUPDOWN_LIBS) \
 	$(KRB_LIBS) \
 	$(GENDERS_LIBS) \
-	$(SLURM_LIBS)
+	$(SLURM_LIBS) \
+	$(TORQUE_LIBS)
 
 xrcmd_la_SOURCES = xrcmd.c 
 xrcmd_la_LDFLAGS = $(MODULE_FLAGS)
@@ -540,6 +556,8 @@ sdr_la_SOURCES = sdr.c
 sdr_la_LDFLAGS = $(MODULE_FLAGS)
 slurm_la_SOURCES = slurm.c 
 slurm_la_LDFLAGS = $(MODULE_FLAGS) $(SLURM_LIBS)
+torque_la_SOURCES = torque.c
+torque_la_LDFLAGS = $(MODULE_FLAGS) $(TORQUE_LIBS)
 dshgroup_la_SOURCES = dshgroup.c 
 dshgroup_la_LDFLAGS = $(MODULE_FLAGS) 
 netgroup_la_SOURCES = netgroup.c 
@@ -649,6 +667,8 @@ slurm.la: $(slurm_la_OBJECTS) $(slurm_la_DEPENDENCIES)
 	$(LINK) $(am_slurm_la_rpath) $(slurm_la_LDFLAGS) $(slurm_la_OBJECTS) $(slurm_la_LIBADD) $(LIBS)
 sshcmd.la: $(sshcmd_la_OBJECTS) $(sshcmd_la_DEPENDENCIES) 
 	$(LINK) $(am_sshcmd_la_rpath) $(sshcmd_la_LDFLAGS) $(sshcmd_la_OBJECTS) $(sshcmd_la_LIBADD) $(LIBS)
+torque.la: $(torque_la_OBJECTS) $(torque_la_DEPENDENCIES)
+	$(LINK) $(am_torque_la_rpath) $(torque_la_LDFLAGS) $(torque_la_OBJECTS) $(torque_la_LIBADD) $(LIBS)
 xcpucmd.la: $(xcpucmd_la_OBJECTS) $(xcpucmd_la_DEPENDENCIES) 
 	$(LINK) $(am_xcpucmd_la_rpath) $(xcpucmd_la_LDFLAGS) $(xcpucmd_la_OBJECTS) $(xcpucmd_la_LIBADD) $(LIBS)
 xrcmd.la: $(xrcmd_la_OBJECTS) $(xrcmd_la_DEPENDENCIES) 
@@ -675,6 +695,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sdr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/slurm.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sshcmd.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/torque.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xcpucmd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xrcmd.Plo@am__quote@
 
