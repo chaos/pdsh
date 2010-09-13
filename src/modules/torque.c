@@ -245,7 +245,7 @@ static hostlist_t _add_jobnodes(hostlist_t hl, int connect, char *jobdesc){
     char *p, hname[PBS_MAXHOSTNAME];
 
     if( (status = pbs_statjob(connect, jobdesc, &a_exechost, EXECQUEONLY)) == NULL ){
-        fprintf(stderr, "Failed to retrieve information for job %s: (%d) %s\n",
+        err ("%p: Failed to retrieve information for job %s: (%d) %s\n",
                 jobdesc, pbs_errno, pbs_strerror(pbs_errno));
     }
     else if ( status->attribs == NULL ){
@@ -294,7 +294,7 @@ static hostlist_t _torque_wcoll (List joblist)
 
     /* Connect to "default_server". */
     if( (connect = pbs_connect(NULL)) < 0 ){
-        errx("Failed to connect to torque server %s: (%d) %s\n",
+        errx("%p: Failed to connect to torque server %s: (%d) %s\n",
              pbs_server, pbs_errno, pbs_strerror(pbs_errno));
     }
 
@@ -302,7 +302,7 @@ static hostlist_t _torque_wcoll (List joblist)
      * We can get it by calling pbs_statserver.
      */
     if( (status = pbs_statserver(connect, &a_servername, NULL)) == NULL ){
-        errx("Failed to retrieve fully qualified servername for torque server.\n");
+        errx("%p: Failed to retrieve fully qualified servername for torque server.\n");
     }
     else {
         strncpy(servername, status->name, PBS_MAXSERVERNAME);
@@ -332,7 +332,7 @@ static hostlist_t _torque_wcoll (List joblist)
     }
 
     if( pbs_disconnect(connect) ){
-        errx("Failed to disconnect from torque server %s: (%d) %s\n",
+        errx("%p: Failed to disconnect from torque server %s: (%d) %s\n",
              pbs_server, pbs_errno, pbs_strerror(pbs_errno));
     }
 

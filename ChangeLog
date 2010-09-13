@@ -1,5 +1,8 @@
 2010-09-10  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/modules/torque.c :
+	  Minor fixup of some error messages in Torque module.
+
 	* : Re-run ./bootstrap
 
 	* config/ac_torque.m4, configure.ac, doc/pdsh.1.in,
