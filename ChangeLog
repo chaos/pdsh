@@ -1,5 +1,9 @@
 2010-09-10  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/modules/Makefile.am, src/modules/Makefile.in :
+	  Use 'target_la_CPPFLAGS' instead of AM_CPPFLAGS for
+	  per-module CPPFLAGS.
+
 	* src/modules/torque.c :
 	  Error in pbs_disconnect() shouldn't be fatal.
 

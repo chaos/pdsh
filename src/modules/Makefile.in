@@ -103,7 +103,7 @@ execcmd_la_OBJECTS = $(am_execcmd_la_OBJECTS)
 @WITH_EXEC_TRUE@@WITH_STATIC_MODULES_FALSE@am_execcmd_la_rpath =  \
 @WITH_EXEC_TRUE@@WITH_STATIC_MODULES_FALSE@	-rpath $(pkglibdir)
 genders_la_LIBADD =
-am_genders_la_OBJECTS = genders.lo
+am_genders_la_OBJECTS = genders_la-genders.lo
 genders_la_OBJECTS = $(am_genders_la_OBJECTS)
 @WITH_LIBGENDERS_TRUE@@WITH_STATIC_MODULES_FALSE@am_genders_la_rpath =  \
 @WITH_LIBGENDERS_TRUE@@WITH_STATIC_MODULES_FALSE@	-rpath \
@@ -180,7 +180,7 @@ sshcmd_la_OBJECTS = $(am_sshcmd_la_OBJECTS)
 @WITH_SSH_TRUE@@WITH_STATIC_MODULES_FALSE@am_sshcmd_la_rpath = -rpath \
 @WITH_SSH_TRUE@@WITH_STATIC_MODULES_FALSE@	$(pkglibdir)
 torque_la_LIBADD =
-am_torque_la_OBJECTS = torque.lo
+am_torque_la_OBJECTS = torque_la-torque.lo
 torque_la_OBJECTS = $(am_torque_la_OBJECTS)
 @WITH_STATIC_MODULES_FALSE@@WITH_TORQUE_TRUE@am_torque_la_rpath =  \
 @WITH_STATIC_MODULES_FALSE@@WITH_TORQUE_TRUE@	-rpath \
@@ -437,8 +437,6 @@ INCLUDES = -I$(top_srcdir)
 @WITH_RMS_TRUE@RMS_MODULE = rms.la
 @WITH_MACHINES_TRUE@MACHINES_MODULE = machines.la
 @WITH_SDR_TRUE@SDR_MODULE = sdr.la
-@WITH_SDR_TRUE@AM_CPPFLAGS = -DGENDERS_G_ONLY
-@WITH_TORQUE_TRUE@AM_CPPFLAGS = $(TORQUE_CPPFLAGS)
 @WITH_MRSH_TRUE@MRSH_MODULE = mcmd.la
 @WITH_MQSHELL_TRUE@MQSHELL_MODULE = mqcmd.la
 @WITH_KRB4_TRUE@KRB4_MODULE = k4cmd.la
@@ -546,6 +544,7 @@ machines_la_SOURCES = machines.c
 machines_la_LDFLAGS = $(MODULE_FLAGS)
 genders_la_SOURCES = genders.c 
 genders_la_LDFLAGS = $(MODULE_FLAGS) $(GENDERS_LIBS)
+@WITH_SDR_TRUE@genders_la_CPPFLAGS = -DGENDERS_G_ONLY
 nodeattr_la_SOURCES = nodeattr.c 
 nodeattr_la_LDFLAGS = $(MODULE_FLAGS)
 nodeupdown_la_SOURCES = nodeupdown.c 
@@ -558,6 +557,7 @@ slurm_la_SOURCES = slurm.c
 slurm_la_LDFLAGS = $(MODULE_FLAGS) $(SLURM_LIBS)
 torque_la_SOURCES = torque.c
 torque_la_LDFLAGS = $(MODULE_FLAGS) $(TORQUE_LIBS)
+torque_la_CPPFLAGS = $(TORQUE_CPPFLAGS)
 dshgroup_la_SOURCES = dshgroup.c 
 dshgroup_la_LDFLAGS = $(MODULE_FLAGS) 
 netgroup_la_SOURCES = netgroup.c 
@@ -683,6 +683,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dshgroup.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/execcmd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/genders.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/genders_la-genders.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/k4cmd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/machines.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mcmd.Plo@am__quote@
@@ -695,7 +696,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sdr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/slurm.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sshcmd.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/torque.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/torque_la-torque.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xcpucmd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xrcmd.Plo@am__quote@
 
@@ -719,6 +720,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
+
+genders_la-genders.lo: genders.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(genders_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT genders_la-genders.lo -MD -MP -MF "$(DEPDIR)/genders_la-genders.Tpo" -c -o genders_la-genders.lo `test -f 'genders.c' || echo '$(srcdir)/'`genders.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/genders_la-genders.Tpo" "$(DEPDIR)/genders_la-genders.Plo"; else rm -f "$(DEPDIR)/genders_la-genders.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='genders.c' object='genders_la-genders.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(genders_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o genders_la-genders.lo `test -f 'genders.c' || echo '$(srcdir)/'`genders.c
+
+torque_la-torque.lo: torque.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(torque_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT torque_la-torque.lo -MD -MP -MF "$(DEPDIR)/torque_la-torque.Tpo" -c -o torque_la-torque.lo `test -f 'torque.c' || echo '$(srcdir)/'`torque.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/torque_la-torque.Tpo" "$(DEPDIR)/torque_la-torque.Plo"; else rm -f "$(DEPDIR)/torque_la-torque.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='torque.c' object='torque_la-torque.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(torque_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o torque_la-torque.lo `test -f 'torque.c' || echo '$(srcdir)/'`torque.c
 
 mostlyclean-libtool:
 	-rm -f *.lo

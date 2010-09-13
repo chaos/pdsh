@@ -41,7 +41,6 @@ endif
 
 if WITH_SDR
 SDR_MODULE = sdr.la
-AM_CPPFLAGS = -DGENDERS_G_ONLY
 endif
 
 if WITH_MRSH
@@ -70,7 +69,6 @@ endif
 
 if WITH_TORQUE
 TORQUE_MODULE = torque.la
-AM_CPPFLAGS = $(TORQUE_CPPFLAGS)
 endif
 
 if WITH_DSHGROUP
@@ -189,6 +187,9 @@ machines_la_SOURCES =     machines.c
 machines_la_LDFLAGS =     $(MODULE_FLAGS)
 genders_la_SOURCES =      genders.c 
 genders_la_LDFLAGS =      $(MODULE_FLAGS) $(GENDERS_LIBS)
+if WITH_SDR
+genders_la_CPPFLAGS =     -DGENDERS_G_ONLY
+endif
 nodeattr_la_SOURCES =     nodeattr.c 
 nodeattr_la_LDFLAGS =     $(MODULE_FLAGS)
 nodeupdown_la_SOURCES =   nodeupdown.c 
@@ -201,6 +202,7 @@ slurm_la_SOURCES =        slurm.c
 slurm_la_LDFLAGS =        $(MODULE_FLAGS) $(SLURM_LIBS)
 torque_la_SOURCES =       torque.c
 torque_la_LDFLAGS =       $(MODULE_FLAGS) $(TORQUE_LIBS)
+torque_la_CPPFLAGS =      $(TORQUE_CPPFLAGS)
 dshgroup_la_SOURCES =     dshgroup.c 
 dshgroup_la_LDFLAGS =     $(MODULE_FLAGS) 
 netgroup_la_SOURCES =     netgroup.c 
