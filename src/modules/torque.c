@@ -294,8 +294,17 @@ static hostlist_t _torque_wcoll (List joblist)
 
     /* Connect to "default_server". */
     if( (connect = pbs_connect(NULL)) < 0 ){
-        errx("%p: Failed to connect to torque server %s: (%d) %s\n",
-             pbs_server, pbs_errno, pbs_strerror(pbs_errno));
+        const char msg[] = "Failed to connect to torque server";
+        /*
+         *   If pbs_server is not set after this call, we presume that
+         *    PBS_DEFAULT isn't set or a default server is not available.
+         *    Generate an alternate error message accordingly:
+         */
+        if (pbs_server == NULL)
+            errx ("%p: %s: PBS_DEFAULT not set or no default server\n", msg);
+
+        errx ("%p: %s %s: (%d) %s\n",
+             msg, pbs_server, pbs_errno, pbs_strerror(pbs_errno));
     }
 
     /* However, fully qualified JobIDs need the fully qualified server name.
