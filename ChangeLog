@@ -1,5 +1,8 @@
 2010-10-04  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/pdsh/privsep.c, src/pdsh/privsep.h :
+	  Switch to rresvport_af.
+
 	* src/pdsh/mod.c :
 	  Fix reference of uninitialized modules, especially during
 	  options processing.

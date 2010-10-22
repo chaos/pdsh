@@ -42,4 +42,9 @@ int privsep_fini (void);
  */
 int privsep_rresvport (int *lport);
 
+/*
+ * Request privilege server to bind to reserved port (Including family).
+ */
+int privsep_rresvport_af (int *lport, int family);
+
 #endif /* !_PRIVSEP_H */

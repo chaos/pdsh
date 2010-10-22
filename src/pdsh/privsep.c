@@ -58,6 +58,30 @@ gid_t user_gid = -1;
 uid_t priv_uid = -1;
 gid_t priv_gid = -1;
 
+/*
+ *  Top 16 bits of port sent to privsep server is used to encode
+ *   the address family (for rresvport_af()). Currently, value is
+ *   either AF_INET AF_INET6 (if zero, then AF_INET).
+ */
+static int privsep_get_family (int *lport)
+{
+	int family = (*lport>>16) & 0xffff;
+	/*
+	 *  Mask out family from lport:
+	 */
+	*lport &= 0xffff;
+
+	return (family ? family : AF_INET);
+}
+
+static int privsep_set_family (int *lport, int family)
+{
+	if (family > 0xffff)
+		return (-1);
+	*lport |= (family<<16);
+	return (0);
+}
+
 static int create_socketpair (void)
 {
 	int pfds[2];
@@ -191,7 +215,8 @@ static int privsep_server (void)
 	 *   send the created fd back to the client.
 	 */
 	while ((rc = read (server_fd, &lport, sizeof (lport))) > 0) {
-		int s = rresvport (&lport);
+		int family = privsep_get_family (&lport);
+		int s = rresvport_af (&lport, family);
 
 		send_rresvport (server_fd, s, lport);
 
@@ -262,12 +287,18 @@ int privsep_fini (void)
 	return (0);
 }
 
-int privsep_rresvport (int *lport)
+int privsep_rresvport_af (int *lport, int family)
 {
 	int s;
 
 	if (client_fd < 0)
-		return (rresvport (lport));
+		return (rresvport_af (lport, family));
+
+	if (privsep_set_family (lport, family) < 0) {
+		err ("%p: privsep_rresvport_af: Invalid family %d\n", family);
+		errno = EINVAL;
+		return (-1);
+	}
 
 	if ((errno = pthread_mutex_lock (&privsep_mutex)))
 		errx ("%p: %s:%d: mutex_lock: %m\n", __FILE__, __LINE__);
@@ -277,10 +308,15 @@ int privsep_rresvport (int *lport)
 		return (-1);
 	}
 
-    	s = recv_rresvport (client_fd, lport);
+	s = recv_rresvport (client_fd, lport);
 
 	if ((errno = pthread_mutex_unlock (&privsep_mutex)))
 		errx ("%p: %s:%d: mutex_unlock: %m\n", __FILE__, __LINE__);
 
 	return (s);
+}
+
+int privsep_rresvport (int *lport)
+{
+	return privsep_rresvport_af (lport, AF_INET);
 }
