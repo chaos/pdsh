@@ -1,3 +1,8 @@
+2010-10-19  Mark Grondona <mgrondona@llnl.gov>
+
+	* Makefile.am, configure.ac, testsuite/* :
+	  Remove dejagnu based testsuite.
+
 2010-10-04  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/privsep.c, src/pdsh/privsep.h :

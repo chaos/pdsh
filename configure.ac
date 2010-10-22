@@ -316,8 +316,6 @@ AC_CONFIG_FILES([
   src/qsnet/Makefile
   src/pdsh/Makefile
   src/modules/Makefile
-  testsuite/Makefile 
-  testsuite/pdsh.test/Makefile 
   doc/Makefile
   etc/Makefile
   scripts/Makefile

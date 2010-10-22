@@ -1,6 +1,3 @@
-- Improve deja-gnu support
-  o resolve problems with dejagnu-1.4.2-3:
-    ERROR: Couldn't find config.guess program.
 - Addy requests more prun-like options
 - Optional pdsh.conf file for configurable system wide defaults
 - Improve xpoll() interface??

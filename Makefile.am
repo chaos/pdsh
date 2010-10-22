@@ -9,7 +9,7 @@ include $(top_srcdir)/config/Make-inc.mk
 ACLOCAL_AMFLAGS =              -I config
 AUTOMAKE_OPTIONS =             foreign dist-bzip2
 CONFIG_STATUS_DEPENDENCIES =   META
-SUBDIRS =                      src testsuite doc etc scripts config
+SUBDIRS =                      src doc etc scripts config
 
 maintainer-clean-local:
 	-(cd $(top_srcdir) && rm -rf autom4te.cache)

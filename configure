@@ -27075,7 +27075,7 @@ _ACEOF
 
 
 
-                                                                                                                                            ac_config_files="$ac_config_files Makefile config/Makefile src/Makefile src/common/Makefile src/qsnet/Makefile src/pdsh/Makefile src/modules/Makefile testsuite/Makefile testsuite/pdsh.test/Makefile doc/Makefile etc/Makefile scripts/Makefile doc/pdcp.1 doc/pdsh.1"
+                                                                                                                        ac_config_files="$ac_config_files Makefile config/Makefile src/Makefile src/common/Makefile src/qsnet/Makefile src/pdsh/Makefile src/modules/Makefile doc/Makefile etc/Makefile scripts/Makefile doc/pdcp.1 doc/pdsh.1"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -27836,8 +27836,6 @@ do
   "src/qsnet/Makefile" ) CONFIG_FILES="$CONFIG_FILES src/qsnet/Makefile" ;;
   "src/pdsh/Makefile" ) CONFIG_FILES="$CONFIG_FILES src/pdsh/Makefile" ;;
   "src/modules/Makefile" ) CONFIG_FILES="$CONFIG_FILES src/modules/Makefile" ;;
-  "testsuite/Makefile" ) CONFIG_FILES="$CONFIG_FILES testsuite/Makefile" ;;
-  "testsuite/pdsh.test/Makefile" ) CONFIG_FILES="$CONFIG_FILES testsuite/pdsh.test/Makefile" ;;
   "doc/Makefile" ) CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
   "etc/Makefile" ) CONFIG_FILES="$CONFIG_FILES etc/Makefile" ;;
   "scripts/Makefile" ) CONFIG_FILES="$CONFIG_FILES scripts/Makefile" ;;

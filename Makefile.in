@@ -312,7 +312,7 @@ target_vendor = @target_vendor@
 ACLOCAL_AMFLAGS = -I config
 AUTOMAKE_OPTIONS = foreign dist-bzip2
 CONFIG_STATUS_DEPENDENCIES = META
-SUBDIRS = src testsuite doc etc scripts config
+SUBDIRS = src doc etc scripts config
 MAINTAINERCLEANFILES = \
     aclocal.m4 \
     config.h.in \
