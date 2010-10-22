@@ -93,21 +93,41 @@ the first module loaded wins.
 
 .SH "Standard target nodelist options"
 .TP
-.I "-w host,host,..."
-Target the specified list of hosts. Do not use with any other
-node selection options (e.g. \fI\-a\fR, \fI\-g\fR if they are
-available). No spaces are allowed in the comma-separated list.
-A list consisting of a single `-' character causes the target
-hosts to be read from stdin, one per line. The host list may
-contain hostlist expressions of the form ``host[1-5,7]''. For
-more information about the hostlist format, see the
-\fBHOSTLIST EXPRESSIONS\fR section below.
+\fB\-w\fR \fITARGETS,...\fR
+Target and or filter the specified list of hosts. Do not use with any
+other node selection options (e.g. \fI\-a\fR, \fI\-g\fR, if they are
+available). No spaces are allowed in the comma-separated list.  Arguments in
+the \fITARGETS\fR list may include normal host names, a range of hosts
+in hostlist format (See \fBHOSTLIST EXPRESSIONS\fR), or a single `-'
+character to read the list of hosts on stdin.
+
+If a host or hostlist is preceded by a `-' character, this causes those
+hosts to be explicitly excluded. If the argument is preceded by a single `^'
+character, it is taken to be the path to file containing a list of hosts,
+one per line. If the item begins with a `/' character, it is taken  as a
+regular expression on which to filter the list of hosts (a regex argument
+may also be optionally trailed by another '/', e.g.  /node.*/). A regex or
+file name argument may also be preceeded by a minus `-' to exclude instead
+of include thoses hosts.
+
+A list of hosts may also be preceded by "user@" to specify a remote
+username other than the default, or "rcmd_type:" to specify an alternate
+rcmd connection type for these hosts. When used together, the rcmd type
+must be specified first, e.g. "ssh:user1@host0" would use ssh to connect
+to host0 as user "user1."
+
+
 .TP
-.I "-x host,host,..."
+.I \fB-x\fR \fIhost,host,...\fR
 Exclude the specified hosts. May be specified in conjunction with
 other target node list options such as \fI\-a\fR and \fI\-g\fR (when
 available). Hostlists may also be specified to the \fI\-x\fR option
-(see \fBHOSTLIST EXPRESSIONS\fI secion below).
+(see the \fBHOSTLIST EXPRESSIONS\fR section below). Arguments to
+\fI-x\fR may also be preceeded by the filename (`^') and regex ('/')
+characters as described above, in which case the resulting hosts are excluded
+as if they had been given to \fB\-w\fR and preceeded with the minus `-'
+character.
+
 
 .SH "Standard pdcp options"
 .TP
