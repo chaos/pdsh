@@ -1,13 +1,17 @@
 set pdsh "$objdir/src/pdsh/pdsh"
 
-#expect_after {
-#	timeout				{ unresolved "$test" }
-#	eof				{ unresolved "$test" }
-#}
-
-# This is required for the following test to work but I have no idea
-# why. Let's blame DejaGNU.
-#expect eof
+#
+#  Procedure for tests that run pdsh -Qw and check output:
+#
+proc test_wcoll { test args result {extra_args ""} }  {
+	global pdsh
+	spawn $pdsh -Qw "$args" $extra_args
+    expect {
+		"$result" { pass "$test" }
+		eof       { fail "$test" }
+	}
+	wait -nowait
+}
 
 set test "pdsh: version (if this fails beware that testsuite is outdated)"
 spawn $pdsh -V
@@ -25,54 +29,36 @@ expect  {
 	-re ".*unknown"			{ unsupported "$test" }
 }
 
-set test "pdsh: hostname range expansion works"
-spawn  $pdsh -Qw foo\[0-3\]
-expect  {
-	-re "foo0,foo1,foo2,foo3" 	{ pass "$test" }
-	eof	 			{ fail "$test" }
-}
+test_wcoll "pdsh: hostname range expansion works" \
+	"foo\[0-3\]" \
+	"foo0,foo1,foo2,foo3"
 
-set test "pdsh: hostname range expansion does not strip leading zeros"
-spawn $pdsh -Qw foo\[00-02\]
-expect  {
-	-re "foo00,foo01,foo02"		{ pass "$test" }
-	eof	 			{ fail "$test" }
-}
+test_wcoll "pdsh: hostname range expansion does not strip leading zeros" \
+	"foo\[00-02\]" \
+	"foo00,foo01,foo02"
 
-set test "pdsh: hostname range expansion handles mixed size suffixes"
-spawn $pdsh -Qw "foo\[9-11\]"
-expect  {
-	-re "foo9,foo10,foo11"		{ pass "$test" }
-	eof	 			{ fail "$test" }
-}
+test_wcoll "pdsh: hostname range expansion handles mixed size suffixes" \
+	"foo\[9-11\]" \
+	"foo9,foo10,foo11"
 
-set test "pdsh: hostname range expansion works with ',' embedded in range"
-spawn $pdsh -Qw foo\[0-2,4\] 
-expect  {
-	-re "foo0,foo1,foo2,foo4"	{ pass "$test" }
-	eof				{ fail "$test" }
-}
+test_wcoll "pdsh: hostname range expansion works with ',' embedded in range" \
+	"foo\[0-2,4\]" \
+	"foo0,foo1,foo2,foo4"
 
-set test "pdsh: -x option works"
-spawn $pdsh -Qw foo\[9-11\] -x foo10
-expect  {
-	-re "foo9,foo11"		{ pass "$test" }
-	eof	 			{ fail "$test" }
-}
+test_wcoll "pdsh: -x option works" \
+	"foo\[9-11\]" \
+	"foo9,foo11" \
+	"-x foo10"
 
-set test "pdsh: -x option works with ranges (gnats:118)"
-spawn $pdsh -Qw foo\[0-5\] -x foo\[1-3\]
-expect  {
-	-re "foo0,foo4,foo5"		{ pass "$test" }
-	eof				{ fail "$test" }
-}
+test_wcoll "pdsh: -x option works with ranges (gnats:118)" \
+	"foo\[0-5\]" \
+	"foo0,foo4,foo5" \
+	"-x foo\[1-3\]"
 
-set test "pdsh: -x option works with non-numeric suffixes (gnats:120)"
-spawn $pdsh -Qw fooi,fooj,foo\[0-5\] -x fooj,fooi,foo2
-expect  {
-	-re "foo0,foo1,foo3,foo4,foo5"	{ pass "$test" }
-	eof				{ fail "$test" }
-}
+test_wcoll "pdsh: -x option works with non-numeric suffixes (gnats:120)" \
+	"fooi,fooj,foo\[0-5\]" \
+	"foo0,foo1,foo3,foo4,foo5" \
+	"-x fooj,fooi,foo2"
 
 
 set test "pdsh: ranges can be embedded in wcoll files"
