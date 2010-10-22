@@ -116,7 +116,7 @@ Requires: pdsh-rcmd
 %{?_with_genders:BuildRequires: genders > 1.0}
 %{?_with_pam:BuildRequires: pam-devel}
 %{?_with_slurm:BuildRequires: slurm-devel}
-%{?_with_slurm:BuildRequires: torque-devel}
+%{?_with_torque:BuildRequires: torque-devel}
 
 
 ##############################################################################
