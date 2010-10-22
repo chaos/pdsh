@@ -331,6 +331,9 @@ from an allocated Torque job.
 # FIXME: build fails when trying to build with _smp_mflags if qsnet is enabled
 # make %{_smp_mflags} CFLAGS="$RPM_OPT_FLAGS"
 make CFLAGS="$RPM_OPT_FLAGS"
+
+# Now run tests
+make check
 ##############################################################################
 
 %install
