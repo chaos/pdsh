@@ -1,3 +1,9 @@
+2010-10-21  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/common/split.c :
+	  Allow multiple sets of brackets in list_split as was done
+	  for hostlist.c.
+
 2010-10-19  Mark Grondona <mgrondona@llnl.gov>
 
 	* Makefile.am, configure.ac, tests/* :

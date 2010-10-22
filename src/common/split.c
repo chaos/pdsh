@@ -45,6 +45,7 @@
 static char *_next_tok(char *sep, char **str)
 {
     char *tok;
+    int level = 0;
 
     /* push str past any leading separators */
     while (**str != '\0' && strchr(sep, **str) != NULL)
@@ -56,9 +57,15 @@ static char *_next_tok(char *sep, char **str)
     /* assign token pointer */
     tok = *str;
 
-    /* push str past token and leave pointing to first separator */
-    while (**str != '\0' && strchr(sep, **str) == NULL)
+    /* push str past token and leave pointing to first separator,
+       ignoring separators between any '[]' */
+    while (**str != '\0' && (level != 0 || strchr(sep, **str) == NULL)) {
+        if (**str == '[')
+            level++;
+        else if (**str == ']')
+            level--;
         (*str)++;
+    }
 
     /* nullify consecutive separators and push str beyond them */
     while (**str != '\0' && strchr(sep, **str) != NULL)
