@@ -1,6 +1,16 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
+* Changes in pdsh-2.23 (2010-09-29)
+===================================
+ -- Fix issue 4: List conflicting modules in -V and -L output.
+ -- Fix issue 5: dshbak -c doesn't properly coalesce hosts with
+     different zero-padding in the numeric suffix.
+ -- Added torque module for setting list of target hosts based on
+     Torque/PBS jobs (Issue 2).
+ -- Added regex module for including (-k) and/or excluding (-E)
+     hosts based on regular expression matching.
+
 * Changes in pdsh-2.22 (2010-09-03)
 ===================================
  -- Fixes several bugs introduced in pdsh-2.21, Including:
