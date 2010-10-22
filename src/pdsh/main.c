@@ -68,6 +68,8 @@ int main(int argc, char *argv[])
 {
     opt_t opt;
     int retval = 0;
+    const char *m;
+
 
     /*
      * Initialize.
@@ -99,7 +101,15 @@ int main(int argc, char *argv[])
      *  Load static or dynamic pdsh modules
      */
     mod_init();
-    if (mod_load_modules(pdsh_module_dir, &opt) < 0)
+    /*
+     *  Allow module directory to be overridden, but not when
+     *   running as root or setuid. (This is mainly for testing...)
+     */
+    if (!(m = getenv ("PDSH_MODULE_DIR")) ||
+          getuid() == 0 ||
+          getuid() != geteuid())
+        m = pdsh_module_dir;
+    if (mod_load_modules(m, &opt) < 0)
         errx("%p: Couldn't load any pdsh modules\n");
 
     /*

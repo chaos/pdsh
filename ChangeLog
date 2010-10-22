@@ -1,5 +1,10 @@
 2010-10-19  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/pdsh/main.c :
+	  Allow PDSH_MODULE_DIR to override pdsh_module_dir iff pdsh
+	  is not running as root and isn't running setuid. This will be
+	  used mostly for testing purposes.
+
 	* src/modules/slurm.c :
 	  Only target running jobs with -j all (not completed for example)
 
