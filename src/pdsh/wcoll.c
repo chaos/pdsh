@@ -61,6 +61,11 @@ hostlist_t read_wcoll(char *file, FILE * f)
     if (!new)
         errx("%p: hostlist_create failed\n");
 
+    if (strcmp (file, "-") == 0) {
+        f = stdin;
+        file = NULL;
+    }
+
     if (f == NULL) {            /* read_wcoll("file", NULL) */
         if (access(file, R_OK) == -1 || !(fp = fopen(file, "r")))
             errx("%p: %s: %m\n", file);

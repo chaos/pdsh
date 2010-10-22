@@ -1,5 +1,8 @@
 2010-10-21  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/pdsh/wcoll.c :
+	  Allow '-' to mean stdin for read_wcoll().
+
 	* src/common/split.c :
 	  Allow multiple sets of brackets in list_split as was done
 	  for hostlist.c.
