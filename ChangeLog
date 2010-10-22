@@ -1,5 +1,8 @@
 2010-10-19  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/modules/slurm.c :
+	  Only target running jobs with -j all (not completed for example)
+
 	* Makefile.am, configure.ac, testsuite/* :
 	  Remove dejagnu based testsuite.
 

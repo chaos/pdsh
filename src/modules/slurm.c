@@ -240,7 +240,7 @@ static hostlist_t _slurm_wcoll (List joblist)
     for (i = 0; i < msg->record_count; i++) {
         job_info_t *j = &msg->job_array[i];
 
-        if (alljobids)
+        if (alljobids && j->job_state == JOB_RUNNING)
             hl = _hl_append (hl, j->nodes);
         else if (!joblist && (j->job_id == envjobid)) {
             /*
