@@ -319,6 +319,8 @@ AC_CONFIG_FILES([
   doc/Makefile
   etc/Makefile
   scripts/Makefile
+  tests/Makefile
+  tests/test-modules/Makefile
   doc/pdcp.1 
   doc/pdsh.1
  ]

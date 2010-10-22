@@ -1,0 +1,78 @@
+Pdsh Tests
+----------
+
+This directory contains many basic test scripts for pdsh
+and its modules. The test framework is borrowed from the
+core Git testsuite, and thus shares many of the Git
+test features, including output in the Test Anything
+Protocol (TAP, testanything.org) format.
+
+Running Tests
+-------------
+
+Tests may be run in 3 different ways, the easiest of which
+is by issuing "make check" from this directory or the top
+level pdsh build directory. The tests may also all be
+invoked via ./runtests.sh. Finally, since the tests output
+TAP, the tests may be run with any TAP harness, most
+notably the prove(1) command, e.g.
+
+ prove --timer -j 4 t[0-9]*.sh
+ [15:47:54] t0002-internal.sh ........ ok       79 ms
+ [15:47:54] t0101-dshgroup.sh ........ ok      263 ms
+ [15:47:54] t1000-dshbak.sh .......... ok      365 ms
+ [15:47:54] t0004-module-loading.sh .. ok      329 ms
+ [15:47:54] t0003-wcoll.sh ........... ok      569 ms
+ [15:47:54] t0001-basic.sh ........... ok      676 ms
+ [15:47:54]
+ All tests successful.
+ Files=8, Tests=55,  1 wallclock secs ( 0.13 usr  0.05 sys +  0.75 cusr  1.64 csys =  2.57 CPU)
+ Result: PASS
+
+
+Test scripts may be run individually as well, e.g.
+
+  ./t0003-wcoll.sh
+  ok 1 - hostname range expansion works
+  ok 2 - host range expansion does not strip leading zeros
+  ok 3 - host range expansion handles mixed size suffixes
+  ...
+  ok 11 - WCOLL environment variable works
+  ok 12 - ranges can be embedded in wcoll files
+  # passed all 12 test(s)
+  1..12
+
+Tests also support a standard set of options:
+
+ -v, --verbose       Print commands being run and their output
+ -d, --debug         Enable any test debugging
+ -i, --immediate     Fail immediately on first failed test
+ -l, --long-tests    Run additional long-running tests
+     --tee           Also write test output to test-results/$TEST_NAME.out
+	 --root=dir      Create 'trash' directories under "dir"
+
+Skipping Tests
+--------------
+
+The environment variable PDSH_SKIP_TESTS is a space separated list
+of patterns that tells which tests to skip, and can either match
+the test number t[0-9]{4} to skip an entire test script, or
+have an appended .$number to skip a particular test in a test script.
+
+Test Naming
+-------------
+
+The test files are by convention named
+
+    tNNNN-<name>.sh
+
+where N is a decimal digit. For pdsh, only the first digit has meaning,
+where so far the only digits used are:
+
+   0 - basic pdsh functionality tests
+   1 - pdsh module tests
+   5 - other tools tests (e.g. dshbak)
+
+Obviously, tests are run in numerical order, so if one test depends on
+another it should be numbered higher.
+

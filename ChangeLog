@@ -1,5 +1,9 @@
 2010-10-19  Mark Grondona <mgrondona@llnl.gov>
 
+	* Makefile.am, configure.ac, tests/* :
+	  Add new pdsh testsuite based on the test-lib.sh from Git.
+	  See tests/README for more information.
+
 	* src/pdsh/main.c :
 	  Allow PDSH_MODULE_DIR to override pdsh_module_dir iff pdsh
 	  is not running as root and isn't running setuid. This will be
