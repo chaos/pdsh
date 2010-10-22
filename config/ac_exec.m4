@@ -35,8 +35,5 @@ AC_DEFUN([AC_EXEC],
   if test "$ac_with_exec" = "yes"; then
      ac_have_exec=yes
      AC_ADD_STATIC_MODULE("execcmd")
-     AC_DEFINE([HAVE_SSH], [1], [Define if you have exec.])
   fi
-
-  AC_SUBST(HAVE_SSH)
 ])
