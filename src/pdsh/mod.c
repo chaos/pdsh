@@ -342,20 +342,6 @@ static int _mod_initialize_modules_by_name (char *names, List m)
     return (0);
 }
 
-static void _mod_delete_uninitialized (List l)
-{
-    mod_t mod;
-    ListIterator i = list_iterator_create (l);
-
-    while ((mod = list_next (i))) {
-        if (!mod->initialized)
-            list_delete (i);
-    }
-
-    list_iterator_destroy (i);
-}
-
-
 int mod_load_modules(const char *dir, opt_t *opt)
 {
     int rc = 0;
@@ -376,11 +362,6 @@ int mod_load_modules(const char *dir, opt_t *opt)
      *  Initialize remaining modules in modules_list:
      */
     list_for_each (module_list, (ListForF) _mod_init_list_safe, NULL);
-
-    /*
-     *  Remove all uninitialized modules
-     */
-    _mod_delete_uninitialized (module_list);
 
     return(rc);
 }
@@ -434,6 +415,7 @@ _mod_print_info(mod_t mod)
     out("Module: %s/%s\n",    mod->pmod->type, mod->pmod->name); 
     out("Author: %s\n",       mod->pmod->author ? mod->pmod->author : "???");
     out("Descr:  %s\n",       mod->pmod->descr ? mod->pmod->descr : "???");
+    out("Active: %s\n",       mod->initialized ? "yes" : "no");
 
     if (mod->pmod->opt_table && mod->pmod->opt_table->opt) {
         out("Options:\n");
@@ -489,8 +471,8 @@ mod_count(char *type)
     return i;
 }
 
-List
-mod_get_module_names(char *type)
+static List
+_mod_get_module_names(char *type, int initialized)
 {
     List l;
     mod_t mod;
@@ -514,13 +496,28 @@ mod_get_module_names(char *type)
     }
 
     while ((mod = list_find(module_itr, (ListFindF) _cmp_type, type))) {
-        list_push(l, mod->pmod->name);
+        /*
+	 *  If !initialized, push only uninitialized modules onto list
+	 */
+        if (!initialized == !mod->initialized)
+	    list_push(l, mod->pmod->name);
     }
 
     list_iterator_destroy(module_itr);
 
     return l;
 }
+
+List mod_get_module_names (char *type)
+{
+    return _mod_get_module_names (type, 1);
+}
+
+List mod_get_uninitialized_module_names (char *type)
+{
+    return _mod_get_module_names (type, 0);
+}
+
 
 void
 mod_list_module_info(void)

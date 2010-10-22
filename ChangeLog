@@ -1,5 +1,10 @@
 2010-09-13  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/pdsh/mod.h, src/pdsh/mod.c, src/pdsh/opt.c :
+	  Don't unload conflicting (uninitialized) modules, instead
+	  keep them for -V and -L output, and mark then as conflicting
+	  to avoid confusion.
+
 	* src/pdsh/rcmd.c, src/pdsh/opt.c :
 	  Fix a couple of compiler warnings.
 

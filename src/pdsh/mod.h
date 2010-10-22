@@ -123,6 +123,12 @@ int mod_count(char *type);
 List mod_get_module_names(char *type);
 
 /*
+ *  Build list of module names that are loaded but not initialized
+ */
+List mod_get_uninitialized_module_names (char *type);
+
+
+/*
  * Print all options provided by modules
  *   Justify option description starting on given column.
  */

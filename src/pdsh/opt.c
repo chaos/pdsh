@@ -956,6 +956,22 @@ static int _module_list_string(char *type, char *buf, int len)
     return (n);
 }
 
+static int _module_list_uninitialized (char *type, char *buf, int len)
+{
+    List l = NULL;
+    int  n = 0;
+
+    if (mod_count(type) == 0)
+        return (0);
+
+    l = mod_get_uninitialized_module_names(type);
+    n = list_join(buf, len, ",", l);
+    list_destroy(l);
+
+    return (n);
+
+}
+
 static char *_rcmd_module_list(char *buf, int maxlen)
 {
     int len, len2;
@@ -1024,7 +1040,15 @@ static void _show_version(void)
     printf("rcmd modules: %s\n", _rcmd_module_list(buf, sizeof (buf)));
 
     n = _module_list_string("misc", buf, sizeof (buf));
-    printf("misc modules: %s\n", n ? buf : "(none)");
+    printf("misc modules: %s", n ? buf : "(none)");
+
+    if ((n = _module_list_uninitialized ("misc", buf, sizeof (buf)))) {
+        printf (" (*conflicting: %s)\n", buf);
+	printf ("[* To force-load a conflicting module,"
+	        " use the -M <name> option]\n");
+    }
+    else
+        printf ("\n");
 
     exit(0);
 }
