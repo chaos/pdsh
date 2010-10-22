@@ -1,3 +1,10 @@
+2010-09-29  Mark Grondona <mgrondona@llnl.gov>
+
+	* scripts/dshbak :
+	  Fix googlecode issue 5 reported by Mattias Slabanja,
+	  where dshbak was failing to coalesce differently zero-padded
+	  hosts with -c.
+
 2010-09-13  Mark Grondona <mgrondona@llnl.gov>
 
 	* config/ac_dshgroup.m4, configure :

@@ -127,28 +127,67 @@ sub compress_inner
 	return wantarray ? @list : "@list";
 }
 
+#
+#  Return the zeropadding, if any, of $n: 
+#
+sub zeropadding
+{
+   my ($n) = @_;
+   return (($n =~ /^0/) and ($n ne "0")) ? length $n : 0;
+}
+
 sub comp
 {
-        my (%i) = ();
-        my (%s) = ();
+	my (%i) = ();
+	my (%s) = ();
 
-        # turn off warnings here to avoid perl complaints about 
-        # uninitialized values for members of %i and %s
-        local ($^W) = 0;
-        push(@{
-               $s{$$_[0]}[ (
-                            $s{ $$_[0] }[ $i{$$_[0]} ]
-                              [$#{$s{$$_[0]}[$i{$$_[0]}]}] == ($$_[1]-1)
-                           ) ? $i{$$_[0]} : ++$i{$$_[0]}
-                         ]
-              }, ($$_[1])
-        ) for map { [/(.*?)(\d*)$/] } sortn(@_);
+	# turn off warnings here to avoid perl complaints about 
+	# uninitialized values for members of %i and %s
+	local ($^W) = 0;
 
-        for my $key (keys %s) {
-                @{$s{$key}} =
-                    map { $#$_>0 ? "$$_[0]-$$_[$#$_]" : @{$_} }  @{$s{$key}};
-        }
 
+	for my $host (sortn (@_)) {
+		my ($p, $n) = $host =~ /(.*?)(\d*)$/;
+		my $zp = &zeropadding ($n);
+		#
+		#  $s{$p} is a reference to an array of arrays
+		#   that indicate individual range elements of
+		#   the form [ N_start, N_end]. If only one element
+		#   is present then the range element is a singleton.
+		#
+		#  $i{$p}{$zp}${n} tracks the index of prefix $p and suffix $n
+		#   with zero-padding $zp into the @{$s{$p}} array.
+
+		#
+		#  See if $n-1 exists in the $s{$p} array (with same zero-pad)
+		#
+		my $idx = $i{$p}{$zp}{$n-1};
+		if (defined $idx) {
+			#
+			#  $n - 1 is already in array, so update END:
+			#
+			$s{$p}[$idx][1] = "$n";
+			$i{$p}{$zp}{$n-0} = $idx;
+		}
+		else {
+			#
+			#   Otherwise, we create a new single entry
+			#    and update $i{} (Use $n-0 to force a number)
+			#
+			push (@{$s{$p}}, [ $n ]);
+			$i{$p}{$zp}{$n-0} = $#{$s{$p}};
+		}
+	}
+
+	#
+	#
+	#  Now return $s{} as a hash of prefixes with a list of range elemts:
+	#   e.g. $s{"host"} = [ "1-10", "25", "100-101" ]
+	#
+	for my $key (keys %s) {
+		@{$s{$key}} =
+			map { $#$_>0 ? "$$_[0]-$$_[$#$_]" : "$$_[0]" }  @{$s{$key}};
+	}
 	return %s;
 }
 
