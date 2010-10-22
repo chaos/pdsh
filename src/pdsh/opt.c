@@ -43,6 +43,9 @@
 
 #include <errno.h>
 
+#include <regex.h>
+#include <ctype.h>
+
 #include "src/common/hostlist.h"
 #include "src/common/err.h"
 #include "src/common/list.h"
@@ -54,13 +57,6 @@
 #include "wcoll.h"
 #include "mod.h"
 #include "rcmd.h"
-
-static void _usage(opt_t * opt);
-static void _show_version(void);
-
-static char *exclude_buf = NULL;
-
-
 #define OPT_USAGE_DSH "\
 Usage: pdsh [-options] command ...\n\
 -S                return largest of remote command return values\n"
@@ -117,6 +113,7 @@ Usage: rpdcp [-options] src [src2...] dir\n\
 #define PCP_ARGS	"pryzZe:"
 #define GEN_ARGS	"hLNKR:M:t:cqf:w:x:l:u:bI:dVT:Q"
 
+
 /*
  *  Pdsh options string (for getopt) -- initialized
  *    in _init_pdsh_options(), and appended to by modules that
@@ -152,6 +149,19 @@ int pdsh_remote_argc (void)
 {
     return remote_argc;
 }
+
+/*
+ *  List of explicitly excluded hosts and regex filter options:
+ */
+static List exclude_list = NULL;
+static List regex_list = NULL;
+
+static void _usage(opt_t * opt);
+static void _show_version(void);
+static int wcoll_args_process (opt_t *opt, char *args);
+static void wcoll_apply_regex (opt_t *opt, List regexs);
+static void wcoll_apply_excluded (opt_t *opt, List excludes);
+static void wcoll_expand (opt_t *opt);
 
 static void
 _init_pdsh_options()
@@ -418,7 +428,6 @@ void opt_env(opt_t * opt)
     }
 }
 
-static void wcoll_append (opt_t *opt, char *hosts);
 
 /*
  *  Process any options that need to be handled early, i.e.
@@ -451,6 +460,24 @@ void opt_args_early (opt_t * opt, int argc, char *argv[])
                 break;
         }
     }
+}
+
+static void wcoll_append_excluded (opt_t *opt, char *exclude_args)
+{
+    List l = list_split (",", exclude_args);
+    ListIterator i = list_iterator_create (l);
+    char *s;
+
+    while ((s = list_next (i))) {
+        char *p = NULL;
+        xstrcatchar (&p, '-');
+        xstrcat (&p, s);
+        wcoll_args_process (opt, p);
+        Free ((void **) &p);
+    }
+
+    list_iterator_destroy (i);
+    list_destroy (l);
 }
 
 /*
@@ -509,12 +536,12 @@ void opt_args(opt_t * opt, int argc, char *argv[])
             break;
         case 'w':              /* target node list */
             if (strcmp(optarg, "-") == 0)
-                opt->wcoll = read_wcoll(NULL, stdin);
-            else 
-                wcoll_append(opt, optarg);
+                wcoll_args_process (opt, "^-");
+            else
+                wcoll_args_process (opt, optarg);
             break;
         case 'x':              /* exclude node list */
-            exclude_buf = Strdup(optarg);
+            wcoll_append_excluded (opt, optarg);
             break;
         case 'q':              /* display fanout and wcoll then quit */
             opt->info_only = true;
@@ -642,26 +669,61 @@ void opt_args(opt_t * opt, int argc, char *argv[])
         }
     }
 
-    /* ignore wcoll & -x option if we are running pcp server */
-    if (opt->pcp_server) 
+    /* ignore wcoll filtering when running pcp server */
+    if (opt->pcp_server)
         return;
 
     /*
-     *  Attempt to grab wcoll from modules stack unless
-     *    wcoll was set from -w.
+     *  Give modules a chance to fill in wcoll if it hasn't been already:
      */
-    if (mod_read_wcoll(opt) < 0)
-        exit(1);
+    if (mod_read_wcoll (opt) < 0)
+        exit (1);
 
     /*
-     *  If wcoll is still empty, try WCOLL environment variable.
+     *  If wcoll is still empty, try WCOLL env variable:
      */
-    if (!opt->wcoll) {
-        char *val;
-        if ((val = getenv("WCOLL")) != NULL)
-            opt->wcoll = read_wcoll(val, NULL);
+    if (opt->wcoll == NULL) {
+        char *val = getenv ("WCOLL");
+        if (val != NULL)
+            opt->wcoll = read_wcoll (val, NULL);
+    }
+
+    if (opt->wcoll) {
+        /*
+         *  Now apply wcoll filtering
+         */
+        if (exclude_list) {
+            wcoll_apply_excluded (opt, exclude_list);
+            list_destroy (exclude_list);
+        }
+        if (regex_list) {
+            wcoll_apply_regex (opt, regex_list);
+            list_destroy (regex_list);
+        }
+
+        /*
+         *  Finally, re-expand wcoll to allow two sets of brackets.
+         *   (For historical compatibility)
+         */
+        wcoll_expand (opt);
     }
 }
+
+static void wcoll_expand (opt_t *opt)
+{
+    hostlist_t hl = opt->wcoll;
+    const char *hosts;
+
+    /*
+     *  Create new hostlist for wcoll
+     */
+    opt->wcoll = hostlist_create ("");
+    while ((hosts = hostlist_shift (hl)))
+        hostlist_push (opt->wcoll, hosts);
+
+    hostlist_destroy (hl);
+}
+
 
 /* 
  * Check if infile_names are legit.
@@ -709,21 +771,6 @@ bool opt_verify(opt_t * opt)
      */
     if (mod_postop(opt) > 0)
         verified = false;
-
-    /* handle -x option */
-    if (!opt->pcp_server && exclude_buf && opt->wcoll) {
-        /*
-         * Delete any hosts in exclude_buf from the wcoll,  
-         *  ignoring errors (except for an invalid hostlist
-         *  in exclude_buf)
-         */
-        if (hostlist_delete(opt->wcoll, exclude_buf) <= 0) {
-            if (errno == EINVAL)
-                errx ("%p: Invalid argument to -x \"%s\"\n", exclude_buf);
-        }
-
-        Free((void **) &exclude_buf);
-    }
 
     /* can't prompt for command if stdin was used for wcoll */
     if (personality == DSH && opt->stdin_unavailable && !opt->cmd) {
@@ -1096,39 +1143,206 @@ static int get_host_rcmd_type (char *hosts, char **rptr, char **hptr,
     }
 
     return (1);
-    
+}
+
+void free_f (void *x)
+{
+    Free (&x);
+}
+
+struct regex_info {
+    int     exclude;
+    int     cflags;
+    int     eflags;
+    int     compiled;
+    char *  pattern;
+    regex_t reg;
+};
+
+void regex_info_destroy (struct regex_info *re)
+{
+    if (re->compiled)
+        regfree (&re->reg);
+    if (re->pattern)
+        Free ((void **) &re->pattern);
+    Free ((void **) &re);
+}
+
+struct regex_info * regex_info_create (const char *r, int exclude)
+{
+    int rc;
+    struct regex_info *re = Malloc (sizeof (*re));
+
+    re->pattern = Strdup (r);
+    re->exclude = exclude;
+    re->cflags =  REG_EXTENDED | REG_NOSUB;
+    re->eflags =  0;
+    re->compiled = 0;
+
+    if ((rc = regcomp (&re->reg, re->pattern, re->cflags)) != 0) {
+        char msg [4096];
+        regerror (rc, &re->reg, msg, sizeof (msg));
+        err ("%p: Error %s pattern \"%s\": %s\n",
+                re->exclude ? "excluding" : "matching",
+                re->pattern, msg);
+        regex_info_destroy (re);
+        return (NULL);
+    }
+
+    re->compiled = 1;
+    return (re);
 }
 
 
-static void wcoll_append (opt_t *opt, char *str)
+void hostlist_filter_regex (hostlist_t hl, struct regex_info *re)
 {
-    hostlist_t  hl = hostlist_create (str);
-    char *rcmd_type = NULL;
-    char *tok;
+    const char *host;
+    hostlist_iterator_t i;
 
-    if (!hl)
-        return;
+    i = hostlist_iterator_create (hl);
+    while ((host = hostlist_next (i))) {
+        int rc = regexec (&re->reg, host, 0, NULL, re->eflags);
+        if ((re->exclude && rc == 0) || (!re->exclude && rc == REG_NOMATCH))
+            hostlist_remove (i);
+    }
+    hostlist_iterator_destroy (i);
+}
 
-    if (!opt->wcoll)
-        opt->wcoll = hostlist_create (NULL);
 
-    while ((tok = hostlist_shift (hl))) {
-        char *hosts, *user = NULL;
+static void list_push_hostlist (List l, hostlist_t hl)
+{
+    size_t n = 4096;
+    char *s = Malloc (n);
 
-        get_host_rcmd_type (tok, &rcmd_type, &hosts, &user);
+    while ((hostlist_ranged_string (hl, n-1, s) < 0) && (n*=2 < 0x7fffff)) {
+        Realloc ((void **) &s, n);
+    }
 
-        hostlist_push (opt->wcoll, hosts);
+    list_push (l, Strdup (s));
+}
 
-        if (rcmd_type || user) {
-            if (rcmd_register_defaults (hosts, rcmd_type, user) < 0)
-                errx ("Failed to register rcmd module \"%s\" for hosts \"%s\"\n",
-                      rcmd_type, hosts);
+
+static void hostlist_assign (hostlist_t *hlp, hostlist_t hl2)
+{
+    if (*hlp == NULL)
+        *hlp = hostlist_create ("");
+    hostlist_push_list (*hlp, hl2);
+}
+
+static int wcoll_arg_process (char *arg, opt_t *opt)
+{
+    struct regex_info *re;
+    int excluded = 0;
+    char *p = arg;
+
+    if (exclude_list == NULL)
+        exclude_list = list_create (free_f);
+
+    if (regex_list == NULL)
+        regex_list = list_create ((ListDelF) regex_info_destroy);
+
+    /*
+     *  Check for excluded arg
+     */
+    if (*p == '-') {
+        excluded = 1;
+        p++;
+    }
+
+    /*
+     *  Move past any leading whitespace
+     */
+    while (isspace (*p))
+        p++;
+
+    if (*p == '^') {
+        hostlist_t hl = read_wcoll (p+1, NULL);
+        if (hl == NULL)
+            errx ("%p: Error reading wcoll: %s: %m\n", p+1);
+        if (excluded)
+            list_push_hostlist (exclude_list, hl);
+        else
+            hostlist_assign (&opt->wcoll, hl);
+        hostlist_destroy (hl);
+    }
+    else if (*p == '/') {
+        int len;
+
+        ++p;
+        len = strlen (p);
+        if (p [len - 1] == '/')
+            p [len - 1] = '\0';
+
+        if ((re = regex_info_create (p, excluded)) == NULL)
+            errx ("%p: Fatal error\n");
+
+        list_push (regex_list, re);
+    }
+    else {
+        if (excluded) {
+            list_push (exclude_list, Strdup (p));
+        }
+        else {
+            char *rcmd_type = NULL;
+            char *hosts, *user = NULL;
+
+            if (!opt->wcoll)
+                opt->wcoll = hostlist_create ("");
+
+            get_host_rcmd_type (p, &rcmd_type, &hosts, &user);
+            hostlist_push (opt->wcoll, hosts);
+            if (rcmd_type || user) {
+                if (rcmd_register_defaults (hosts, rcmd_type, user) < 0)
+                    errx ("%p: Failed to register rcmd \"%s\" for \"%s\"\n",
+                            rcmd_type, hosts);
+            }
         }
     }
 
-    hostlist_destroy (hl);
+    return 0;
+}
 
-    return;
+static int wcoll_args_process (opt_t *opt, char * args)
+{
+    int rc;
+    List l = list_split (",", args);
+    rc = list_for_each (l, (ListForF) wcoll_arg_process, opt);
+    list_destroy (l);
+    return (rc);
+}
+
+static void wcoll_apply_regex (opt_t *opt, List regexs)
+{
+    struct regex_info *re;
+    ListIterator i;
+
+    if (!opt->wcoll || !regexs)
+        return;
+
+    /*
+     *  filter any supplied regular expression args
+     */
+    i = list_iterator_create (regexs);
+    while ((re = list_next (i)))
+        hostlist_filter_regex (opt->wcoll, re);
+    list_iterator_destroy (i);
+}
+
+static void wcoll_apply_excluded (opt_t *opt, List excludes)
+{
+    ListIterator i;
+    char *arg;
+
+    if (!opt->wcoll || !excludes)
+        return;
+
+    /*
+     *  filter explicitly excluded hosts:
+     */
+    i = list_iterator_create (excludes);
+    while ((arg = list_next (i)))
+        hostlist_delete (opt->wcoll, arg);
+    list_iterator_destroy (i);
 }
 
 /*

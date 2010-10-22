@@ -62,4 +62,33 @@ test_expect_success 'ranges can be embedded in wcoll files' '
 	test_output_is_expected "$(WCOLL=wcoll pdsh -Q | tail -1)" \
                                 "foo9,foo10,foo11,foo12"
 '
+test_expect_success '^file works' '
+	test_pdsh_wcoll "^./wcoll" "foo9,foo10,foo11,foo12"
+'
+test_expect_success '-x ^file works' '
+	test_pdsh_wcoll "foo[8-13]" "foo8,foo13" "-x^wcoll"
+'
+test_expect_success '^file works with other args' '
+	test_pdsh_wcoll "foo[1-2],^./wcoll" "foo1,foo2,foo9,foo10,foo11,foo12"
+'
+test_expect_success '-^file excludes hosts in file' '
+	test_pdsh_wcoll "foo[8-12],-^./wcoll" "foo8"
+'
+test_expect_success 'host exclusion with "-" works' '
+	test_pdsh_wcoll "foo[9-11],-foo10"  "foo9,foo11"
+'
+test_expect_success 'regex filtering works' '
+	test_pdsh_wcoll "foo[0-20],/0$/" "foo0,foo10,foo20"
+'
+test_expect_success 'regex exclusion works' '
+	test_pdsh_wcoll "foo[0-20],-/[1-9]$/" "foo0,foo10,foo20"
+'
+test_expect_success 'regex exclusion works from -x' '
+	test_pdsh_wcoll "foo[0-20]" "foo0,foo10,foo20" "-x/[1-9]$/"
+'
+test_expect_success 'multiple -w options' '
+	test_pdsh_wcoll "foo[0-20]" "foo0,foo10,foo20" "-w-/[1-9]$/" &&
+	test_pdsh_wcoll "foo8" "foo8,foo9,foo10,foo11,foo12" "-w^wcoll" &&
+	test_pdsh_wcoll "foo1,bar1" "foo1" "-w/^foo/"
+'
 test_done
