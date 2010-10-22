@@ -176,6 +176,22 @@ _mod_postop(mod_t mod, opt_t *pdsh_opts)
 
 
 /*
+ *  Like list_next (i), but skip over inactive modules
+ */
+static mod_t _mod_next_active (ListIterator i)
+{
+    mod_t mod;
+
+    while ((mod = list_next (i))) {
+        if (mod->initialized)
+            return (mod);
+    }
+
+    return (NULL);
+}
+
+
+/*
  *  Call any "read wcoll" functions exported by modules. The module
  *    is responsible for deciding when to generate a new wcoll, 
  *    append to existing wcoll, etc. (presumably based on the contents
@@ -200,7 +216,7 @@ mod_read_wcoll(opt_t *opt)
         return -1;
     }
 
-    while ((mod = list_next(module_itr))) {
+    while ((mod = _mod_next_active (module_itr))) {
         hostlist_t hl = NULL;
 
         if (!(hl = _mod_read_wcoll(mod, opt)))
@@ -233,7 +249,7 @@ mod_postop(opt_t *pdsh_opts)
         return 1;
     }
 
-    while ((mod = list_next(module_itr)))
+    while ((mod = _mod_next_active (module_itr)))
         errors += _mod_postop(mod, pdsh_opts);
 
     list_iterator_destroy(module_itr);
@@ -472,7 +488,7 @@ mod_count(char *type)
 }
 
 static List
-_mod_get_module_names(char *type, int initialized)
+_mod_get_module_names(char *type, int get_active)
 {
     List l;
     mod_t mod;
@@ -488,19 +504,14 @@ _mod_get_module_names(char *type, int initialized)
         return NULL;
     }
 
-    if (type == NULL) {
-        while((mod = list_next(module_itr)))
-            list_push(l, mod->pmod->name);
-        list_iterator_destroy(module_itr);
-        return l;
-    }
-
-    while ((mod = list_find(module_itr, (ListFindF) _cmp_type, type))) {
+    while ((mod = (type ? list_find(module_itr, (ListFindF) _cmp_type, type)
+                        : list_next(module_itr)))) {
         /*
-	 *  If !initialized, push only uninitialized modules onto list
-	 */
-        if (!initialized == !mod->initialized)
-	    list_push(l, mod->pmod->name);
+         *  Push active (initialized) modules onto list if get_active
+         *   is true, otherwise push inactive (!initialized) modules:
+         */
+        if (!get_active == !mod->initialized)
+            list_push(l, mod->pmod->name);
     }
 
     list_iterator_destroy(module_itr);
@@ -645,7 +656,7 @@ mod_process_opt(opt_t *opt, int c, char *optarg)
         return -1;
     }
 
-    while ((mod = list_next(module_itr))) {
+    while ((mod = _mod_next_active (module_itr))) {
         if ((p = _mod_find_opt(mod, c))) {
             list_iterator_destroy(module_itr);
             return p->f(opt, c, optarg);
