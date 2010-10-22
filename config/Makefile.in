@@ -37,8 +37,9 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 subdir = config
-DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in config.guess \
-	config.sub depcomp install-sh ltmain.sh missing mkinstalldirs
+DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in compile \
+	config.guess config.sub depcomp install-sh ltmain.sh missing \
+	mkinstalldirs
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/config/ac_connect_timeout.m4 \
 	$(top_srcdir)/config/ac_debug.m4 \

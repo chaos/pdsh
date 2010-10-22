@@ -24077,14 +24077,7 @@ echo "${ECHO_T}${ac_with_exec=yes}" >&6
      MODULES="$MODULES "execcmd""
   fi
 
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_SSH 1
-_ACEOF
-
   fi
-
-
 
 
 
