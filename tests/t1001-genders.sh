@@ -109,6 +109,33 @@ test_expect_success 'pdsh -X option supports genders_query' '
 	test_output_is_expected "$OUTPUT" "n[0-5,8-10]"
 '
 
+test_expect_success 'pdsh -x excludes hosts selected by genders' '
+	OUTPUT=$(pdsh -F genders.A -AX "os=fedora&&foo" -x n5 -q | tail -1)
+	test_output_is_expected "$OUTPUT" "n[0-4,8-10]"
+'
+
+test_expect_success 'pdsh -w -host excludes hosts selected by genders' '
+	OUTPUT=$(pdsh -F genders.A -A -w -n5 -q | tail -1)
+	test_output_is_expected "$OUTPUT" "n[0-4,6-10]"
+'
+
+test_expect_success 'pdsh -w /regex/ filters hosts selected by genders' '
+	OUTPUT=$(pdsh -F genders.A -A -w /n.*0$/ -q | tail -1)
+	test_output_is_expected "$OUTPUT" "n[0,10]"
+'
+
+test_expect_success 'pdsh -w -/regex/ filters hosts selected by genders' '
+	OUTPUT=$(pdsh -F genders.A -A -w -/n.*0$/ -q | tail -1)
+	test_output_is_expected "$OUTPUT" "n[1-9]"
+'
+cat >genders.C <<EOF
+node[0-10] compute,pdsh_rcmd_type=exec
+EOF
+test_expect_success MOD_RCMD_EXEC 'genders pdsh_rcmd_type attribute' '
+    PDSH_RCMD_TYPE=ssh
+	pdsh -S -Fgenders.C -A true
+'
+
 unset PDSH_GENDERS_DIR
 unset PDSH_MISC_MODULES
 

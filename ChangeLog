@@ -1,5 +1,9 @@
 2010-10-21  Mark Grondona <mgrondona@llnl.gov>
 
+	* tests/t1001-genders.sh : Add more tests.
+
+	* tests/t0005-rcmd_type-and-user.sh : Added.
+
 	* tests/t0003-wcoll.sh :
 	  Add tests for regex(/), hostfile(^), and exclusion(-) 
 	  syntax for -w (and -x).
