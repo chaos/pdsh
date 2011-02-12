@@ -1,5 +1,8 @@
 2011-02-11  Mark Grondona <mgrondona@llnl.gov>
 
+	* tests/t0006-pdcp.patch :
+	  Add some simple pdcp tests.
+
 	* src/pdsh/dsh.c, src/pdsh/opt.c, src/pdsh/opt.h :
 	  Allow PDSH_REMOTE_PDCP_PATH environment variable to set default
 	  value for -e / remote pdcp path. Fix for gogole code Issue 7.
