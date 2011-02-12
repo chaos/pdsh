@@ -41,9 +41,9 @@ test_output_is_expected() {
 }
 
 test_expect_success 'genders -F works' '
-	pdsh -F $(pwd)/genders -qa 
+	pdsh -F $(pwd)/genders -qa
 '
-test_expect_failure 'genders -F works with relative paths' '
+test_expect_success 'genders -F works with relative paths' '
 	pdsh -F ./genders.A -qa
 '
 test_expect_success 'genders -a skips pdsh_all_skip nodes' '
@@ -67,7 +67,7 @@ test_expect_success 'PDSH_GENDERS_FILE variable works' '
 	test_output_is_expected "$OUTPUT"  "n[1-10]"
 '
 
-test_expect_failure 'PDSH_GENDERS_FILE variable works with relative paths' '
+test_expect_success 'PDSH_GENDERS_FILE variable works with relative paths' '
 	OUTPUT=$(PDSH_GENDERS_FILE=./genders.A pdsh -aq | tail -1)
 	test_output_is_expected "$OUTPUT" "n[1-10]"
 '
