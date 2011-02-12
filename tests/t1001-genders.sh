@@ -28,7 +28,7 @@ n[4-7]  foo
 EOF
 
 cat >genders.B <<EOF
-n[1-10] altname=e%n
+n[1-10] foo,altname=e%n
 EOF
 
 test_output_is_expected() {
@@ -62,11 +62,18 @@ test_expect_success 'genders -i option selects canonical name' '
 	OUTPUT=$(pdsh -F $(pwd)/genders.B -A -i -q | tail -1)
 	test_output_is_expected "$OUTPUT" "n[1-10]"
 '
+test_expect_success '-A returns altname by default' '
+	OUTPUT=$(pdsh -F $(pwd)/genders.B -Aq | tail -1)
+	test_output_is_expected "$OUTPUT" "en[1-10]"
+'
+test_expect_success '-g returns altname by default' '
+	OUTPUT=$(pdsh -F./genders.B -gfoo -q | tail -1)
+	test_output_is_expected "$OUTPUT" "en[1-10]"
+'
 test_expect_success 'PDSH_GENDERS_FILE variable works' '
 	OUTPUT=$(PDSH_GENDERS_FILE=$(pwd)/genders.A pdsh -aq | tail -1)
 	test_output_is_expected "$OUTPUT"  "n[1-10]"
 '
-
 test_expect_success 'PDSH_GENDERS_FILE variable works with relative paths' '
 	OUTPUT=$(PDSH_GENDERS_FILE=./genders.A pdsh -aq | tail -1)
 	test_output_is_expected "$OUTPUT" "n[1-10]"
@@ -83,6 +90,18 @@ export PDSH_GENDERS_DIR=$(pwd)
 test_expect_success 'pdsh -g option works' '
 	OUTPUT=$(pdsh -F genders.A -g login -q | tail -1)
 	test_output_is_expected "$OUTPUT" "n0"
+'
+test_expect_success 'pdsh -g option works as filter' '
+	OUTPUT=$(pdsh -F genders.A -w n[0-100] -g login -q | tail -1)
+	test_output_is_expected "$OUTPUT" "n0"
+'
+test_expect_success 'Multiple -g option as filter are ORed together' '
+	OUTPUT=$(pdsh -F genders.A -w n[0-100] -g login,blahblah -q | tail -1)
+	test_output_is_expected "$OUTPUT" "n0"
+'
+test_expect_success 'pdsh -g as filter with invalid attr removes all hosts' '
+	pdsh -F genders.A -w n[0-100] -g blahblah -q 2>&1 | \
+		grep -q "no remote hosts specified"
 '
 test_expect_success 'pdsh -X option works' '
 	OUTPUT=$(pdsh -F genders.A -AX login -q | tail -1)
