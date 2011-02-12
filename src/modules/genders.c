@@ -71,6 +71,7 @@ static int        genders_postop(opt_t *);
 static bool allnodes   = false;
 static bool opt_i      = false;
 #endif /* !GENDERS_G_ONLY */
+static bool genders_opt_invoked = false;
 
 static genders_t gh    = NULL;
 static char *gfile     = NULL;
@@ -192,6 +193,7 @@ genders_process_opt(opt_t *pdsh_opts, int opt, char *arg)
         return -1;
         break;
     }
+    genders_opt_invoked = true;
     return 0;
 }
 
@@ -203,12 +205,6 @@ genders_init(void)
         errx("%p: Error loading self: %s\n", lt_dlerror());
 
     g_query_addr = lt_dlsym(dlh, "genders_query");
-
-    /*
-     *  Allow default genders file location to be overridden with
-     *   PDSH_GENDERS_FILE environment variable.
-     */
-    gfile = getenv ("PDSH_GENDERS_FILE");
 
     return 0;
 }
@@ -421,18 +417,26 @@ static char * genders_filename_create (char *file)
 
 static genders_t _handle_create()
 {
+    char *gfile_env;
     char *genders_file = NULL;
     genders_t gh = NULL;
 
     if ((gh = genders_handle_create()) == NULL)
         errx("%p: Unable to create genders handle: %m\n");
 
-    if (!gfile)
-        gfile = "genders";
-    genders_file = genders_filename_create (gfile);
+    if (gfile)
+        genders_file = genders_filename_create (gfile);
+    else if ((gfile_env = getenv ("PDSH_GENDERS_FILE")))
+        genders_file = genders_filename_create (gfile_env);
+    else
+        genders_file = genders_filename_create ("genders");
 
-    if (genders_load_data(gh, genders_file) < 0)
-        err("%p: %s: %s\n", genders_file, genders_errormsg(gh));
+    /*
+     *  Only exit on error from genders_load_data() if an genders
+     *   module option was explicitly invoked:
+     */
+    if ((genders_load_data(gh, genders_file) < 0) && genders_opt_invoked)
+        errx("%p: %s: %s\n", genders_file, genders_errormsg(gh));
 
     return gh;
 }

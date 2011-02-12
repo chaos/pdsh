@@ -1,6 +1,11 @@
 2010-10-26  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/genders.c :
+	  Do not print an error if genders file is missing, unless
+	  a genders option (-F, -a, -g, -i, -X) is explictly used,
+	  then it is a fatal error.
+
+	* src/modules/genders.c :
 	  Allow relative path to genders file with -F and/or
 	  PDSH_GENDERS_FILE.
 
