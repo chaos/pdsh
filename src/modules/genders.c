@@ -402,9 +402,10 @@ static char * genders_filename_create (char *file)
     const char *gdir = getenv ("PDSH_GENDERS_DIR");
 
     /*
-     *  Return a copy of filename if user specified an absolute path:
+     *  Return a copy of filename if user specified an
+     *   absolute or relative path:
      */
-    if (file[0] == '/')
+    if (file[0] == '/' || file[0] == '.')
         return Strdup (file);
 
     /*

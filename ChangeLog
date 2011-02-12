@@ -1,3 +1,9 @@
+2010-10-26  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/modules/genders.c :
+	  Allow relative path to genders file with -F and/or
+	  PDSH_GENDERS_FILE.
+
 2010-10-25  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/sshcmd.c :
