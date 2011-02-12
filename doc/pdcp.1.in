@@ -150,7 +150,8 @@ Preserve modification time and modes.
 .TP
 .I "-e PATH"
 Explicitly specify path to remote \fBpdcp\fR binary
-instead of using the locally executed path.
+instead of using the locally executed path. Can also be set via
+the environment variable PDSH_REMOTE_PDCP_PATH.
 .TP
 .I "-l user"
 This option may be used to copy files as another user, subject to

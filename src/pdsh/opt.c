@@ -361,7 +361,13 @@ void opt_default(opt_t * opt, char *argv0)
     opt->separate_stderr = true;
 #endif
 
-    opt->path_progname = _find_path(argv0);
+    opt->local_program_path = _find_path(argv0);
+
+    /*
+     *  By default assume remote path to pdsh/pdcp is the same
+     *   as local path: (overridden with pdpc -e or PDSH_REMOTE_PDCP_PATH).
+     */
+    opt->remote_program_path = Strdup(opt->local_program_path);
 
     /* PCP specific */
     opt->outfile_name = NULL;
@@ -424,6 +430,13 @@ void opt_env(opt_t * opt)
             opt->dshpath = Strdup("PATH=");
             xstrcat(&opt->dshpath, rhs);
             xstrcat(&opt->dshpath, ";");
+        }
+    }
+
+    if (pdsh_personality() == PCP) {
+        if ((rhs = getenv ("PDSH_REMOTE_PDCP_PATH")) != NULL) {
+            Free ((void **) &opt->remote_program_path);
+            opt->remote_program_path = Strdup (rhs);
         }
     }
 }
@@ -579,9 +592,9 @@ void opt_args(opt_t * opt, int argc, char *argv[])
             break;
         case 'e':
             if (pdsh_personality() == PCP) {
-                Free ((void **) &opt->path_progname);
-                opt->path_progname = Strdup(optarg);
-            } 
+                Free ((void **) &opt->remote_program_path);
+                opt->remote_program_path = Strdup(optarg);
+            }
             else
                 goto test_module_option;
             break;
@@ -921,7 +934,6 @@ void opt_list(opt_t * opt)
         out("Outfile			%s\n", STRORNULL(opt->outfile_name));
         out("Recursive		%s\n", BOOLSTR(opt->recursive));
         out("Preserve mod time/mode	%s\n", BOOLSTR(opt->preserve));
-        out("Full program pathname	%s\n", STRORNULL(opt->path_progname));
         if (opt->pcp_server) {
             out("pcp server         	%s\n", BOOLSTR(opt->pcp_server));
             out("target is directory	%s\n", BOOLSTR(opt->target_is_directory));
@@ -929,7 +941,9 @@ void opt_list(opt_t * opt)
     }
 
     if (!opt->pcp_server) {
-
+        out("Full program pathname	%s\n", STRORNULL(opt->local_program_path));
+        out("Remote program path	%s\n",
+                STRORNULL(opt->remote_program_path));
         out("\n-- Generic options --\n");
         out("Local username		%s\n", opt->luser);
         out("Local uid     		%d\n", opt->luid);
@@ -976,8 +990,10 @@ void opt_free(opt_t * opt)
         Free((void **) &pdsh_options);
     if (opt->dshpath)
         Free((void **) &opt->dshpath);
-    if (opt->path_progname)
-        Free((void **) &opt->path_progname);
+    if (opt->local_program_path)
+        Free((void **) &opt->local_program_path);
+    if (opt->remote_program_path)
+        Free((void **) &opt->remote_program_path);
     if (opt->infile_names)
         list_destroy(opt->infile_names);
 

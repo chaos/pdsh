@@ -1023,7 +1023,7 @@ int dsh(opt_t * opt)
             exit(1);
         }
 
-        xstrcat(&cmd, opt->path_progname); 
+        xstrcat(&cmd, opt->remote_program_path);
         if (opt->recursive)
             xstrcat(&cmd, " -r");
         if (opt->preserve)
@@ -1041,7 +1041,7 @@ int dsh(opt_t * opt)
         char *filename;
         ListIterator i;
 
-        xstrcat(&cmd, opt->path_progname); 
+        xstrcat(&cmd, opt->remote_program_path);
 
         if (opt->recursive)
             xstrcat(&cmd, " -r");

@@ -90,7 +90,8 @@ typedef struct {
     bool target_is_directory;   /* undocumented pdcp is target a directory */
     bool pcp_client;            /* undocumented pdcp client option */
     char *pcp_client_host;      /* hostname used to execute client */
-    char *path_progname;        /* absolute path to program name */
+    char *local_program_path;   /* absolute path to program on local node   */
+    char *remote_program_path;  /* absolute path to program on remote nodes */
     bool reverse_copy;          /* rpdcp: reverse copy */
 } opt_t;
 

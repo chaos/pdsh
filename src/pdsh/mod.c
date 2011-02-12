@@ -887,7 +887,7 @@ _mod_load_dynamic_modules(const char *dir, opt_t *pdsh_opts)
     if (!initialized) 
         mod_init();
 
-    if (_pdsh_owner(pdsh_opts->path_progname, &pdsh_owner) < 0)
+    if (_pdsh_owner(pdsh_opts->local_program_path, &pdsh_owner) < 0)
         return -1;
 
     if (!_path_permissions_ok(dir, pdsh_owner)) 
