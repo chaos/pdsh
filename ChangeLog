@@ -1,3 +1,9 @@
+2011-02-11  Mark Grondona <mgrondona@llnl.gov>
+
+	* tests/t0004-module-loading.sh :
+	  Ensure that test modules are built before running tests.
+	  Test that -M overrides PDSH_MISC_MODULES env var.
+
 2010-10-27  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/genders.c :

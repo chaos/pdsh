@@ -2,6 +2,13 @@
 
 test_description='pdsh dynamic module support'
 
+TEST_MODULE_PATH="$(pwd)/test-modules"
+
+if ! test -f $TEST_MODULE_PATH/a.la -a -f $TEST_MODULE_PATH/b.la; then
+	echo "$0: Test modules A & B not built, please run \"make check.\"" >&2
+	exit 1
+fi
+
 . ${srcdir:-.}/test-lib.sh
 
 module_list () {
@@ -66,6 +73,10 @@ test_expect_success 'pdsh -M B ativates module B' '
 test_expect_success 'PDSH_MISC_MODULES option works' '
 	PDSH_MISC_MODULES=B
 	module_is_active misc/B && module_is_inactive misc/A
+'
+test_expect_success '-M option overrides PDSH_MISC_MODULES environment var' '
+	OUTPUT=$(PDSH_MISC_MODULES=B pdsh -MA -L 2>&1)
+	say_color error "$OUTPUT"
 '
 test_expect_success 'pdsh help string correctly displays options of loaded modules' '
 	OUTPUT=$(pdsh -h 2>&1 | grep ^-a) &&
