@@ -46,7 +46,7 @@ module_is_inactive() {
 test_output_matches() {
 	OUTPUT="$1"
 	PATTERN="$2"
-	if ! [[ "$OUTPUT" =~ "$PATTERN" ]]; then
+	if ! echo "$OUTPUT" | grep -q "$PATTERN" ; then
 		say_color error "Error: Didn't find pattern \"$PATTERN\""
 		say_color info  "OUTPUT=$OUTPUT"
 		false

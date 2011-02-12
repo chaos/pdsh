@@ -1,6 +1,11 @@
+2011-02-12  Mark Grondona <mgrondona@llnl.gov>
+
+	* tests/t0004-module-loading.sh :
+	  Fixup pattern check in module load tests to be more robust.
+
 2011-02-11  Mark Grondona <mgrondona@llnl.gov>
 
-	* tests/t0006-pdcp.patch :
+	* tests/t0006-pdcp.sh :
 	  Add some simple pdcp tests.
 
 	* src/pdsh/dsh.c, src/pdsh/opt.c, src/pdsh/opt.h :
