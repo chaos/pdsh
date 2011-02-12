@@ -46,6 +46,9 @@ test_expect_success 'pdsh -x option works with non-numeric suffix (gnats:120)' '
 test_expect_success 'pdsh -w- reads from stdin' '
 	echo "foo1,foo2,foo3" | test_pdsh_wcoll "-" "foo1,foo2,foo3"
 '
+test_expect_success 'pdsh -w- can be used with other -w args' '
+	echo "foo1,foo2,foo3" | test_pdsh_wcoll "-" "foo1,foo2,foo3,foo4" "-wfoo4" 
+'
 cat >wcoll <<EOF
 foo1
 foo2
@@ -71,8 +74,26 @@ test_expect_success '-x ^file works' '
 test_expect_success '^file works with other args' '
 	test_pdsh_wcoll "foo[1-2],^./wcoll" "foo1,foo2,foo9,foo10,foo11,foo12"
 '
+cat >A <<EOF
+foo1
+foo2
+EOF
+cat >B <<EOF
+foo7
+foo8
+EOF
+test_expect_success 'Multiple ^file args' '
+	test_pdsh_wcoll "^A,^B" "foo1,foo2,foo7,foo8"
+'
+test_expect_success 'Multiple -w^file' '
+	test_pdsh_wcoll "^A" "foo1,foo2,foo7,foo8" "-w^B"
+'
 test_expect_success '-^file excludes hosts in file' '
 	test_pdsh_wcoll "foo[8-12],-^./wcoll" "foo8"
+'
+test_expect_success '^file errors out if file doesnt exist' '
+	! pdsh -w "^nosuchfile" -q 2>/dev/null &&
+	pdsh -w "^nosuchfile" -q 2>&1 | grep -q "nosuchfile: No such file" 
 '
 test_expect_success 'host exclusion with "-" works' '
 	test_pdsh_wcoll "foo[9-11],-foo10"  "foo9,foo11"
