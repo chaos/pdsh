@@ -1,3 +1,9 @@
+2010-10-27  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/modules/genders.c :
+	  Allow -g to be used with -w to filter a list of wcoll
+	  hosts via a genders attribute.
+
 2010-10-26  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/genders.c :

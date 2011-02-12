@@ -72,6 +72,7 @@ static bool allnodes   = false;
 static bool opt_i      = false;
 #endif /* !GENDERS_G_ONLY */
 static bool genders_opt_invoked = false;
+static bool generate_altnames =   false;
 
 static genders_t gh    = NULL;
 static char *gfile     = NULL;
@@ -230,6 +231,9 @@ genders_wcoll(opt_t *opt)
 {
     _genders_opt_verify(opt);
 
+    if (opt->wcoll)
+        return (NULL);
+
 #if GENDERS_G_ONLY
     if (!attrlist)
         return NULL;
@@ -241,7 +245,57 @@ genders_wcoll(opt_t *opt)
     if (gh == NULL)
         gh = _handle_create();
 
+    generate_altnames = true;
     return _read_genders(attrlist);
+}
+
+/*
+ *  Return true if host returns true for any one genders query
+ *   in list iterator i.
+ */
+static int g_host_matches (const char *host, ListIterator i)
+{
+    char altname [1024];
+    int has_altname = 0;
+    size_t len = sizeof (altname);
+    const char altattr[] = GENDERS_ALTNAME_ATTRIBUTE;
+    char *query;
+
+    if (genders_testattr (gh, host, altattr, altname, len))
+        has_altname = 1;
+
+    list_iterator_reset (i);
+    while ((query = list_next (i))) {
+        if (genders_testquery (gh, host, query) == 1)
+            return (1);
+        if (has_altname && genders_testquery (gh, altname, query) == 1)
+            return (1);
+    }
+    return (0);
+}
+
+/*
+ *  Filter hostlist hl on a list of genders queries in query_list.
+ *   Multiple queries are ORed together, so a given host must only
+ *   match a single query.
+ */
+static void genders_filter (hostlist_t hl, List query_list)
+{
+    char *s;
+    hostlist_iterator_t i = hostlist_iterator_create (hl);
+    ListIterator qi = list_iterator_create (query_list);
+
+    if ((i == NULL) || (qi == NULL)) {
+        err ("%p: genders: failed to create list or hostlist iterator\n");
+        return;
+    }
+
+    while ((s = hostlist_next (i))) {
+        if (!g_host_matches (s, qi))
+            hostlist_remove (i);
+    }
+    hostlist_iterator_destroy (i);
+    list_iterator_destroy (qi);
 }
 
 static int
@@ -255,6 +309,9 @@ genders_postop(opt_t *opt)
     if (gh == NULL)
         gh = _handle_create();
 
+    if (attrlist)
+        genders_filter (opt->wcoll, attrlist);
+
     if (excllist && (hl = _read_genders (excllist))) {
         hostlist_t altlist = _genders_to_altnames (gh, hl);
         _delete_all (opt->wcoll, hl);
@@ -266,11 +323,11 @@ genders_postop(opt_t *opt)
 
 #if !GENDERS_G_ONLY
     /*
-     *  Grab altnames if gend_attr or allnodes given and !opt_i,
-     *   or if opt_i and neither gend_attr or allnodes given.
+     *  Genders module returns altnames by default, but only
+     *   when genders fills in wcoll or with -i, not when filtering via
+     *   -g or -X.
      */
-    if ( (opt_i && !(attrlist || allnodes)) 
-      || (!opt_i && (attrlist || allnodes))) {
+    if ((generate_altnames && !opt_i) || (!generate_altnames && opt_i)) {
         hostlist_t hl = opt->wcoll;
         opt->wcoll = _genders_to_altnames(gh, hl);
         hostlist_destroy(hl);
@@ -302,16 +359,6 @@ _genders_opt_verify(opt_t *opt)
     if (allnodes && (attrlist != NULL))
         errx("%p: Do not specify -a with -g\n");
 #endif /* !GENDERS_G_ONLY */
-
-    if(opt->wcoll) {
-#if !GENDERS_G_ONLY
-        if (allnodes)
-            errx("%p: Do not specify -a with other node selection options\n");
-#endif /* !GENDERS_G_ONLY */
-        if (attrlist)
-            errx("%p: Do not specify -g with other node selection options\n");
-    }
-
     return;
 }
 
