@@ -135,6 +135,20 @@ test_expect_success MOD_RCMD_EXEC 'genders pdsh_rcmd_type attribute' '
     PDSH_RCMD_TYPE=ssh
 	pdsh -S -Fgenders.C -A true
 '
+test_expect_success 'missing genders file is not an error' '
+	PDSH_GENDERS_FILE=doesnotexist
+	if pdsh -w host[0-10] -q 2>&1 | grep -q error; then
+	   say_color error "Error: Missing genders file causes error"
+	   false
+	fi
+'
+test_expect_success 'missing genders file with -F is an error' '
+	if !pdsh -Fdoesnotexist -w host[0-10] -q 2>&1 | grep -q error; then
+	   say_color error "Error: Missing genders file with -F doesnt cause error"
+	   false
+	fi
+'
+
 
 unset PDSH_GENDERS_DIR
 unset PDSH_MISC_MODULES
