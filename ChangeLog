@@ -1,3 +1,9 @@
+2010-10-25  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/modules/sshcmd.c :
+	  Pass remote argv to ssh command as it was recieved in pdsh
+	  instead of collapsing all arguments into a single command.
+
 2010-10-22  Mark Grondona <mgrondona@llnl.gov>
 
 	* : tag pdsh-2.23.

@@ -134,14 +134,19 @@ struct pdsh_module pdsh_module_info = {
   &sshcmd_module_options[0],
 };
 
-static char **ssh_argv_create (const char *cmd)
+static char **ssh_argv_create (const char **remote_argv)
 {
     int n;
     char *arg;
     char **argv;
+    const char **p;
     ListIterator i;
 
-    n = list_count (ssh_args_list) + 4;
+    n = 0;
+    for (p = remote_argv; *p; p++)
+        n++;
+
+    n += list_count (ssh_args_list) + 2;
     argv = (char **) Malloc (n * sizeof (char *));
     memset (argv, 0, n);
 
@@ -151,8 +156,9 @@ static char **ssh_argv_create (const char *cmd)
         argv[n++] = Strdup (arg);
     list_iterator_destroy (i);
 
-    /* Append command to standard list of args */
-    argv[n] = Strdup (cmd);
+    /* Append remote_argv to standard list of args */
+    for (p = remote_argv; *p; p++)
+        argv[n++] = Strdup (*p);
 
     return (argv);
 }
@@ -183,6 +189,13 @@ static int mod_ssh_postop(opt_t *opt)
 {
     sshcmd_args_init ();
     ssh_args_prepend_timeout (opt->connect_timeout);
+
+    /*
+     *  Append PATH=...; to ssh args if DSHPATH was set
+     */
+    if (opt->dshpath)
+        list_append (ssh_args_list, Strdup (opt->dshpath));
+
     return 0;
 }
 
@@ -231,7 +244,7 @@ sshcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
          int rank, int *fd2p, void **arg)
 {
     pipecmd_t p = NULL;
-    char **ssh_args = ssh_argv_create (cmd);
+    char **ssh_args = ssh_argv_create (pdsh_remote_argv ());
 
     if (!(p = pipecmd ("ssh", (const char **) ssh_args, ahost, ruser, rank)))
         goto out;
