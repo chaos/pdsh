@@ -346,7 +346,7 @@ test_failure_ () {
 
 test_known_broken_ok_ () {
 	test_fixed=$(($test_fixed+1))
-	say_color "" "ok $test_count - $@ # TODO known breakage"
+	say_color pass "ok $test_count - $@ # TODO known breakage"
 }
 
 test_known_broken_failure_ () {
