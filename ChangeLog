@@ -1,3 +1,9 @@
+2011-02-14  Mark Grondona <mgrondona@llnl.gov>
+
+	* tests/test-modules/pcptest.c, tests/test-modules/Makefile.am,
+	  tests/test-modules/Makefile.in :
+	  Add test rcmd module for use in testing {r}pdcp functionality.
+
 2011-02-12  Mark Grondona <mgrondona@llnl.gov>
 
 	* tests/t0004-module-loading.sh :

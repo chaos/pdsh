@@ -17,12 +17,16 @@ MODULE_FLAGS = \
 
 check_LTLIBRARIES = \
 	a.la \
-	b.la
+	b.la \
+	pcptest.la
 
 a_la_SOURCES =        a.c 
 a_la_LDFLAGS =        $(MODULE_FLAGS)
 b_la_SOURCES =        b.c 
 b_la_LDFLAGS =        $(MODULE_FLAGS)
+
+pcptest_la_SOURCES =  pcptest.c
+pcptest_la_LDFLAGS =  $(MODULE_FLAGS)
 
 $(VERSION_SCRIPT) : 
 	(echo  "{ global:";                \

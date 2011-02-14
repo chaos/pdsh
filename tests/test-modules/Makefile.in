@@ -83,6 +83,9 @@ a_la_OBJECTS = $(am_a_la_OBJECTS)
 b_la_LIBADD =
 am_b_la_OBJECTS = b.lo
 b_la_OBJECTS = $(am_b_la_OBJECTS)
+pcptest_la_LIBADD =
+am_pcptest_la_OBJECTS = pcptest.lo
+pcptest_la_OBJECTS = $(am_pcptest_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/config/depcomp
 am__depfiles_maybe = depfiles
@@ -94,8 +97,8 @@ LTCOMPILE = $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) \
 CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(a_la_SOURCES) $(b_la_SOURCES)
-DIST_SOURCES = $(a_la_SOURCES) $(b_la_SOURCES)
+SOURCES = $(a_la_SOURCES) $(b_la_SOURCES) $(pcptest_la_SOURCES)
+DIST_SOURCES = $(a_la_SOURCES) $(b_la_SOURCES) $(pcptest_la_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -317,12 +320,15 @@ MODULE_FLAGS = \
 
 check_LTLIBRARIES = \
 	a.la \
-	b.la
+	b.la \
+	pcptest.la
 
 a_la_SOURCES = a.c 
 a_la_LDFLAGS = $(MODULE_FLAGS)
 b_la_SOURCES = b.c 
 b_la_LDFLAGS = $(MODULE_FLAGS)
+pcptest_la_SOURCES = pcptest.c
+pcptest_la_LDFLAGS = $(MODULE_FLAGS)
 DISTCLEANFILES = \
 	$(VERSION_SCRIPT)
 
@@ -373,6 +379,8 @@ a.la: $(a_la_OBJECTS) $(a_la_DEPENDENCIES)
 	$(LINK)  $(a_la_LDFLAGS) $(a_la_OBJECTS) $(a_la_LIBADD) $(LIBS)
 b.la: $(b_la_OBJECTS) $(b_la_DEPENDENCIES) 
 	$(LINK)  $(b_la_LDFLAGS) $(b_la_OBJECTS) $(b_la_LIBADD) $(LIBS)
+pcptest.la: $(pcptest_la_OBJECTS) $(pcptest_la_DEPENDENCIES) 
+	$(LINK)  $(pcptest_la_LDFLAGS) $(pcptest_la_OBJECTS) $(pcptest_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -382,6 +390,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/a.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/b.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pcptest.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
