@@ -1,5 +1,8 @@
 2011-02-14  Mark Grondona <mgrondona@llnl.gov>
 
+	* tests/t0006-pdcp.sh :
+	  Add basic functionality test for pdcp and rpdcp.
+
 	* tests/test-modules/a.c, tests/test-modules/b.c :
 	  Remove PCP flag from misc/A and misc/B test modules.
 
