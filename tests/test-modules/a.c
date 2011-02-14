@@ -70,7 +70,7 @@ struct pdsh_module pdsh_module_info = {
   "A",
   "Mark Grondona",
   "Module test A",
-  DSH | PCP,
+  DSH,
 
   &a_module_ops,
   &a_rcmd_ops,
