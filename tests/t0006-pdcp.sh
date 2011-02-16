@@ -91,39 +91,59 @@ create_random_file() {
 
 test_expect_success 'pdcp basic functionality' '
     HOSTS="host[0-10]"
-	setup_host_dirs "$HOSTS"
-	create_random_file testfile 10
-
-	PDSH_MODULE_DIR=$T pdcp -Rpcptest -w "$HOSTS" testfile testfile
-	if test $? -eq 0; then
-	  pdsh -SRexec -w "$HOSTS" diff -q testfile %h/testfile
-	  if test $? -eq 0; then
-	     return 0
-	  else
-	     say_color error "found a difference in pdcp output file"
-      fi
-   fi
-   false
+	setup_host_dirs "$HOSTS" &&
+	test_when_finished "rm -rf host* testfile" &&
+	create_random_file testfile 10 &&
+	PDSH_MODULE_DIR=$T pdcp -Rpcptest -w "$HOSTS" testfile testfile &&
+	pdsh -SRexec -w "$HOSTS" diff -q testfile %h/testfile
 '
 rm -rf host* testfile
 
 test_expect_success 'rpdcp basic functionality' '
 	HOSTS="host[0-10]"
 	setup_host_dirs "$HOSTS"
-	pdsh -Rexec -w "$HOSTS" dd if=/dev/urandom of=%h/testfile bs=1024 count=10
-
-	mkdir output
-	PDSH_MODULE_DIR=$T rpdcp -Rpcptest -w "$HOSTS" testfile output/
-	if test $? -eq 0; then
-		pdsh -SRexec -w "$HOSTS" diff -q output/testfile.%h %h/testfile
-		if test $? -eq 0; then
-			return 0
-		else
-			say_color error "found a difference in pdcp output file"
-		fi
-	fi
-	false
+	test_when_finished "rm -rf host* t output" &&
+	pdsh -Rexec -w "$HOSTS" dd if=/dev/urandom of=%h/t bs=1024 count=10 >/dev/null 2>&1 &&
+	mkdir output &&
+	PDSH_MODULE_DIR=$T rpdcp -Rpcptest -w "$HOSTS" t output/ &&
+	pdsh -SRexec -w "$HOSTS" diff -q output/t.%h %h/t
 '
-rm -rf host* testfile
+test_expect_success 'initialize directory tree' '
+	mkdir tree &&
+	(
+	   cd tree &&
+	   echo foo >foo &&
+	   ln -s foo foo.link &&
+	   mkdir -p dir/a/b/c/d/e &&
+	   create_random_file dir/data 1024 &&
+	   echo "deep dir" > dir/a/b/c/d/e/file &&
+	   mkdir bar &&
+	   echo "zzz" >bar/zzz &&
+	   mkdir baz &&
+	   echo "#!/bin/sh" > baz/exec.sh &&
+	   chmod +x baz/exec.sh &&
+	   echo "write protected file" > dir/a/b/c/xw &&
+	   chmod -w dir/a/b/c/xw
+	)
+'
+test_expect_success 'pdcp -r works' '
+	HOSTS="host[0-10]"
+	setup_host_dirs "$HOSTS" &&
+	test_when_finished "rm -rf host*" &&
+	PDSH_MODULE_DIR=$T pdcp -Rpcptest -w "$HOSTS" -r tree . &&
+	pdsh -SRexec -w "$HOSTS" diff -Nqr tree %h/tree &&
+	pdsh -SRexec -w "$HOSTS" test -x tree/baz/exec.sh &&
+	pdsh -SRexec -w "$HOSTS" test -h tree/foo.link &&
+	pdsh -SRexec -w "$HOSTS" test ! -w dir/a/b/c/xw
+'
+test_expect_success 'rpdcp -r works' '
+	HOSTS="host[0-10]"
+	setup_host_dirs "$HOSTS" &&
+	test_when_finished "rm -rf host* output" &&
+	pdsh -SRexec -w "$HOSTS" cp -a tree %h/ &&
+	mkdir output &&
+	PDSH_MODULE_DIR=$T rpdcp -Rpcptest -w "$HOSTS" -r tree output/ &&
+	pdsh -SRexec -w "$HOSTS" diff -Nqr tree output/tree.%h
+'
 
 test_done
