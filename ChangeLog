@@ -1,6 +1,9 @@
 2011-02-25  Mark Grondona <mgrondona@llnl.gov>
 
 	* scripts/dshbak :
+	  Avoid pointless dereference of $lines in call to &cmp_list.
+
+	* scripts/dshbak :
 	  Add 'use strict' and fix errors.
 
 	* scripts/dshbak :

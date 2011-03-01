@@ -62,7 +62,7 @@ if ($opt_c) {
 		my @identical = ();			# init list of matches
 		for my $tag2 (keys %lines) {	
 			next if ($tag2 eq $tag);	# skip over myself
-			if (cmp_list(\@{$lines{$tag}}, \@{$lines{$tag2}})) {
+			if (cmp_list($lines{$tag}, $lines{$tag2})) {
 				push(@identical, $tag2);# equal?  stash match
 				delete($lines{$tag2});	# delete data from hash
 			}
