@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 #############################################################################
 # $Id$
 #############################################################################
@@ -32,7 +32,10 @@ require 5.003;
 
 use Getopt::Std;
 
-getopts('c') or usage();
+use constant GETOPTS_ARGS => "c";
+use vars map { "\$opt_$_" } split(/:*/, GETOPTS_ARGS);
+
+getopts(GETOPTS_ARGS) or usage();
 
 #
 # Stdin consists of lines of the form "hostname: output...".
@@ -40,6 +43,9 @@ getopts('c') or usage();
 #
 while (<>) {
 	($tag, $data) = m/^\s*(\S+?)\s*: ?(.*\n)$/;
+
+	#  Ignore lines that aren't prefixed with a hostname:
+	next unless $tag;
 	push(@{$lines{$tag}}, $data);
 }
 

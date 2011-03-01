@@ -1,6 +1,9 @@
 2011-02-25  Mark Grondona <mgrondona@llnl.gov>
 
 	* scripts/dshbak :
+	  Add -w to perl invocation and fix warnings.
+
+	* scripts/dshbak :
 	  Add Copyright header.
 
 2011-02-15  Mark Grondona <mgrondona@llnl.gov>
