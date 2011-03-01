@@ -29,11 +29,14 @@
 #############################################################################
 
 require 5.003;
+use strict;
 
 use Getopt::Std;
 
 use constant GETOPTS_ARGS => "c";
 use vars map { "\$opt_$_" } split(/:*/, GETOPTS_ARGS);
+
+my %lines = ();
 
 getopts(GETOPTS_ARGS) or usage();
 
@@ -42,7 +45,7 @@ getopts(GETOPTS_ARGS) or usage();
 # Store these in a hash, keyed by hostname, of lists of lines.
 #
 while (<>) {
-	($tag, $data) = m/^\s*(\S+?)\s*: ?(.*\n)$/;
+	my ($tag, $data) = m/^\s*(\S+?)\s*: ?(.*\n)$/;
 
 	#  Ignore lines that aren't prefixed with a hostname:
 	next unless $tag;
@@ -54,10 +57,10 @@ while (<>) {
 # of hosts followed by one copy of the output.
 #
 if ($opt_c) {
-	foreach $tag (sortn(keys %lines)) {		# look thru each host
+	for my $tag (sortn(keys %lines)) {		# look thru each host
 		next if (!defined($lines{$tag}));	# skip deleted keys
-		@identical = ();			# init list of matches
-		foreach $tag2 (keys %lines) {	
+		my @identical = ();			# init list of matches
+		for my $tag2 (keys %lines) {	
 			next if ($tag2 eq $tag);	# skip over myself
 			if (cmp_list(\@{$lines{$tag}}, \@{$lines{$tag2}})) {
 				push(@identical, $tag2);# equal?  stash match
@@ -68,7 +71,7 @@ if ($opt_c) {
 		printf("%s\n", 				# plus myself
 		    join(",", compress(sort(@identical, $tag)))); 
 		print("----------------\n");
-		foreach $data (@{$lines{$tag}}) {	# lines of data (once)
+		for my $data (@{$lines{$tag}}) {	# lines of data (once)
 			print($data);
 		}
 	}
@@ -77,11 +80,11 @@ if ($opt_c) {
 #
 } else {
 
-	foreach $tag (sortn(keys %lines)) {
+	for my $tag (sortn(keys %lines)) {
 		print("----------------\n");		# header: one host
 		print("$tag\n");
 		print("----------------\n");
-		foreach $data (@{$lines{$tag}}) {	# lines of data
+		for my $data (@{$lines{$tag}}) {	# lines of data
 			print($data);
 		}
 	}

@@ -1,6 +1,9 @@
 2011-02-25  Mark Grondona <mgrondona@llnl.gov>
 
 	* scripts/dshbak :
+	  Add 'use strict' and fix errors.
+
+	* scripts/dshbak :
 	  Add -w to perl invocation and fix warnings.
 
 	* scripts/dshbak :
