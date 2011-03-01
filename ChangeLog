@@ -1,6 +1,9 @@
 2011-02-25  Mark Grondona <mgrondona@llnl.gov>
 
 	* scripts/dshbak :
+	  Improve usage message and add -h option.
+
+	* scripts/dshbak :
 	  Avoid pointless dereference of $lines in call to &cmp_list.
 
 	* scripts/dshbak :

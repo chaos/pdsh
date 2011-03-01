@@ -32,13 +32,25 @@ require 5.003;
 use strict;
 
 use Getopt::Std;
+use File::Basename qw/ basename /;
 
-use constant GETOPTS_ARGS => "c";
+use constant GETOPTS_ARGS => "ch";
 use vars map { "\$opt_$_" } split(/:*/, GETOPTS_ARGS);
+
+#############################################################################
+my $prog  = basename $0;
+my $usage = <<EOF;
+Usage: $prog [OPTION]...
+ -h       Display this help message
+ -c       Coalesce identical output from hosts
+EOF
 
 my %lines = ();
 
+#############################################################################
+
 getopts(GETOPTS_ARGS) or usage();
+$opt_h and usage(0);
 
 #
 # Stdin consists of lines of the form "hostname: output...".
@@ -117,7 +129,9 @@ sub cmp_list
 
 sub usage
 {
-	printf STDERR ("Usage: dshbak [-c]\n");
+	my ($rc) = $@ ? $@ : 0;
+	printf STDERR $usage;
+	exit $rc;
 }
 
 
