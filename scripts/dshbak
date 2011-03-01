@@ -33,8 +33,9 @@ use strict;
 
 use Getopt::Std;
 use File::Basename qw/ basename /;
+use File::Path;
 
-use constant GETOPTS_ARGS => "ch";
+use constant GETOPTS_ARGS => "chfd:";
 use vars map { "\$opt_$_" } split(/:*/, GETOPTS_ARGS);
 
 #############################################################################
@@ -43,6 +44,8 @@ my $usage = <<EOF;
 Usage: $prog [OPTION]...
  -h       Display this help message
  -c       Coalesce identical output from hosts
+ -d DIR   Send output to files in DIR, one file per host
+ -f       With -d, force creation of DIR
 EOF
 
 my %lines = ();
@@ -51,6 +54,28 @@ my %lines = ();
 
 getopts(GETOPTS_ARGS) or usage();
 $opt_h and usage(0);
+
+if ($opt_c and $opt_d) {
+	print STDERR "$prog: Do not specify both -c and -d\n";
+	exit 1;
+}
+
+if ($opt_f and not $opt_d) {
+	print STDERR "$prog: Option -f may only be used with -d\n";
+	exit 1;
+}
+
+if ($opt_d) {
+    if ($opt_f and not -d $opt_d) {
+		eval { mkpath ($opt_d) };
+		if ($@) {
+			print STDERR "$prog: Failed to create $opt_d: $@\n";
+			exit 1;
+		}
+	}
+	-d $opt_d or die "$prog: Output directory $opt_d does not exist\n";
+}
+
 
 #
 # Stdin consists of lines of the form "hostname: output...".
@@ -87,9 +112,15 @@ if ($opt_c) {
 			print($data);
 		}
 	}
-#
-# If no -c, all hosts appear individually with their output.
-#
+} elsif ($opt_d) {
+
+	for my $tag (sortn (keys %lines)) {
+		my $file = "$opt_d/$tag";
+		open (OUTPUT, ">$file") ||
+			die ("$prog: Failed to open output file '$file': $!");
+		print OUTPUT @{$lines{$tag}};
+	}
+
 } else {
 
 	for my $tag (sortn(keys %lines)) {
