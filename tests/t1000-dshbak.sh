@@ -23,6 +23,26 @@ dshbak_test_notok()
 	rm ok && :
 }
 
+test_expect_success 'dshbak functionality' '
+	cat >input <<EOF
+foo0: bar
+foo1: bar
+EOF
+	cat >output <<EOF
+----------------
+foo0
+----------------
+bar
+----------------
+foo1
+----------------
+bar
+EOF
+	dshbak <input >output2 &&
+	diff output output2 &&
+	rm input output* 
+'
+
 
 test_expect_success 'dshbak -c does not coalesce different length output' '
 	dshbak_test_notok "

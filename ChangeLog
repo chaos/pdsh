@@ -1,3 +1,8 @@
+2011-02-27  Mark Grondona <mgrondona@llnl.gov>
+
+	* tests/t1000-dshbak.sh :
+	  Add tests for normal dshbak output.
+
 2011-02-26  Mark Grondona <mgrondona@llnl.gov>
 
 	* tests/t1000-dshbak.sh :
