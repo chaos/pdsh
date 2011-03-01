@@ -1,3 +1,10 @@
+2011-02-28  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/modules/sshcmd.c :
+	  Fix functionality of PDSH_SSH_ARGS_APPEND. The value
+	  of this environment variable is now prepended to other ssh args,
+	  in order for these args to appear before the target host name.
+
 2011-02-27  Mark Grondona <mgrondona@llnl.gov>
 
 	* scripts/dshbak :

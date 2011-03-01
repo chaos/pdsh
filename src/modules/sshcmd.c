@@ -277,22 +277,23 @@ static int sshcmd_args_init (void)
 {
     char *val = NULL;
     char *str = NULL;
-    List args_list = NULL;
 
-    if (!(val = getenv ("PDSH_SSH_ARGS"))) 
-        val = "-2 -a -x -l%u %h";
-
-    str = Strdup (val);
-    args_list = list_split (" ", str);
-    Free ((void **) &str);
-
+    /*
+     *  Place SSH_ARGS_APPEND at the beggining of the args string
+     *   because %h must always come last...
+     */
     if ((val = getenv ("PDSH_SSH_ARGS_APPEND"))) {
         str = Strdup (val);
-        args_list = list_split_append (args_list, " ", str);
-        Free ((void **) &str);
+        xstrcatchar (&str, ' ');
     }
 
-    ssh_args_list = args_list;
+    if (!(val = getenv ("PDSH_SSH_ARGS")))
+        val = "-2 -a -x -l%u %h";
+    xstrcat (&str, val);
+
+    ssh_args_list = list_split (" ", str);
+
+    Free ((void **) &str);
 
     return (0);
 }
