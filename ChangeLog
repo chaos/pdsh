@@ -1,5 +1,7 @@
 2011-02-28  Mark Grondona <mgrondona@llnl.gov>
 
+	* : tag pdsh-2.24.
+
 	* src/modules/sshcmd.c :
 	  Fix functionality of PDSH_SSH_ARGS_APPEND. The value
 	  of this environment variable is now prepended to other ssh args,

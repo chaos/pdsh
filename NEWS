@@ -1,6 +1,27 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
+* Changes in pdsh-2.24 (2011-02-28)
+===================================
+ -- Resolve issue 7: Allow PDSH_REMOTE_PDCP_PATH to set default path
+     to remote pdcp program (pdcp -e).
+ -- Resolve issue 9: Fix use of PDSH_SSH_ARGS_APPEND.
+ -- Resolve issue 10: dshbak: Support writing output to file-per-host.
+     Adds new -d DIR and -f options to dshbak.
+ -- genders: Allow relative paths to genders files with -F and
+     PDSH_GENDERS_FILE.
+ -- genders: Don't print an error if genders file is missing, unless
+     a genders optin (-F, -a, -g, -i, -X) is explicitly used.
+ -- genders: Allow -g to be used with other node selection options as
+     a filter. For example: pdsh -w host[0-1024] -g attr1 ...
+ -- ssh: Better preservation of remote command args in ssh module.
+     Previous versions of pdsh would alwas collapse all args into
+     a single argument passed to ssh: "cmd arg1 arg2 ..." With this
+     fix the argv list will more closely match the form passed to pdsh.
+ -- Refactored large portions of dshbak, improve usage output,
+     and update manpage.
+ -- Expanded testsuite.
+
 * Changes in pdsh-2.23 (2010-10-22)
 ===================================
  -- Fix issue 4: List available but conflicting modules in -V and -L output.
