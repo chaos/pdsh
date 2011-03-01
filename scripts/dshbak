@@ -48,89 +48,140 @@ Usage: $prog [OPTION]...
  -f       With -d, force creation of DIR
 EOF
 
-my %lines = ();
+#
+#  Save the desired output type in output_fn, which
+#   can be do_output_normal, do_output_per_file, or do_output_coalesced.
+#
+my $output_fn = \&do_output_normal;
 
 #############################################################################
 
 getopts(GETOPTS_ARGS) or usage();
+
+#############################################################################
+#
+#  Process args:
+#
 $opt_h and usage(0);
 
-if ($opt_c and $opt_d) {
-	print STDERR "$prog: Do not specify both -c and -d\n";
-	exit 1;
-}
-
-if ($opt_f and not $opt_d) {
-	print STDERR "$prog: Option -f may only be used with -d\n";
-	exit 1;
+if ($opt_c) {
+	&log_fatal ("Do not specify both -c and -d\n") if ($opt_d);
+	$output_fn = \&do_output_coalesced;
 }
 
 if ($opt_d) {
     if ($opt_f and not -d $opt_d) {
 		eval { mkpath ($opt_d) };
-		if ($@) {
-			print STDERR "$prog: Failed to create $opt_d: $@\n";
-			exit 1;
-		}
+		&log_fatal ("Failed to create $opt_d: $@\n") if ($@);
 	}
-	-d $opt_d or die "$prog: Output directory $opt_d does not exist\n";
+	-d $opt_d or &log_fatal ("Output directory $opt_d does not exist\n");
+
+	$output_fn = \&do_output_per_file;
 }
 
+&log_fatal ("Option -f may only be used with -d\n") if ($opt_f && !$opt_d);
+
+
+#############################################################################
+#
+#  Grab all lines of input and produce output:
+#
+my %lines = &process_lines ();
+&$output_fn ($_) for (sortn (keys %lines));
+
+exit 0;
+#############################################################################
+#
+#  Functions:
+#
+#
+sub log_msg   { print STDERR "$prog: ", @_;       }
+sub log_fatal { &log_msg ("Fatal: ", @_); exit 1; }
 
 #
-# Stdin consists of lines of the form "hostname: output...".
-# Store these in a hash, keyed by hostname, of lists of lines.
+#  Read lines of stdin produced from pdsh and push onto a hash
+#   per host prefix.
 #
-while (<>) {
-	my ($tag, $data) = m/^\s*(\S+?)\s*: ?(.*\n)$/;
-
-	#  Ignore lines that aren't prefixed with a hostname:
-	next unless $tag;
-	push(@{$lines{$tag}}, $data);
+sub process_lines
+{
+	my %lines = ();
+	#
+	# Stdin consists of lines of the form "hostname: output...".
+	# Store these in a hash, keyed by hostname, of lists of lines.
+	#
+	while (<>) {
+		my ($tag, $data) = m/^\s*(\S+?)\s*: ?(.*\n)$/;
+		#  Ignore lines that aren't prefixed with a hostname:
+		next unless $tag;
+		push(@{$lines{$tag}}, $data);
+	}
+	return %lines;
 }
 
 #
-# If -c was specified, hosts with identical output are displayed as a list
-# of hosts followed by one copy of the output.
+#  Print the standard dshbak header
 #
-if ($opt_c) {
-	for my $tag (sortn(keys %lines)) {		# look thru each host
-		next if (!defined($lines{$tag}));	# skip deleted keys
-		my @identical = ();			# init list of matches
-		for my $tag2 (keys %lines) {	
-			next if ($tag2 eq $tag);	# skip over myself
-			if (cmp_list($lines{$tag}, $lines{$tag2})) {
-				push(@identical, $tag2);# equal?  stash match
-				delete($lines{$tag2});	# delete data from hash
-			}
-		}
-		print("----------------\n");		# header: list of hosts
-		printf("%s\n", 				# plus myself
-		    join(",", compress(sort(@identical, $tag)))); 
-		print("----------------\n");
-		for my $data (@{$lines{$tag}}) {	# lines of data (once)
-			print($data);
-		}
-	}
-} elsif ($opt_d) {
+sub print_header
+{
+	my $div = "----------------\n";
+	print $div, @_, "\n", $div
+}
 
-	for my $tag (sortn (keys %lines)) {
-		my $file = "$opt_d/$tag";
-		open (OUTPUT, ">$file") ||
-			die ("$prog: Failed to open output file '$file': $!");
-		print OUTPUT @{$lines{$tag}};
+#
+#  Normal output function
+#
+sub do_output_normal
+{
+	my ($tag) = @_;
+	&print_header ($tag);
+	print @{$lines{$tag}};
+}
+
+#
+#  Put each host output into separate files in directory
+#   specified by $opt_d.
+#
+sub do_output_per_file
+{
+	my ($tag) = @_;
+	my $file = "$opt_d/$tag";
+	open (OUTPUT, ">$file") ||
+		&log_fatal ("Failed to open output file '$file': $!");
+
+	print OUTPUT @{$lines{$tag}};
+}
+
+#
+#  Print identical output only once, tagged with the list of
+#   hosts producing matching data.
+#
+sub do_output_coalesced
+{
+	my ($tag) = @_;
+	my @identical = ();
+
+	#
+	#  Ignore any deleted tags, lines from these hosts has already
+	#   been printed:
+	#
+	return if not defined ($lines{$tag});
+
+	#
+	#  Look for other hosts with identical output:
+	#
+	for my $tag2 (keys %lines) {
+		next if ($tag2 eq $tag);
+		next unless (cmp_list ($lines{$tag}, $lines{$tag2}));
+		#
+		#  Output is identical -- stash the tag of this match and
+		#   delete it from further processing:
+		#
+		push (@identical, $tag2);
+		delete ($lines{$tag2});
 	}
 
-} else {
-
-	for my $tag (sortn(keys %lines)) {
-		print("----------------\n");		# header: one host
-		print("$tag\n");
-		print("----------------\n");
-		for my $data (@{$lines{$tag}}) {	# lines of data
-			print($data);
-		}
-	}
+	&print_header (compress (sort (@identical, $tag)));
+	print @{$lines{$tag}};
 }
 
 #
@@ -166,6 +217,9 @@ sub usage
 }
 
 
+#
+#  Try to compress a list of hosts into a host range
+#
 sub compress 
 {
 	my %suffixes = ();

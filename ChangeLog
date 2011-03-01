@@ -1,5 +1,9 @@
 2011-02-27  Mark Grondona <mgrondona@llnl.gov>
 
+	* scripts/dshbak :
+	  Refactor large portions of dshbak code for
+	  future maintainability.
+
 	* tests/t1000-dshbak.sh :
 	  Add tests for normal dshbak output.
 
