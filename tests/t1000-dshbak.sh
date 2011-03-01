@@ -87,4 +87,47 @@ foo5s0: bar
 foo00s0: bar" "foo[00-02,1,3,5]s0"
 '
 
+cat >test_input <<EOF
+test
+input
+file
+ foo
+bar  
+
+EOF
+
+test_expect_success 'dshbak -d functionality' '
+  success=t
+  mkdir test_output &&
+  pdsh -w foo[0-10] -Rexec cat test_input | dshbak -d test_output &&
+  for i in `seq 0 10`; do
+	  diff -q test_input test_output/foo$i || success=f, break
+  done &&
+  test "$success" = "t" &&
+  rm -rf test_output
+'
+test_expect_success 'dshbak -f functionality' '
+  success=t
+  pdsh -w foo[0-10] -Rexec cat test_input | dshbak -f -d test_output &&
+  for i in `seq 0 10`; do
+	  diff -q test_input test_output/foo$i || success=f, break
+  done &&
+  test "$success" = "t" &&
+  rm -rf test_output
+'
+test_expect_success 'dshbak -f without -d fails' '
+  dshbak -f </dev/null 2>&1 | grep "Option -f may only be used with -d"
+'
+test_expect_success 'dshbak -d fails when output dir does not exist' '
+  dshbak -d does_not_exist </dev/null 2>&1 | \
+     grep "Output directory does_not_exist does not exist"
+'
+test_expect_success 'dshbak -d fails gracefully for non-writable dir' '
+  mkdir test_output &&
+  chmod 500 test_output &&
+  echo -e "foo0: bar" | dshbak -d test_output 2>&1 | tee logfile | \
+     grep "Failed to open output file"  &&
+  rm -rf test_output logfile
+'
+
 test_done

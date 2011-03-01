@@ -1,5 +1,8 @@
 2011-02-26  Mark Grondona <mgrondona@llnl.gov>
 
+	* tests/t1000-dshbak.sh :
+	  Add tests for dshbak -d and -f options.
+
 	* doc/dshbak.1 :
 	  Document -d and -f options.
 
