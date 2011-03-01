@@ -1,24 +1,29 @@
-\." $Id$
+.\" $Id$
 .\"
-.TH DSHBAK 1 "Release 1.3" "LLNL" "DSHBAK"
+.TH DSHBAK 1 "2011-02-26"
 .SH NAME
 dshbak \- format output from pdsh command
+
 .SH SYNOPSIS
 .B dshbak 
-.I "[-c]"
-.br
+[\fIOPTION\fR]..
+
 .SH DESCRIPTION
-.B dshbak
-formats 
-.B pdsh
-output for humans.  Output from each node is consolidated, the leading
-.I "node:"
-prefix is stripped, and a header block with the node name is added.
-If the
-.I "-c"
+The \fBdshbak\fR program formats \fBpdsh\fR pdsh output for humans.
+Output from each node is consolidated, the leading "\fInode:\fR" is
+stripped, and a header block with the node name is added. If the \fI-c\fR
 option is specified, nodes with identical output are not displayed twice;
-instead, the header will contain a list of nodes.  The list of nodes is
+instead, the header will contain a list of nodes. The list of nodes is
 further compressed into node ranges if the node names have a numeric suffix.
+
+.SH OPTIONS
+.TP
+.BI "-h"
+Display a summary of command line options.
+.TP
+.BI "-c"
+Do not display identical output from nodes twice. Instead, print
+the list of nodes with matching output in the header block.
 
 .SH "ORIGIN"
 A rewrite of IBM dshbak(1) by Jim Garlick
@@ -27,4 +32,6 @@ A rewrite of IBM dshbak(1) by Jim Garlick
 on LLNL's ASCI Blue-Pacific IBM SP system.  
 
 .SH "SEE ALSO"
-pdsh(1)
+.BR pdsh (1)
+.PP
+\fBhttp://pdsh.googlecode.com\fR
