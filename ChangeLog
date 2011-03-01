@@ -1,5 +1,8 @@
 2011-02-26  Mark Grondona <mgrondona@llnl.gov>
 
+	* doc/dshbak.1 :
+	  Document -d and -f options.
+
 	* scripts/dshbak :
 	  Support writing output to a file per host based on
 	  Alexander Bandura's dshdir(1) utility. Thanks to

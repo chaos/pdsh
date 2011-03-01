@@ -24,6 +24,14 @@ Display a summary of command line options.
 .BI "-c"
 Do not display identical output from nodes twice. Instead, print
 the list of nodes with matching output in the header block.
+.TP
+.BI "-d " DIR
+Write consolidated node output to separate files in output
+directory \fIDIR\fR. Any existing files will be overwritten.
+.TP
+.BI "-f"
+With \fI-d\fR, force creation of specified \fIDIR\fR.
+
 
 .SH "ORIGIN"
 A rewrite of IBM dshbak(1) by Jim Garlick
