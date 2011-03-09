@@ -14,6 +14,42 @@ fi
 #  Tests of the framework. From git teststuite:
 #
 test_expect_success 'working success' ':'
+test_expect_failure 'pretend known breakage' '
+	false
+'
+test_expect_success 'pretend we have fixed a known breakage (run in sub test-lib)' "
+    mkdir passing-todo &&
+	(cd passing-todo &&
+	cat >passing-todo.sh <<EOF &&
+#!/bin/sh
+
+test_description='A passing TODO test
+
+This is run in a sub test-lib so that we do not get incorrect passing
+metrics
+'
+
+# Point to the t/test-lib.sh, which isn't in ../ as usual
+TEST_DIRECTORY=\"$TEST_DIRECTORY\"
+. \"\$TEST_DIRECTORY\"/test-lib.sh
+
+test_expect_failure 'pretend we have fixed a known breakage' '
+	:
+'
+test_done
+EOF
+
+chmod +x passing-todo.sh &&
+./passing-todo.sh >out 2>err &&
+! test -s err &&
+sed -e 's/^> //' >expect <<EOF &&
+> ok 1 - pretend we have fixed a known breakage # TODO known breakage
+> # fixed 1 known breakage(s)
+> # passed all 1 test(s)
+> 1..1
+EOF
+   test_cmp expect out)
+"
 
 test_set_prereq HAVEIT
 haveit=no
@@ -27,21 +63,59 @@ test_expect_success 'tests clean up after themselves' '
     test_when_finished clean=yes
 '
 
-cleaner=no
-test_expect_code 1 'tests clean up even after a failure' '
-    test_when_finished cleaner=yes &&
+if test $clean != yes
+then
+	say "bug in test framework: basic cleanup command does not work reliably"
+	exit 1
+fi
+
+test_expect_success 'tests clean up even on failures' "
+    mkdir failing-cleanup &&
+    (cd failing-cleanup &&
+    cat >failing-cleanup.sh <<EOF &&
+#!/bin/sh
+
+test_description='Failing tests with cleanup commands'
+
+# Point to the t/test-lib.sh, which isn't in ../ as usual
+TEST_DIRECTORY=\"$TEST_DIRECTORY\"
+. \"\$TEST_DIRECTORY\"/test-lib.sh
+
+test_expect_success 'tests clean up even after a failure' '
+    touch clean-after-failure &&
+    test_when_finished rm clean-after-failure &&
     (exit 1)
 '
 
-if test $clean$cleaner != yesyes
-then    
-        say "bug in test framework: cleanup commands do not work reliably"
-        exit 1
-fi
-
-test_expect_code 2 'failure to clean up causes the test to fail' '
-    test_when_finished "(exit 2)"
+test_expect_success 'failure to clean up causes the test to fail' '
+    test_when_finished \"(exit 2)\"
 '
+
+test_done
+EOF
+    chmod +x failing-cleanup.sh &&
+    test_must_fail ./failing-cleanup.sh >out 2>err &&
+    ! test -s err &&
+    ! test -f \"trash directory.failing-cleanup/clean-after-failure\" &&
+sed -e 's/Z$//' -e 's/^> //' >expect <<\EOF &&
+> not ok - 1 tests clean up even after a failure
+> #	Z
+> #	    touch clean-after-failure &&
+> #	    test_when_finished rm clean-after-failure &&
+> #	    (exit 1)
+> #	Z
+> not ok - 2 failure to clean up causes the test to fail
+> #	Z
+> #	    test_when_finished \"(exit 2)\"
+> #	Z
+> # failed 2 among 2 test(s)
+> 1..2
+EOF
+    test_cmp expect out)
+"
+
+
+
 
 ###########################################################################
 #
