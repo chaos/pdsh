@@ -244,7 +244,19 @@ sshcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
          int rank, int *fd2p, void **arg)
 {
     pipecmd_t p = NULL;
-    char **ssh_args = ssh_argv_create (pdsh_remote_argv ());
+    const char **remote_argv = pdsh_remote_argv ();
+    const char *alt_argv[] = { cmd, NULL };
+    char **ssh_args;
+
+    /*
+     *  If running as pdcp/rpdcp, then the dsh code has rewritten
+     *   the cmd to invoke pdcp server on remote nodes. Therefore
+     *    avoid using pdsh_remote_argv() directly, instead use cmd:
+     */
+    if (pdsh_personality() == PCP)
+        remote_argv = alt_argv;
+
+    ssh_args = ssh_argv_create (remote_argv);
 
     if (!(p = pipecmd ("ssh", (const char **) ssh_args, ahost, ruser, rank)))
         goto out;

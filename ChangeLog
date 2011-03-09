@@ -1,5 +1,8 @@
 2011-03-08  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/modules/sshcmd.c :
+	  Fix pdcp when used with ssh. (Issue 12)
+
 	* tests/t2001-ssh.sh :
 	  Add some simple ssh tests.
 
