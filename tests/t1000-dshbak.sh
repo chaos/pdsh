@@ -142,7 +142,7 @@ test_expect_success 'dshbak -d fails when output dir does not exist' '
   dshbak -d does_not_exist </dev/null 2>&1 | \
      grep "Output directory does_not_exist does not exist"
 '
-test_expect_success 'dshbak -d fails gracefully for non-writable dir' '
+test_expect_success SANITY 'dshbak -d fails gracefully for non-writable dir' '
   mkdir test_output &&
   chmod 500 test_output &&
   echo -e "foo0: bar" | dshbak -d test_output 2>&1 | tee logfile | \
