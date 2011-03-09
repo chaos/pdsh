@@ -1,3 +1,9 @@
+2011-03-05  Mark Grondona <mgrondona@llnl.gov>
+
+	* tests/test-lib.sh :
+	  Check ownership of pdsh binary and build directory and complain
+	  and exit with error if they are different.
+
 2011-03-04  Mark Grondona <mgrondona@llnl.gov>
 
 	* tests/t0004-module-loading.sh, tests/t0006-pdcp.sh :

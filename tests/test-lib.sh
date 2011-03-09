@@ -916,6 +916,20 @@ test -w / || test_set_prereq SANITY
 test "$USER" = "root" || test_set_prereq NOTROOT
 
 #
+# If the pdsh build directory owner and the pdsh binary have
+#  different ownership, abort the test because pdsh will not
+#  be able to load any modules, and almost no tests will work.
+#
+path_owner() { ls -ld $1 | awk '{print $3}'; }
+pdsh_owner=$(path_owner $PDSH_BUILD_DIR/src/pdsh/pdsh)
+builddir_owner=$(path_owner $PDSH_BUILD_DIR/src)
+if test "$pdsh_owner" != "$builddir_owner"; then
+  say_color error 'Build directory owner and pdsh binary owner are different'
+  say_color error 'The testsuite will not work in this configuration'
+  exit 1
+fi
+
+#
 #  Set loaded modules as prereqs
 #
 for mod in $(pdsh -L 2>&1 | \
