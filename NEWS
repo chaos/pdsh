@@ -1,6 +1,17 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents thos changes that are of interest to users and admins.
 
+* Changes in pdsh-2.25 (2011-03-09)
+===================================
+ -- Fix pdcp breakage with ssh (bug introduced in pdsh-2.24).
+     (Resolves issue 12: pdcp executes file instead of copying.)
+ -- testsuite: Skip tests dependent on PDSH_MODULE_DIR when testsuite
+     run as root (Resolves issue 13: testsuite broken when run as root).
+ -- testsuite: Skip dshbak -d test to non-writable directory when
+     directory permissions do not seem to apply (e.g. privileged user).
+     (Possibly resolves issue 11: tests fail on Mac OSX under fink)
+ -- testsuite: add simple ssh tests.
+
 * Changes in pdsh-2.24 (2011-02-28)
 ===================================
  -- Resolve issue 7: Allow PDSH_REMOTE_PDCP_PATH to set default path
