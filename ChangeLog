@@ -1,3 +1,8 @@
+2011-03-08  Mark Grondona <mgrondona@llnl.gov>
+
+	* tests/t2001-ssh.sh :
+	  Add some simple ssh tests.
+
 2011-03-05  Mark Grondona <mgrondona@llnl.gov>
 
 	* tests/test-lib.sh :
