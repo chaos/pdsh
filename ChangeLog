@@ -1,5 +1,12 @@
 2011-03-04  Mark Grondona <mgrondona@llnl.gov>
 
+	* tests/t0004-module-loading.sh, tests/t0006-pdcp.sh :
+	  Set the NOTROOT prereq for all tests that require PDSH_MODULE_DIR,
+	  since this environment variable is not functional as root.
+
+	* tests/test-lib.sh :
+	  Set NOTROOT prereq when tests are not run as root.
+
 	* tests/t1000-dshbak.sh :
 	  Add SANITY prereq when testing non-writable dir.
 

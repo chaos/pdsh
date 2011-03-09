@@ -908,7 +908,12 @@ rm -f y
 
 # When the tests are run as root, permission tests will report that
 # things are writable when they shouldn't be.
+#
+# Additionally, for pdsh, some tests require non-root, esp those
+#  that use PDSH_MODULE_DIR, which doesn't work when run setuid or
+#  as root
 test -w / || test_set_prereq SANITY
+test "$USER" = "root" || test_set_prereq NOTROOT
 
 #
 #  Set loaded modules as prereqs
