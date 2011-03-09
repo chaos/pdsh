@@ -70,7 +70,8 @@ where N is a decimal digit. For pdsh, only the first digit has meaning,
 where so far the only digits used are:
 
    0 - basic pdsh functionality tests
-   1 - pdsh module tests
+   1 - pdsh misc module tests
+   2 - pdsh rcmd module tests
    5 - other tools tests (e.g. dshbak)
 
 Obviously, tests are run in numerical order, so if one test depends on
