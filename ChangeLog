@@ -1,3 +1,9 @@
+2011-03-04  Mark Grondona <mgrondona@llnl.gov>
+
+	* tests/t0001-basic.sh :
+	  Don't depend on /bin/true for test of working
+	  test_expect_success(), use builtin ':' instead.
+
 2011-02-28  Mark Grondona <mgrondona@llnl.gov>
 
 	* : tag pdsh-2.24.

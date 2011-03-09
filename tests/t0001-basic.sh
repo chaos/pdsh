@@ -13,7 +13,7 @@ fi
 #
 #  Tests of the framework. From git teststuite:
 #
-test_expect_success 'working success' '/bin/true'
+test_expect_success 'working success' ':'
 
 test_set_prereq HAVEIT
 haveit=no
