@@ -1,3 +1,8 @@
+2011-04-01  Mark Grondona <mgrondona@llnl.gov>
+
+	* tests/t2001-ssh.sh :
+	  Add test for issue 14: interactive mode broken with ssh.
+
 2011-03-09  Mark Grondona <mgrondona@llnl.gov>
 
 	* : tag pdsh-2.25.

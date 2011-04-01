@@ -76,6 +76,13 @@ test_expect_success 'PDSH_SSH_ARGS_APPEND works' '
 test_debug '
 	echo Output: "$OUTPUT"
 '
+test_expect_success 'interactive mode works with ssh (Issue 14)' '
+	OUTPUT=$(echo test command line | pdsh -Rssh -wfoo)
+	echo "$OUTPUT" | grep "test command line"
+'
+test_debug '
+	echo Output: "$OUTPUT"
+'
 #
 #  Exit code tests:
 #
