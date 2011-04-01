@@ -1,5 +1,11 @@
 2011-04-01  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/modules/execcmd.c :
+	  Fix interactive dsh with exec. Instead of trying to split
+	  the cmdline entered in interactive mode internally within
+	  pdsh, the exec module will pass the command as a string
+	  to sh -c.
+
 	* tests/t2000-exec.sh :
 	  Add a few simple exec module specific tests.
 

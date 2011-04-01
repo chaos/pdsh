@@ -158,6 +158,15 @@ execcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
 {
     pipecmd_t p;
     const char **argv = pdsh_remote_argv ();
+    /*
+     *  If pdsh_remote_argv is empty or NULL we may be running
+     *   in interactive dsh mode. Don't try to split the cmd
+     *   into args ourselves in this case, instead just pass
+     *   to a shell:
+     */
+    const char *alt_argv[] = { "sh", "-c", cmd, NULL };
+    if (!argv || *argv == NULL)
+        argv = alt_argv;
 
     if (!(p = pipecmd (argv[0], argv + 1,  ahost, ruser, rank)))
         return (-1);
