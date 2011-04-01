@@ -1,5 +1,8 @@
 2011-04-01  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/modules/sscmd.c :
+	  Fix interactive dsh with ssh. (Issue 14)
+
 	* tests/t2001-ssh.sh :
 	  Add test for issue 14: interactive mode broken with ssh.
 

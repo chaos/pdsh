@@ -255,6 +255,12 @@ sshcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
      */
     if (pdsh_personality() == PCP)
         remote_argv = alt_argv;
+    /*
+     *  In interactive dsh mode, pdsh_remote_argv() will be empty
+     *   so we can't use it.
+     */
+    if (!remote_argv || !*remote_argv)
+        remote_argv = alt_argv;
 
     ssh_args = ssh_argv_create (remote_argv);
 
