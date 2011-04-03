@@ -1,5 +1,10 @@
 2011-04-03  Mark Grondona <mgrondona@llnl.gov>
 
+	* tests/test-lib.sh :
+	  Add prereq checks for seq(1) and expr(1), and add a
+	  somewhat portable random() function for random number
+	  generation.
+
 	* tests/t5000-dshbak.sh :
 	  Fix another case where dshbak -d test on non-writable dir
 	  would erroneously fail. (Issue 11).

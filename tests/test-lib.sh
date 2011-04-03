@@ -920,6 +920,29 @@ rm -f y
 test -w / || test_set_prereq SANITY
 test "$USER" = "root" || test_set_prereq NOTROOT
 
+#  Set some prereqs for common commands
+#
+test "$(seq -sx 0 2)" = "0x1x2" && test_set_prereq SEQ
+test "$(expr 9 - 2)" = "7" &&      test_set_prereq EXPR
+
+#  Function to generate a random number
+# 
+random() { 
+   R=$RANDOM
+   if test -z "$R"; then
+      if test -r /dev/urandom; then
+         R=$(dd if=/dev/urandom count=1 2>/dev/null | cksum | cut -d' ' -f1)
+      else
+         R=$( (echo $$; ps; date +%s) 2>&1 | cksum | cut -d' ' -f1)
+      fi
+   fi
+   if test -n "${1}"; then
+      R=$(expr $R % $1)
+   fi
+   echo $R
+}
+
+
 #
 # If the pdsh build directory owner and the pdsh binary have
 #  different ownership, abort the test because pdsh will not
