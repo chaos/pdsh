@@ -1,3 +1,9 @@
+2011-04-03  Mark Grondona <mgrondona@llnl.gov>
+
+	* tests/t5000-dshbak.sh :
+	  Fix another case where dshbak -d test on non-writable dir
+	  would erroneously fail. (Issue 11).
+
 2011-04-01  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/execcmd.c :

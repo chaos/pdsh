@@ -147,7 +147,7 @@ test_expect_success SANITY 'dshbak -d fails gracefully for non-writable dir' '
   chmod 500 test_output &&
   echo -e "foo0: bar" | dshbak -d test_output 2>&1 | tee logfile | \
      grep "Failed to open output file"  &&
-  rm -rf test_output logfile
+  rm -rf test_output logfile || :
 '
 
 test_done
