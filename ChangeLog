@@ -1,5 +1,9 @@
 2011-04-03  Mark Grondona <mgrondona@llnl.gov>
 
+	* tests/t2001-ssh.sh:
+	  Use random() function instead of bash's $RANDOM.
+	  Replace {..} with seq(1).
+
 	* tests/test-lib.sh :
 	  Add prereq checks for seq(1) and expr(1), and add a
 	  somewhat portable random() function for random number

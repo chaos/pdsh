@@ -106,24 +106,24 @@ test_expect_success 'create ssh dummy script for exit code testing' '
 	chmod 755 ssh
 '
 test_expect_success 'ssh dummy script is functional' '
-	TEST_EXIT_CODE=$(($RANDOM%254)) &&
+	TEST_EXIT_CODE=$(random 254)
+	echo "$TEST_EXIT_CODE"
 	ssh -n 1 -i 0 &&
-	test_expect_code $TEST_EXIT_CODE ssh -n 1 -i 1 -e $TEST_EXIT_CODE
+	test_expect_code "$TEST_EXIT_CODE" ssh -n 1 -i 1 -e $TEST_EXIT_CODE
 	test_expect_code 0               ssh -n0 -i255 -e $TEST_EXIT_CODE
 '
 test_expect_success 'ssh works with pdsh -S' '
-	TEST_EXIT_CODE=$(($RANDOM%254)) &&
-	FAILING_RANK=$(($RANDOM%15)) &&
+	TEST_EXIT_CODE=$(random 254) &&
 	export PDSH_SSH_ARGS="-n%n -i0 -e$TEST_EXIT_CODE"
-	test_expect_code $TEST_EXIT_CODE pdsh -Rssh -S -w foo0 command
+	test_expect_code "$TEST_EXIT_CODE" pdsh -Rssh -S -w foo0 command
 '
 unset PDSH_SSH_ARGS
-test_expect_success 'ssh works with pdsh -S and multiple targets' '
-	for n in {1..24}; do
-		TEST_EXIT_CODE=$(($RANDOM%254)) &&
-		FAILING_RANK=$(($RANDOM%$n)) &&
+test_expect_success SEQ 'ssh works with pdsh -S and multiple targets' '
+	for n in $(seq 1 24); do
+		TEST_EXIT_CODE=$(random 254) &&
+		FAILING_RANK=$(random $n) &&
 		export PDSH_SSH_ARGS="-n%n -i$FAILING_RANK -e$TEST_EXIT_CODE"
-		test_expect_code $TEST_EXIT_CODE pdsh -Rssh -S -wfoo[0-$n] command
+		test_expect_code "$TEST_EXIT_CODE" pdsh -Rssh -S -wfoo[0-$n] command
 	done
 '
 unset PDSH_SSH_ARGS
