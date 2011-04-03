@@ -146,7 +146,7 @@ sub do_output_per_file
 	my ($tag) = @_;
 	my $file = "$opt_d/$tag";
 	open (OUTPUT, ">$file") ||
-		&log_fatal ("Failed to open output file '$file': $!");
+		&log_fatal ("Failed to open output file '$file': $!\n");
 
 	print OUTPUT @{$lines{$tag}};
 }
