@@ -1,5 +1,8 @@
 2011-04-19  Mark Grondona <mgrondona@llnl.gov>
 
+	* scripts/dshbak :
+	  Fix for missing commas in header output (issue 19).
+
 	* tests/t5000-dshbak.sh :
 	  Add test to ensure commas appear in dshbak output (issue 19).
 

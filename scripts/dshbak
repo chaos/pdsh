@@ -123,8 +123,9 @@ sub process_lines
 #
 sub print_header
 {
+	local $"=",";
 	my $div = "----------------\n";
-	print $div, @_, "\n", $div
+	print $div, "@_", "\n", $div
 }
 
 #
