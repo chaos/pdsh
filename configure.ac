@@ -65,6 +65,9 @@ else
    *-*-solaris*)
    	 AC_DEFINE(_POSIX_PTHREAD_SEMANTICS, 1, [POSIX pthread semantics on Solaris])
    ;;
+   *-*-hpux*)
+     LDFLAGS="$LDFLAGS -Wl,-E"
+   ;;
    esac
 fi
 AC_SUBST(AIX_PDSH_LDFLAGS)

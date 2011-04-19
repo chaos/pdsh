@@ -1,3 +1,8 @@
+2011-04-19  Mark Grondona <mgrondona@llnl.gov>
+
+	* configure.ac, configure :
+	  Append -Wl,-E to LDFLAGS on HP-UX (Issue 18).
+
 2011-04-03  Mark Grondona <mgrondona@llnl.gov>
 
 	* tests/t2001-ssh.sh:

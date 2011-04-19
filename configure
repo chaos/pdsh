@@ -21924,6 +21924,9 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
    ;;
+   *-*-hpux*)
+     LDFLAGS="$LDFLAGS -Wl,-E"
+   ;;
    esac
 fi
 
