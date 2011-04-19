@@ -1,5 +1,8 @@
 2011-04-19  Mark Grondona <mgrondona@llnl.gov>
 
+	* tests/t5000-dshbak.sh :
+	  Add test to ensure commas appear in dshbak output (issue 19).
+
 	* configure.ac, configure :
 	  Append -Wl,-E to LDFLAGS on HP-UX (Issue 18).
 

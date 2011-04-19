@@ -106,6 +106,14 @@ foo3s0: bar
 foo5s0: bar
 foo00s0: bar" "foo[00-02,1,3,5]s0"
 '
+test_expect_success 'issue 19: missing commas in dshbak header output' '
+    dshbak_test "
+foo1: bar
+foo2: bar
+foo5: bar
+bar0: bar
+bar1: bar" "bar[0-1],foo[1-2,5]"
+'
 
 cat >test_input <<EOF
 test
