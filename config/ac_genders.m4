@@ -45,6 +45,12 @@ AC_DEFUN([AC_GENDERS],
       AC_ADD_STATIC_MODULE("genders")
       AC_DEFINE([HAVE_LIBGENDERS], [1], [Define if you have libgenders.])
       GENDERS_LIBS="-lgenders"
+
+      AC_CHECK_LIB([genders], [genders_query],
+          [AC_DEFINE( [HAVE_GENDERS_QUERY], [1],
+                      [Define if genders library has genders_query.])],
+          [ac_have_genders_query=no]
+      )
     fi
 
   fi

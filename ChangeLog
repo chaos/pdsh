@@ -1,3 +1,8 @@
+2011-04-22  Mark Grondona <mgrondona@llnl.gov>
+
+	* config/ac_genders.m4, configure, config.h.in :
+	  Add check for genders_query during configure.
+
 2011-04-20  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/genders.c :

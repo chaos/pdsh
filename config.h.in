@@ -83,6 +83,9 @@
 /* Define to 1 if you have the <features.h> header file. */
 #undef HAVE_FEATURES_H
 
+/* Define if genders library has genders_query. */
+#undef HAVE_GENDERS_QUERY
+
 /* Define to 1 if you have the `index' function. */
 #undef HAVE_INDEX
 
