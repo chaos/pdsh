@@ -38,7 +38,6 @@
 #include "src/common/xmalloc.h"
 #include "src/common/split.h"
 #include "src/common/xstring.h"
-#include "src/pdsh/ltdl.h"
 #include "src/pdsh/mod.h"
 #include "src/pdsh/rcmd.h"
 
@@ -78,10 +77,6 @@ static genders_t gh    = NULL;
 static char *gfile     = NULL;
 static List attrlist   = NULL;
 static List excllist   = NULL;
-
-static lt_dlhandle dlh = NULL;
-static lt_ptr g_query_addr = NULL;
-typedef int (*g_query)(genders_t, char **, int, char *);
 
 /* 
  * Export pdsh module operations structure
@@ -201,12 +196,6 @@ genders_process_opt(opt_t *pdsh_opts, int opt, char *arg)
 static int
 genders_init(void)
 {
-
-    if (!(dlh = lt_dlopen(NULL)))
-        errx("%p: Error loading self: %s\n", lt_dlerror());
-
-    g_query_addr = lt_dlsym(dlh, "genders_query");
-
     return 0;
 }
 
@@ -222,7 +211,6 @@ genders_fini(void)
     if ((gh != NULL) && (genders_handle_destroy(gh) < 0))
         errx("%p: Error destroying genders handle: %s\n", genders_errormsg(gh));
 
-    lt_dlclose(dlh);
     return 0;
 }
 
@@ -495,6 +483,7 @@ static genders_t _handle_create()
  *
  *  Returns NULL if no '=' found.
  */
+#if !HAVE_GENDERS_QUERY
 static char *
 _get_val(char *attr)
 {
@@ -510,6 +499,7 @@ _get_val(char *attr)
 
     return (val);
 }
+#endif /* !HAVE_GENDERS_QUERY */
 
 static hostlist_t 
 _read_genders_attr(char *query)
@@ -521,13 +511,13 @@ _read_genders_attr(char *query)
     if ((len = genders_nodelist_create(gh, &nodes)) < 0)
         errx("%p: genders: nodelist_create: %s\n", genders_errormsg(gh));
 
-    if (g_query_addr) {
-        if ((nnodes = ((g_query)g_query_addr)(gh, nodes, len, query)) < 0) {
-            errx("%p: Error querying genders for query \"%s\": %s\n", 
-                 query ? query : "(all)", genders_errormsg(gh));
-        }
+#if HAVE_GENDERS_QUERY
+    if ((nnodes = genders_query (gh, nodes, len, query)) < 0) {
+        errx("%p: Error querying genders for query \"%s\": %s\n", 
+                query ? query : "(all)", genders_errormsg(gh));
     }
-    else {
+#else /* !HAVE_GENDERS_QUERY */
+    {
         /* query defaults to just an attribute or attribute=value pair */
         char *val;
         val = _get_val(query);
@@ -536,6 +526,7 @@ _read_genders_attr(char *query)
                  query ? query : "(all)", genders_errormsg(gh));
         }
     }
+#endif /* HAVE_GENDERS_QUERY */
 
     hl = _genders_to_hostlist(gh, nodes, nnodes);
 

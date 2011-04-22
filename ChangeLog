@@ -1,5 +1,9 @@
 2011-04-22  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/modules/genders.c :
+	  Remove runtime check for genders_query support using dlopen/dlsym.
+	  Use HAVE_GENDERS_QUERY at compile-time instead.
+
 	* config/ac_genders.m4, configure, config.h.in :
 	  Add check for genders_query during configure.
 
