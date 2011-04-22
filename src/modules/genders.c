@@ -524,7 +524,7 @@ _read_genders_attr(char *query)
     if (g_query_addr) {
         if ((nnodes = ((g_query)g_query_addr)(gh, nodes, len, query)) < 0) {
             errx("%p: Error querying genders for query \"%s\": %s\n", 
-                 query ?: "(all)", genders_errormsg(gh));
+                 query ? query : "(all)", genders_errormsg(gh));
         }
     }
     else {
@@ -533,7 +533,7 @@ _read_genders_attr(char *query)
         val = _get_val(query);
         if ((nnodes = genders_getnodes(gh, nodes, len, query, val)) < 0) {
             errx("%p: Error querying genders for attr \"%s\": %s\n", 
-                 query ?: "(all)", genders_errormsg(gh));
+                 query ? query : "(all)", genders_errormsg(gh));
         }
     }
 

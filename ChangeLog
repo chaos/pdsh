@@ -1,3 +1,9 @@
+2011-04-20  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/modules/genders.c :
+	  ISO C doesn't allow missing middle operand in conditional
+	  expression. Replace x ?: y with x ? x : y.
+
 2011-04-19  Mark Grondona <mgrondona@llnl.gov>
 
 	* scripts/dshbak :
