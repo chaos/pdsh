@@ -100,13 +100,13 @@ static int  _mod_load_static(int);
 #else
 static int  _mod_load_dynamic_modules(const char *, opt_t *);
 static int  _mod_load_dynamic(const char *);
-static int  _mod_initialize(mod_t mod);
-static int  _mod_init_list_safe(mod_t mod, void *arg);
 static int  _cmp_filenames(mod_t, char *);
 static int  _is_loaded(char *filename); 
 static bool _path_permissions_ok(const char *dir, uid_t pdsh_owner);
 static perm_error_t  _dir_permission_error(struct stat *, uid_t alt_uid);
 #endif
+static int  _mod_initialize(mod_t mod);
+static int  _mod_init_list_safe(mod_t mod, void *arg);
 static void _mod_destroy(mod_t mod);
 static bool _mod_opts_ok(mod_t mod);
 static int  _mod_print_info(mod_t mod);
