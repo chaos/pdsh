@@ -75,7 +75,7 @@ test_expect_success 'command timeout 0 by default' '
 
 export T="$TEST_DIRECTORY/test-modules"
 
-test_expect_success NOTROOT 'Have pcptest rcmd module' '
+test_expect_success DYNAMIC_MODULES,NOTROOT 'Have pcptest rcmd module' '
 	PDSH_MODULE_DIR=$T pdcp -L | grep -q pcptest
 '
 
@@ -89,7 +89,7 @@ create_random_file() {
 	dd if=/dev/urandom of=$name bs=1024 count=$size >/dev/null 2>&1
 }
 
-test_expect_success NOTROOT 'pdcp basic functionality' '
+test_expect_success DYNAMIC_MODULES,NOTROOT 'pdcp basic functionality' '
     HOSTS="host[0-10]"
 	setup_host_dirs "$HOSTS" &&
 	test_when_finished "rm -rf host* testfile" &&
@@ -99,7 +99,7 @@ test_expect_success NOTROOT 'pdcp basic functionality' '
 '
 rm -rf host* testfile
 
-test_expect_success NOTROOT 'rpdcp basic functionality' '
+test_expect_success DYNAMIC_MODULES,NOTROOT 'rpdcp basic functionality' '
 	HOSTS="host[0-10]"
 	setup_host_dirs "$HOSTS"
 	test_when_finished "rm -rf host* t output" &&
@@ -108,7 +108,7 @@ test_expect_success NOTROOT 'rpdcp basic functionality' '
 	PDSH_MODULE_DIR=$T rpdcp -Rpcptest -w "$HOSTS" t output/ &&
 	pdsh -SRexec -w "$HOSTS" diff -q output/t.%h %h/t
 '
-test_expect_success NOTROOT 'initialize directory tree' '
+test_expect_success DYNAMIC_MODULES,NOTROOT 'initialize directory tree' '
 	mkdir tree &&
 	(
 	   cd tree &&
@@ -126,7 +126,7 @@ test_expect_success NOTROOT 'initialize directory tree' '
 	   chmod -w dir/a/b/c/xw
 	)
 '
-test_expect_success NOTROOT 'pdcp -r works' '
+test_expect_success DYNAMIC_MODULES,NOTROOT 'pdcp -r works' '
 	HOSTS="host[0-10]"
 	setup_host_dirs "$HOSTS" &&
 	test_when_finished "rm -rf host*" &&
@@ -136,7 +136,7 @@ test_expect_success NOTROOT 'pdcp -r works' '
 	pdsh -SRexec -w "$HOSTS" test -h tree/foo.link &&
 	pdsh -SRexec -w "$HOSTS" test ! -w dir/a/b/c/xw
 '
-test_expect_success NOTROOT 'rpdcp -r works' '
+test_expect_success DYNAMIC_MODULES,NOTROOT 'rpdcp -r works' '
 	HOSTS="host[0-10]"
 	setup_host_dirs "$HOSTS" &&
 	test_when_finished "rm -rf host* output" &&

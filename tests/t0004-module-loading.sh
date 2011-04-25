@@ -4,12 +4,19 @@ test_description='pdsh dynamic module support'
 
 TEST_MODULE_PATH="$(pwd)/test-modules"
 
+. ${srcdir:-.}/test-lib.sh
+
+if ! test_have_prereq DYNAMIC_MODULES; then
+	skip_all='skipping dynamic module tests, pdsh built with static modules'
+	test_done
+fi
+
+
 if ! test -f $TEST_MODULE_PATH/a.la -a -f $TEST_MODULE_PATH/b.la; then
 	echo "$0: Test modules A & B not built, please run \"make check.\"" >&2
 	exit 1
 fi
 
-. ${srcdir:-.}/test-lib.sh
 
 module_list () {
 	pdsh -L "$EXTRA_PDSH_ARGS" 2>&1 | \

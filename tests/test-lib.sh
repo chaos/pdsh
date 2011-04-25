@@ -970,4 +970,8 @@ if [ -n "$PDSH_TEST_LONG" ]; then
 	test_set_prereq LONGTESTS
 fi
 
+if pdsh -V | head -1 | grep -qv +static-modules; then
+	test_set_prereq DYNAMIC_MODULES
+fi
+
 
