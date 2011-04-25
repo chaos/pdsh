@@ -1,3 +1,13 @@
+2011-04-25  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/tests/test-lib.sh, tests/t0004-module-loading.sh,
+	  tests/t0006-pdcp.sh :
+	  Allow testsuite to run even with --enable-static-modules.
+
+	* src/pdsh/mod.c :
+	  Move prototypes outside of STATIC_MODULES ifdef so that
+	  build with --enable-static-modules succeeds.
+
 2011-04-22  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/modules/genders.c :
