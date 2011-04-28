@@ -1,5 +1,10 @@
 2011-04-27  Mark Grondona <mgrondona@llnl.gov>
 
+	* tests/t2001-ssh.sh :
+	  Previous fix for PDSH_SSH_ARGS broke the ssh exit status
+	  dummy script in the testuite. Have the script process -l
+	  so that it works again.
+
 	* src/modules/sshcmd.c :
 	  Check for presence of %u and %h in PDSH_SSH_ARGS and append
 	  them if missing (otherwise assume user supplied them properly.)

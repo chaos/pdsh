@@ -83,6 +83,14 @@ test_expect_success 'PDSH_SSH_ARGS does not require %u' '
 test_debug '
 	echo Output: "$OUTPUT"
 '
+test_expect_success 'PDSH_SSH_ARGS without %u inserts %u before %h' '
+	OUTPUT=$(PDSH_SSH_ARGS="-p 888 %h" pdsh -ltestuser -Rssh -wfoo hostname)
+	echo "$OUTPUT" | grep "[-]p 888 -ltestuser foo hostname"
+'
+test_debug '
+	echo Output: "$OUTPUT"
+'
+
 test_expect_success 'PDSH_SSH_ARGS does not require %u or %h' '
 	OUTPUT=$(PDSH_SSH_ARGS="-p 777" pdsh -ltestuser -Rssh -wfoo hostname)
 	echo "$OUTPUT" | grep "[-]p 777 -ltestuser foo hostname"
@@ -123,11 +131,12 @@ test_debug '
 test_expect_success 'create ssh dummy script for exit code testing' '
 	echo "#!/bin/bash"  >ssh
 	echo "# Usage: $0 -n <this rank> -i <failing rank> -e <exitcode> " >>ssh
-	echo "while getopts \":n:i:e:\" opt; do "                          >>ssh
+	echo "while getopts \":n:i:e:l:\" opt; do "                        >>ssh
 	echo "  case \$opt in"                                             >>ssh
 	echo "    n) RANK=\$OPTARG ;;"                                     >>ssh
 	echo "    i) FAILRANK=\$OPTARG ;;"                                 >>ssh
 	echo "    e) EXITCODE=\$OPTARG ;;"                                 >>ssh
+	echo "    l)  ;;"                                                  >>ssh
 	echo "  esac"                                                      >>ssh
 	echo "done"                                                        >>ssh
 	echo ""                                                            >>ssh
@@ -139,8 +148,8 @@ test_expect_success 'ssh dummy script is functional' '
 	TEST_EXIT_CODE=$(random 254)
 	echo "$TEST_EXIT_CODE"
 	ssh -n 1 -i 0 &&
-	test_expect_code "$TEST_EXIT_CODE" ssh -n 1 -i 1 -e $TEST_EXIT_CODE
-	test_expect_code 0               ssh -n0 -i255 -e $TEST_EXIT_CODE
+	test_expect_code "$TEST_EXIT_CODE" ssh -lfoo -n 1 -i 1 -e $TEST_EXIT_CODE
+	test_expect_code 0                 ssh -lxxx -n0 -i255 -e $TEST_EXIT_CODE
 '
 test_expect_success 'ssh works with pdsh -S' '
 	TEST_EXIT_CODE=$(random 254) &&
