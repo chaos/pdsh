@@ -1,5 +1,8 @@
 2011-04-27  Mark Grondona <mgrondona@llnl.gov>
 
+	* doc/pdsh.1.in :
+	  Document use of %u %h %n in PDSH_SSH_ARGS.
+
 	* tests/t2001-ssh.sh :
 	  Previous fix for PDSH_SSH_ARGS broke the ssh exit status
 	  dummy script in the testuite. Have the script process -l

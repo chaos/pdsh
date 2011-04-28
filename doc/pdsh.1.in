@@ -411,12 +411,18 @@ use (e.g. ssh, rsh).
 .TP
 PDSH_SSH_ARGS
 Override the standard arguments that \fBpdsh\fR passes to the
-ssh(1) command ("-2 -a -x"). 
+ssh(1) command ("-2 -a -x -l%u %h"). The use of the parameters
+\fB%u\fR, \fB%h\fR, and \fB%n\fR (as documented in the \fBrcmd/exec\fR
+section above) is optional. If these parameters are missing,
+\fBpdsh\fR will append them to the ssh commandline because it is
+assumed they are mandatory.
 .TP
 PDSH_SSH_ARGS_APPEND
 Append additional options to the ssh(1) command invoked by \fBpdsh\fR.
 For example, PDSH_SSH_ARGS_APPEND="-q" would run ssh in quiet mode,
-or "-v" would increase the verbosity of ssh.
+or "-v" would increase the verbosity of ssh. (Note: these arguments
+are actually prepended to the ssh commandline to ensure they appear
+before any target hostname argument to ssh.)
 .TP
 WCOLL
 If no other node selection option is used, the WCOLL environment
