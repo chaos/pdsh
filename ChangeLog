@@ -1,3 +1,9 @@
+2011-04-28  Mark Grondona <mgrondona@llnl.gov>
+
+	* scripts/dshbak :
+	  Simplify concatenation of compressed hosts in print_header
+	  by using join() instead of the obscure $" variable.
+
 2011-04-27  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/privsep.c :
