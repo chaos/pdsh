@@ -169,6 +169,15 @@ test_expect_success '-f sets fanout' '
 test_expect_success '-l sets remote username' '
 	check_pdsh_option l "Remote username" foouser
 '
+test_expect_success 'too long username fails gracefully' '
+	i=0
+	u="X"
+	while [ $i -lt 512 ]; do
+		u="${u}X"
+		let i=$i+1
+	done
+	pdsh -wfoo -l${u} -q 2>&1 | grep "exceeds max username length"
+'
 test_expect_success '-t sets connect timeout' '
 	check_pdsh_option t "Connect timeout (secs)" 33
 '
@@ -189,4 +198,5 @@ test_expect_success 'pdsh -N option works' '
 		false
     fi
 '
+
 test_done

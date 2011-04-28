@@ -1,5 +1,8 @@
 2011-04-27  Mark Grondona <mgrondona@llnl.gov>
 
+	* tests/t0001-basic.sh :
+	  Check for graceful failure when supplied username is too long.
+
 	* tests/test-lib.sh, tests/t2001-ssh.sh :
 	  Add a simplified shell function implemntation of seq(1).
 	  Remove SEQ prereq. (Some systems don't have seq(1)).
