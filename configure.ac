@@ -99,7 +99,7 @@ AC_MSGHDR_ACCRIGHTS
 # Checks for library functions.
 dnl AC_FUNC_MALLOC
 AC_FUNC_STRERROR_R
-AC_CHECK_FUNCS([strerror pthread_sigmask sigthreadmask rresvport atoi])
+AC_CHECK_FUNCS([strerror pthread_sigmask sigthreadmask rresvport rresvport_af atoi])
 
 #
 # Check for poll vs. select()

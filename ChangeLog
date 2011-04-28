@@ -1,5 +1,8 @@
 2011-04-27  Mark Grondona <mgrondona@llnl.gov>
 
+	* configure.ac, configure, config.h.in :
+	  Add check for rresvport_af function.
+
 	* doc/pdsh.1.in :
 	  Document use of %u %h %n in PDSH_SSH_ARGS.
 

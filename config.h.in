@@ -200,6 +200,9 @@
 /* Define to 1 if you have the `rresvport' function. */
 #undef HAVE_RRESVPORT
 
+/* Define to 1 if you have the `rresvport_af' function. */
+#undef HAVE_RRESVPORT_AF
+
 /* do we have sa_len in struct sockaddr */
 #undef HAVE_SA_LEN
 
