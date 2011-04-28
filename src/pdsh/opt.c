@@ -57,6 +57,13 @@
 #include "wcoll.h"
 #include "mod.h"
 #include "rcmd.h"
+
+/*
+ *  Fallback maximum username length if sysconf(_SC_LOGIN_NAME_MAX) not
+ *   available or fails. (buffers will be this size + 1 for NUL termination)
+ */
+#define DEFAULT_MAX_USERNAME_LENGTH 16
+
 #define OPT_USAGE_DSH "\
 Usage: pdsh [-options] command ...\n\
 -S                return largest of remote command return values\n"
@@ -288,6 +295,40 @@ done:
     return abspath;
 }
 
+
+/*
+ *   Return a value for the max login name length (username buffer length)
+ */
+static int login_name_max_len (void)
+{
+    static int maxnamelen = -1;
+
+    if (maxnamelen < 0) {
+#ifdef _SC_LOGIN_NAME_MAX
+        errno = 0;
+        if ((maxnamelen = sysconf (_SC_LOGIN_NAME_MAX)) <= 0) {
+            err ("%p: sysconf(LOGIN_NAME_MAX): %m\n");
+            maxnamelen = DEFAULT_MAX_USERNAME_LENGTH;
+        }
+#else
+        maxnamelen = DEFAULT_MAX_USERNAME_LENGTH;
+#endif
+    }
+
+    return (maxnamelen);
+}
+
+static void copy_username (char *dst, const char *src)
+{
+    int maxlen = login_name_max_len ();
+
+    if (strlen (src) > maxlen)
+        errx ("%p: Fatal: username '%s' exceeds max username length (%d)\n",
+                src, maxlen);
+
+    strcpy (dst, src);
+}
+
 /*
  * Set defaults for various options.
  *	opt (IN/OUT)	option struct
@@ -297,6 +338,8 @@ void opt_default(opt_t * opt, char *argv0)
     struct passwd *pw;
 
     opt->progname = xbasename(argv0);
+    opt->luser = Malloc (login_name_max_len () + 1);
+    opt->ruser = Malloc (login_name_max_len () + 1);
 
     opt->reverse_copy = false;
 
@@ -316,10 +359,8 @@ void opt_default(opt_t * opt, char *argv0)
         _init_pdsh_options();
 
     if ((pw = getpwuid(getuid())) != NULL) {
-        strncpy(opt->luser, pw->pw_name, MAX_USERNAME);
-        strncpy(opt->ruser, pw->pw_name, MAX_USERNAME);
-        opt->luser[MAX_USERNAME - 1] = '\0';
-        opt->ruser[MAX_USERNAME - 1] = '\0';
+        copy_username (opt->luser, pw->pw_name);
+        copy_username (opt->ruser, pw->pw_name);
         opt->luid = pw->pw_uid;
     } else
         errx("%p: who are you?\n");
@@ -575,8 +616,7 @@ void opt_args(opt_t * opt, int argc, char *argv[])
             opt->sigint_terminates = true;
             break;
         case 'l':              /* specify remote username for rshd */
-            strncpy(opt->ruser, optarg, MAX_USERNAME);
-            opt->ruser[MAX_USERNAME - 1] = '\0';
+            copy_username (opt->ruser, optarg);
             break;
         case 'r':              /* rcp: copy recursively */
             if (pdsh_personality() == PCP)
@@ -996,6 +1036,10 @@ void opt_free(opt_t * opt)
         Free((void **) &opt->remote_program_path);
     if (opt->infile_names)
         list_destroy(opt->infile_names);
+    if (opt->luser)
+        Free((void **) &opt->luser);
+    if (opt->ruser)
+        Free((void **) &opt->ruser);
 
     rcmd_exit();
 }

@@ -1,3 +1,11 @@
+2011-04-27  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/opt.h, src/pdsh/opt.c:
+	  Don't use static buffers for ruser and luser. Instead allocate
+	  memory based on the return value of sysconf(_SC_LOGIN_NAME_MAX)
+	  if available. Supplying a username longer than this value is now
+	  a fatal error. (Issue 24)
+
 2011-04-25  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/tests/test-lib.sh, tests/t0004-module-loading.sh,

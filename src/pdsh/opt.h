@@ -37,7 +37,6 @@
 #include "src/common/list.h"
 #include "src/common/hostlist.h"
 
-#define MAX_USERNAME	17
 #define MAX_GENDATTR	64
 
 #define RC_MAGIC	"XXRETCODE:"
@@ -59,9 +58,9 @@ typedef struct {
     bool altnames;              /* -i */
     bool sigint_terminates;     /* -b */
     hostlist_t wcoll;           /* target node list (-w, WCOLL, or stdin) */
-    char luser[MAX_USERNAME];   /* local username */
+    char *luser;                /* local username */
     uid_t luid;                 /* uid for above */
-    char ruser[MAX_USERNAME];   /* remote username (-l or default) */
+    char *ruser;                /* remote username (-l or default) */
     int fanout;                 /* (-f, FANOUT, or default) */
     int connect_timeout;
     int command_timeout;
