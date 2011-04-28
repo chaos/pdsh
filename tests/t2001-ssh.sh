@@ -118,7 +118,7 @@ test_expect_success 'ssh works with pdsh -S' '
 	test_expect_code "$TEST_EXIT_CODE" pdsh -Rssh -S -w foo0 command
 '
 unset PDSH_SSH_ARGS
-test_expect_success SEQ 'ssh works with pdsh -S and multiple targets' '
+test_expect_success 'ssh works with pdsh -S and multiple targets' '
 	for n in $(seq 1 24); do
 		TEST_EXIT_CODE=$(random 254) &&
 		FAILING_RANK=$(random $n) &&

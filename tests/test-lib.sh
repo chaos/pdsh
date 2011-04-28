@@ -922,7 +922,6 @@ test "$USER" = "root" || test_set_prereq NOTROOT
 
 #  Set some prereqs for common commands
 #
-test "$(seq -sx 0 2)" = "0x1x2" && test_set_prereq SEQ
 test "$(expr 9 - 2)" = "7" &&      test_set_prereq EXPR
 
 #  Function to generate a random number
@@ -940,6 +939,22 @@ random() {
       R=$(expr $R % $1)
    fi
    echo $R
+}
+
+#  Shell implementation of seq(1)
+#
+seq() {
+	if [ $# -eq 1 ]; then
+		i=1
+		end=$1
+	else
+		i=$1
+		end=$2
+	fi
+	while [ $i -le $end ]; do
+		echo $i
+		let i=$i+1
+	done
 }
 
 
