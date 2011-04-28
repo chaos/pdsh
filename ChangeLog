@@ -1,5 +1,9 @@
 2011-04-27  Mark Grondona <mgrondona@llnl.gov>
 
+	* tests/t2001-ssh.sh :
+	  Test to make sure %u and %h are not _forced_ to be in
+	  PDSH_SSH_ARGS when used.
+
 	* tests/t0001-basic.sh :
 	  Check for graceful failure when supplied username is too long.
 

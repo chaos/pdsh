@@ -63,15 +63,45 @@ test_debug '
 	echo Output: "$OUTPUT"
 '
 test_expect_success 'PDSH_SSH_ARGS works' '
-	OUTPUT=$(PDSH_SSH_ARGS="ssh -p 922 -l%u %h" pdsh -luser -Rssh -wfoo hostname) &&
+	OUTPUT=$(PDSH_SSH_ARGS="-p 922 -l%u %h" pdsh -luser -Rssh -wfoo hostname) &&
 	echo "$OUTPUT" | grep "[-]p 922 -luser foo hostname"
 '
 test_debug '
 	echo Output: "$OUTPUT"
 '
+test_expect_success 'PDSH_SSH_ARGS does not require %h' '
+	OUTPUT=$(PDSH_SSH_ARGS="-p 888 -l%u" pdsh -luser -Rssh -wfoo hostname)
+	echo "$OUTPUT" | grep "[-]p 888 -luser foo hostname"
+'
+test_debug '
+	echo Output: "$OUTPUT"
+'
+test_expect_success 'PDSH_SSH_ARGS does not require %u' '
+	OUTPUT=$(PDSH_SSH_ARGS="-p 888 %h" pdsh -ltestuser -Rssh -wfoo hostname)
+	echo "$OUTPUT" | grep "[-]ltestuser"
+'
+test_debug '
+	echo Output: "$OUTPUT"
+'
+test_expect_success 'PDSH_SSH_ARGS does not require %u or %h' '
+	OUTPUT=$(PDSH_SSH_ARGS="-p 777" pdsh -ltestuser -Rssh -wfoo hostname)
+	echo "$OUTPUT" | grep "[-]p 777 -ltestuser foo hostname"
+'
+test_debug '
+	echo Output: "$OUTPUT"
+'
+
 test_expect_success 'PDSH_SSH_ARGS_APPEND works' '
 	OUTPUT=$(PDSH_SSH_ARGS_APPEND="-p 922" pdsh -Rssh -wfoo hostname) &&
 	echo "$OUTPUT" | grep "[-]p 922"
+'
+test_debug '
+	echo Output: "$OUTPUT"
+'
+test_expect_success 'PDSH_SSH_ARGS_APPEND are added to PDSH_SSH_ARGS' '
+	OUTPUT=$(PDSH_SSH_ARGS_APPEND="-p 922" PDSH_SSH_ARGS="-x -a -l%u %h" \
+	         pdsh -Rssh -lfoouser -wfoo hostname) &&
+	echo "$OUTPUT" | grep "[-]p 922 -x -a -lfoouser foo hostname"
 '
 test_debug '
 	echo Output: "$OUTPUT"
