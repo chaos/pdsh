@@ -1,5 +1,8 @@
 2011-04-27  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/pdsh/privsep.c :
+	  Fallback to rresvport when we don't have rresvport_af.
+
 	* configure.ac, configure, config.h.in :
 	  Add check for rresvport_af function.
 

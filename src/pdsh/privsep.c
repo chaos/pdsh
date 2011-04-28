@@ -204,6 +204,21 @@ static int recv_rresvport (int pipefd, int *lptr)
 	return (fd);
 }
 
+
+static int p_rresvport_af (int *port, int family)
+{
+#if HAVE_RRESVPORT_AF
+	return rresvport_af (port, family);
+#else
+	/*  Family must be AF_INET
+	 */
+	if (family != AF_INET)
+		err ("%p: rresvport called with family != AF_INET!\n");
+	/* ignore family != AF_INET */
+	return rresvport (port);
+#endif
+}
+
 static int privsep_server (void)
 {
 	int rc;
@@ -216,7 +231,7 @@ static int privsep_server (void)
 	 */
 	while ((rc = read (server_fd, &lport, sizeof (lport))) > 0) {
 		int family = privsep_get_family (&lport);
-		int s = rresvport_af (&lport, family);
+		int s = p_rresvport_af (&lport, family);
 
 		send_rresvport (server_fd, s, lport);
 
@@ -292,7 +307,7 @@ int privsep_rresvport_af (int *lport, int family)
 	int s;
 
 	if (client_fd < 0)
-		return (rresvport_af (lport, family));
+		return (p_rresvport_af (lport, family));
 
 	if (privsep_set_family (lport, family) < 0) {
 		err ("%p: privsep_rresvport_af: Invalid family %d\n", family);
