@@ -290,6 +290,61 @@ sshcmd_destroy (pipecmd_t p)
     return WEXITSTATUS (status);
 }
 
+/*
+ *  Check string argument [arg] for parameter substitution sequence [s].
+ *    If [s] is found in [arg] then also check that [s] is not preceeded
+ *    by '%' which would have the effect of escaping the parameter
+ *    substitution.
+ */
+static int arg_has_parameter (const char *arg, const char *s)
+{
+    char *p;
+    if ((p = strstr (arg, s)) && ((p == arg) || (*(p-1) != '%')))
+        return 1;
+    return 0;
+}
+
+/*
+ *  Scan the current ssh_args_list for presence of %u and %h.
+ *   If they are not present, assume we need to append them to the
+ *   ssh args.
+ */
+static int fixup_ssh_args (List ssh_args_list)
+{
+    ListIterator i = list_iterator_create (ssh_args_list);
+    char *arg;
+    int got_user = 0;
+    int got_host = 0;
+
+    while ((arg = list_next (i))) {
+        if (arg_has_parameter (arg, "%u"))
+            got_user = 1;
+        if (arg_has_parameter (arg, "%h"))
+            got_host = 1;
+    }
+
+    if (!got_user) {
+        if (got_host) {
+            /*
+             *  Ensure "%lu" is not inserted after "%h":
+             */
+            list_iterator_reset (i);
+            arg = list_find (i, (ListFindF) arg_has_parameter, "%h");
+            list_insert (i, Strdup ("-l%u"));
+        }
+        else
+            list_append (ssh_args_list, Strdup ("-l%u"));
+    }
+
+    /*
+     *  Always append "%h" to end of args
+     */
+     if (!got_host)
+         list_append (ssh_args_list, Strdup ("%h"));
+
+     list_iterator_destroy (i);
+     return (0);
+     }
 
 static int sshcmd_args_init (void)
 {
@@ -310,8 +365,12 @@ static int sshcmd_args_init (void)
     xstrcat (&str, val);
 
     ssh_args_list = list_split (" ", str);
-
     Free ((void **) &str);
+
+    /*
+     *   Append "-l%u" and "%h" if necessary:
+     */
+    fixup_ssh_args (ssh_args_list);
 
     return (0);
 }

@@ -1,5 +1,9 @@
 2011-04-27  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/modules/sshcmd.c :
+	  Check for presence of %u and %h in PDSH_SSH_ARGS and append
+	  them if missing (otherwise assume user supplied them properly.)
+
 	* tests/t2001-ssh.sh :
 	  Test to make sure %u and %h are not _forced_ to be in
 	  PDSH_SSH_ARGS when used.
