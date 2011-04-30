@@ -1,5 +1,10 @@
 2011-04-29  Mark Grondona <mgrondona@llnl.gov>
 
+	* tests/t0006-pdcp.sh :
+	  Avoid using GNU-specific options to utilities like
+	  cp(1) and diff(1) for better portability. Replace explicit
+	  calls to diff with $GIT_TEST_CMP where possible.
+
 	* tests/test-lib.sh, tests/t0001-basic.sh,
 	  tests/t0006-pdcp.sh, tests/t2001-ssh.sh :
 	  Use $SHELL_PATH in place of hard-coded /bin/sh in

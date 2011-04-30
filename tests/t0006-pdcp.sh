@@ -95,7 +95,7 @@ test_expect_success DYNAMIC_MODULES,NOTROOT 'pdcp basic functionality' '
 	test_when_finished "rm -rf host* testfile" &&
 	create_random_file testfile 10 &&
 	PDSH_MODULE_DIR=$T pdcp -Rpcptest -w "$HOSTS" testfile testfile &&
-	pdsh -SRexec -w "$HOSTS" diff -q testfile %h/testfile
+	pdsh -SRexec -w "$HOSTS" $GIT_TEST_CMP testfile %h/testfile
 '
 rm -rf host* testfile
 
@@ -106,7 +106,7 @@ test_expect_success DYNAMIC_MODULES,NOTROOT 'rpdcp basic functionality' '
 	pdsh -Rexec -w "$HOSTS" dd if=/dev/urandom of=%h/t bs=1024 count=10 >/dev/null 2>&1 &&
 	mkdir output &&
 	PDSH_MODULE_DIR=$T rpdcp -Rpcptest -w "$HOSTS" t output/ &&
-	pdsh -SRexec -w "$HOSTS" diff -q output/t.%h %h/t
+	pdsh -SRexec -w "$HOSTS" $GIT_TEST_CMP output/t.%h %h/t
 '
 test_expect_success DYNAMIC_MODULES,NOTROOT 'initialize directory tree' '
 	mkdir tree &&
@@ -131,7 +131,7 @@ test_expect_success DYNAMIC_MODULES,NOTROOT 'pdcp -r works' '
 	setup_host_dirs "$HOSTS" &&
 	test_when_finished "rm -rf host*" &&
 	PDSH_MODULE_DIR=$T pdcp -Rpcptest -w "$HOSTS" -r tree . &&
-	pdsh -SRexec -w "$HOSTS" diff -Nqr tree %h/tree &&
+	pdsh -SRexec -w "$HOSTS" diff -r tree %h/tree >/dev/null &&
 	pdsh -SRexec -w "$HOSTS" test -x tree/baz/exec.sh &&
 	pdsh -SRexec -w "$HOSTS" test -h tree/foo.link &&
 	pdsh -SRexec -w "$HOSTS" test ! -w dir/a/b/c/xw
@@ -140,10 +140,10 @@ test_expect_success DYNAMIC_MODULES,NOTROOT 'rpdcp -r works' '
 	HOSTS="host[0-10]"
 	setup_host_dirs "$HOSTS" &&
 	test_when_finished "rm -rf host* output" &&
-	pdsh -SRexec -w "$HOSTS" cp -a tree %h/ &&
+	pdsh -SRexec -w "$HOSTS" cp -r tree %h/ &&
 	mkdir output &&
 	PDSH_MODULE_DIR=$T rpdcp -Rpcptest -w "$HOSTS" -r tree output/ &&
-	pdsh -SRexec -w "$HOSTS" diff -Nqr tree output/tree.%h
+	pdsh -SRexec -w "$HOSTS" diff -r tree output/tree.%h >/dev/null
 '
 
 test_done
