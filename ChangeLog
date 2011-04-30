@@ -1,5 +1,7 @@
 2011-04-29  Mark Grondona <mgrondona@llnl.gov>
 
+	* : tag pdsh-2.26.
+
 	* tests/Makefile.am, tests/Makefile.in :
 	  Run runtests.sh during "make check" instead of
 	  individual tests. This allows running tests under

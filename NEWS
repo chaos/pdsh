@@ -1,6 +1,24 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents those changes that are of interest to users and admins.
 
+* Changes in pdsh-2.26 (2011-04-29)
+===================================
+ -- Fix issue 14: interactive mode broken with ssh
+ -- Fix issue 19: missing commas in dshbak(1) header output
+ -- Fix issue 20: compilation error in genders.c with non-GCC compilers
+ -- Fix issue 23: compilation failure with --enable-static-modules
+ -- Fix issue 24: don't arbitrarily limit usernames to 16 characters
+ -- Fix issue 25: PDSH_SSH_ARGS should not require %u and %h
+ -- Fix issue 26: document use of %u and %h in PDSH_SSH_ARGS
+ -- Fix interactive mode with rcmd/exec.
+ -- genders: do not look for genders_query(3) support at runtime,
+     as this causes too many problems on some systems. Instead, 
+     use autoconf to include or exclude genders_query support from
+     the genders module. (fixes Issue 1)
+ -- Fix build on AIX
+ -- Add -Wl,-E to LDFLAGS on HP-UX (Issue 18)
+ -- Fixes for testsuite portability (Issues 15, 22, 28)
+
 * Changes in pdsh-2.25 (2011-03-09)
 ===================================
  -- Fix pdcp breakage with ssh (bug introduced in pdsh-2.24).
