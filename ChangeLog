@@ -1,3 +1,9 @@
+2011-04-29  Mark Grondona <mgrondona@llnl.gov>
+
+	* tests/t0001-basic.sh :
+	  Don't log manufactured test failures used to test cleanup
+	  where they would be reported by aggregate-results.sh.
+
 2011-04-28  Mark Grondona <mgrondona@llnl.gov>
 
 	* scripts/dshbak :

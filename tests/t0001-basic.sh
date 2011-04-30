@@ -77,6 +77,8 @@ test_expect_success 'tests clean up even on failures' "
 
 test_description='Failing tests with cleanup commands'
 
+# Don't log these as failures by pretending we're running under TAP::Harness
+HARNESS_ACTIVE=t
 # Point to the t/test-lib.sh, which isn't in ../ as usual
 TEST_DIRECTORY=\"$TEST_DIRECTORY\"
 . \"\$TEST_DIRECTORY\"/test-lib.sh
