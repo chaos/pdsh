@@ -1,6 +1,9 @@
 2011-04-29  Mark Grondona <mgrondona@llnl.gov>
 
 	* tests/runtests.sh :
+	  Exit non-zero from runtests.sh if any tests fail.
+
+	* tests/runtests.sh :
 	  Use $SHELL_PATH to invoke tests. Set SHELL_PATH to
 	  /usr/bin/bash and GIT_TEST_CMP to cmp on AIX.
 

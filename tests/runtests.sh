@@ -15,9 +15,15 @@ case "${uname_s}" in
 		  ;;
 esac
 
+code=0
 for test in t[0-9]*.sh; do
 	echo "*** $test ***"
 	$SHELL_PATH ./$test
+	if [ $? -ne 0 ]; then
+		code=1
+	fi
 done
 
 $SHELL_PATH aggregate-results.sh test-results/*
+
+exit $code
