@@ -120,7 +120,7 @@ test_expect_success DYNAMIC_MODULES,NOTROOT 'initialize directory tree' '
 	   mkdir bar &&
 	   echo "zzz" >bar/zzz &&
 	   mkdir baz &&
-	   echo "#!/bin/sh" > baz/exec.sh &&
+	   echo "#!$SHELL_PATH" > baz/exec.sh &&
 	   chmod +x baz/exec.sh &&
 	   echo "write protected file" > dir/a/b/c/xw &&
 	   chmod -w dir/a/b/c/xw

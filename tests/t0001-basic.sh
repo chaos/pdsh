@@ -21,7 +21,7 @@ test_expect_success 'pretend we have fixed a known breakage (run in sub test-lib
     mkdir passing-todo &&
 	(cd passing-todo &&
 	cat >passing-todo.sh <<EOF &&
-#!/bin/sh
+#!$SHELL_PATH
 
 test_description='A passing TODO test
 
@@ -73,7 +73,7 @@ test_expect_success 'tests clean up even on failures' "
     mkdir failing-cleanup &&
     (cd failing-cleanup &&
     cat >failing-cleanup.sh <<EOF &&
-#!/bin/sh
+#!$SHELL_PATH
 
 test_description='Failing tests with cleanup commands'
 

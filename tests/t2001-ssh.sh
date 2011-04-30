@@ -15,7 +15,7 @@ fi
 #
 
 test_expect_success 'create ssh dummy script' '
-	echo "#!/bin/sh"  >ssh &&
+	echo "#!$SHELL_PATH"  >ssh &&
 	echo "echo \"\$@\"" >>ssh &&
 	chmod 755 ssh
 '
@@ -129,7 +129,7 @@ test_debug '
 #
 
 test_expect_success 'create ssh dummy script for exit code testing' '
-	echo "#!/bin/bash"  >ssh
+	echo "#!$SHELL_PATH"  >ssh
 	echo "# Usage: $0 -n <this rank> -i <failing rank> -e <exitcode> " >>ssh
 	echo "while getopts \":n:i:e:l:\" opt; do "                        >>ssh
 	echo "  case \$opt in"                                             >>ssh

@@ -1,5 +1,10 @@
 2011-04-29  Mark Grondona <mgrondona@llnl.gov>
 
+	* tests/test-lib.sh, tests/t0001-basic.sh,
+	  tests/t0006-pdcp.sh, tests/t2001-ssh.sh :
+	  Use $SHELL_PATH in place of hard-coded /bin/sh in
+	  internal scripts and tests.
+
 	* tests/t0001-basic.sh :
 	  Don't log manufactured test failures used to test cleanup
 	  where they would be reported by aggregate-results.sh.

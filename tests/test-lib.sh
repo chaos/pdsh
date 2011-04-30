@@ -47,6 +47,12 @@ export LANG LC_ALL PAGER TERM TZ
 EDITOR=:
 export EDITOR
 
+#
+#  If SHELL_PATH is not set, use a default of /bin/sh
+#
+SHELL_PATH=${SHELL_PATH:-/bin/sh}
+export SHELL_PATH
+
 unset VISUAL
 #
 #  Pdsh variables
