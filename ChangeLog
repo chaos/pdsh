@@ -1,5 +1,9 @@
 2011-04-29  Mark Grondona <mgrondona@llnl.gov>
 
+	* tests/runtests.sh :
+	  Use $SHELL_PATH to invoke tests. Set SHELL_PATH to
+	  /usr/bin/bash and GIT_TEST_CMP to cmp on AIX.
+
 	* tests/t0006-pdcp.sh :
 	  Avoid using GNU-specific options to utilities like
 	  cp(1) and diff(1) for better portability. Replace explicit
