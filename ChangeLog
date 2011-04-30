@@ -1,5 +1,10 @@
 2011-04-29  Mark Grondona <mgrondona@llnl.gov>
 
+	* tests/Makefile.am, tests/Makefile.in :
+	  Run runtests.sh during "make check" instead of
+	  individual tests. This allows running tests under
+	  SHELL_PATH.
+
 	* tests/runtests.sh :
 	  Exit non-zero from runtests.sh if any tests fail.
 

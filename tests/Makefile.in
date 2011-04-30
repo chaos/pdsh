@@ -295,7 +295,7 @@ target_os = @target_os@
 target_vendor = @target_vendor@
 SUBDIRS = test-modules
 T = $(wildcard $(srcdir)/t[0-9]*.sh)
-TESTS = $(T)
+TESTS = runtests.sh
 EXTRA_DIST = \
     test-lib.sh \
     aggregate-results.sh \

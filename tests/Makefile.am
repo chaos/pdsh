@@ -5,7 +5,7 @@ CPPFLAGS = \
 
 T = $(wildcard $(srcdir)/t[0-9]*.sh)
 
-TESTS = $(T)
+TESTS = runtests.sh
 
 EXTRA_DIST = \
     test-lib.sh \
