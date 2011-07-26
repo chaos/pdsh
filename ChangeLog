@@ -1,3 +1,9 @@
+2011-07-26  Mark Grondona <mgrondona@llnl.gov>
+
+	* tests/t5000-dshbak.sh:
+	  Add tests for proper compress over zero-pad boundaries
+	  like 09-10 and 099-100, etc.
+
 2011-04-29  Mark Grondona <mgrondona@llnl.gov>
 
 	* : tag pdsh-2.26.

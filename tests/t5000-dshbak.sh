@@ -115,6 +115,52 @@ bar0: bar
 bar1: bar" "bar[0-1],foo[1-2,5]"
 '
 
+test_expect_success 'dshbak properly joins 9,10' '
+    dshbak_test "
+foo1: bar
+foo2: bar
+foo3: bar
+foo4: bar
+foo5: bar
+foo6: bar
+foo7: bar
+foo8: bar
+foo9: bar
+foo10: bar
+foo11: bar" "foo[1-11]"
+'
+
+test_expect_success 'issue 33: dshbak does not coalesce 09,10' '
+    dshbak_test "
+foo01: bar
+foo02: bar
+foo03: bar
+foo04: bar
+foo05: bar
+foo06: bar
+foo07: bar
+foo08: bar
+foo09: bar
+foo10: bar
+foo11: bar" "foo[01-11]"
+'
+
+test_expect_success 'issue 33: dshbak does not coalesce 099,100' '
+    dshbak_test "
+foo090: bar
+foo091: bar
+foo092: bar
+foo093: bar
+foo094: bar
+foo095: bar
+foo096: bar
+foo097: bar
+foo098: bar
+foo099: bar
+foo100: bar
+foo101: bar" "foo[090-101]"
+'
+
 cat >test_input <<EOF
 test
 input
