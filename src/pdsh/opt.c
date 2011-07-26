@@ -1278,7 +1278,7 @@ static void list_push_hostlist (List l, hostlist_t hl)
         Realloc ((void **) &s, n);
     }
 
-    list_push (l, Strdup (s));
+    list_push (l, s);
 }
 
 
