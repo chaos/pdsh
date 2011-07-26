@@ -304,7 +304,7 @@ int privsep_fini (void)
 
 int privsep_rresvport_af (int *lport, int family)
 {
-	int s;
+	int s = -1;
 
 	if (client_fd < 0)
 		return (p_rresvport_af (lport, family));
@@ -320,11 +320,12 @@ int privsep_rresvport_af (int *lport, int family)
 
 	if (write (client_fd, lport, sizeof (*lport)) < 0) {
 		err ("%p: privsep: client write: %m\n");
-		return (-1);
+		goto out;
 	}
 
 	s = recv_rresvport (client_fd, lport);
 
+out:
 	if ((errno = pthread_mutex_unlock (&privsep_mutex)))
 		errx ("%p: %s:%d: mutex_unlock: %m\n", __FILE__, __LINE__);
 
