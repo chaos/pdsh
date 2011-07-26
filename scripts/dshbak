@@ -261,12 +261,26 @@ sub compress_inner
 }
 
 #
-#  Return the zeropadding, if any, of $n: 
+#  Return the zeropadded width of $n, where the zero-padded
+#   width is the minimum format width a number with the given
+#   zero-padding. That is, no zero-padding is 1, because 0-9
+#   have a minimum width of 1, "01" has a width of 2, 010 has
+#   a width of 3 and so on.
 #
-sub zeropadding
+sub zeropadwidth
 {
    my ($n) = @_;
-   return (($n =~ /^0/) and ($n ne "0")) ? length $n : 0;
+
+   #
+   #  zeropad width is the length of $n if there are any leading
+   #   zeros and the number is not zero itself.
+   #
+   return length $n if (($n =~ /^0/) and ($n ne "0"));
+
+   #
+   #  If no leading zeros (or $n == 0) then the width is always '1'
+   #
+   return 1;
 }
 
 sub comp
@@ -281,7 +295,7 @@ sub comp
 
 	for my $host (sortn (@_)) {
 		my ($p, $n) = $host =~ /(.*?)(\d*)$/;
-		my $zp = &zeropadding ($n);
+		my $zp = &zeropadwidth ($n);
 		#
 		#  $s{$p} is a reference to an array of arrays
 		#   that indicate individual range elements of
@@ -292,9 +306,21 @@ sub comp
 		#   with zero-padding $zp into the @{$s{$p}} array.
 
 		#
-		#  See if $n-1 exists in the $s{$p} array (with same zero-pad)
+		#  Need to check if $n-1 exists in the $s{$p} array, but the
+		#   zero-padded width must be compatible. e.g.. "9" and "09"
+		#   are compatible with 10, but not with 010. 
 		#
 		my $idx = $i{$p}{$zp}{$n-1};
+
+		#
+		#  If the current zeropad is 1, and the length of $n is > 1,
+		#   then we check for a previous number with either zp == 1 or
+		#   zp == length. This catches 09-10, 099-100, etc .
+		#
+		if (!defined $idx && $zp == 1) {
+			$idx = $i{$p}{length $n}{$n-1};
+		}
+
 		if (defined $idx) {
 			#
 			#  $n - 1 is already in array, so update END:

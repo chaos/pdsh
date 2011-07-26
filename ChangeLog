@@ -1,5 +1,10 @@
 2011-07-26  Mark Grondona <mgrondona@llnl.gov>
 
+	* scripts/dshbak :
+	  Properly handle coalescing hosts across 9,10 99,100
+	  boundaries when zero-padding is in effect. e.g. 09-10
+	  099-100, etc. (Fixes issue 33).
+
 	* tests/t5000-dshbak.sh:
 	  Add tests for proper compress over zero-pad boundaries
 	  like 09-10 and 099-100, etc.
