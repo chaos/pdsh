@@ -1256,7 +1256,7 @@ struct regex_info * regex_info_create (const char *r, int exclude)
 
 void hostlist_filter_regex (hostlist_t hl, struct regex_info *re)
 {
-    const char *host;
+    char *host;
     hostlist_iterator_t i;
 
     i = hostlist_iterator_create (hl);
@@ -1264,6 +1264,7 @@ void hostlist_filter_regex (hostlist_t hl, struct regex_info *re)
         int rc = regexec (&re->reg, host, 0, NULL, re->eflags);
         if ((re->exclude && rc == 0) || (!re->exclude && rc == REG_NOMATCH))
             hostlist_remove (i);
+        free (host);
     }
     hostlist_iterator_destroy (i);
 }
