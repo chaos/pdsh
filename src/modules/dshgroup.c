@@ -121,33 +121,29 @@ static int dshgroup_process_opt(opt_t *pdsh_opt, int opt, char *arg)
 
 static hostlist_t _read_groupfile (const char *group)
 {
-    char groupfile[4096] = "";
-    char backupfile[4096] = "";
+    int maxpathlen;
+    char path [4096];
     char *home = getenv("HOME");
-    char *path = getenv("DSHGROUP_PATH");
+    char *dshgroup_path = getenv("DSHGROUP_PATH");
 
-    if (!path)
-        path = DSHGROUP_PATH;
+    maxpathlen = sizeof (path) - 1;
 
-    snprintf (backupfile, 4096, "%s/%s", path, group);
+    if (!dshgroup_path)
+        dshgroup_path = DSHGROUP_PATH;
 
     if (home) {
-        snprintf (groupfile, 4096, "%s/.dsh/group/%s", home, group);
-        if (access (groupfile, R_OK) >= 0) 
-            return read_wcoll(groupfile, NULL);
-    } else
+        int n;
+        n = snprintf (path, maxpathlen,"%s/.dsh/group:%s", home, dshgroup_path);
+        if (n <= 0 || n > maxpathlen)
+            errx ("%p: dshgroup: search path (%s/.dsh/group:%s) overflow\n",
+                    home, dshgroup_path);
+    }
+    else {
         err ("%p: dshgroup: warning: Unable to read $HOME env var\n");
+        strncpy (path, dshgroup_path, sizeof (path));
+    }
 
-    if (access (backupfile, R_OK) >= 0)
-        return read_wcoll(backupfile, NULL);
-
-    err ("%p: unable to read group file from ");
-    if (home)
-        err ("%s or %s\n", groupfile, backupfile);
-    else
-        err ("%s\n", backupfile);
-
-    return NULL;
+    return read_wcoll_path (path, group);
 }
 
 static hostlist_t _read_groups (List grouplist)
