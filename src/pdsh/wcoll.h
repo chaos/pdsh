@@ -42,6 +42,14 @@ typedef enum { false, true } bool;
 
 hostlist_t read_wcoll(char *, FILE *);
 
+/*
+ *  Read WCOLL file [file] searching colon-separated path [path].
+ *
+ *  Supports the use of '#include filename' to include other WCOLL files
+ *   that are also in [path].
+ */
+hostlist_t read_wcoll_path (const char *path, const char *file);
+
 #endif
 /*
  * vi:tabstop=4 shiftwidth=4 expandtab
