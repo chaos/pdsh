@@ -1,5 +1,10 @@
 2011-08-12  Mark Grondona <mgrondona@llnl.gov>
 
+	* src/pdsh/wcoll.c :
+	  Use the dirname of the wcoll file (or "." if reading
+	  from stdin) as the search path for WCOLL files supplied
+	  via environment variable or to -w ^file.
+
 	* tests/t1002-dshgroup.sh :
 	  Add tests for #include syntax with dshgroup.
 

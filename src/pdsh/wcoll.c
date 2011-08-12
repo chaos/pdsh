@@ -36,6 +36,7 @@
 #include <stdlib.h>             /* atoi */
 #include <errno.h>
 #include <ctype.h>
+#include <libgen.h>
 
 #include "src/common/err.h"
 #include "src/common/list.h"
@@ -263,6 +264,33 @@ hostlist_t read_wcoll_path (const char *path, const char *file)
 }
 
 /*
+ *  Get the dirname for the file path [file] and copy into the buffer
+ *   [dir] of length [len]. If [file] is NULL then return ".".
+ */
+static char * get_file_path (const char *file, char *dir, int len)
+{
+    char *str;
+    char *dname;
+
+    memset (dir, 0, len);
+    dir[0] = '.';
+
+    if (file == NULL)
+        return (dir);
+
+    str = Strdup (file);
+    dname = dirname (str);
+
+    if (dname && strlen (dname) < len - 1)
+        strcpy (dir, dname);
+    else
+        err ("%p: %s: Error reading file path\n");
+
+    Free ((void **) &str);
+    return (dir);
+}
+
+/*
  * Read wcoll from specified file or from the specified FILE pointer.
  * (one of the arguments must be NULL).  
  *      file (IN)       name of wcoll file (or NULL)
@@ -271,6 +299,7 @@ hostlist_t read_wcoll_path (const char *path, const char *file)
  */
 hostlist_t read_wcoll(char *file, FILE * f)
 {
+    char path[4096];
     hostlist_t new;
     struct wcoll_ctx *ctx;
     FILE *fp = NULL;
@@ -288,7 +317,9 @@ hostlist_t read_wcoll(char *file, FILE * f)
     } else                      /* read_wcoll(NULL, fp) */
         fp = f;
 
-    ctx = wcoll_ctx_create (".");
+    get_file_path (file, path, sizeof (path));
+
+    ctx = wcoll_ctx_create (path);
     wcoll_ctx_read_stream (ctx, fp);
     new = ctx->hl;
     wcoll_ctx_destroy (ctx);
