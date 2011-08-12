@@ -1,5 +1,8 @@
 2011-08-12  Mark Grondona <mgrondona@llnl.gov>
 
+	* tests/t1002-dshgroup.sh :
+	  Add tests for #include syntax with dshgroup.
+
 	* src/modules/dshgroup.c :
 	  Use read_wcoll_path instead of read_wcoll.
 

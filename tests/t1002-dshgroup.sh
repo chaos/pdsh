@@ -28,7 +28,24 @@ foo5
 foo4
 foo3
 EOF
+cat >.dsh/group/groupAB <<EOF
+#include groupA
+#include groupB
+foo8
+EOF
+cat >.dsh/group/groupA2 <<EOF
+#include $(pwd)/.dsh/group/groupA
+EOF
 
+cat >.dsh/group/groupX <<EOF
+#include groupY
+foo1
+EOF
+
+cat >.dsh/group/groupY <<EOF
+#include groupX
+foo2
+EOF
 
 test_expect_success 'dshgroup options are active' '
 	pdsh -h 2>&1 | grep -q "target hosts in dsh group"
@@ -48,6 +65,17 @@ test_expect_success 'dshgroup -X option works' '
 test_expect_success 'dshgroup -X option works with -w' '
 	O=$(pdsh -w foo[0-10] -X groupA -q | tail -1)
 	test_output_is_expected "$O" "foo[4-9]"
+'
+test_expect_success 'dshgroup #include syntax works' '
+    O=$(pdsh -g groupAB -q | tail -1)
+	test_output_is_expected "$O" "foo[0-5,8,10]"
+'
+test_expect_success 'dshgroup #include syntax works with absolute paths' '
+    O=$(pdsh -g groupA2 -q | tail -1)
+	test_output_is_expected "$O" "foo[0-3,10]"
+'
+test_expect_success 'dshgroup #include syntax detects loops' '
+    pdsh -g groupX -q 2>&1 | grep -q "warning:"
 '
 
 test_done
