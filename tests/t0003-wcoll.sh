@@ -112,4 +112,31 @@ test_expect_success 'multiple -w options' '
 	test_pdsh_wcoll "foo8" "foo8,foo9,foo10,foo11,foo12" "-w^wcoll" &&
 	test_pdsh_wcoll "foo1,bar1" "foo1" "-w/^foo/"
 '
+
+cat >A <<EOF
+foo1
+#include B
+EOF
+cat >B <<EOF
+foo2
+EOF
+
+test_expect_success 'wcoll files support #include syntax' '
+    test_pdsh_wcoll "^A" "foo1,foo2"
+'
+
+mkdir testdir
+cat >testdir/A <<EOF
+foo1
+foo2
+#include B
+EOF
+cat >testdir/B <<EOF
+foo10
+EOF
+
+test_expect_success 'wcoll #include syntax searches dirname of orignal file' '
+    test_pdsh_wcoll "^testdir/A" "foo1,foo2,foo10"
+'
+
 test_done

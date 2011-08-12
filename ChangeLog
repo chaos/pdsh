@@ -1,5 +1,8 @@
 2011-08-12  Mark Grondona <mgrondona@llnl.gov>
 
+	* tests/t0003-wcoll.sh :
+	  Add tests for #include usage with WCOLL and -w.
+
 	* src/pdsh/wcoll.c :
 	  Use the dirname of the wcoll file (or "." if reading
 	  from stdin) as the search path for WCOLL files supplied
