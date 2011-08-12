@@ -124,9 +124,12 @@ static hostlist_t _read_groupfile (const char *group)
     char groupfile[4096] = "";
     char backupfile[4096] = "";
     char *home = getenv("HOME");
+    char *path = getenv("DSHGROUP_PATH");
 
+    if (!path)
+        path = DSHGROUP_PATH;
 
-    snprintf (backupfile, 4096, DSHGROUP_PATH "/%s", group);
+    snprintf (backupfile, 4096, "%s/%s", path, group);
 
     if (home) {
         snprintf (groupfile, 4096, "%s/.dsh/group/%s", home, group);
