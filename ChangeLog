@@ -1,3 +1,8 @@
+2011-08-17  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/wcoll.c :
+	  Detect invalid #include lines in wcoll files.
+
 2011-08-16  Mark Grondona <mgrondona@llnl.gov>
 
 	* src/pdsh/wcoll.c :

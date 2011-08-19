@@ -134,18 +134,44 @@ static int wcoll_ctx_path_lookup (struct wcoll_ctx *ctx,
     return (rc);
 }
 
-static char * include_file (char *p)
+static char * include_file (char *line)
 {
-    if (strncmp (p, "#include", 8) != 0)
-        return NULL;
+    const char *sep = "\n\r\t ";
+    char *p = line;
+    char *orig;
+    char *included = NULL;
 
+    /*
+     *  Check for "#include" starting in first column. If it exists,
+     *   then attempt to return the included filename or path.
+     */
+    if (strncmp (p, "#include", 8) != 0)
+        return (NULL);
     p += 8;
+
     /*
      *  Skip whitespace
      */
     while (isblank (*p)) p++;
 
-    return strtok (p, "\n\r\t ");
+    /*
+     *  Copy original line in case we need to print an error.
+     */
+    orig = Strdup (line);
+
+    /*
+     *  Get next token, which should be the included filename or path.
+     *
+     *  If there are more tokens following the filename, then ignore
+     *   this line and print an error.
+     */
+    if ((p = strtok (p, sep)) == NULL || strtok (NULL, "\n\r\t "))
+        err ("%p: warning: Ignoring invalid line: %s", orig);
+    else
+        included = p;
+
+    Free ((void **) &orig);
+    return (included);
 }
 
 /*
