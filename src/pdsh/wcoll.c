@@ -145,7 +145,7 @@ static char * include_file (char *p)
      */
     while (isblank (*p)) p++;
 
-    return strsep (&p, "\n\r\t ");
+    return strtok (p, "\n\r\t ");
 }
 
 /*
