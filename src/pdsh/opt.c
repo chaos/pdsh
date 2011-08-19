@@ -771,8 +771,10 @@ static void wcoll_expand (opt_t *opt)
      *  Create new hostlist for wcoll
      */
     opt->wcoll = hostlist_create ("");
-    while ((hosts = hostlist_shift (hl)))
+    while ((hosts = hostlist_shift (hl))) {
         hostlist_push (opt->wcoll, hosts);
+        free (hosts);
+    }
 
     hostlist_destroy (hl);
 }

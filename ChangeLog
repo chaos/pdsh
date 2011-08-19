@@ -1,3 +1,8 @@
+2011-08-13  Mark Grondona <mgrondona@llnl.gov>
+
+	* src/pdsh/opt.c (wcoll_expand) :
+	  Fix memory leak.
+
 2011-08-12  Mark Grondona <mgrondona@llnl.gov>
 
 	* tests/t0003-wcoll.sh :
