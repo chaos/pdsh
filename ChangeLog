@@ -1,5 +1,8 @@
 2011-08-17  Mark Grondona <mgrondona@llnl.gov>
 
+	* tests/t0003-wcoll.sh :
+	  Add test for detecting malformed #include line in wcoll file.
+
 	* src/pdsh/wcoll.c :
 	  Detect invalid #include lines in wcoll files.
 

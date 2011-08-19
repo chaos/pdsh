@@ -139,4 +139,35 @@ test_expect_success 'wcoll #include syntax searches dirname of orignal file' '
     test_pdsh_wcoll "^testdir/A" "foo1,foo2,foo10"
 '
 
+cat >testdir/A <<EOF
+foo1
+foo2
+#include B garbage
+EOF
+
+cat >testdir/B <<EOF
+#
+#included A
+foo10
+EOF
+cat >testdir/C <<EOF
+#
+#include
+foo11
+EOF
+
+test_expect_success 'wcoll #include syntax ignores malformed lines' '
+    test_pdsh_wcoll "^testdir/A" "foo1,foo2" &&
+	pdsh -w^testdir/A -q 2>&1 | grep -q warning
+'
+test_expect_success 'wcoll match #include exactly' '
+    test_pdsh_wcoll "^testdir/B" "foo10" &&
+	pdsh -w^testdir/B -q 2>&1 | grep -q warning
+'
+
+test_expect_success 'wcoll: #include alone fails' '
+    test_pdsh_wcoll "^testdir/C" "foo11" &&
+	pdsh -w^testdir/C -q 2>&1 | grep -q warning
+'
+
 test_done
