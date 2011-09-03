@@ -965,6 +965,15 @@ seq() {
 
 
 #
+#  Ensure that pdsh has been built.
+#
+if ! test -x $PDSH_BUILD_DIR/src/pdsh/pdsh; then
+  say_color error 'Can not find a pdsh binary to test'
+  say_color error 'Do you need to run the build system?'
+  exit 1
+fi
+
+#
 # If the pdsh build directory owner and the pdsh binary have
 #  different ownership, abort the test because pdsh will not
 #  be able to load any modules, and almost no tests will work.
