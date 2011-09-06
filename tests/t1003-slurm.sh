@@ -23,10 +23,11 @@ export KILLJOBIDS=""
 #  Create a batch job and return the jobid or FAILED on stdout
 #
 create_batch_job() {
-	ID=$(echo -e '#!/bin/sh\nsleep 100\n'|sbatch "$@" |sed 's/Submitted batch job //')
+	ID=$(printf '#!/bin/sh\nsleep 100\n'|sbatch "$@" |sed 's/Submitted batch job //')
 	count=0
-    while test "$(squeue -j $ID -ho %t)" != "R" -a $((count++)) -lt 30; do
+    while test "$(squeue -j $ID -ho %t)" != "R" && $count -lt 30; do
         sleep 1;
+        $((count=count+1))
     done
 	if test "$count" -ge 30; then
 		echo FAILED

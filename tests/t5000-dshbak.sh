@@ -5,7 +5,7 @@ test_description='dshbak functionality'
 . ${srcdir:-.}/test-lib.sh
 
 dshbak_test() {
-	echo -e "$1" | dshbak -c  > output
+	printf "$1\n" | dshbak -c  > output
 	cat output \
            | while read line ; do
 	       test "$line" = "$2" && echo ok
@@ -15,7 +15,7 @@ dshbak_test() {
 dshbak_test_notok()
 {
 	touch ok
-	echo -e "$1" \
+	printf "$1\n" \
 		| dshbak -c \
 		| while read line ; do
 		    test "$line" = "$2" && rm ok
@@ -199,7 +199,7 @@ test_expect_success 'dshbak -d fails when output dir does not exist' '
 test_expect_success SANITY 'dshbak -d fails gracefully for non-writable dir' '
   mkdir test_output &&
   chmod 500 test_output &&
-  echo -e "foo0: bar" | dshbak -d test_output 2>&1 | tee logfile | \
+  printf "foo0: bar\n" | dshbak -d test_output 2>&1 | tee logfile | \
      grep "Failed to open output file"  &&
   rm -rf test_output logfile || :
 '

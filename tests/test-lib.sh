@@ -959,7 +959,7 @@ seq() {
 	fi
 	while [ $i -le $end ]; do
 		echo $i
-		let i=$i+1
+		i=$((i+1))
 	done
 }
 

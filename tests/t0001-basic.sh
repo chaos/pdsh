@@ -176,7 +176,7 @@ test_expect_success 'too long username fails gracefully' '
 	u="X"
 	while [ $i -lt 512 ]; do
 		u="${u}X"
-		let i=$i+1
+		i=$((i+1))
 	done
 	pdsh -wfoo -l${u} -q 2>&1 | grep "exceeds max username length"
 '
