@@ -841,8 +841,8 @@ static int _thd_init (thd_t *th, opt_t *opt, List pcp_infiles, int i)
     th->pcp_progname = opt->progname;
     th->outfile_name = opt->outfile_name;
     th->kill_on_fail = opt->kill_on_fail;
-    th->outbuf = cbuf_create (64, 8192);
-    th->errbuf = cbuf_create (64, 8192);
+    th->outbuf = cbuf_create (64, 131072);
+    th->errbuf = cbuf_create (64, 131072);
 
     if (!(th->rcmd = rcmd_create (th->host))) {
         th->state = DSH_CANCELED;
