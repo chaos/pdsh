@@ -522,8 +522,8 @@ static int _extract_rc(char *buf)
 
 static int _do_output (int fd, cbuf_t cb, out_f outf, bool read_rc, thd_t *t)
 {
-    char buf[8192];
-    int rc = 0;
+    char c;
+    int n, rc;
     int dropped = 0;
 
     if ((rc = cbuf_write_from_fd (cb, fd, -1, &dropped)) < 0) {
@@ -533,22 +533,45 @@ static int _do_output (int fd, cbuf_t cb, out_f outf, bool read_rc, thd_t *t)
         return (-1);
     } 
 
-    while (cbuf_read_line (cb, buf, 8192, 1) > 0) {
+    /*
+     *  Use cbuf_peek_line with a single character buffer in order to
+     *   get the buffer size needed for the next line (if any).
+     */
+    while ((n = cbuf_peek_line (cb, &c, 1, 1))) {
+        char *buf;
 
-        if (read_rc)
-            t->rc = _extract_rc (buf);
+        if (n < 0) {
+            err ("%p: %S: Failed to peek line: %m\n", t->host);
+            break;
+        }
 
-        if (strlen (buf) > 0) {
+        /*
+         *  Allocate enough space for line plus NUL character,
+         *   then actually read line data into buffer:
+         */
+        buf = Malloc (n + 1);
+        if ((n = cbuf_read (cb, buf, n))) {
+            if (n < 0) {
+                err ("%p: %S: Failed to read line from buffer: %m\n", t->host);
+                break;
+            }
+            if (read_rc)
+                t->rc = _extract_rc (buf);
+            /*
+             *  We are careful to use a single call to write the line
+             *   to the output stream to avoid interleaved lines of
+             *   output.
+             */
             if (t->labels)
                 outf ("%S: %s", t->host, buf);
             else
                 outf ("%s", buf);
             fflush (NULL);
         }
+        Free ((void **)&buf);
     }
 
     return (rc);
-
 }
 
 static void _flush_output (cbuf_t cb, out_f outf, thd_t *t)
