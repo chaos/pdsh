@@ -73,6 +73,7 @@ where so far the only digits used are:
    1 - pdsh misc module tests
    2 - pdsh rcmd module tests
    5 - other tools tests (e.g. dshbak)
+   6 - pdsh regression tests (that don't fit in other categories)
 
 Obviously, tests are run in numerical order, so if one test depends on
 another it should be numbered higher.
