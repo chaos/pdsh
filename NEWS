@@ -1,6 +1,23 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents those changes that are of interest to users and admins.
 
+* Changes in pdsh-2.27 (2011-09-07)
+===================================
+ -- Fix issue 17: Allow dshgroup files to include other files
+ -- Fix issue 33: dshbak breaks up host lists at zeropad boundaries,
+     (e.g. 01-09,10-11, 010-099,100-101, etc.)
+ -- Fix issue 34: dshgroup path override broken in ./configure
+ -- Fix issue 36: pdsh truncates output lines at 8K
+ -- dshgroup: Allow dshgroup search path to be overridden by DSHGROUP_PATH,
+     a colon-separated list of directories to search. $HOME/.dsh/group
+     is still always prepended to this path.
+ -- Allow wcoll files (-w ^file and WCOLL=file) to include other files
+     with a "#include FILE" syntax. If included files have no path, then
+     a search path of the dirname of the included file ("." for stdin)
+     is used.
+ -- testsuite: added tests, fixed some portability issues.
+ -- Fix some minor memory leaks and locking bugs reported by Coverity.
+
 * Changes in pdsh-2.26 (2011-04-29)
 ===================================
  -- Fix issue 14: interactive mode broken with ssh
