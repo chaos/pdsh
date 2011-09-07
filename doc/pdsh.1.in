@@ -382,7 +382,10 @@ will need to use the \fBgenders\fR module instead.
 
 .SH "dshgroup module options"
 The dshgroup module allows pdsh to use dsh (or Dancer's shell) style
-group files from /etc/dsh/group/ or ~/.dsh/group/. 
+group files from /etc/dsh/group/ or ~/.dsh/group/. The default search
+path may be overridden with the DSHGROUP_PATH environment variable, a
+colon-separated list of directories to search. The default value
+for DSHGROUP_PATH is /etc/dsh/group.
 .TP
 .I "-g groupname,..."
 Target nodes in dsh group file "groupname" found in either 
@@ -390,6 +393,12 @@ Target nodes in dsh group file "groupname" found in either
 .TP
 .I "-X groupname,..."
 Exclude nodes in dsh group file "groupname."
+.PP
+As an enhancement in \fBpdsh\fR, dshgroup files may optionally
+include other dshgroup files via a special \fI#include STRING\fR syntax.
+The argument to \fI#include\fR may be either a file path, or a group
+name, in which case the path used to search for the group file is the
+same as if the group had been specified to \fI-g\fR.
 
 .SH "netgroup module options"
 The netgroup module allows pdsh to use standard netgroup entries to
