@@ -360,7 +360,7 @@ rm -rf "$RPM_BUILD_ROOT"
 
 %files
 %defattr(-,root,root)
-%doc COPYING README ChangeLog NEWS DISCLAIMER 
+%doc COPYING README NEWS DISCLAIMER 
 %doc README.KRB4 README.modules README.QsNet
 %{_bindir}/pdsh
 %{_bindir}/pdcp
