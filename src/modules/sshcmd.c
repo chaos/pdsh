@@ -70,8 +70,6 @@
 #include "src/pdsh/dsh.h"
 #include "src/pdsh/mod.h"
 
-#define HBUF_LEN	1024
-
 #if STATIC_MODULES
 #  define pdsh_module_info sshcmd_module_info
 #  define pdsh_module_priority sshcmd_module_priority
