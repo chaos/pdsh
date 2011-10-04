@@ -86,6 +86,7 @@ static int sshcmd_signal(int, void *arg, int);
 static int sshcmd(char *, char *, char *, char *, char *, int, int *, void **);
 static int sshcmd_destroy (pipecmd_t p);
 static int sshcmd_args_init (void);
+static int fixup_ssh_args (List ssh_args_list, int need_user);
 
 List ssh_args_list =     NULL;
 
@@ -132,7 +133,7 @@ struct pdsh_module pdsh_module_info = {
   &sshcmd_module_options[0],
 };
 
-static char **ssh_argv_create (const char **remote_argv)
+static char **ssh_argv_create (List arg_list, const char **remote_argv)
 {
     int n;
     char *arg;
@@ -144,12 +145,12 @@ static char **ssh_argv_create (const char **remote_argv)
     for (p = remote_argv; *p; p++)
         n++;
 
-    n += list_count (ssh_args_list) + 2;
+    n += list_count (arg_list) + 2;
     argv = (char **) Malloc (n * sizeof (char *));
     memset (argv, 0, n);
 
     n = 0;
-    i = list_iterator_create (ssh_args_list);
+    i = list_iterator_create (arg_list);
     while ((arg = list_next (i))) 
         argv[n++] = Strdup (arg);
     list_iterator_destroy (i);
@@ -214,6 +215,25 @@ static int sshcmd_init(opt_t * opt)
     return 0;
 }
 
+static void free_f (void *x)
+{
+    Free ((void **) &x);
+}
+
+static List ssh_args_list_copy (List args)
+{
+    List copy;
+    ListIterator i = list_iterator_create (args);
+    const char *arg;
+
+    copy = list_create ((ListDelF) free_f);
+    while ((arg = list_next (i)))
+        list_append (copy, Strdup (arg));
+    list_iterator_destroy (i);
+
+    return (copy);
+}
+
 static int mod_ssh_exit (void)
 {
     if (ssh_args_list)
@@ -245,6 +265,7 @@ sshcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
     const char **remote_argv = pdsh_remote_argv ();
     const char *alt_argv[] = { cmd, NULL };
     char **ssh_args;
+    List args_list;
 
     /*
      *  If running as pdcp/rpdcp, then the dsh code has rewritten
@@ -260,7 +281,19 @@ sshcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
     if (!remote_argv || !*remote_argv)
         remote_argv = alt_argv;
 
-    ssh_args = ssh_argv_create (remote_argv);
+    /*
+     *  Create a copy of ssh_args_list to customize for this target
+     */
+    args_list = ssh_args_list_copy (ssh_args_list);
+
+    if (strcmp (luser, ruser) != 0)
+        fixup_ssh_args (args_list, 1);
+    else
+        fixup_ssh_args (args_list, 0);
+
+    ssh_args = ssh_argv_create (args_list, remote_argv);
+
+    list_destroy (args_list);
 
     if (!(p = pipecmd ("ssh", (const char **) ssh_args, ahost, ruser, rank)))
         goto out;
@@ -307,7 +340,7 @@ static int arg_has_parameter (const char *arg, const char *s)
  *   If they are not present, assume we need to append them to the
  *   ssh args.
  */
-static int fixup_ssh_args (List ssh_args_list)
+static int fixup_ssh_args (List ssh_args_list, int need_user)
 {
     ListIterator i = list_iterator_create (ssh_args_list);
     char *arg;
@@ -315,13 +348,13 @@ static int fixup_ssh_args (List ssh_args_list)
     int got_host = 0;
 
     while ((arg = list_next (i))) {
-        if (arg_has_parameter (arg, "%u"))
+        if (need_user && arg_has_parameter (arg, "%u"))
             got_user = 1;
         if (arg_has_parameter (arg, "%h"))
             got_host = 1;
     }
 
-    if (!got_user) {
+    if (need_user && !got_user) {
         if (got_host) {
             /*
              *  Ensure "%lu" is not inserted after "%h":
@@ -342,7 +375,7 @@ static int fixup_ssh_args (List ssh_args_list)
 
      list_iterator_destroy (i);
      return (0);
-     }
+}
 
 static int sshcmd_args_init (void)
 {
@@ -364,11 +397,6 @@ static int sshcmd_args_init (void)
 
     ssh_args_list = list_split (" ", str);
     Free ((void **) &str);
-
-    /*
-     *   Append "-l%u" and "%h" if necessary:
-     */
-    fixup_ssh_args (ssh_args_list);
 
     return (0);
 }
