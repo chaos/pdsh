@@ -75,6 +75,8 @@
 #  define pdsh_module_priority sshcmd_module_priority
 #endif    
 
+#define DEFAULT_SSH_ARGS "-2 -a -x %h"
+
 int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
 
     
@@ -392,7 +394,7 @@ static int sshcmd_args_init (void)
     }
 
     if (!(val = getenv ("PDSH_SSH_ARGS")))
-        val = "-2 -a -x -l%u %h";
+        val = DEFAULT_SSH_ARGS;
     xstrcat (&str, val);
 
     ssh_args_list = list_split (" ", str);
