@@ -83,6 +83,14 @@ test_expect_success 'PDSH_SSH_ARGS does not require %u' '
 test_debug '
 	echo Output: "$OUTPUT"
 '
+test_expect_success 'PDSH_SSH_ARGS does not force %u when ruser not set (Issue 39)' '
+	OUTPUT=$(PDSH_SSH_ARGS="-p 888 %h" pdsh -Rssh -wfoo hostname)
+	echo "$OUTPUT" | grep "[-]l"
+	test $? -ne 0
+'
+test_debug '
+	echo Output: "$OUTPUT"
+'
 test_expect_success 'PDSH_SSH_ARGS without %u inserts %u before %h' '
 	OUTPUT=$(PDSH_SSH_ARGS="-p 888 %h" pdsh -ltestuser -Rssh -wfoo hostname)
 	echo "$OUTPUT" | grep "[-]p 888 -ltestuser foo hostname"
