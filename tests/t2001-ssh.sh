@@ -91,6 +91,29 @@ test_expect_success 'PDSH_SSH_ARGS does not force %u when ruser not set (Issue 3
 test_debug '
 	echo Output: "$OUTPUT"
 '
+test_expect_success 'ssh does not set -l%u by default (Issue 40)' '
+	OUTPUT=$(pdsh -Rssh -wfoo hostname)
+	echo "$OUTPUT" | grep "[-]l"
+	test $? -ne 0
+'
+test_debug '
+	echo Output: "$OUTPUT"
+'
+test_expect_success 'ssh sets -l%u when ruser != luser' '
+	OUTPUT=$(pdsh -Rssh -wfoo,testuser@bar hostname | grep bar) &&
+	echo "$OUTPUT" | grep "[-]ltestuser"
+'
+test_debug '
+	echo Output: "$OUTPUT"
+'
+test_expect_success 'ssh does not set -l%u when ruser == luser (Issue 40)' '
+	OUTPUT=$(pdsh -Rssh -wfoo,testuser@bar hostname | grep foo) &&
+	echo "$OUTPUT" | grep "[-]l"
+	test $? -ne 0
+'
+test_debug '
+	echo Output: "$OUTPUT"
+'
 test_expect_success 'PDSH_SSH_ARGS without %u inserts %u before %h' '
 	OUTPUT=$(PDSH_SSH_ARGS="-p 888 %h" pdsh -ltestuser -Rssh -wfoo hostname)
 	echo "$OUTPUT" | grep "[-]p 888 -ltestuser foo hostname"
