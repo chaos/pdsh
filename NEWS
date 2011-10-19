@@ -1,6 +1,13 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents those changes that are of interest to users and admins.
 
+* Changes in pdsh-2.28 (2011-10-19)
+===================================
+ -- Fix issue 39: ssh forces use of -l<user> option
+ -- Fix issue 40: -l%u added to ssh args only if remote and local
+     usernames differ
+ -- testsuite: Added tests for -l%u handing in ssh
+
 * Changes in pdsh-2.27 (2011-09-07)
 ===================================
  -- Fix issue 17: Allow dshgroup files to include other files
