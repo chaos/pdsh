@@ -29,7 +29,7 @@
 #endif
 
 #ifndef DSHGROUP_PATH
-#define DSHGROUP_PATH "/etc/dshgroup"
+#define DSHGROUP_PATH "/etc/dsh/group"
 #endif
 
 #include <unistd.h> /* access */
