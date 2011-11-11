@@ -26598,7 +26598,7 @@ fi
   #
   echo "$as_me:$LINENO: checking for whether to build dshgroup module" >&5
 echo $ECHO_N "checking for whether to build dshgroup module... $ECHO_C" >&6
-  ac_dshgroup_path="/etc/dshgroup";
+  ac_dshgroup_path="/etc/dsh/group";
 
 
 # Check whether --with-dshgroups or --without-dshgroups was given.
@@ -26606,7 +26606,8 @@ if test "${with_dshgroups+set}" = set; then
   withval="$with_dshgroups"
    case "$withval" in
         no)  ac_with_dshgroup=no ;;
-        *) ac_with_dshgroup=yes; ac_dshgroup_path="$withval" ;;
+        yes) ac_with_dshgroup=yes ;;
+        *)   ac_with_dshgroup=yes; ac_dshgroup_path="$withval" ;;
       esac
 
 
