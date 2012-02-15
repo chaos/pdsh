@@ -180,6 +180,7 @@ _allocbuf(struct pcp_server *s, BUF *bp, int fd, int blksize)
         bp->buf = malloc(size);
         if (!bp->buf) {
             _error(s, "malloc: out of memory\n");
+            bp->cnt = 0;
             return NULL;
         }
     }
@@ -218,14 +219,19 @@ _sink(struct pcp_server *svr, char *targ, BUF *bufp) {
     BUF *bp;
     off_t i, j, size;
     char ch;
-    const char *why;
-    int amt, count, exists, first, mask, mode;
+    const char *why = "failed to set 'why' string";
+    int amt, count, exists, mask, mode;
     int ofd, setimes, targisdir, cursize = 0;
-    char *np, buf[BUFSIZ], *namebuf = NULL;
+    char *np, *buf = NULL, *namebuf = NULL;
 
 #define	atime	tv[0]
 #define	mtime	tv[1]
 #define	SCREWUP(str)	{ why = str; goto screwup; }
+
+    if (!(buf = malloc(BUFSIZ))) {
+        _error(svr, "out of memory for buf: %m\n");
+        return;
+    }
 
     setimes = targisdir = 0;
     mask = umask(0);
@@ -241,14 +247,11 @@ _sink(struct pcp_server *svr, char *targ, BUF *bufp) {
     if (stat(targ, &stb) == 0 && (stb.st_mode & S_IFMT) == S_IFDIR)
         targisdir = 1;
 
-    for (first = 1;; first = 0) {
+    while (1) {
 		int rc;
         cp = buf;
-        if ((rc = read(svr->infd, cp, 1)) <= 0) {
-            if (namebuf)
-                free(namebuf);
-            return;
-        }
+        if ((rc = read(svr->infd, cp, 1)) <= 0)
+            goto end_server;
         if (*cp++ == '\n')
             SCREWUP("unexpected <newline>");
 
@@ -267,9 +270,7 @@ _sink(struct pcp_server *svr, char *targ, BUF *bufp) {
 
         if (buf[0] == 'E') {
             (void)write(svr->outfd, "", 1);
-            if (namebuf)
-                free(namebuf);
-            return;
+            goto end_server;
         }
 
         if (ch == '\n')
@@ -333,6 +334,7 @@ _sink(struct pcp_server *svr, char *targ, BUF *bufp) {
               
                 if (!(namebuf = malloc(need))) { 
                     _error(svr, "out of memory\n");
+                    cursize = 0;
 
                     /* original rcp may not work with a continue here,
                      * but it will work with pdcp protocol.
@@ -437,12 +439,14 @@ bad:
         }
     }
 
-    return;
-
 screwup:
     _error(svr, "protocol screwup: %s\n", why);
 
 end_server:
+    if (buf)
+        free(buf);
+    if (namebuf)
+        free(namebuf);
     return;
 }
 
