@@ -114,6 +114,16 @@ test_expect_success 'slurm -j option handles illegal jobid gracefully' '
 	pdsh -j garbage 2>&1 | grep -q "invalid setting"
 '
 
+test_expect_success 'slurm -P option works' '
+	part=$(sinfo -ho %P | head -1)
+	O1=$(sinfo -ho %N -p $part)
+	O2=$(pdsh -P $part -q | tail -1)
+        if test "x$O1" != "x$O2"; then
+		say_color error "Error: pdsh -P $part selected nodes $O2 expected $O1"
+		false
+	fi
+'
+
 #
 #  Clean up:
 #

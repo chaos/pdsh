@@ -70,9 +70,11 @@ static int mod_slurm_init(void);
 static int mod_slurm_wcoll(opt_t *opt);
 static int mod_slurm_exit(void);
 static hostlist_t _slurm_wcoll(List jobids);
+static hostlist_t _slurm_wcoll_partition(List partitions);
 static int slurm_process_opt(opt_t *, int opt, char *arg);
 
 static List job_list = NULL;
+static List partition_list = NULL;
 
 /*
  *  Export generic pdsh module options
@@ -94,6 +96,10 @@ struct pdsh_module_option slurm_module_options[] =
      "Run on nodes allocated to SLURM job(s) (\"all\" = all jobs)",
      DSH | PCP, (optFunc) slurm_process_opt
    },
+   { 'P', "partition,...",
+     "Run on nodes contained in SLURM partition",
+     DSH | PCP, (optFunc) slurm_process_opt
+   },
    PDSH_OPT_TABLE_END
  };
 
@@ -104,7 +110,7 @@ struct pdsh_module pdsh_module_info = {
   "misc",
   "slurm",
   "Mark Grondona <mgrondona@llnl.gov>",
-  "Attempt to read wcoll from SLURM_JOBID env var",
+  "Target nodes contained in SLURM jobs or partitions, read SLURM_JOBID by default",
   DSH | PCP, 
 
   &slurm_module_ops,
@@ -143,6 +149,9 @@ slurm_process_opt(opt_t *pdsh_opts, int opt, char *arg)
     case 'j':
         job_list = list_split_append (job_list, ",", arg);
         break;
+    case 'P':
+        partition_list = list_split_append (partition_list, ",", arg);
+        break;
     default:
         break;
     }
@@ -156,6 +165,9 @@ mod_slurm_exit(void)
     if (job_list)
         list_destroy (job_list);
 
+    if (partition_list)
+        list_destroy (partition_list);
+
     return (0);
 }
 
@@ -168,6 +180,15 @@ static int mod_slurm_wcoll(opt_t *opt)
 {
     if (job_list && opt->wcoll)
         errx("%p: do not specify -j with any other node selection option.\n");
+
+    if (partition_list && opt->wcoll)
+        errx("%p: do not specify -P with any other node selection option.\n");
+
+    if (partition_list && job_list)
+        errx("%p: do not specify -j and -P together.\n");
+
+    if (partition_list)
+        opt->wcoll = _slurm_wcoll_partition (partition_list);
 
     if (!opt->wcoll) 
             opt->wcoll = _slurm_wcoll (job_list); 
@@ -198,6 +219,13 @@ static int _jobid_requested (List l, uint32_t jobid)
     if (l == NULL)
         return (0);
     return (list_delete_all (l, (ListFindF)_find_id, &jobid));
+}
+
+static int _partition_requested (List l, char *partition)
+{
+    if (l == NULL)
+        return (0);
+    return (list_delete_all (l, (ListFindF)_find_str, partition));
 }
 
 static int _alljobids_requested (List l)
@@ -261,6 +289,48 @@ static hostlist_t _slurm_wcoll (List joblist)
     }
     
     slurm_free_job_info_msg (msg);
+
+    if (hl)
+        hostlist_uniq (hl);
+
+    return (hl);
+}
+
+static hostlist_t _slurm_wcoll_partition (List partitionlist)
+{
+    int i;
+    char * str;
+    hostlist_t hl = NULL;
+    partition_info_msg_t * msg;
+    partition_info_t * p;
+    ListIterator li;
+
+    if (slurm_load_partitions((time_t) NULL, &msg, 1) < 0)
+        errx ("Unable to contact slurm controller: %s\n",
+              slurm_strerror (errno));
+
+    for (i = 0; i < msg->record_count; i++){
+        p = &msg->partition_array[i];
+
+        if (_partition_requested (partitionlist, p->name)) {
+            hl = _hl_append (hl, p->nodes);
+            /*
+             * Exit when there is no more partitions to search
+             */
+            if (list_count (partitionlist) == 0)
+                break;
+        }
+    }
+
+    /*
+     *  Anything left in partitionlist wasn't found, emit a warning
+     */
+    li = list_iterator_create(partitionlist);
+    while ((str = list_next(li))){
+       err("%p: Warning - partition %s not found\n", str);
+    }
+
+    slurm_free_partition_info_msg (msg);
 
     if (hl)
         hostlist_uniq (hl);

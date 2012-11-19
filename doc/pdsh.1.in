@@ -321,6 +321,11 @@ Target list of nodes allocated to the SLURM job \fIjobid\fR. This option
 may be used multiple times to target multiple SLURM jobs. The special
 argument "all" can be used to target all nodes running SLURM jobs, e.g.
 \fI-j all\fR.
+.TP
+.I "-P partition[,partition,...]"
+Target list of nodes containing in the SLURM partition \fIpartition\fR.
+This option may be used multiple times to target multiple SLURM partitions
+and/or partitions may be given in a comma-delimited list.
 
 .SH "torque module options"
 The \fBtorque\fI module allows \fBpdsh\fR to target nodes based on
