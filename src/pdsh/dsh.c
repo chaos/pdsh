@@ -557,16 +557,18 @@ static int _do_output (int fd, cbuf_t cb, out_f outf, bool read_rc, thd_t *t)
             }
             if (read_rc)
                 t->rc = _extract_rc (buf);
-            /*
-             *  We are careful to use a single call to write the line
-             *   to the output stream to avoid interleaved lines of
-             *   output.
-             */
-            if (t->labels)
-                outf ("%S: %s", t->host, buf);
-            else
-                outf ("%s", buf);
-            fflush (NULL);
+            if (strlen (buf) > 0) {
+                /*
+                 *  We are careful to use a single call to write the line
+                 *   to the output stream to avoid interleaved lines of
+                 *   output.
+                 */
+                if (t->labels)
+                    outf ("%S: %s", t->host, buf);
+                else
+                    outf ("%s", buf);
+                fflush (NULL);
+            }
         }
         Free ((void **)&buf);
     }
