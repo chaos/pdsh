@@ -5,7 +5,7 @@ test_description='pdsh exec module tests'
 . ${srcdir:-.}/test-lib.sh
 
 if ! test_have_prereq MOD_RCMD_EXEC; then
-	skip_all='skipping ssh tests, ssh module not available'
+	skip_all='skipping exec tests, exec module not available'
 	test_done
 fi
 
