@@ -9,6 +9,11 @@ if ! test_have_prereq MOD_RCMD_MRSH; then
 	test_done
 fi
 
+if ! pdsh -Rmrsh -w localhost /bin/true 2>&1 >/dev/null; then
+	skip_all='skipping mrsh tests, mrsh server not available on localhost'
+	test_done
+fi
+
 test_expect_success 'mrsh module runs' '
 	OUTPUT=$(pdsh -Rmrsh -w localhost echo i am here)
 '
