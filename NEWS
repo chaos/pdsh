@@ -1,6 +1,13 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents those changes that are of interest to users and admins.
 
+* Changes in pdsh-2.29 (2013-02-12)
+===================================
+ -- Fix issue 42: --with-dshgroup sets DSHGROUP_PATH to "yes"
+ -- Fix issue 53: Add -P option to target SLURM partitions (Michael Fenn)
+ -- Fix issue 54: pdsh prints empty lines with -S
+ -- pdcp: Add more levels of directory recursion (Pythagoras Watson)
+
 * Changes in pdsh-2.28 (2011-10-19)
 ===================================
  -- Fix issue 39: ssh forces use of -l<user> option
