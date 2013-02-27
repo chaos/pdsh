@@ -168,6 +168,15 @@ test_expect_success 'missing genders file with -F is an error' '
 	fi
 '
 
+cat >genders.issue55 <<EOF
+prefix1 skip_me
+prefix-suffix1 no_skip
+EOF
+test_expect_success 'pdsh -X excludes more hosts than expected (Issue 55)' '
+	OUTPUT=$(pdsh -F ./genders.issue55 -Aq -X skip_me | tail -1)
+	test_output_is_expected "$OUTPUT" "prefix-suffix1"
+'
+
 
 unset PDSH_GENDERS_DIR
 unset PDSH_MISC_MODULES
