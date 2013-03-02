@@ -1,6 +1,13 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents those changes that are of interest to users and admins.
 
+* Changes in pdsh-2.29 (2013-03-02)
+===================================
+ -- Fix issue 55: genders -X option removes more hosts than expected.
+     (This was a generic fix for hostname matching, so it probably
+      affected -x and other options as well.)
+ -- testsuite: Add test for issue 55.
+
 * Changes in pdsh-2.29 (2013-02-12)
 ===================================
  -- Fix issue 42: --with-dshgroup sets DSHGROUP_PATH to "yes"
