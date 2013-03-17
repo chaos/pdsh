@@ -171,6 +171,13 @@ mod_slurm_exit(void)
     return (0);
 }
 
+static void _append_hostlist (hostlist_t *hl1, hostlist_t hl2)
+{
+    if (*hl1 == NULL)
+        *hl1 = hostlist_create ("");
+    hostlist_push_list (*hl1, hl2);
+}
+
 /*
  *  If no wcoll has been established by this time, look for the
  *    SLURM_JOBID env var, and set wcoll to the list of nodes allocated
@@ -178,20 +185,32 @@ mod_slurm_exit(void)
  */
 static int mod_slurm_wcoll(opt_t *opt)
 {
-    if (job_list && opt->wcoll)
-        errx("%p: do not specify -j with any other node selection option.\n");
+    hostlist_t hlp = NULL, hlj = NULL;
 
-    if (partition_list && opt->wcoll)
-        errx("%p: do not specify -P with any other node selection option.\n");
-
-    if (partition_list && job_list)
-        errx("%p: do not specify -j and -P together.\n");
-
+    /*
+     *  If a list of partitions is supplied gather the hosts
+     */
     if (partition_list)
-        opt->wcoll = _slurm_wcoll_partition (partition_list);
+        hlp = _slurm_wcoll_partition (partition_list);
 
-    if (!opt->wcoll) 
-            opt->wcoll = _slurm_wcoll (job_list); 
+    if (job_list)
+        hlj = _slurm_wcoll (job_list);
+
+    /*
+     *  If no partition or job list, and empty wcoll, use
+     *   SLURM_JOBID if set.
+     */
+    if (!hlp && !hlj && !opt->wcoll)
+        hlj = _slurm_wcoll (NULL);
+
+    if (hlp) {
+        _append_hostlist (&opt->wcoll, hlp);
+        hostlist_destroy (hlp);
+    }
+    if (hlj) {
+        _append_hostlist (&opt->wcoll, hlj);
+        hostlist_destroy (hlj);
+    }
 
     return 0;
 }
