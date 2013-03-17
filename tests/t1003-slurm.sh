@@ -124,6 +124,15 @@ test_expect_success 'slurm -P option works' '
 	fi
 '
 
+test_expect_success 'slurm -P works with -w' '
+	part=$(sinfo -ho %P | head -1)
+	O1=$(sinfo -ho %N -p $part)
+	O2=$(pdsh -P $part -w foo,bar -q | tail -1)
+	if test "foo,bar,x$O1" != "x$O2"; then
+		say_color error "Error: pdsh -P $part -w foo,bar got $02 expected foo,bar,$O1"
+	fi
+'
+
 #
 #  Clean up:
 #
