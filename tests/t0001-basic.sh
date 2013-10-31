@@ -147,9 +147,6 @@ test_expect_success 'pdsh -N option works' '
     fi
 '
 
-run_timeout() {
-	perl -e 'alarm shift @ARGV; exec @ARGV' "$@"
-}
 test_expect_success LONGTESTS '-u option is functional' '
 	run_timeout 5 pdsh -wfoo -Rexec -u 1 sleep 10 2>&1 \
             | grep -i "command timeout"

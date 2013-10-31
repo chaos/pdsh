@@ -177,6 +177,13 @@ test_expect_success 'pdsh -X excludes more hosts than expected (Issue 55)' '
 	test_output_is_expected "$OUTPUT" "prefix-suffix1"
 '
 
+cat >genders.is.slow <<EOF
+foo[0-10000] test
+EOF
+test_expect_success 'genders query is slow' '
+	run_timeout 1 pdsh -F ./genders.is.slow -g test -q
+'
+
 
 unset PDSH_GENDERS_DIR
 unset PDSH_MISC_MODULES

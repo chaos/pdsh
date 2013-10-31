@@ -963,6 +963,12 @@ seq() {
 	done
 }
 
+#
+#  Run a command and send SIGALRM after timeout seconds
+#
+run_timeout() {
+	perl -e 'alarm shift @ARGV; exec @ARGV' "$@"
+}
 
 #
 #  Ensure that pdsh has been built.
