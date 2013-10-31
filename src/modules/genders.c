@@ -270,9 +270,14 @@ static int g_host_matches (const char *host, ListIterator i)
 static void genders_filter (hostlist_t hl, List query_list)
 {
     char *s;
-    hostlist_iterator_t i = hostlist_iterator_create (hl);
-    ListIterator qi = list_iterator_create (query_list);
+    hostlist_iterator_t i;
+    ListIterator qi;
 
+    if ((query_list == NULL) || (list_count (query_list) == 0))
+        return;
+
+    i = hostlist_iterator_create (hl);
+    qi = list_iterator_create (query_list);
     if ((i == NULL) || (qi == NULL)) {
         err ("%p: genders: failed to create list or hostlist iterator\n");
         return;
@@ -541,7 +546,6 @@ _read_genders_attr(char *query)
 static hostlist_t 
 _read_genders (List attrs)
 {
-    ListIterator i  = NULL;
     hostlist_t   hl = NULL;
     char *    query = NULL;
 
@@ -551,10 +555,7 @@ _read_genders (List attrs)
     if ((attrs == NULL) || (list_count (attrs) == 0))
         return NULL;
 
-    if ((i = list_iterator_create (attrs)) == NULL)
-        errx ("genders: unable to create list iterator: %m\n");
-
-    while ((query = list_next (i))) {
+    while ((query = list_pop (attrs))) {
         hostlist_t l = _read_genders_attr (query);
 
         if (hl == NULL) {
@@ -563,9 +564,8 @@ _read_genders (List attrs)
             hostlist_push_list (hl, l);
             hostlist_destroy (l);
         }
+        Free ((void **)&query);
     }
-
-    list_iterator_destroy (i);
 
     hostlist_uniq (hl);
 
