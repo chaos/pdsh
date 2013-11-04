@@ -152,6 +152,7 @@ struct pdsh_module pdsh_module_info = {
 static genders_t  _handle_create();
 static hostlist_t _genders_to_altnames(genders_t g, hostlist_t hl);
 static hostlist_t _read_genders(List l);
+static hostlist_t _read_genders_attr(char *query);
 static void       _genders_opt_verify(opt_t *opt);
 static int        _delete_all (hostlist_t hl, hostlist_t dl);
 static int        register_genders_rcmd_types (opt_t *opt);
@@ -237,29 +238,29 @@ genders_wcoll(opt_t *opt)
     return _read_genders(attrlist);
 }
 
-/*
- *  Return true if host returns true for any one genders query
- *   in list iterator i.
- */
-static int g_host_matches (const char *host, ListIterator i)
+static hostlist_t hostlist_intersect (hostlist_t h1, hostlist_t h2)
 {
-    char altname [1024];
-    int has_altname = 0;
-    size_t len = sizeof (altname);
-    const char altattr[] = GENDERS_ALTNAME_ATTRIBUTE;
-    char *query;
+    char *host;
+    hostlist_t r = hostlist_create (NULL);
+    hostlist_iterator_t i = hostlist_iterator_create (h1);
 
-    if (genders_testattr (gh, host, altattr, altname, len))
-        has_altname = 1;
-
-    list_iterator_reset (i);
-    while ((query = list_next (i))) {
-        if (genders_testquery (gh, host, query) == 1)
-            return (1);
-        if (has_altname && genders_testquery (gh, altname, query) == 1)
-            return (1);
+    while ((host = hostlist_next (i))) {
+        if (hostlist_find (h2, host) >= 0) {
+            hostlist_push_host (r, host);
+	}
+        free (host);
     }
-    return (0);
+    hostlist_iterator_destroy (i);
+    return (r);
+}
+
+static hostlist_t genders_query_with_altnames (char *query)
+{
+    hostlist_t r = _read_genders_attr (query);
+    hostlist_t altlist = _genders_to_altnames (gh, r);
+    hostlist_push_list (r, altlist);
+    hostlist_destroy (altlist);
+    return (r);
 }
 
 /*
@@ -267,28 +268,36 @@ static int g_host_matches (const char *host, ListIterator i)
  *   Multiple queries are ORed together, so a given host must only
  *   match a single query.
  */
-static void genders_filter (hostlist_t hl, List query_list)
+static hostlist_t genders_filter (hostlist_t hl, List query_list)
 {
     char *s;
-    hostlist_iterator_t i;
-    ListIterator qi;
+    ListIterator i;
+    hostlist_t result;
 
     if ((query_list == NULL) || (list_count (query_list) == 0))
-        return;
+        return hl;
 
-    i = hostlist_iterator_create (hl);
-    qi = list_iterator_create (query_list);
-    if ((i == NULL) || (qi == NULL)) {
+    if ((i = list_iterator_create (query_list)) == NULL) {
         err ("%p: genders: failed to create list or hostlist iterator\n");
-        return;
+        return hl;
     }
 
-    while ((s = hostlist_next (i))) {
-        if (!g_host_matches (s, qi))
-            hostlist_remove (i);
+    /*
+     *  Result is the union of the intersection of each genders query
+     *   with the incoming hostlist [hl]
+     */
+    result = hostlist_create (NULL);
+    while ((s = list_next (i))) {
+        hostlist_t ghl = genders_query_with_altnames (s);
+        hostlist_t r = hostlist_intersect (hl, ghl);
+        hostlist_destroy (ghl);
+
+        hostlist_push_list (result, r);
     }
-    hostlist_iterator_destroy (i);
-    list_iterator_destroy (qi);
+    list_iterator_destroy (i);
+    hostlist_uniq (result);
+    hostlist_destroy (hl);
+    return (result);
 }
 
 static int
@@ -303,7 +312,7 @@ genders_postop(opt_t *opt)
         gh = _handle_create();
 
     if (attrlist)
-        genders_filter (opt->wcoll, attrlist);
+        opt->wcoll = genders_filter (opt->wcoll, attrlist);
 
     if (excllist && (hl = _read_genders (excllist))) {
         hostlist_t altlist = _genders_to_altnames (gh, hl);
