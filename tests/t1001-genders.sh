@@ -188,6 +188,96 @@ test_expect_success 'genders filter is slow' '
 	run_timeout 1 pdsh -F ./genders.is.slow -w foo[0-10000] -g test2 -q
 '
 
+cat >genders.torture <<EOF
+foo[1-1000] bar
+foo[200-300] baz
+foo700 pdsh_all_skip
+EOF
+results=(
+'pdsh@<hostname>: no remote hosts specified'
+'pdsh@<hostname>: no remote hosts specified'
+'pdsh@<hostname>: no remote hosts specified'
+'pdsh@<hostname>: no remote hosts specified'
+'foo[1-1000]'
+'foo[1-199,301-1000]'
+'foo[1-49,101-1000]'
+'foo[1-49,101-199,301-1000]'
+'foo[31-2000]'
+'foo[31-199,301-2000]'
+'foo[31-49,101-2000]'
+'foo[31-49,101-199,301-2000]'
+'foo[31-1000]'
+'foo[31-199,301-1000]'
+'foo[31-49,101-1000]'
+'foo[31-49,101-199,301-1000]'
+'foo[1-699,701-1000]'
+'foo[1-199,301-699,701-1000]'
+'foo[1-49,101-699,701-1000]'
+'foo[1-49,101-199,301-699,701-1000]'
+'pdsh@<hostname>: Do not specify -a with -g'
+'pdsh@<hostname>: Do not specify -a with -g'
+'pdsh@<hostname>: Do not specify -a with -g'
+'pdsh@<hostname>: Do not specify -a with -g'
+'foo[31-699,701-2000]'
+'foo[31-199,301-699,701-2000]'
+'foo[31-49,101-699,701-2000]'
+'foo[31-49,101-199,301-699,701-2000]'
+'pdsh@<hostname>: Do not specify -a with -g'
+'pdsh@<hostname>: Do not specify -a with -g'
+'pdsh@<hostname>: Do not specify -a with -g'
+'pdsh@<hostname>: Do not specify -a with -g'
+'foo[1-1000]'
+'foo[1-199,301-1000]'
+'foo[1-49,101-1000]'
+'foo[1-49,101-199,301-1000]'
+'pdsh@<hostname>: Do not specify -a with -g'
+'pdsh@<hostname>: Do not specify -a with -g'
+'pdsh@<hostname>: Do not specify -a with -g'
+'pdsh@<hostname>: Do not specify -a with -g'
+'foo[31-2000]'
+'foo[31-199,301-2000]'
+'foo[31-49,101-2000]'
+'foo[31-49,101-199,301-2000]'
+'pdsh@<hostname>: Do not specify -a with -g'
+'pdsh@<hostname>: Do not specify -a with -g'
+'pdsh@<hostname>: Do not specify -a with -g'
+'pdsh@<hostname>: Do not specify -a with -g'
+'foo[1-699,701-1000]'
+'foo[1-199,301-699,701-1000]'
+'foo[1-49,101-699,701-1000]'
+'foo[1-49,101-199,301-699,701-1000]'
+'pdsh@<hostname>: Do not specify -a with -g'
+'pdsh@<hostname>: Do not specify -a with -g'
+'pdsh@<hostname>: Do not specify -a with -g'
+'pdsh@<hostname>: Do not specify -a with -g'
+'foo[31-699,701-2000]'
+'foo[31-199,301-699,701-2000]'
+'foo[31-49,101-699,701-2000]'
+'foo[31-49,101-199,301-699,701-2000]'
+'pdsh@<hostname>: Do not specify -a with -g'
+'pdsh@<hostname>: Do not specify -a with -g'
+'pdsh@<hostname>: Do not specify -a with -g'
+'pdsh@<hostname>: Do not specify -a with -g'
+)
+let i=0
+for A in "" "-A "; do
+ for a in "" "-a "; do
+  for w in "" "-w foo[31-2000] "; do
+   for g in "" "-g bar "; do
+    for x in "" "-x foo[50-100] "; do
+     for X in "" "-X baz "; do
+        test_expect_success "Py's genders test #$i ($A$a$w$g$x$X)" '
+             OUTPUT=$(pdsh -F ./genders.torture -q $A$a$w$g$x$X 2>&1 |
+                      tail -1 | sed "s/^\(pdsh@\)[^:]*/\1<hostname>/")
+             test_output_is_expected "$OUTPUT" "${results[$i]}"
+        '
+        let i=i+1
+     done
+    done
+   done
+  done
+ done
+done
 
 unset PDSH_GENDERS_DIR
 unset PDSH_MISC_MODULES
