@@ -1,7 +1,13 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents those changes that are of interest to users and admins.
 
-* Changes in pdsh-2.29 (2013-03-02)
+* Changes in pdsh-2.31 (2013-11-07)
+===================================
+ -- Fix issue 56: slurm: Allow mixed use of -P, -w and -j options.
+ -- Fix issue 59: pdsh very slow when using a few thousand hosts and genders.
+ -- testsuite: Expanded tests for genders module (Pythagoras Watson)
+
+* Changes in pdsh-2.30 (2013-03-02)
 ===================================
  -- Fix issue 55: genders -X option removes more hosts than expected.
      (This was a generic fix for hostname matching, so it probably
