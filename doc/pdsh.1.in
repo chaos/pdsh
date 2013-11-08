@@ -269,7 +269,10 @@ attribute. This is shorthand for running "pdsh -A -X pdsh_all_skip ..."
 .TP 
 .I "-g attr[=val][,attr[=val],...]"
 Target nodes that match any of the specified genders attributes (with
-optional values). Conflicts with \fI\-a\fR and \fI\-w\fR options. This
+optional values). Conflicts with the \fI\-a\fR option. If used in
+combination with other node selection options like \fI-w\fR, the
+\fI-g\fR option will select from the supplied node list, instead of
+from the genders file as a whole. Otherwise, This
 option targets the alternate hostnames in the genders database by
 default. The \fI\-i\fR option provided by the genders module may be used
 to translate these to the canonical genders hostnames. If the installed
