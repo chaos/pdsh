@@ -359,7 +359,7 @@ _genders_opt_verify(opt_t *opt)
  *   }
  */
     if (allnodes && (attrlist != NULL))
-        errx("%p: Do not specify -a with -g\n");
+        errx("%p: Do not specify -A or -a with -g\n");
 #endif /* !GENDERS_G_ONLY */
     return;
 }
