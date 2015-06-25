@@ -112,7 +112,7 @@ sub process_lines
 	while (<>) {
 		my ($tag, $data) = m/^\s*(\S+?)\s*: ?(.*\n)$/;
 		#  Ignore lines that aren't prefixed with a hostname:
-		next unless $tag;
+		next unless "$tag" ne "";
 		push(@{$lines{$tag}}, $data);
 	}
 	return %lines;
