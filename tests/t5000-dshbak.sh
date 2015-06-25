@@ -203,5 +203,15 @@ test_expect_success SANITY 'dshbak -d fails gracefully for non-writable dir' '
      grep "Failed to open output file"  &&
   rm -rf test_output logfile || :
 '
+test_expect_success 'Issue 70: dshbak fails on hostname of 0' '
+    dshbak_test "
+0: foo
+1: foo
+2: foo
+0: bar
+1: bar
+2: bar
+" "[0-2]"
+'
 
 test_done
