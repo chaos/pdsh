@@ -183,10 +183,14 @@ be listed in the user\'s .rhosts file (even for root).
 .TP
 .I "-t seconds"
 Set the connect timeout. Default is @CONNECT_TIMEOUT@ seconds.
+This option may also be set via the PDSH_CONNECT_TIMEOUT environment
+variable.
 .TP
 .I "-u seconds"
 Set a limit on the amount of time a remote command is allowed to execute.
 Default is no limit. See note in LIMITATIONS if using \fI-u\fR with ssh.
+This option may also be set via the PDSH_COMMAND_TIMEOUT environment
+variable.
 .TP
 .I "-f number"
 Set the maximum number of simultaneous remote commands to \fInumber\fR.

@@ -449,6 +449,14 @@ void opt_env(opt_t * opt)
         if (string_to_int (rhs, &opt->fanout) < 0)
             errx ("%p: Invalid environment variable FANOUT=%s\n", rhs);
 
+    if ((rhs = getenv("PDSH_CONNECT_TIMEOUT")) != NULL)
+        if (string_to_int (rhs, &opt->connect_timeout) < 0)
+            errx ("%p: Invalid environment variable PDSH_CONNECT_TIMEOUT=%s\n", rhs);
+
+    if ((rhs = getenv("PDSH_COMMAND_TIMEOUT")) != NULL)
+        if (string_to_int (rhs, &opt->command_timeout) < 0)
+            errx ("%p: Invalid environment variable PDSH_COMMAND_TIMEOUT=%s\n", rhs);
+
     if ((rhs = getenv("PDSH_RCMD_TYPE")) != NULL)
         opt->rcmd_name = Strdup(rhs);
 
