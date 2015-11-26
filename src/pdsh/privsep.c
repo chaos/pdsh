@@ -150,7 +150,7 @@ static int send_rresvport (int pipefd, int fd, int lport)
 		cmsg->cmsg_len     = CONTROLLEN;
 		msg.msg_control    = (caddr_t) cmsg;
 		msg.msg_controllen = CONTROLLEN;
-		* (int *) CMSG_DATA(cmsg) = fd;
+		memcpy (CMSG_DATA (cmsg), &fd, sizeof (int));
 	}
 #endif
 
@@ -198,7 +198,7 @@ static int recv_rresvport (int pipefd, int *lptr)
 		return (-1);
 
 #if !HAVE_MSGHDR_ACCRIGHTS
-	fd = *(int *) CMSG_DATA (cmsg);
+	memcpy (&fd, CMSG_DATA (cmsg), sizeof (int));
 #endif
 
 	return (fd);
