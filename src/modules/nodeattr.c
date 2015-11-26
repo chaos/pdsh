@@ -36,6 +36,7 @@
 #include "src/common/err.h"
 #include "src/common/xmalloc.h"
 #include "src/common/xstring.h"
+#include "src/common/split.h"
 #include "src/pdsh/xpopen.h"
 #include "src/pdsh/mod.h"
 
