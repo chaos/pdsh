@@ -21,7 +21,7 @@ AC_DEFUN([AC_DEBUG],
 [
   AC_MSG_CHECKING([whether debugging is enabled])
   AC_ARG_ENABLE([debug],
-    AC_HELP_STRING([--enable-debug], [enable debugging code for development]),
+    AS_HELP_STRING([--enable-debug],[enable debugging code for development]),
     [ case "$enableval" in
         yes) ac_debug=yes ;;
         no)  ac_debug=no ;;

@@ -20,7 +20,7 @@ AC_DEFUN([AC_FANOUT],
 [
   AC_MSG_CHECKING([for default fanout])
   AC_ARG_WITH([fanout],
-    AC_HELP_STRING([--with-fanout=N], [Specify default fanout]),
+    AS_HELP_STRING([--with-fanout=N],[Specify default fanout]),
     [ case "$withval" in
         no)  FANOUT=1 ;;
         *)   FANOUT=$withval ;;

@@ -21,7 +21,7 @@ AC_DEFUN([AC_EXEC],
   #
   AC_MSG_CHECKING([for whether to build exec module])
   AC_ARG_WITH([exec],
-    AC_HELP_STRING([--with-exec], [Build exec module]),
+    AS_HELP_STRING([--with-exec],[Build exec module]),
     [ case "$withval" in
         no)  ac_with_exec=no ;;
         yes) ac_with_exec=yes ;;

@@ -21,8 +21,7 @@ AC_DEFUN([AC_GENDERS],
   #
   AC_MSG_CHECKING([for whether to build genders module])
   AC_ARG_WITH([genders],
-    AC_HELP_STRING([--with-genders],
-      [Build genders module for libgenders support]),
+    AS_HELP_STRING([--with-genders],[Build genders module for libgenders support]),
     [ case "$withval" in
         no)  ac_with_libgenders=no ;;
         yes) ac_with_libgenders=yes ;;

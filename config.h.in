@@ -282,8 +282,8 @@
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
 
-/* Define to 1 if you have the <sys/sysmacros.h */
-#undef HAVE_SYS_SYSMACROS_H
+/* Define to 1 if you have the <sys/sysmacros.h,> header file. */
+#undef HAVE_SYS_SYSMACROS_H_
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H

@@ -21,8 +21,7 @@ AC_DEFUN([AC_NODEATTR],
   #
   AC_MSG_CHECKING([for whether to build nodeattr module])
   AC_ARG_WITH([nodeattr],
-    AC_HELP_STRING([--with-nodeattr(=PATH)], 
-      [Build nodeattr module (PATH=program location)]),
+    AS_HELP_STRING([--with-nodeattr(=PATH)],[Build nodeattr module (PATH=program location)]),
     [ case "$withval" in
         no)  ac_with_nodeattr=no ;;
         yes) ac_with_nodeattr=yes ;;

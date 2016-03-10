@@ -19,8 +19,7 @@ AC_DEFUN([AC_TORQUE],
   AC_MSG_CHECKING([for whether to build torque module])
 
   AC_ARG_WITH([torque],
-    AC_HELP_STRING([--with-torque],
-      [support running pdsh under Torque allocation]),
+    AS_HELP_STRING([--with-torque],[support running pdsh under Torque allocation]),
       [ case "$withval" in
           yes) ac_with_torque=yes ;;
           no)  ac_with_torque=no ;;

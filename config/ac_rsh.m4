@@ -23,7 +23,7 @@ AC_DEFUN([AC_RSH],
   #
   AC_MSG_CHECKING([for whether to build rsh module])
   AC_ARG_WITH([rsh],
-    AC_HELP_STRING([--without-rsh], [Do not include the standard rsh module]),
+    AS_HELP_STRING([--without-rsh],[Do not include the standard rsh module]),
     [ case "$withval" in
         no)  ac_with_rsh=no ;;
         yes) ac_with_rsh=yes ;;

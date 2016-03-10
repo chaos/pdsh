@@ -6,11 +6,12 @@
 #
 # This file is to be processed with autoconf to generate a configure script.
 
-AC_INIT([pdsh])
+AC_INIT
+AC_CONFIG_SRCDIR([pdsh])
 X_AC_META
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_SRCDIR([src/pdsh/dsh.h])
-AC_CANONICAL_SYSTEM
+AC_CANONICAL_TARGET
 AC_GPL_LICENSED
 
 # hack to fix dejagnu.am brokenness before automake 1.6
@@ -22,7 +23,7 @@ fi
 #  Automake support
 # 
 AM_INIT_AUTOMAKE([$META_NAME], [$VERSION], [no-define])
-AM_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADERS([config.h])
 AM_MAINTAINER_MODE
 
 #
@@ -48,7 +49,7 @@ AM_CONDITIONAL(WITH_GNU_LD, test "$with_gnu_ld" = "yes")
 # Do we want static modules?
 #
 AC_ARG_ENABLE([static-modules],
-              AC_HELP_STRING([--enable-static-modules], [Build static modules]),
+              AS_HELP_STRING([--enable-static-modules],[Build static modules]),
               ac_static_modules=yes)
 AM_CONDITIONAL(WITH_STATIC_MODULES, test "$ac_static_modules" = "yes")
 
