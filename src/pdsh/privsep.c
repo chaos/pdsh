@@ -123,6 +123,10 @@ static int send_rresvport (int pipefd, int fd, int lport)
 
 	cmsg = (struct cmsghdr *) &buf;
 #endif
+#if !HAVE_RRESVPORT
+	errno = ENOSYS;
+	return (-1);
+#endif
 
 	memset (&msg, 0, sizeof (msg));
 
@@ -162,6 +166,7 @@ static int send_rresvport (int pipefd, int fd, int lport)
 	return (0);
 }
 
+#if HAVE_RRESVPORT
 static int recv_rresvport (int pipefd, int *lptr)
 {
 	int            fd = -1;
@@ -203,19 +208,23 @@ static int recv_rresvport (int pipefd, int *lptr)
 
 	return (fd);
 }
+#endif /* HAVE_RRESVPORT */
 
 
 static int p_rresvport_af (int *port, int family)
 {
 #if HAVE_RRESVPORT_AF
 	return rresvport_af (port, family);
-#else
+#elif HAVE_RRESVPORT
 	/*  Family must be AF_INET
 	 */
 	if (family != AF_INET)
 		err ("%p: rresvport called with family != AF_INET!\n");
 	/* ignore family != AF_INET */
 	return rresvport (port);
+#else
+	errno = ENOSYS;
+	return (-1);
 #endif
 }
 
@@ -274,6 +283,9 @@ static int create_privileged_child (void)
 
 int privsep_init (void)
 {
+#if !HAVE_RRESVPORT
+	return (0);
+#endif
 	if (geteuid() == getuid())
 		return 0;
 
@@ -285,6 +297,9 @@ int privsep_init (void)
 
 int privsep_fini (void)
 {
+#if !HAVE_RRESVPORT
+	return (0);
+#endif
 	int status;
 	if (client_fd < 0 || cpid < 0)
 		return (0);
@@ -334,5 +349,11 @@ out:
 
 int privsep_rresvport (int *lport)
 {
+#if HAVE_RRESVPORT
 	return privsep_rresvport_af (lport, AF_INET);
+#else
+	errno = ENOSYS;
+	return -1;
+#endif /* HAVE_RRESVPORT */
+	
 }
