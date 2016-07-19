@@ -7,7 +7,7 @@ Summary: Parallel remote shell program
 License: GPL
 Url: https://github.com/grondo/pdsh
 Group: System Environment/Base
-Source: http://dl.sourceforge.net/sourceforge/pdsh/pdsh-%{version}-1.tar.gz
+Source: pdsh-%{version}-1.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires: pdsh-rcmd
 
@@ -515,6 +515,7 @@ fi
 %changelog
 * Tue Jul 20 2016 Albert Chu <chu11@llnl.gov>
 - update URL to point to github URL
+- update Source to not point to sourceforge repo
 
 * Fri Jun 22 2007 Mark Grondona <mgrondona@llnl.gov>
 - reworked specfile conditionals to allow easy change of defaults
