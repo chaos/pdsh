@@ -124,23 +124,6 @@ static int mod_torque_init (void)
 }
 
 
-static int32_t str2jobid (const char *str)
-{
-    char *p = NULL;
-    long int jid;
-
-    if (str == NULL)
-        return (-1);
-
-    jid = strtoul (str, &p, 10);
-
-    if( *p != '\0' )
-        errx ("%p: invalid jobid format \"%s\" for -j\n", str);
-
-    return ((int32_t) jid);
-}
-
-
 static int
 torque_process_opt(opt_t *pdsh_opts, int opt, char *arg)
 {
@@ -180,14 +163,8 @@ static int mod_torque_wcoll(opt_t *opt)
     return 0;
 }
 
-static void _create_fq_jobid(char *dst, const char *jobid, const char *servername){
-  /*
-   *  Create fully qualified jobid, "<integer>.<servername>"
-   */
-    if ( str2jobid(jobid) < 0 ){
-        *dst = '\0';
-        return;
-    }
+static void _create_fq_jobid(char *dst, const char *jobid, const char *servername)
+{
     strncpy(dst, jobid, PBS_MAXSEQNUM);
     strncat(dst, ".", 1);
     strncat(dst, servername, PBS_MAXSERVERNAME);
