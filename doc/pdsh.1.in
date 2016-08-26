@@ -465,7 +465,7 @@ represents the degenerate hostlist: foo19.
 
 The hostlist syntax is meant only as a convenience on clusters with a 
 "prefixNNN" naming convention and specification of ranges should not be
-considered necessary -- this foo1,foo9 could be specified as such, or
+considered necessary -- the list foo1,foo9 could be specified as such, or
 by the hostlist foo[1,9].
 
 Some examples of usage follow:
