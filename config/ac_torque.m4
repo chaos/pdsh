@@ -33,7 +33,7 @@ AC_DEFUN([AC_TORQUE],
 
   if test "$ac_with_torque" = "yes"; then
     if pbs-config 1>/dev/null 2>&1; then
-      TORQUE_LIBS=$(pbs-config --libs)
+      TORQUE_LIBS=$(pbs-config --libs --libadd)
       TORQUE_CPPFLAGS=$(pbs-config --cflags)
       saveLIBS="$LIBS"
       LIBS="$TORQUE_LIBS $LIBS"
