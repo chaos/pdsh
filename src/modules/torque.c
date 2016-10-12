@@ -315,6 +315,10 @@ static hostlist_t _torque_wcoll (List joblist)
     }
     else {
         strncpy(servername, status->name, PBS_MAXSERVERNAME);
+        /* Some versions of torque will return server name as FQDN:PORT 
+         * which ends up being in the JobID sent back to the pbs_server.
+         */
+        strtok(servername, ":");
         pbs_statfree(status);
     }
 
