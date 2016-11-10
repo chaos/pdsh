@@ -493,6 +493,7 @@ void opt_args_early (opt_t * opt, int argc, char *argv[])
     extern int optind;
     extern char *optarg;
     extern int opterr;
+    int pc = 0;
 
     /*
      *  Disable error reporting from getopt during early processing,
@@ -502,8 +503,11 @@ void opt_args_early (opt_t * opt, int argc, char *argv[])
     opterr = 0;
 
 #ifdef __linux
-    /* Tell glibc getopt to stop eating after the first non-option arg */
-    putenv("POSIXLY_CORRECT=1");
+    if (!getenv("POSIXLY_CORRECT")) {
+        /* Tell glibc getopt to stop eating after the first non-option arg */
+        putenv("POSIXLY_CORRECT=1");
+        pc = 1;
+    }
 #endif
     while ((c = getopt(argc, argv, pdsh_options)) != EOF) {
         switch (c) {
@@ -514,6 +518,11 @@ void opt_args_early (opt_t * opt, int argc, char *argv[])
                 break;
         }
     }
+#ifdef __linux
+    if (pc) {
+        unsetenv("POSIXLY_CORRECT");
+    }
+#endif
 }
 
 static void wcoll_append_excluded (opt_t *opt, char *exclude_args)
