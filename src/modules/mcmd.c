@@ -620,7 +620,7 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
 
             memcpy(tptr,(char *) &rand,sizeof(rand));
             tptr += sizeof(rand);
-            if (fd_read_line (s3, tptr, LINEBUFSIZE) < 0)
+            if (fd_read_line (s3, tptr, LINEBUFSIZE - sizeof(rand)) < 0)
                 err("%p: %S: mcmd: Read error from remote host: %m\n", ahost);
             else
                 err("%p: %S: mcmd: Error: %s\n", ahost, &tmpbuf[0]);
