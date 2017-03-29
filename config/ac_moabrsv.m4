@@ -32,16 +32,23 @@ AC_DEFUN([AC_MOABRSV],
   AC_MSG_RESULT([${ac_with_moabrsv=no}]) 
 
   if test "$ac_with_moabrsv" = "yes"; then
-     PKG_CHECK_MODULES([LIBXML],[libxml-2.0],[ac_have_libxml2=yes])
+
+     AC_CHECK_LIB([xml2], [xmlInitParser],
+	          [ac_have_libxml2=yes],
+                  [ac_have_libxml2=no], [-lxml2])
 	
      if test "$ac_have_libxml2" != "yes"; then
         AC_MSG_NOTICE([Cannot support moabrsv without libxml2.])
      else
         ac_have_moabrsv=yes
         AC_ADD_STATIC_MODULE("moabrsv")
+        XML2_LIBS="-lxml2"
+        XML2_INCLUDE="-I/usr/include/libxml2"
         AC_DEFINE([HAVE_MOABRSV], [1], [Define if you have moabrsv.])
      fi
   fi
 
   AC_SUBST(HAVE_MOABRSV)
+  AC_SUBST(XML2_LIBS)
+  AC_SUBST(XML2_INCLUDE)
 ])
