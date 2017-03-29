@@ -162,6 +162,12 @@ check_pdsh_option() {
 	pdsh -$flag$flagval -w foo -q | grep -q "$name[ 	]*$value$"
 }
 
+check_pdsh_env_variable() {
+	env_var=$1; name=$2; env_var_val=$3;
+	echo "env_var=$env_var name='$name' env_var_val=$env_var_val"
+	env $env_var=$env_var_val pdsh -w foo -q | grep -q "$name[ 	]*$env_var_val$"
+}
+
 test_expect_success '-f sets fanout' '
 	check_pdsh_option f Fanout 8
 '
@@ -180,8 +186,14 @@ test_expect_success 'too long username fails gracefully' '
 test_expect_success '-t sets connect timeout' '
 	check_pdsh_option t "Connect timeout (secs)" 33
 '
+test_expect_success 'env PDSH_CONNECT_TIMEOUT sets connect timeout' '
+	check_pdsh_env_variable PDSH_CONNECT_TIMEOUT "Connect timeout (secs)" 33
+'
 test_expect_success '-u sets command timeout' '
 	check_pdsh_option u "Command timeout (secs)" 22
+'
+test_expect_success 'env PDSH_COMMAND_TIMEOUT sets command timeout' '
+	check_pdsh_env_variable PDSH_COMMAND_TIMEOUT "Command timeout (secs)" 22
 '
 test_expect_success 'command timeout 0 by default' '
     pdsh -w foo -q | grep -q "Command timeout (secs)[ 	]*0$"
