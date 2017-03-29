@@ -42,13 +42,13 @@ AC_DEFUN([AC_MOABRSV],
      else
         ac_have_moabrsv=yes
         AC_ADD_STATIC_MODULE("moabrsv")
-        XML2_LIBS="-lxml2"
-        XML2_INCLUDE="-I/usr/include/libxml2"
+        MOABRSV_LIBS="-lxml2"
+        MOABRSV_CPPFLAGS="-I/usr/include/libxml2"
         AC_DEFINE([HAVE_MOABRSV], [1], [Define if you have moabrsv.])
      fi
   fi
 
   AC_SUBST(HAVE_MOABRSV)
-  AC_SUBST(XML2_LIBS)
-  AC_SUBST(XML2_INCLUDE)
+  AC_SUBST(MOABRSV_LIBS)
+  AC_SUBST(MOABRSV_CPPFLAGS)
 ])
