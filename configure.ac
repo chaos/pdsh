@@ -226,7 +226,7 @@ AM_CONDITIONAL([WITH_TORQUE], [test "$ac_have_torque" = "yes"])
 #
 # Determine whether to to build moabrsv module (support running under Moab reservation)
 #
-AC_TORQUE
+AC_MOABRSV
 AM_CONDITIONAL([WITH_MOABRSV], [test "$ac_have_moabrsv" = "yes"])
 
 #
