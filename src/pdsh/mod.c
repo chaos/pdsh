@@ -37,11 +37,12 @@
 #include <dirent.h>
 #include <assert.h>
 #include <string.h>
+#include <libgen.h>
 
 #if STATIC_MODULES
 #include "static_modules.h"
 #else
-#include "ltdl.h"
+#include <dlfcn.h>
 #endif 
 
 #include "src/common/err.h"
@@ -72,7 +73,7 @@ struct module_components {
 #endif
 
 #if !STATIC_MODULES
-    lt_dlhandle handle;
+    void *handle;
 #endif
     char *filename;
 
@@ -128,11 +129,7 @@ mod_init(void)
             return -1;
         }
         initialized = true;
-#if STATIC_MODULES
         return 0;
-#else
-        return lt_dlinit();
-#endif
     } else
         return 0;
 }
@@ -149,11 +146,7 @@ mod_exit(void)
      */
     list_destroy(module_list);
     
-#if STATIC_MODULES || PREVENT_DLCLOSE_BUG
     return 0;
-#else
-    return lt_dlexit();
-#endif
 }
 
 hostlist_t
@@ -297,7 +290,7 @@ _mod_destroy(mod_t mod)
 #if !STATIC_MODULES
 #  if !PREVENT_DLCLOSE_BUG
     if (mod->handle)
-        lt_dlclose(mod->handle);
+        dlclose(mod->handle);
 #  endif
 #endif
 
@@ -806,22 +799,15 @@ static int
 _mod_load_dynamic(const char *fq_path)
 {
     mod_t mod = NULL;
-    const lt_dlinfo *info;
     int *priority;
     assert(fq_path != NULL);
 
     mod = mod_create();
 
-    if (!(mod->handle = lt_dlopen(fq_path)))
+    if (!(mod->handle = dlopen(fq_path,RTLD_LAZY)))
         goto fail;
 
-    if (!(info = lt_dlgetinfo(mod->handle))) 
-        goto fail_libtool_broken;
-
-    if (info->filename == NULL) 
-        goto fail_libtool_broken;
-
-    mod->filename = Strdup(info->filename);
+    mod->filename = Strdup(basename(fq_path));
 
     if (_is_loaded(mod->filename)) {
         /* Module already loaded. This is OK, no need for
@@ -832,12 +818,12 @@ _mod_load_dynamic(const char *fq_path)
     }
   
     /* load all module info from the pdsh_module structure */
-    if (!(mod->pmod = lt_dlsym(mod->handle, "pdsh_module_info"))) {
+    if (!(mod->pmod = dlsym(mod->handle, "pdsh_module_info"))) {
         err("%p:[%s] can't resolve pdsh module\n", mod->filename);
         goto fail;
     }
 
-    if ((priority = lt_dlsym(mod->handle, "pdsh_module_priority"))) 
+    if ((priority = dlsym(mod->handle, "pdsh_module_priority"))) 
         mod->priority = *priority;
 
     if (_mod_register(mod, mod->filename) < 0)

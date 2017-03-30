@@ -71,6 +71,10 @@ if WITH_TORQUE
 TORQUE_MODULE = torque.la
 endif
 
+if WITH_MOABRSV
+MOABRSV_MODULE = moabrsv.la
+endif
+
 if WITH_DSHGROUP
 DSHGROUP_MODULE = dshgroup.la
 endif
@@ -116,6 +120,7 @@ pkglib_LTLIBRARIES = \
 	$(KRB4_MODULE) \
 	$(SLURM_MODULE) \
 	$(TORQUE_MODULE) \
+	$(MOABRSV_MODULE) \
 	$(DSHGROUP_MODULE) \
 	$(NETGROUP_MODULE) \
 	$(EXEC_MODULE)
@@ -144,6 +149,8 @@ EXTRA_libmods_la_SOURCES = \
 	sdr.c \
 	k4cmd.c \
 	slurm.c \
+	torque.c \
+	moabrsv.c \
 	dshgroup.c \
 	netgroup.c \
 	xcpucmd.c \
@@ -161,7 +168,8 @@ libmods_la_LDFLAGS = \
 	$(KRB_LIBS) \
 	$(GENDERS_LIBS) \
 	$(SLURM_LIBS) \
-	$(TORQUE_LIBS)
+	$(TORQUE_LIBS) \
+	$(MOABRSV_LIBS)
 
 
 xrcmd_la_SOURCES =        xrcmd.c 
@@ -203,6 +211,9 @@ slurm_la_LDFLAGS =        $(MODULE_FLAGS) $(SLURM_LIBS)
 torque_la_SOURCES =       torque.c
 torque_la_LDFLAGS =       $(MODULE_FLAGS) $(TORQUE_LIBS)
 torque_la_CPPFLAGS =      $(TORQUE_CPPFLAGS)
+moabrsv_la_SOURCES =      moabrsv.c
+moabrsv_la_LDFLAGS =      $(MODULE_FLAGS) $(MOABRSV_LIBS)
+moabrsv_la_CPPFLAGS =     $(MOABRSV_CPPFLAGS)
 dshgroup_la_SOURCES =     dshgroup.c 
 dshgroup_la_LDFLAGS =     $(MODULE_FLAGS) 
 netgroup_la_SOURCES =     netgroup.c 

@@ -347,6 +347,16 @@ a Torque allocation).
 Target list of nodes allocated to the Torque job \fIjobid\fR. This option
 may be used multiple times to target multiple Torque jobs.
 
+.SH "moabrsv module options"
+The \fBmoabrsv\fI module allows \fBpdsh\fR to target nodes based on
+Moab reservations. Similar to the slurm and torque modules, the
+\fBmoabrsv\fR module is typically called after all other node
+selection options have been processed.
+.TP
+.I "-r rsvid[,rsvid,...]"
+Target list of nodes allocated to the Moab reservation \fIrsvid\fR. This option
+may be used multiple times to target multiple Moab reservations.
+
 .SH "rms module options"
 The \fBrms\fR module allows pdsh to target nodes based on an RMS 
 resource. The \fBrms\fR module is typically called after all other

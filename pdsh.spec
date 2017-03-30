@@ -87,6 +87,7 @@ Requires: pdsh-rcmd
 %{expand: %pdsh_opt machines}
 %{expand: %pdsh_opt slurm}
 %{expand: %pdsh_opt torque}
+%{expand: %pdsh_opt moabrsv}
 %{expand: %pdsh_opt rms}
 
 #
@@ -117,6 +118,7 @@ Requires: pdsh-rcmd
 %{?_with_pam:BuildRequires: pam-devel}
 %{?_with_slurm:BuildRequires: slurm-devel}
 %{?_with_torque:BuildRequires: torque-devel}
+%{?_with_moabrsv:BuildRequires: libxml2-devel}
 
 
 ##############################################################################
@@ -279,6 +281,13 @@ Requires:  torque
 Pdsh module providing support for gathering the list of target nodes
 from an allocated Torque job.
 
+%package   mod-moabrsv
+Summary:   Provides support for running pdsh under Moab reservations
+Group:     System Environment/Base
+Requires:  libxml2
+%description mod-moabrsv
+Pdsh module providing support for gathering the list of target nodes
+from a Moab reservation.
 
 
 ##############################################################################
