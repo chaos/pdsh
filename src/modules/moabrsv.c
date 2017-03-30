@@ -255,10 +255,9 @@ static hostlist_t _add_rsvnodes(hostlist_t hl, char *rsvid) {
     if ( rsvnodes!=NULL ) {
         node_list = list_split(",",rsvnodes);
 	li = list_iterator_create(node_list);
+	while ( (node=list_next(li)) )
+	    hl = _hl_append_node(hl,node);
 	list_destroy(node_list);
-	while ( (node=list_next(li)) ) {
-	    _hl_append_node(hl,node);
-	}
     }
 
     return hl;
