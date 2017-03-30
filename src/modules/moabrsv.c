@@ -105,7 +105,7 @@ struct pdsh_module_operations moabrsv_module_ops = {
  */
 struct pdsh_module_option moabrsv_module_options[] =
  {
-   { 'j', "rsvid,...",
+   { 'r', "rsvid,...",
      "Run on nodes allocated to Moab reservation(s)",
      DSH | PCP, (optFunc) moabrsv_process_opt
    },
@@ -137,7 +137,7 @@ static int
 moabrsv_process_opt(opt_t *pdsh_opts, int opt, char *arg)
 {
     switch (opt) {
-    case 'j':
+    case 'r':
         rsv_list = list_split_append(rsv_list, ",", arg);
         break;
     default:
