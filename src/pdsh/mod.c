@@ -37,6 +37,7 @@
 #include <dirent.h>
 #include <assert.h>
 #include <string.h>
+#include <libgen.h>
 
 #if STATIC_MODULES
 #include "static_modules.h"
@@ -806,7 +807,7 @@ _mod_load_dynamic(const char *fq_path)
     if (!(mod->handle = dlopen(fq_path,RTLD_LAZY)))
         goto fail;
 
-    mod->filename = basename(fq_path);
+    mod->filename = Strdup(basename(fq_path));
 
     if (_is_loaded(mod->filename)) {
         /* Module already loaded. This is OK, no need for
