@@ -14,7 +14,12 @@ if ! test_have_prereq MOD_MISC_MOABRSV; then
 fi
 
 if ! showres >/dev/null 2>&1; then
-	skip_all='skipping moab tests, moab install not available'
+	skip_all='skipping moab tests, showres not working'
+	test_done
+fi
+
+if ! mrsvctl -q ALL >/dev/null 2>&1; then
+	skip_all='skipping moab tests, mrsvctl not working'
 	test_done
 fi
 
