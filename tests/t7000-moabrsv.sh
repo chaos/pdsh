@@ -62,3 +62,4 @@ test_expect_success 'moabrsv -r option handles illegal rsvid gracefully' '
 	pdsh -r garbage 2>&1 | grep -q "No reservation data"
 '
 
+test_done
