@@ -102,3 +102,9 @@ Module:      misc/netgroup
 Package:     pdsh-mod-netgroup
 Description: Allows list of targets to be build from netgroups.
 Conflicts:   misc/genders, misc/dshgroup, misc/nodeattr
+
+Module:	     misc/moabrsv
+Package:     pdsh-mod-moabrsv
+Description: Allows list of targets to be build from Moab reservations.
+Conflicts:   None
+Requires:    libxml2

@@ -224,6 +224,12 @@ AC_TORQUE
 AM_CONDITIONAL([WITH_TORQUE], [test "$ac_have_torque" = "yes"])
 
 #
+# Determine whether to to build moabrsv module (support running under Moab reservation)
+#
+AC_MOABRSV
+AM_CONDITIONAL([WITH_MOABRSV], [test "$ac_have_moabrsv" = "yes"])
+
+#
 # Determine whether to build dshgroup module 
 # (support dsh-style /etc/dsh/group/%s ~/.dsh/group/%s files)
 #

@@ -87,6 +87,7 @@ Requires: pdsh-rcmd
 %{expand: %pdsh_opt machines}
 %{expand: %pdsh_opt slurm}
 %{expand: %pdsh_opt torque}
+%{expand: %pdsh_opt moabrsv}
 %{expand: %pdsh_opt rms}
 
 #
@@ -117,6 +118,7 @@ Requires: pdsh-rcmd
 %{?_with_pam:BuildRequires: pam-devel}
 %{?_with_slurm:BuildRequires: slurm-devel}
 %{?_with_torque:BuildRequires: torque-devel}
+%{?_with_moabrsv:BuildRequires: libxml2-devel}
 
 
 ##############################################################################
@@ -279,6 +281,13 @@ Requires:  torque
 Pdsh module providing support for gathering the list of target nodes
 from an allocated Torque job.
 
+%package   mod-moabrsv
+Summary:   Provides support for running pdsh under Moab reservations
+Group:     System Environment/Base
+Requires:  libxml2
+%description mod-moabrsv
+Pdsh module providing support for gathering the list of target nodes
+from a Moab reservation.
 
 
 ##############################################################################
@@ -482,6 +491,13 @@ rm -rf "$RPM_BUILD_ROOT"
 %endif
 ##############################################################################
 
+%if %{?_with_moabrsv:1}%{!?_with_moabrsv:0}
+%files mod-moabrsv
+%defattr(-,root,root)
+%{_libdir}/pdsh/moabrsv.*
+%endif
+##############################################################################
+
 %if %{?_with_qshell:1}%{!?_with_qshell:0}
 %files qshd
 %defattr(-,root,root)
@@ -513,6 +529,9 @@ fi
 ##############################################################################
 
 %changelog
+* Fri Mar 21 2017 Troy Baer <troy@osc.edu>
+- add mod-moabrsv package
+
 * Tue Jul 20 2016 Albert Chu <chu11@llnl.gov>
 - update URL to point to github URL
 - update Source to not point to sourceforge repo
