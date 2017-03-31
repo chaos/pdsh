@@ -1,0 +1,17 @@
+Makefile.in
+aclocal.m4
+config/Makefile.in
+config/libtool.m4
+config/ltmain.sh
+config.h.in
+configure
+doc/Makefile.in
+etc/Makefile.in
+scripts/Makefile.in
+src/Makefile.in
+src/common/Makefile.in
+src/modules/Makefile.in
+src/pdsh/Makefile.in
+src/qsnet/Makefile.in
+tests/Makefile.in
+tests/test-modules/Makefile.in
