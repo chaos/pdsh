@@ -491,6 +491,13 @@ rm -rf "$RPM_BUILD_ROOT"
 %endif
 ##############################################################################
 
+%if %{?_with_moabrsv:1}%{!?_with_moabrsv:0}
+%files mod-moabrsv
+%defattr(-,root,root)
+%{_libdir}/pdsh/moabrsv.*
+%endif
+##############################################################################
+
 %if %{?_with_qshell:1}%{!?_with_qshell:0}
 %files qshd
 %defattr(-,root,root)
@@ -522,6 +529,9 @@ fi
 ##############################################################################
 
 %changelog
+* Fri Mar 21 2017 Troy Baer <troy@osc.edu>
+- add mod-moabrsv package
+
 * Tue Jul 20 2016 Albert Chu <chu11@llnl.gov>
 - update URL to point to github URL
 - update Source to not point to sourceforge repo
