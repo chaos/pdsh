@@ -30,7 +30,7 @@ fi
 export PDSH_MISC_MODULES=moabrsv
 
 RSVIDS=$(showres | egrep 'Job|User' | awk '{print $1}')
-if [ -n "$RSVID" ]; then
+if [ -n "$RSVIDS" ]; then
    #
    # Use an existing reservation
    #
@@ -48,7 +48,7 @@ fi
 #
 NODES=$(mrsvctl -q --xml $RSVID | tr ' ' '\n' | grep AllocNodeList | sed 's/^AllocNodeList="//' | sed 's/"$//')
 
-test_expect_success 'smoabrsv -r option works' '
+test_expect_success 'moabrsv -r option works' '
 	O=$(pdsh -r$RSVID -q | tail -1)
 	if test "x$O" != "x$NODES"; then
 	   say_color error "Error: pdsh -r$RSVID selected nodes $O expected $NOD
@@ -58,7 +58,7 @@ ES"
         fi
 '
 
-test_expect_success 'moabrsv -r option handles illegal jobid gracefully' '
-	pdsh -r garbage 2>&1 | grep -q "invalid setting"
+test_expect_success 'moabrsv -r option handles illegal rsvid gracefully' '
+	pdsh -r garbage 2>&1 | grep -q "No reservation data"
 '
 
