@@ -110,12 +110,6 @@ AC_FANOUT
 AC_CONNECT_TIMEOUT
 
 #
-# Check for sdr
-#
-AC_SDR
-AM_CONDITIONAL(WITH_SDR, [test -n "$SDRGETOBJECTS"])
-
-#
 # Test for inclusion of standard "rsh" module
 # 
 AC_RSH

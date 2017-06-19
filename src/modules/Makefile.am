@@ -31,10 +31,6 @@ if WITH_MACHINES
 MACHINES_MODULE = machines.la
 endif
 
-if WITH_SDR
-SDR_MODULE = sdr.la
-endif
-
 if WITH_MRSH
 MRSH_MODULE = mcmd.la
 endif
@@ -97,7 +93,6 @@ pkglib_LTLIBRARIES = \
 	$(NODEATTR_MODULE) \
 	$(NODEUPDOWN_MODULE) \
 	$(MACHINES_MODULE) \
-	$(SDR_MODULE) \
 	$(KRB4_MODULE) \
 	$(SLURM_MODULE) \
 	$(TORQUE_MODULE) \
@@ -123,7 +118,6 @@ EXTRA_libmods_la_SOURCES = \
 	nodeattr.c \
 	nodeupdown.c \
 	machines.c \
-	sdr.c \
 	k4cmd.c \
 	slurm.c \
 	dshgroup.c \
@@ -157,15 +151,10 @@ machines_la_SOURCES =     machines.c
 machines_la_LDFLAGS =     $(MODULE_FLAGS)
 genders_la_SOURCES =      genders.c 
 genders_la_LDFLAGS =      $(MODULE_FLAGS) $(GENDERS_LIBS)
-if WITH_SDR
-genders_la_CPPFLAGS =     -DGENDERS_G_ONLY
-endif
 nodeattr_la_SOURCES =     nodeattr.c 
 nodeattr_la_LDFLAGS =     $(MODULE_FLAGS)
 nodeupdown_la_SOURCES =   nodeupdown.c 
 nodeupdown_la_LDFLAGS =   $(MODULE_FLAGS) $(NODEUPDOWN_LIBS)
-sdr_la_SOURCES =          sdr.c 
-sdr_la_LDFLAGS =          $(MODULE_FLAGS)
 slurm_la_SOURCES =        slurm.c 
 slurm_la_LDFLAGS =        $(MODULE_FLAGS) $(SLURM_LIBS)
 torque_la_SOURCES =       torque.c
