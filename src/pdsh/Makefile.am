@@ -62,7 +62,7 @@ config.c: $(top_srcdir)/META $(top_builddir)/config.h
 
 testconfig.c: $(top_srcdir)/META $(top_builddir)/config.h
 	@(echo "char *pdsh_version = \"$(PDSH_VERSION_FULL)\";";\
-          moddir=`cd $(top_builddir)/src/modules && pwd`; \
+          moddir=`cd $(top_builddir)/src/modules/.libs && pwd`; \
           echo "char *pdsh_module_dir = \"$$moddir\";"\
          )> testconfig.c
 
