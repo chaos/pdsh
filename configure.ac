@@ -152,18 +152,6 @@ AM_CONDITIONAL(WITH_KRB4, test  "$ac_have_krb4" =  "yes")
 AC_PAM
 
 #
-# Test for support of QSW Elan and Qshell support. If requested and
-#  available, build qshd and qcmd connect module.
-#
-# achu - WITH_QSW builds libqsw.  It is a separate conditional, b/c
-#        libqsw may be needed for mqshell (--with-mqshell) even if 
-#        --with-qshell is not specified
-#
-AC_QSHELL
-AM_CONDITIONAL(WITH_QSHELL, [test "$ac_have_qshell" = "yes"])
-AM_CONDITIONAL(WITH_QSW,    [test "$ac_have_qsw"    = "yes"])
-
-#
 # Test for whether to build "machines" module.
 #
 AC_MACHINES
@@ -193,14 +181,6 @@ AM_CONDITIONAL(WITH_NODEUPDOWN, [test "$ac_have_libnodeupdown" = "yes"])
 AC_MRSH
 AM_CONDITIONAL(WITH_LIBMUNGE,   [test "$ac_have_libmunge"      = "yes"])
 AM_CONDITIONAL(WITH_MRSH,       [test "$ac_have_mrsh"          = "yes"])
-
-#
-# Check if user wants to build mqshell
-# Run only after checks for --with-qshell and --with-mrsh 
-#
-AC_MQSHELL
-AM_CONDITIONAL(WITH_MQSHELL,    [test "$ac_have_mqshell"       = "yes"])
-AM_CONDITIONAL(WITH_QSW,        [test "$ac_have_qsw"           = "yes"])
 
 #
 # Determine whether to build RMS module (Support for RMS allocate)
@@ -313,7 +293,6 @@ AC_CONFIG_FILES([
   config/Makefile
   src/Makefile
   src/common/Makefile
-  src/qsnet/Makefile
   src/pdsh/Makefile
   src/modules/Makefile
   doc/Makefile

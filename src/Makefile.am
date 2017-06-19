@@ -8,6 +8,5 @@ include $(top_srcdir)/config/Make-inc.mk
 
 SUBDIRS = \
     common \
-    qsnet \
     modules \
     pdsh

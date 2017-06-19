@@ -15,14 +15,12 @@ EXTRA_DIST = \
     ac_krb4.m4 \
     ac_machines.m4 \
     ac_meta.m4 \
-    ac_mqshell.m4 \
     ac_mrsh.m4 \
     ac_xcpu.m4 \
     ac_nodeattr.m4 \
     ac_nodeupdown.m4 \
     ac_pam.m4 \
     ac_pollselect.m4 \
-    ac_qshell.m4 \
     ac_readline.m4 \
     ac_rmsquery.m4 \
     ac_sdr.m4 \
@@ -31,7 +29,6 @@ EXTRA_DIST = \
     ac_exec.m4 \
     ac_static_modules.m4 \
     acx_pthread.m4 \
-    ac_elan.m4 \
     ac_rsh.m4 \
     ac_slurm.m4 \
     ac_dshgroup.m4 \

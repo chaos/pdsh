@@ -42,6 +42,5 @@ EXTRA_DIST = \
     DISCLAIMER META \
     pdsh.spec \
     README.KRB4 \
-    README.QsNet \
     README.modules \
     bootstrap 
