@@ -33,13 +33,7 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_DEBUG
-
-#
-# Libtool and ltld.[ch] support
-#
-AC_LIBTOOL_DLOPEN
-AC_PROG_LIBTOOL
-AC_LIB_LTDL
+LT_INIT
 
 AM_CONDITIONAL(WITH_GNU_LD, test "$with_gnu_ld" = "yes")
 
