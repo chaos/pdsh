@@ -73,7 +73,7 @@ test_expect_success 'command timeout 0 by default' '
     pdcp -w foo -q * /tmp | grep -q "Command timeout (secs)[ 	]*0$"
 '
 
-export T="$TEST_DIRECTORY/test-modules"
+export T="$TEST_DIRECTORY/test-modules/.libs"
 
 test_expect_success DYNAMIC_MODULES,NOTROOT 'Have pcptest rcmd module' '
 	PDSH_MODULE_DIR=$T pdcp -L | grep -q pcptest
