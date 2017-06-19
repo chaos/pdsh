@@ -19,8 +19,7 @@ AC_DEFUN([AC_RMSQUERY],
   # 
   AC_MSG_CHECKING([for whether to build rms module])
   AC_ARG_WITH([rms],
-    AC_HELP_STRING([--with-rms], 
-      [support running pdsh under RMS allocation]),
+    AS_HELP_STRING([--with-rms],[support running pdsh under RMS allocation]),
       [ case "$withval" in
         yes) ac_with_rms=yes ;;
         no)  ac_with_rms=no ;;

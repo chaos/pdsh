@@ -21,7 +21,7 @@ AC_DEFUN([AC_MRSH],
   #
   AC_MSG_CHECKING([for whether to build mrsh module])
   AC_ARG_WITH([mrsh],
-    AC_HELP_STRING([--with-mrsh], [Build mrsh module]),
+    AS_HELP_STRING([--with-mrsh],[Build mrsh module]),
     [ case "$withval" in
         no)  ac_with_mrsh=no ;;
         yes) ac_with_mrsh=yes ;;

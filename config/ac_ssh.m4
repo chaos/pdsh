@@ -21,7 +21,7 @@ AC_DEFUN([AC_SSH],
   #
   AC_MSG_CHECKING([for whether to build ssh module])
   AC_ARG_WITH([ssh],
-    AC_HELP_STRING([--with-ssh], [Build ssh module]),
+    AS_HELP_STRING([--with-ssh],[Build ssh module]),
     [ case "$withval" in
         no)  ac_with_ssh=no ;;
         yes) ac_with_ssh=yes ;;

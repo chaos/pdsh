@@ -21,7 +21,7 @@ AC_DEFUN([AC_NODEUPDOWN],
   #
   AC_MSG_CHECKING([for whether to build nodeupdown module])
   AC_ARG_WITH([nodeupdown],
-    AC_HELP_STRING([--with-nodeupdown], [Build nodeupdown module]),
+    AS_HELP_STRING([--with-nodeupdown],[Build nodeupdown module]),
     [ case "$withval" in
         no)  ac_with_libnodeupdown=no ;;
         yes) ac_with_libnodeupdown=yes ;;
@@ -40,16 +40,8 @@ AC_DEFUN([AC_NODEUPDOWN],
       AC_MSG_NOTICE([Cannot support nodeupdown without libnodeupdown])
    else
       # Which nodeupdown API version do we have?
-      AC_TRY_COMPILE(
-           [#include <nodeupdown.h>],
-           [nodeupdown_load_data(NULL, NULL, NULL, NULL, 0,0);],
-           ac_nodeupdown_load_data_6=yes,
-           ac_nodeupdown_load_data_6=no)
-      AC_TRY_COMPILE(
-           [#include <nodeupdown.h>],
-           [nodeupdown_load_data(NULL, NULL, 0, 0, NULL);],
-           ac_nodeupdown_load_data_5=yes,
-           ac_nodeupdown_load_data_5=no)
+      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <nodeupdown.h>]], [[nodeupdown_load_data(NULL, NULL, NULL, NULL, 0,0);]])],[ac_nodeupdown_load_data_6=yes],[ac_nodeupdown_load_data_6=no])
+      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <nodeupdown.h>]], [[nodeupdown_load_data(NULL, NULL, 0, 0, NULL);]])],[ac_nodeupdown_load_data_5=yes],[ac_nodeupdown_load_data_5=no])
       
       if test "$ac_nodeupdown_load_data_6" = "yes"; then
            AC_DEFINE(HAVE_NODEUPDOWN_LOAD_DATA_6, 1, 

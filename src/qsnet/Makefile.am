@@ -6,7 +6,7 @@
 
 include $(top_srcdir)/config/Make-inc.mk
 
-INCLUDES = \
+AM_CPPFLAGS = \
     -I$(top_srcdir)
 
 if WITH_QSW

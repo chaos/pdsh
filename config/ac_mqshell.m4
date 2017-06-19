@@ -19,10 +19,7 @@
 AC_DEFUN([AC_STRUCT_SA_LEN],
 [
   AC_CACHE_CHECK([for sa_len in struct sockaddr], ac_cv_struct_sa_len,
-        AC_TRY_COMPILE([#include <sys/types.h> #include <sys/socket.h>], 
-                        [struct sockaddr s; s.sa_len;],
-                        ac_cv_struct_sa_len=yes, 
-                        ac_cv_struct_sa_len=no))
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h> #include <sys/socket.h>]], [[struct sockaddr s; s.sa_len;]])],[ac_cv_struct_sa_len=yes],[ac_cv_struct_sa_len=no]))
 
   if test $ac_cv_struct_sa_len = yes; then
      AC_DEFINE(HAVE_SA_LEN, [1], [do we have sa_len in struct sockaddr])  
@@ -37,7 +34,7 @@ AC_DEFUN([AC_MQSHELL],
   #
   AC_MSG_CHECKING([for whether to build mqshell module and mqshd daemon])
   AC_ARG_WITH([mqshell],
-    AC_HELP_STRING([--with-mqshell], [Build mqshell module and mqshd daemon]),
+    AS_HELP_STRING([--with-mqshell],[Build mqshell module and mqshd daemon]),
     [ case "$withval" in
         no)  ac_with_mqshell=no ;;
         yes) ac_with_mqshell=yes ;;

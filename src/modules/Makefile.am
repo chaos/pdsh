@@ -8,7 +8,7 @@ include $(top_srcdir)/config/Make-inc.mk
 
 AUTOMAKE_OPTIONS = foreign
 
-INCLUDES =         -I$(top_srcdir)
+AM_CPPFLAGS =      -I$(top_srcdir)
 
 
 if WITH_SSH

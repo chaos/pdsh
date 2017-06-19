@@ -19,8 +19,7 @@ AC_DEFUN([AC_SLURM],
   # 
   AC_MSG_CHECKING([for whether to build slurm module])
   AC_ARG_WITH([slurm],
-    AC_HELP_STRING([--with-slurm], 
-      [support running pdsh under SLURM allocation]),
+    AS_HELP_STRING([--with-slurm],[support running pdsh under SLURM allocation]),
       [ case "$withval" in
         yes) ac_with_slurm=yes ;;
         no)  ac_with_slurm=no ;;

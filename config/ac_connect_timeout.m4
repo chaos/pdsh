@@ -20,8 +20,7 @@ AC_DEFUN([AC_CONNECT_TIMEOUT],
 [
   AC_MSG_CHECKING([for default connect timeout])
   AC_ARG_WITH([timeout],
-    AC_HELP_STRING([--with-timeout=N], 
-	[Specify default connect timeout (secs)]),
+    AS_HELP_STRING([--with-timeout=N],[Specify default connect timeout (secs)]),
     [ case "$withval" in
         no)  CONNECT_TIMEOUT=0 ;;
         *)   CONNECT_TIMEOUT=$withval ;;
