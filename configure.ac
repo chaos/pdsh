@@ -178,12 +178,6 @@ AM_CONDITIONAL(WITH_LIBMUNGE,   [test "$ac_have_libmunge"      = "yes"])
 AM_CONDITIONAL(WITH_MRSH,       [test "$ac_have_mrsh"          = "yes"])
 
 #
-# Determine whether to build RMS module (Support for RMS allocate)
-#
-AC_RMSQUERY
-AM_CONDITIONAL([WITH_RMS], [test "$ac_have_rmsquery" = "yes"])
-
-#
 # Determine whether to build SLURM module (support running under SLURM jobid
 #
 AC_SLURM

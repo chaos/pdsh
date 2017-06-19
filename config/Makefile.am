@@ -21,7 +21,6 @@ EXTRA_DIST = \
     ac_nodeupdown.m4 \
     ac_pollselect.m4 \
     ac_readline.m4 \
-    ac_rmsquery.m4 \
     ac_sdr.m4 \
     ac_socklen_t.m4 \
     ac_ssh.m4 \

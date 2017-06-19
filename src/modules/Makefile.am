@@ -27,10 +27,6 @@ if WITH_NODEUPDOWN
 NODEUPDOWN_MODULE = nodeupdown.la
 endif
 
-if WITH_RMS
-RMS_MODULE = rms.la
-endif
-
 if WITH_MACHINES
 MACHINES_MODULE = machines.la
 endif
@@ -100,7 +96,6 @@ pkglib_LTLIBRARIES = \
 	$(GENDERS_MODULE) \
 	$(NODEATTR_MODULE) \
 	$(NODEUPDOWN_MODULE) \
-	$(RMS_MODULE) \
 	$(MACHINES_MODULE) \
 	$(SDR_MODULE) \
 	$(KRB4_MODULE) \
@@ -127,7 +122,6 @@ EXTRA_libmods_la_SOURCES = \
 	genders.c \
 	nodeattr.c \
 	nodeupdown.c \
-	rms.c \
 	machines.c \
 	sdr.c \
 	k4cmd.c \
@@ -170,8 +164,6 @@ nodeattr_la_SOURCES =     nodeattr.c
 nodeattr_la_LDFLAGS =     $(MODULE_FLAGS)
 nodeupdown_la_SOURCES =   nodeupdown.c 
 nodeupdown_la_LDFLAGS =   $(MODULE_FLAGS) $(NODEUPDOWN_LIBS)
-rms_la_SOURCES =          rms.c 
-rms_la_LDFLAGS =          $(MODULE_FLAGS)
 sdr_la_SOURCES =          sdr.c 
 sdr_la_LDFLAGS =          $(MODULE_FLAGS)
 slurm_la_SOURCES =        slurm.c 
