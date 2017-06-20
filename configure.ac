@@ -25,6 +25,7 @@ fi
 #  Automake support
 # 
 AM_INIT_AUTOMAKE([no-define])
+AM_SILENT_RULES([yes])
 AC_CONFIG_HEADERS([config.h])
 AM_MAINTAINER_MODE
 
