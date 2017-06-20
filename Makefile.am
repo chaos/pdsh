@@ -8,7 +8,6 @@ include $(top_srcdir)/config/Make-inc.mk
 
 ACLOCAL_AMFLAGS =              -I config
 AUTOMAKE_OPTIONS =             foreign dist-bzip2
-CONFIG_STATUS_DEPENDENCIES =   META
 SUBDIRS =                      src tests doc scripts config
 
 maintainer-clean-local:
@@ -39,7 +38,7 @@ MAINTAINERCLEANFILES = \
     stamp-h.in 
 
 EXTRA_DIST = \
-    DISCLAIMER META \
+    DISCLAIMER \
     pdsh.spec \
     README.KRB4 \
     README.modules \

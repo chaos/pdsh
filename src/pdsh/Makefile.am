@@ -51,12 +51,12 @@ PDSH_SOURCES = \
     cbuf.c \
     cbuf.h
 
-config.c: $(top_srcdir)/META $(top_builddir)/config.h
+config.c: $(top_builddir)/config.h
 	@(echo "char *pdsh_version = \"$(PDSH_VERSION_FULL)\";";\
           echo "char *pdsh_module_dir = \"$(pkglibdir)\";"\
          )> config.c
 
-testconfig.c: $(top_srcdir)/META $(top_builddir)/config.h
+testconfig.c: $(top_builddir)/config.h
 	@(echo "char *pdsh_version = \"$(PDSH_VERSION_FULL)\";";\
           moddir=`cd $(top_builddir)/src/modules/.libs && pwd`; \
           echo "char *pdsh_module_dir = \"$$moddir\";"\

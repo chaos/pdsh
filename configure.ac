@@ -7,11 +7,11 @@
 # This file is to be processed with autoconf to generate a configure script.
 
 AC_INIT([pdsh],
-        m4_esyscmd([git describe --always |  awk '/.*/ {sub(/^v/, ""); printf "%s",$1; exit}']))
+        m4_esyscmd([git describe --always |  awk '/.*/ {sub(/^pdsh-/, ""); printf "%s",$1; exit}']))
 
 AC_CONFIG_SRCDIR([pdsh])
-X_AC_META
 AC_CONFIG_AUX_DIR([config])
+AC_CONFIG_MACRO_DIR([config])
 AC_CONFIG_SRCDIR([src/pdsh/dsh.h])
 AC_CANONICAL_TARGET
 AC_GPL_LICENSED
@@ -211,30 +211,15 @@ fi
 #
 # Build PDSH_VERSION string
 #
-if echo "$META_RELEASE" | grep '^[[0-9]][[0-9]]*$' >/dev/null 2>&1; then
-   PDSH_VERSION="$META_NAME-$META_VERSION"
-else
-   if echo "$META_RELEASE" | grep -e "pre0" -e "UNSTABLE" >/dev/null 2>&1; then
-      if test "$META_RELEASE" = "UNSTABLE"; then
-	     DATE=`date +"%Y%m%d%H%M"`
-      else
-	     DATE=`echo $META_RELEASE | cut -d. -f3`
-      fi
-      PDSH_VERSION="$META_NAME-$META_VERSION (unstable cvs build $DATE)"
-   else
-      PDSH_RELEASE="`echo $META_RELEASE | sed 's/^[[^\.]]*\.//'`"
-      PDSH_VERSION="$META_NAME-$META_VERSION-$PDSH_RELEASE"
-   fi
-fi
 test "$ac_static_modules" = "yes" && EXTRA_VERS="+static-modules"
 test "$ac_with_readline"  = "yes" && EXTRA_VERS="${EXTRA_VERS}+readline"
 test "$ac_debug"          = "yes" && EXTRA_VERS="${EXTRA_VERS}+debug"
 test "$ac_with_dmalloc"   = "yes" && EXTRA_VERS="${EXTRA_VERS}+dmalloc"
 
 if test -n "$EXTRA_VERS" ; then
-   PDSH_VERSION_FULL="$PDSH_VERSION ($EXTRA_VERS)"
+   PDSH_VERSION_FULL="$PACKAGE_NAME-$PACKAGE_VERSION ($EXTRA_VERS)"
 else
-   PDSH_VERSION_FULL="$PDSH_VERSION"
+   PDSH_VERSION_FULL="$PACKAGE_NAME-$PACKAGE_VERSION"
 fi
 
 AC_SUBST(PDSH_VERSION)

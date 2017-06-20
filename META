@@ -1,9 +1,0 @@
-##
-# $Id$
-##
-# Metadata for RPM/TAR makefile targets
-##
-  Meta:		1
-  Name:		pdsh
-  Version:	2.31
-  Release:	1

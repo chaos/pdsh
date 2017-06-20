@@ -14,7 +14,6 @@ EXTRA_DIST = \
     ac_gpl_licensed.m4 \
     ac_krb4.m4 \
     ac_machines.m4 \
-    ac_meta.m4 \
     ac_mrsh.m4 \
     ac_xcpu.m4 \
     ac_nodeupdown.m4 \
