@@ -138,10 +138,10 @@ static int pcptest_signal(int fd, void *arg, int signum)
     return (pipecmd_signal ((pipecmd_t) arg, signum));
 }
 
-static char **pcptest_argv_create (char *remote_cmd)
+static const char **pcptest_argv_create (char *remote_cmd)
 {
     char *cmd;
-    char **argv;
+    const char **argv;
     const char **p;
 
     /*  Prepend chdir to remote argv, then collapse args
