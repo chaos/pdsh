@@ -93,11 +93,10 @@ static void pipe_info_destroy (struct pipe_info_struct *e)
 static char * pipecmd_format_arg (pipecmd_t e, const char *arg)
 {
     char buf [64];
-    const char *q, *p;
+    const char *p;
     char *str = NULL;
 
-    q = p = arg;
-
+    p = arg;
     while (*p != '\0') {
         if (*p == '%') {
             p++;
