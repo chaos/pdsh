@@ -368,7 +368,8 @@ static void _shell(uid_t uid, char *cmd)
     case -1:
         errx("%p: fork: %m\n");
     case 0:
-        setuid(uid);
+        if (setuid(uid) < 0)
+            errx ("%p: setuid: %m\n");
         ret = system(cmd);
         if (ret)
             err ("%p: exited with status %d\n", ret);
