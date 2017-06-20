@@ -3,7 +3,12 @@ SUBDIRS = test-modules
 CPPFLAGS = \
 	-I $(top_srcdir)
 
-TESTS = \
+TEST_EXTENSIONS = .sh
+SH_LOG_DRIVER = \
+    env AM_TAP_AWK='$(AWK)' $(SHELL) \
+    $(top_srcdir)/config/tap-driver.sh
+
+check_SCRIPTS = \
     t0001-basic.sh \
     t0002-internal.sh \
     t0003-wcoll.sh \
@@ -19,10 +24,14 @@ TESTS = \
     t5000-dshbak.sh \
     t6036-long-output-lines.sh
 
+TESTS = \
+    $(check_SCRIPTS)
+
 EXTRA_DIST = \
+    $(check_SCRIPTS) \
     test-lib.sh \
     aggregate-results.sh
 
 clean-local:
-	rm -fr trash-directory.* test-results .prove
+	rm -fr trash-directory.* test-results .prove *.log *.output
 
