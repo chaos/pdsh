@@ -142,7 +142,6 @@ static const char **pcptest_argv_create (char *remote_cmd)
 {
     char *cmd;
     const char **argv;
-    const char **p;
 
     /*  Prepend chdir to remote argv, then collapse args
      *   so they can be fed to /bin/sh -c
