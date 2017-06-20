@@ -124,7 +124,7 @@ static hostlist_t _read_netgroup (const char *group)
 
 	setnetgrent (group);
 
-	while (rc = getnetgrent_r (&host, &user, &domain, buf, sizeof (buf))) {
+	while ((rc = getnetgrent_r (&host, &user, &domain, buf, sizeof (buf)))) {
 		if (hl == NULL)
 			hl = hostlist_create (host);
 		else
