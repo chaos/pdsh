@@ -782,7 +782,7 @@ void opt_args(opt_t * opt, int argc, char *argv[])
 static void wcoll_expand (opt_t *opt)
 {
     hostlist_t hl = opt->wcoll;
-    const char *hosts;
+    char *hosts;
 
     /*
      *  Create new hostlist for wcoll
