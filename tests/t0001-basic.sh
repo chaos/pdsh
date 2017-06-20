@@ -7,7 +7,7 @@ if ! test -x ../src/pdsh/pdsh; then
    exit 1
 fi
 
-. ${srcdir:-.}/test-lib.sh
+. $(dirname $0)/test-lib.sh
 
 ###########################################################################
 #
@@ -30,8 +30,7 @@ metrics
 '
 
 # Point to the t/test-lib.sh, which isn't in ../ as usual
-TEST_DIRECTORY=\"$TEST_DIRECTORY\"
-. \"\$TEST_DIRECTORY\"/test-lib.sh
+. \"$TEST_SRCDIR\"/test-lib.sh
 
 test_expect_failure 'pretend we have fixed a known breakage' '
 	:
@@ -80,8 +79,7 @@ test_description='Failing tests with cleanup commands'
 # Don't log these as failures by pretending we're running under TAP::Harness
 HARNESS_ACTIVE=t
 # Point to the t/test-lib.sh, which isn't in ../ as usual
-TEST_DIRECTORY=\"$TEST_DIRECTORY\"
-. \"\$TEST_DIRECTORY\"/test-lib.sh
+. \"$TEST_SRCDIR\"/test-lib.sh
 
 test_expect_success 'tests clean up even after a failure' '
     touch clean-after-failure &&
