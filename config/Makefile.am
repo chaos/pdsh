@@ -19,7 +19,6 @@ EXTRA_DIST = \
     ac_xcpu.m4 \
     ac_nodeattr.m4 \
     ac_nodeupdown.m4 \
-    ac_pam.m4 \
     ac_pollselect.m4 \
     ac_readline.m4 \
     ac_rmsquery.m4 \

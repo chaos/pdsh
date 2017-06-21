@@ -147,11 +147,6 @@ AC_KRB4
 AM_CONDITIONAL(WITH_KRB4, test  "$ac_have_krb4" =  "yes")
 
 #
-# Check for PAM
-#
-AC_PAM
-
-#
 # Test for whether to build "machines" module.
 #
 AC_MACHINES
