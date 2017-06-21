@@ -49,7 +49,6 @@
 #include "src/common/xmalloc.h"
 #include "src/common/xstring.h"
 #include "src/pdsh/xpopen.h"
-#include "src/pdsh/ltdl.h"
 #include "src/pdsh/mod.h"
 #include "src/pdsh/opt.h"
 
