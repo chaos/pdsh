@@ -26,6 +26,7 @@ env:
   - CC=clang-3.8
 
 script:
+  - export CFLAGS=-Werror
   - scripts/travis-ci-deps.sh
   - eval $(scripts/travis-ci-deps.sh --printenv)
   - ./bootstrap
