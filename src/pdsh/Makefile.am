@@ -49,9 +49,7 @@ PDSH_SOURCES = \
     wcoll.c \
     wcoll.h \
     cbuf.c \
-    cbuf.h \
-    xpopen.c \
-    xpopen.h
+    cbuf.h
 
 config.c: $(top_srcdir)/META $(top_builddir)/config.h
 	@(echo "char *pdsh_version = \"$(PDSH_VERSION_FULL)\";";\

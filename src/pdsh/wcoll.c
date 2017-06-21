@@ -45,7 +45,6 @@
 #include "src/common/hostlist.h"
 #include "src/common/split.h"
 #include "src/common/xstring.h"
-#include "xpopen.h"
 #include "dsh.h"
 #include "wcoll.h"
 
