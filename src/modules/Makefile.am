@@ -19,10 +19,6 @@ if WITH_LIBGENDERS
 GENDERS_MODULE = genders.la
 endif
 
-if WITH_NODEATTR
-NODEATTR_MODULE = nodeattr.la
-endif
-
 if WITH_NODEUPDOWN
 NODEUPDOWN_MODULE = nodeupdown.la
 endif
@@ -90,7 +86,6 @@ pkglib_LTLIBRARIES = \
 	$(SSH_MODULE) \
 	$(MRSH_MODULE) \
 	$(GENDERS_MODULE) \
-	$(NODEATTR_MODULE) \
 	$(NODEUPDOWN_MODULE) \
 	$(MACHINES_MODULE) \
 	$(KRB4_MODULE) \
@@ -115,7 +110,6 @@ EXTRA_libmods_la_SOURCES = \
 	sshcmd.c \
 	mcmd.c  \
 	genders.c \
-	nodeattr.c \
 	nodeupdown.c \
 	machines.c \
 	k4cmd.c \
@@ -151,8 +145,6 @@ machines_la_SOURCES =     machines.c
 machines_la_LDFLAGS =     $(MODULE_FLAGS)
 genders_la_SOURCES =      genders.c 
 genders_la_LDFLAGS =      $(MODULE_FLAGS) $(GENDERS_LIBS)
-nodeattr_la_SOURCES =     nodeattr.c 
-nodeattr_la_LDFLAGS =     $(MODULE_FLAGS)
 nodeupdown_la_SOURCES =   nodeupdown.c 
 nodeupdown_la_LDFLAGS =   $(MODULE_FLAGS) $(NODEUPDOWN_LIBS)
 slurm_la_SOURCES =        slurm.c 

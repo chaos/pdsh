@@ -147,12 +147,6 @@ AC_MACHINES
 AM_CONDITIONAL(WITH_MACHINES, [test "$ac_have_machines" = "yes"])
 
 #
-# Check for nodeattr
-#
-AC_NODEATTR
-AM_CONDITIONAL(WITH_NODEATTR,   [test "$ac_have_nodeattr"      = "yes"])
-
-#
 # Check for genders
 #
 AC_GENDERS
