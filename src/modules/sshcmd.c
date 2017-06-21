@@ -205,8 +205,10 @@ static int sshcmd_init(opt_t * opt)
     /*
      * Drop privileges if running setuid root
      */
-    if ((geteuid() == 0) && (getuid() != 0))
-        setuid (getuid ());
+    if ((geteuid() == 0) && (getuid() != 0)) {
+        if (setuid (getuid ()) < 0)
+            errx ("%p: setuid: %m\n");
+    }
 
     /*
      *  Do not resolve hostnames in pdsh when using ssh
