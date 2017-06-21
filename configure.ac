@@ -296,7 +296,6 @@ AC_CONFIG_FILES([
   src/pdsh/Makefile
   src/modules/Makefile
   doc/Makefile
-  etc/Makefile
   scripts/Makefile
   tests/Makefile
   tests/test-modules/Makefile
