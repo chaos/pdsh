@@ -32,3 +32,22 @@ script:
   - ./bootstrap
   - ./configure --with-exec --with-ssh --with-mrsh --with-genders --with-dshgroups --with-netgroup --with-machines
   - make -j 2 check
+
+before_deploy:
+  - make dist
+  - export TAG_URI="https://github.com/${TRAVIS_REPO_SLUG}/blob/${TRAVIS_TAG}"
+  - export TARBALL=$(echo pdsh*.tar.gz)
+  - ls -l $TARBALL
+  - echo "Deploying tag ${TRAVIS_TAG} as $TARBALL"
+
+deploy:
+  provider: releases
+  skip_cleanup: true
+  file: "$TARBALL"
+  body: View latest [NEWS](https://github.com/${TRAVIS_REPO_SLUG}/blob/${TRAVIS_TAG}/NEWS
+  on:
+    condition: $TRAVIS_JOB_NUMBER = $TRAVIS_BUILD_NUMBER.1
+    tags: true
+    repo: grondo/pdsh
+  api_key:
+     secure: fq2Ob/0h2gkqFFwfL+TkWsjhdcxyyKnMxCGn2dmYnNahufKgnrxYtCde34X3rXksAH8knOuoclEG5lGzjl4plihDmBKcvrN+TsUztq6UcKpn/CYx9CTqo239XJE4+0bLL4UqyisWTBjjkQz4caVwwgi+JETx/eSkW6VyuDe1mIbPokOUbqULuOT6SBlLO1yR6QLt0qRtgdd0KB1uI9B1hSUq3QHNeDtZHBqTypnYiJLeIFWZd0ETxBjibJ1FE6KK4SxY413DYTu9YxLWjFDLm3ObQ/jeedmJ5iLr4bnnasu2/G07lJ4MWsOPp4ulmea/zUIWSk8wLu2x2KyYhWVlv9XU2AEPIc1Mc8y4xdBQuOqFAndMwszX/rQc+y0gsEXznKVXPebAbandZktbSqW06YkEf7ge6IMGA9fnNMoXIRT3GO6av5UKfyn4T8cx7ssBIZLYe5RLsGSN6y2tO7ExpVn4sIHGhn2u/gIWuthBSgXjm28bTaM7XTVlK63vXEMhRr8coJ5RcZLT3Yo37tUXSE4+WKQoBmsFG6yCCnBg3g7rBEMWdvj16o6rel4CD/fv8/y95bawIu7ROOuu1Q+1kOaHjm1mSDMUW1CJIMMs6kul3VLVxdJY2xvUxg0A2V2v1jh2AH3ZstfoDpnAH2S4HAs1DfZPzscbSdAZX4Sm9b8=
