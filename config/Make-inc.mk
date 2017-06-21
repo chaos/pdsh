@@ -22,3 +22,10 @@ force-dependency-check:
 #
 distclean-local::
 	-rm -f *~ \#* .\#* cscope*.out core *.core tags TAGS
+
+#
+#  Code coverage flags
+AM_CFLAGS = \
+    $(CODE_COVERAGE_CFLAGS)
+AM_LDFLAGS = \
+    $(CODE_COVERAGE_LDFLAGS)

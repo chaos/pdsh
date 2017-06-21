@@ -43,3 +43,14 @@ EXTRA_DIST = \
     README.KRB4 \
     README.modules \
     bootstrap 
+
+# coverage
+
+CODE_COVERAGE_IGNORE_PATTERN = \
+        "/tests/*" \
+        "/pdsh/cbuf.*" \
+        "/common/hostlist.*" \
+	"/usr/*"
+
+CODE_COVERAGE_LCOV_OPTIONS =
+@CODE_COVERAGE_RULES@
