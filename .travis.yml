@@ -44,7 +44,7 @@ deploy:
   provider: releases
   skip_cleanup: true
   file: "$TARBALL"
-  body: View latest [NEWS](https://github.com/${TRAVIS_REPO_SLUG}/blob/${TRAVIS_TAG}/NEWS
+  body: View latest [NEWS](https://github.com/${TRAVIS_REPO_SLUG}/blob/${TRAVIS_TAG}/NEWS)
   on:
     condition: $TRAVIS_JOB_NUMBER = $TRAVIS_BUILD_NUMBER.1
     tags: true
