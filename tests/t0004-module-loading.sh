@@ -2,7 +2,7 @@
 
 test_description='pdsh dynamic module support'
 
-TEST_MODULE_PATH="$(pwd)/test-modules"
+TEST_MODULE_PATH="$(pwd)/test-modules/.libs"
 
 . ${srcdir:-.}/test-lib.sh
 
@@ -12,7 +12,7 @@ if ! test_have_prereq DYNAMIC_MODULES; then
 fi
 
 
-if ! test -f $TEST_MODULE_PATH/a.la -a -f $TEST_MODULE_PATH/b.la; then
+if ! test -f $TEST_MODULE_PATH/a.so -a -f $TEST_MODULE_PATH/b.so; then
 	echo "$0: Test modules A & B not built, please run \"make check.\"" >&2
 	exit 1
 fi
@@ -63,11 +63,11 @@ test_output_matches() {
 unset EXTRA_PDSH_ARGS
 
 test_expect_success NOTROOT 'PDSH_MODULE_DIR functionality' '
-	PDSH_MODULE_DIR=$TEST_DIRECTORY/test-modules
+	PDSH_MODULE_DIR=$TEST_DIRECTORY/test-modules/.libs
 	module_is_active A && module_is_active B
 '
 
-export PDSH_MODULE_DIR="$TEST_DIRECTORY/test-modules"
+export PDSH_MODULE_DIR="$TEST_DIRECTORY/test-modules/.libs"
 
 test_expect_success NOTROOT 'module A takes precedence over B' '
 	module_is_active misc/A && module_is_inactive misc/B
@@ -98,14 +98,12 @@ test_expect_success NOTROOT 'Loading conflicting module with -M causes error' '
 '
 
 test_expect_success NOTROOT 'Conflicting modules dont run init()' '
-    PDSH_MODULE_DIR=$TEST_DIRECTORY/test-modules
     if pdsh -q 2>&1 | grep "B: in init"; then
 	    say_color error "Error: init routine for module B run unexpectedly"
 		false
 	fi
 '
 test_expect_success NOTROOT 'Force loaded module runs init()' '
-    PDSH_MODULE_DIR=$TEST_DIRECTORY/test-modules
     if ! pdsh -q -MB 2>&1 | grep "B: in init"; then
 	    say_color error "Error: init routine for module B not run with -M B"
 		false

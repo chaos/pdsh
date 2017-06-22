@@ -35,13 +35,7 @@ To configure in additional feature modules:
         Enable support of ssh(1) remote shell service.
 
 --with-machines=/path/to/machines
-	Use a flat file list of machine names for -a instead of
-        genders, nodeattr, or SDRGetObjects.  
-
---with-qshell
-	Enable support for running parallel jobs on the Quadrics Elan
-	interconnect via the qshell service option (-R qsh) and qshell daemon.
-	See README.QsNet for more information.
+	Use a flat file list of machine names for -a instead of genders
 
 --with-genders
         Enable support of a genders database through the genders(3)
@@ -58,14 +52,6 @@ To configure in additional feature modules:
 		Enable use of netgroups (via /etc/netgroup or NIS) to build lists
 		of target hosts using -g/-X to include/exclude hosts.
 
---with-nodeattr=/path/to/nodeattr
-        Enable support of a genders database through the nodeattr(1)
-        command. This is primarily for older systems that do not yet
-        have genders(3) library support.  For pdsh's -i option to
-        function properly, the genders database must have alternate
-        node names listed as the value of the "altname" attribute and
-        the nodeattr command must have the -r option available. 
-
 --with-nodeupdown
         Enable support of dynamic elimination of down nodes through
         the nodeupdown(3) library. 
@@ -73,15 +59,6 @@ To configure in additional feature modules:
 --with-mrsh
         Enable support of mrsh(1) remote shell service.
    
---with-mqshell
-        Enable support for runnig parallel jobs on the Quadrics Elan
-        interconnect via the mqshell service option (-R mqsh) and
-        mqshell dameon.  Mqshell is identical to qshell but adds munge
-        authentication (authentication used by mrsh). 
-
---with-rms
-	 Support running pdsh under RMS allocation.
-
 --with-slurm
 	Support running pdsh under SLURM allocation.
 
@@ -93,10 +70,6 @@ To configure in additional feature modules:
 
 --with-readline
 	Use the GNU readline library to parse input in interactive mode.
-
---without-pam
-        Disable PAM from the qshell and mqshell daemons.  By default, they
-        are enabled.
 
 Note that a number of the above configurations options may "conflict"
 with each other because they perform identical operations.  For
@@ -121,13 +94,6 @@ For example:
 
  > chown root PREFIX/bin/pdsh PREFIX/bin/pdcp
  > chmod 4755 PREFIX/bin/pdsh PREFIX/bin/pdcp
-
-If you compile the qshell and/or mqshell with PAM support, remember to
-update your PAM configuration files to support the "qshell" and/or
-"mqshell" service names. There are sample xinetd(8) config files
-for qshd and mqshd in the etc/ directory. Also be sure read the
-README.QsNet file in this directory.
-
 
 +---------+
 | GOTCHAS |

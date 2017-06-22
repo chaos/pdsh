@@ -23,8 +23,7 @@ AC_DEFUN([AC_DSHGROUP],
   ac_dshgroup_path="/etc/dsh/group";
 
   AC_ARG_WITH([dshgroups],
-    AC_HELP_STRING([--with-dshgroups(=PATH)], 
-	  [Build dshgroup module for dsh group file support (with optional PATH)]),
+    AS_HELP_STRING([--with-dshgroups(=PATH)],[Build dshgroup module for dsh group file support (with optional PATH)]),
     [ case "$withval" in
         no)  ac_with_dshgroup=no ;;
         yes) ac_with_dshgroup=yes ;;

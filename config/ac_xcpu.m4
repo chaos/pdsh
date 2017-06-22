@@ -21,7 +21,7 @@ AC_DEFUN([AC_XCPU],
   #
   AC_MSG_CHECKING([for whether to build xcpu module])
   AC_ARG_WITH([xcpu],
-    AC_HELP_STRING([--with-xcpu], [Build xcpu module]),
+    AS_HELP_STRING([--with-xcpu],[Build xcpu module]),
     [ case "$withval" in
         no)  ac_with_xcpu=no ;;
         yes) ac_with_xcpu=yes ;;

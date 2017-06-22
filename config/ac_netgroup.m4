@@ -21,8 +21,7 @@ AC_DEFUN([AC_NETGROUP],
   #
   AC_MSG_CHECKING([for whether to build netgroup module])
   AC_ARG_WITH([netgroup],
-    AC_HELP_STRING([--with-netgroup], 
-	  [Build netgroup module for netgroups support]),
+    AS_HELP_STRING([--with-netgroup],[Build netgroup module for netgroups support]),
     [ case "$withval" in
         no)  ac_with_netgroup=no ;;
         yes) ac_with_netgroup=yes ;;

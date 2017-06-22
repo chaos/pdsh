@@ -19,6 +19,7 @@
 # additionally to the file test-results/$BASENAME.out, too.
 
 test_name=$(basename "$0" .sh)
+test_dir=$(cd $(dirname "$0") && pwd)
 
 case "$GIT_TEST_TEE_STARTED, $* " in
 done,*)
@@ -84,7 +85,7 @@ fi
 #
 if test -z "$PDSH_SRC_DIR"; then
     if test -z "$srcdir"; then
-	    PDSH_SRC_DIR=$(pwd)/..
+	    PDSH_SRC_DIR=${test_dir}/..
     else
 	    PDSH_SRC_DIR=$(cd ${srcdir} && pwd)/..
 	fi
@@ -490,6 +491,7 @@ test_external () {
 		# Export TEST_DIRECTORY, TRASH_DIRECTORY and GIT_TEST_LONG
 		# to be able to use them in script
 		export TEST_DIRECTORY TRASH_DIRECTORY GIT_TEST_LONG
+                export TEST_SRCDIR="${test_dir}"
 		# Run command; redirect its stderr to &4 as in
 		# test_run_, but keep its stdout on our stdout even in
 		# non-verbose mode.
@@ -762,6 +764,7 @@ then
 	# itself.
 	TEST_DIRECTORY=$(pwd)
 fi
+TEST_SRCDIR=${test_dir}
 
 if test -n "$valgrind"
 then

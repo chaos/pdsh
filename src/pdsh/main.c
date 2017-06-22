@@ -361,14 +361,18 @@ static void _interactive_dsh(opt_t * opt)
  */
 static void _shell(uid_t uid, char *cmd)
 {
+    int ret;
     pid_t pid;
 
     switch (pid = fork()) {
     case -1:
         errx("%p: fork: %m\n");
     case 0:
-        setuid(uid);
-        system(cmd);
+        if (setuid(uid) < 0)
+            errx ("%p: setuid: %m\n");
+        ret = system(cmd);
+        if (ret)
+            err ("%p: exited with status %d\n", ret);
         exit(0);
     default:
         waitpid(pid, NULL, 0);

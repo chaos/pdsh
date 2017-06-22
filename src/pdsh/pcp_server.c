@@ -243,7 +243,8 @@ _sink(struct pcp_server *svr, char *targ, BUF *bufp) {
             return;
     }
 
-    (void)write(svr->outfd, "", 1);
+    if (write(svr->outfd, "", 1) != 1)
+        SCREWUP("write failed");
     if (stat(targ, &stb) == 0 && (stb.st_mode & S_IFMT) == S_IFDIR)
         targisdir = 1;
 
@@ -269,7 +270,8 @@ _sink(struct pcp_server *svr, char *targ, BUF *bufp) {
         }
 
         if (buf[0] == 'E') {
-            (void)write(svr->outfd, "", 1);
+            if (write(svr->outfd, "", 1) != 1)
+                SCREWUP("write failed");
             goto end_server;
         }
 
@@ -293,7 +295,8 @@ _sink(struct pcp_server *svr, char *targ, BUF *bufp) {
             getnum(atime.tv_usec);
             if (*cp++ != '\0')
                 SCREWUP("atime.usec not delimited");
-            (void)write(svr->outfd, "", 1);
+            if (write(svr->outfd, "", 1) != 1)
+                SCREWUP("write failed");
             continue;
         }
         if (*cp != 'C' && *cp != 'D')
@@ -382,7 +385,8 @@ bad:
         if (exists && svr->preserve)
             (void)fchmod(ofd, mode);
 
-        (void)write(svr->outfd, "", 1);
+        if (write(svr->outfd, "", 1) != 1)
+            _error(svr, "failed to write to outfd: %m\n");
         if ((bp = _allocbuf(svr, bufp, ofd, BUFSIZ)) == NULL) {
             (void)close(ofd);
             continue;
@@ -432,7 +436,8 @@ bad:
                 _error(svr, "%s: %m\n", np);
                 break;
             case NO:
-                (void)write(svr->outfd, "", 1);
+                if (write(svr->outfd, "", 1) != 1)
+                    _error(svr, "write failed to outfd: %m\n");
                 break;
             case DISPLAYED:
                 break;

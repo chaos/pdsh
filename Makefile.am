@@ -8,8 +8,7 @@ include $(top_srcdir)/config/Make-inc.mk
 
 ACLOCAL_AMFLAGS =              -I config
 AUTOMAKE_OPTIONS =             foreign dist-bzip2
-CONFIG_STATUS_DEPENDENCIES =   META
-SUBDIRS =                      src tests doc etc scripts config
+SUBDIRS =                      src tests doc scripts config
 
 maintainer-clean-local:
 	-(cd $(top_srcdir) && rm -rf autom4te.cache)
@@ -39,9 +38,19 @@ MAINTAINERCLEANFILES = \
     stamp-h.in 
 
 EXTRA_DIST = \
-    DISCLAIMER META \
+    DISCLAIMER \
     pdsh.spec \
     README.KRB4 \
-    README.QsNet \
     README.modules \
     bootstrap 
+
+# coverage
+
+CODE_COVERAGE_IGNORE_PATTERN = \
+        "/tests/*" \
+        "/pdsh/cbuf.*" \
+        "/common/hostlist.*" \
+	"/usr/*"
+
+CODE_COVERAGE_LCOV_OPTIONS =
+@CODE_COVERAGE_RULES@

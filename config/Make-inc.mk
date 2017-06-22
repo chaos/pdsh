@@ -9,7 +9,6 @@
 #
 
 $(top_builddir)/src/common/libcommon.la \
-$(top_builddit)/src/qsnet/libqsw.la \
 $(top_builddit)/src/modules/libmods.la \
 : force-dependency-check
 	@cd `dirname $@` && make `basename $@`
@@ -23,3 +22,10 @@ force-dependency-check:
 #
 distclean-local::
 	-rm -f *~ \#* .\#* cscope*.out core *.core tags TAGS
+
+#
+#  Code coverage flags
+AM_CFLAGS = \
+    $(CODE_COVERAGE_CFLAGS)
+AM_LDFLAGS = \
+    $(CODE_COVERAGE_LDFLAGS)

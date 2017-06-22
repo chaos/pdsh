@@ -16,12 +16,8 @@
 AC_DEFUN([AC_MSGHDR_ACCRIGHTS],
 [AC_CACHE_CHECK([for msg_accrights in struct msghdr], ac_cv_msghdr_accrights,
 [
-  AC_TRY_COMPILE(
-  [#include <sys/types.h>
-   #include <sys/socket.h>],
-  [struct msghdr m; m.msg_accrights = 0],
-  ac_cv_msghdr_accrights=yes,
-  ac_cv_msghdr_accrights=no)
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
+   #include <sys/socket.h>]], [[struct msghdr m; m.msg_accrights = 0]])],[ac_cv_msghdr_accrights=yes],[ac_cv_msghdr_accrights=no])
 ])
 
 if test "$ac_cv_msghdr_accrights" = "yes"; then

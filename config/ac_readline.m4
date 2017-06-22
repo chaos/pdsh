@@ -19,7 +19,7 @@ AC_DEFUN([AC_READLINE],
 [
   AC_MSG_CHECKING([for whether to include readline suport])
   AC_ARG_WITH([readline],
-    AC_HELP_STRING([--with-readline], [compile with readline support]),
+    AS_HELP_STRING([--with-readline],[compile with readline support]),
       [ case "$withval" in
         yes) ac_with_readline=yes ;;
         no)  ac_with_readline=no ;;

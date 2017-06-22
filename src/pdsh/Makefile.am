@@ -6,26 +6,24 @@
 
 include $(top_srcdir)/config/Make-inc.mk
 
-INCLUDES =                 -I$(top_srcdir)
+AM_CPPFLAGS =              -I$(top_srcdir)
 noinst_PROGRAMS =          pdsh
 bin_PROGRAMS =             pdsh.inst
 
 if WITH_STATIC_MODULES
 MODULE_LIBS =              $(top_builddir)/src/modules/libmods.la 
 else
-MODULE_FLAGS =             -export-dynamic $(AIX_PDSH_LDFLAGS)
-LTDL_FILES =               ltdl.h ltdl.c
-LTDL_LDADD =               $(LIBADD_DL)
+MODULE_FLAGS =             -export-dynamic $(AIX_PDSH_LDFLAGS) -ldl
 endif
 
-pdsh_LDADD =               $(READLINE_LIBS) $(LTDL_LDADD)
+pdsh_LDADD =               $(READLINE_LIBS)
 pdsh_LDFLAGS =             $(MODULE_LIBS) $(MODULE_FLAGS) \
                            $(top_builddir)/src/common/libcommon.la
 
 pdsh_inst_LDADD =          $(pdsh_LDADD)
 pdsh_inst_LDFLAGS =        $(pdsh_LDFLAGS)
 
-pdsh_SOURCES =             $(PDSH_SOURCES) $(LTDL_FILES)
+pdsh_SOURCES =             $(PDSH_SOURCES)
 pdsh_inst_SOURCES =        $(pdsh_SOURCES)
 nodist_pdsh_SOURCES =      testconfig.c
 nodist_pdsh_inst_SOURCES = config.c
@@ -51,18 +49,16 @@ PDSH_SOURCES = \
     wcoll.c \
     wcoll.h \
     cbuf.c \
-    cbuf.h \
-    xpopen.c \
-    xpopen.h
+    cbuf.h
 
-config.c: $(top_srcdir)/META $(top_builddir)/config.h
+config.c: $(top_builddir)/config.h
 	@(echo "char *pdsh_version = \"$(PDSH_VERSION_FULL)\";";\
           echo "char *pdsh_module_dir = \"$(pkglibdir)\";"\
          )> config.c
 
-testconfig.c: $(top_srcdir)/META $(top_builddir)/config.h
+testconfig.c: $(top_builddir)/config.h
 	@(echo "char *pdsh_version = \"$(PDSH_VERSION_FULL)\";";\
-          moddir=`cd $(top_builddir)/src/modules && pwd`; \
+          moddir=`cd $(top_builddir)/src/modules/.libs && pwd`; \
           echo "char *pdsh_module_dir = \"$$moddir\";"\
          )> testconfig.c
 

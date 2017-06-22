@@ -186,7 +186,8 @@ static int xrcmd_signal(int efd, void *arg, int signum)
         if (fcntl(efd, F_SETFL, O_NONBLOCK) < 0)
             err("%p: fcntl: %m\n");
         c = (char) signum;
-        write(efd, &c, 1);
+        if (write(efd, &c, 1) < 0)
+            err("%p: write (efd): %m\n");
     }
     return 0;
 }
@@ -257,7 +258,10 @@ xrcmd(char *ahost, char *addr, char *locuser, char *remuser,
     }
     lport--;
     if (fd2p == 0) {
-        write(s, "", 1);
+        if (write(s, "", 1) != 1) {
+            err ("%p: %S: write: %m\n", ahost);
+            goto bad;
+        }
         lport = 0;
     } else {
         char num[8];
@@ -302,9 +306,12 @@ xrcmd(char *ahost, char *addr, char *locuser, char *remuser,
             goto bad2;
         }
     }
-    (void) write(s, locuser, strlen(locuser) + 1);
-    (void) write(s, remuser, strlen(remuser) + 1);
-    (void) write(s, cmd, strlen(cmd) + 1);
+    if (write(s, locuser, strlen(locuser) + 1) < 0
+       || write(s, remuser, strlen(remuser) + 1) < 0
+       || write(s, cmd, strlen(cmd) + 1) < 0) {
+        err("%p: %S: write (user,cmd): %m\n", ahost);
+        goto bad2;
+    }
     rv = read(s, &c, 1);
     if (rv < 0) {
         if (errno == EINTR)

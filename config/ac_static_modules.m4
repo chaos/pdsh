@@ -31,32 +31,8 @@ AC_DEFUN([AC_STATIC_MODULES_EXIT],
 [
   # check for module conflicts 
 
-  if test "$ac_have_libgenders" = "yes" && test "$ac_have_nodeattr" = "yes"; then
-     AC_MSG_ERROR([--with-genders conflicts with --with-nodeattr])
-  fi
-
   if test "$ac_have_libgenders" = "yes" && test "$ac_have_machines" = "yes"; then
      AC_MSG_ERROR([--with-genders conflicts with --with-machines])
-  fi
-
-  if test "$ac_have_libgenders" = "yes" && test "$ac_have_sdr" = "yes"; then
-     AC_MSG_ERROR([--with-genders conflicts with --with-sdr])
-  fi
-
-  if test "$ac_have_nodeattr" = "yes" && test "$ac_have_machines" = "yes"; then
-     AC_MSG_ERROR([--with-nodeattr conflicts with --with-machines])
-  fi
-
-  if test "$ac_have_nodeattr" = "yes" && test "$ac_have_sdr" = "yes"; then
-     AC_MSG_ERROR([--with-nodeattr conflicts with --with-sdr])
-  fi
-
-  if test "$ac_have_machines" = "yes" && test "$ac_have_sdr" = "yes"; then
-     AC_MSG_ERROR([--with-machines conflicts with --with-sdr])
-  fi
-
-  if test "$ac_have_qshell" = "yes" && test "$ac_have_mqshell" = "yes"; then
-     AC_MSG_ERROR([--with-qshell conflicts with --with-mqshell])
   fi
 
   for module in $MODULES; do

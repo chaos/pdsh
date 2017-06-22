@@ -105,11 +105,12 @@ static void drop_privileges (void)
 	priv_gid = getegid ();
 
 #ifdef _POSIX_SAVED_IDS
-	seteuid (user_uid);
-	setegid (user_gid);
+	if (seteuid (user_uid) < 0 || setegid (user_gid) < 0)
+		errx ("%p: seteuid/setegid: %m\n");
 #else
-	setreuid (priv_uid, user_uid);
-	setregid (priv_gid, user_gid);
+	if (setreuid (priv_uid, user_uid) < 0
+	  || setregid (priv_gid, user_gid < 0))
+		errx ("%p: setreuid/setregid: %m\n");
 #endif
 }
 

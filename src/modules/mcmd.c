@@ -250,7 +250,8 @@ mcmd_signal(int fd, void *arg, int signum)
         if (fcntl(fd, F_SETFL, O_NONBLOCK) < 0)
             err("%p: fcntl: %m\n");
         c = (char) signum;
-        write(fd, &c, 1);
+        if (write(fd, &c, 1) < 0)
+            err("%p: write (signalfd): %m\n");
     }
     return 0;
 }
@@ -529,7 +530,10 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
             goto bad;
         }
     } else {
-        write(s, "", 1);
+        if (write(s, "", 1) != 1) {
+            err ("%p: %S: mcmd: write NUL stderr port: %m\n", ahost);
+            goto bad;
+        }
         lport = 0;
     }
 

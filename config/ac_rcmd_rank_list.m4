@@ -18,7 +18,7 @@
 AC_DEFUN([AC_RCMD_RANK_LIST], [
 		AC_ARG_WITH([rcmd-rank-list],
 			AS_HELP_STRING([--with-rcmd-rank-list],
-				[Specify priority ordered list of rcmd modules. Default is mrsh,rsh,ssh,krb4,qsh,mqsh,exec,xcpu]),
+				[Specify priority ordered list of rcmd modules. Default is mrsh,rsh,ssh,krb4,exec,xcpu]),
 			[ for t in `echo $withval | tr "," " "`; do
 			       if echo mrsh,rsh,ssh,krb4,qsh,mqsh,exec,xcpu | grep -q $t; then
 				     if test -z "$ac_cv_rcmd_rank_list" ; then
@@ -34,7 +34,7 @@ AC_DEFUN([AC_RCMD_RANK_LIST], [
 
 		AC_MSG_CHECKING([rcmd rank list])
 		if test -z "$ac_cv_rcmd_rank_list"; then
-		   ac_cv_rcmd_rank_list='"mrsh", "rsh", "ssh", "krb4", "qsh", "mqsh", "exec", "xcpu"'
+		   ac_cv_rcmd_rank_list='"mrsh", "rsh", "ssh", "krb4", "exec", "xcpu"'
         fi
         AC_MSG_RESULT([$ac_cv_rcmd_rank_list])
 
