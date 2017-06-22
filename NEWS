@@ -1,6 +1,18 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents those changes that are of interest to users and admins.
 
+* Changes in pdsh-2.32 (2017-06-22)
+===================================
+ -- Autotools update
+ -- Switch to dlopen(3)/dlsym(3) instead of using libltdl
+ -- Drop qshell, mqshell, rmsquery, nodeattr and sdr modules.
+ -- Fix issue 70: dshbak: handle hostname of "0"
+ -- Allow PDSH_CONNECT_TIMEOUT and PDSH_COMMAND_TIMEOUT environment
+     variables (Erik Jacobson)
+ -- Fix some old URLs in documentation (Al Chu)
+ -- Avoid exporting POSIXLY_CORRECT to child processes (Dorian Krause)
+ -- Fix mcmd start offset bug in max bytes calculation (Egbert Eich)
+
 * Changes in pdsh-2.31 (2013-11-07)
 ===================================
  -- Fix issue 56: slurm: Allow mixed use of -P, -w and -j options.
