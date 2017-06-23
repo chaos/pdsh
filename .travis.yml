@@ -19,11 +19,19 @@ cache:
   - $HOME/local
   - $HOME/.local
 
-env:
-  - CC=gcc
-  - CC=clang
-  - CC=gcc-6
-  - CC=clang-3.8
+matrix:
+  include:
+  - os: linux
+    env: CC=gcc
+  - os: linux
+    env: CC=clang
+  - os: linux
+    env: CC=gcc-6
+  - os: linux
+    env: CC=clang-3.8
+  - os: osx
+    language: c
+    osx_image: xcode8.3
 
 script:
   - export CFLAGS=-Werror
