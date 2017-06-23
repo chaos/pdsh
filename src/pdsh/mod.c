@@ -342,7 +342,7 @@ static int _mod_initialize_modules_by_name (char *names, List m)
 {
     List l;
 
-    if (names == NULL)
+    if (names == NULL || strlen(names) == 0)
         return (0);
 
     l = list_split (",", names);
