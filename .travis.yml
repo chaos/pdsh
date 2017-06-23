@@ -43,6 +43,9 @@ script:
   - ./configure --with-exec --with-ssh --with-mrsh --with-genders --with-dshgroups --with-netgroup --with-machines
   - make -j 2 check
 
+after_failure:
+  - cat tests/test-suite.log
+
 before_deploy:
   - make dist
   - export TAG_URI="https://github.com/${TRAVIS_REPO_SLUG}/blob/${TRAVIS_TAG}"
