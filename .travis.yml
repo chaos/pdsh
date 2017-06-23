@@ -34,7 +34,7 @@ matrix:
     osx_image: xcode8.3
 
 script:
-  - export CFLAGS=-Werror
+  - if  [[ "$TRAVIS_OS_NAME" = "linux" ]]; then export CFLAGS=-Werror; fi
   - scripts/travis-ci-deps.sh
   - eval $(scripts/travis-ci-deps.sh --printenv)
   - ./bootstrap
