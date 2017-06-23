@@ -119,12 +119,11 @@ static hostlist_t _read_netgroup (const char *group)
 {
 	hostlist_t hl = NULL;
 	char *host, *user, *domain;
-	char buf[4096];
     int rc;
 
 	setnetgrent (group);
 
-	while ((rc = getnetgrent_r (&host, &user, &domain, buf, sizeof (buf)))) {
+	while ((rc = getnetgrent (&host, &user, &domain))) {
 		if (hl == NULL)
 			hl = hostlist_create (host);
 		else
