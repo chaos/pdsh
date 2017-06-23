@@ -43,7 +43,7 @@ script:
 
 after_failure:
   - cat tests/test-suite.log
-  - src/pdsh/pdsh -q
+  - src/pdsh/pdsh -q -w foo[1-10]
   - src/pdsh/pdsh -V
 
 before_deploy:
