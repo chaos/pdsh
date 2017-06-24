@@ -33,12 +33,8 @@
 
 #include <stdio.h>              /* FILE *     */
 
+#include "src/common/macros.h"
 #include "src/common/hostlist.h"
-
-#ifndef _BOOL_DEFINED
-#define _BOOL_DEFINED
-typedef enum { false, true } bool;
-#endif /* !_BOOL_DEFINED */
 
 hostlist_t read_wcoll(char *, FILE *);
 
