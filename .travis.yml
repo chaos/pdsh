@@ -34,9 +34,11 @@ matrix:
     osx_image: xcode8.3
 
 script:
-  - if  [[ "$TRAVIS_OS_NAME" = "linux" ]]; then export CFLAGS=-Werror; fi
-  - scripts/travis-ci-deps.sh
-  - eval $(scripts/travis-ci-deps.sh --printenv)
+  - if  [[ "$TRAVIS_OS_NAME" = "linux" ]]; then
+        export CFLAGS=-Werror;
+        scripts/travis-ci-deps.sh;
+        eval $(scripts/travis-ci-deps.sh --printenv);
+    fi
   - ./bootstrap
   - ./configure --with-exec --with-ssh --with-mrsh --with-genders --with-dshgroups --with-netgroup --with-machines
   - make -j 2 check
