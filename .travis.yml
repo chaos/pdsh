@@ -48,8 +48,7 @@ script:
 
 after_failure:
   - cat tests/test-suite.log
-  - src/pdsh/pdsh -q -w foo[1-10]
-  - src/pdsh/pdsh -V
+  - (cd tests && ./t1001-genders.sh -d -v)
 
 before_deploy:
   - make dist
