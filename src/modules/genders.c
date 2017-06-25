@@ -480,6 +480,8 @@ static genders_t _handle_create()
     else
         genders_file = genders_filename_create ("genders");
 
+    fprintf (stderr, "genders_file = %s\n", genders_file);
+
     /*
      *  Only exit on error from genders_load_data() if an genders
      *   module option was explicitly invoked:
