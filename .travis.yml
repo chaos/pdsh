@@ -49,7 +49,7 @@ script:
 after_failure:
   - cat tests/test-suite.log
   - echo 'host[0-10] compute' > x.genders
-  - ecoh 'host[11-12] storage' >> x.genders
+  - echo 'host[11-12] storage' >> x.genders
   - ulimit -c unlimited
   - src/pdsh/pdsh -M genders -aq -F ./x.genders
   - lldb -c /cores/* --batch -o 'bt' -o 'quit'

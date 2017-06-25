@@ -489,6 +489,8 @@ static genders_t _handle_create()
     if ((genders_load_data(gh, genders_file) < 0) && genders_opt_invoked)
         errx("%p: %s: %s\n", genders_file, genders_errormsg(gh));
 
+    fprintf (stderr, "after genders_load_data = %s\n", genders_file);
+
     return gh;
 }
 
