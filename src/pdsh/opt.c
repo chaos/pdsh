@@ -501,7 +501,9 @@ void opt_args_early (opt_t * opt, int argc, char *argv[])
     extern int optind;
     extern char *optarg;
     extern int opterr;
+#ifdef __linux
     int pc = 0;
+#endif
 
     /*
      *  Disable error reporting from getopt during early processing,
