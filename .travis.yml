@@ -39,7 +39,16 @@ script:
         eval $(scripts/travis-ci-deps.sh --printenv);
     fi
   - if  [[ "$TRAVIS_OS_NAME" = "osx" ]]; then
-        brew install genders;
+        wget https://github.com/chaos/genders/releases/download/genders-1-22-1/genders-1.22.tar.gz;
+        tar xvfz genders-1.22.tar.gz;
+        pushd genders-1.22;
+        mkdir $HOME/local;
+        ./configure --prefix=$HOME/local --without-java-extensions;
+        make -j2 ; make install;
+        export LD_LIBRARY_PATH=$HOME/local/lib;
+        export LDFLAGS="-L$HOME/local/lib";
+        export CPPFLAGS="-I$HOME/local/include";
+        popd;
     fi
   - export CFLAGS="-Werror -Wno-error=deprecated-declarations"
   - ./bootstrap
@@ -51,7 +60,7 @@ after_failure:
   - echo 'host[0-10] compute' > x.genders
   - echo 'host[11-12] storage' >> x.genders
   - ulimit -c unlimited
-  - src/pdsh/pdsh -M genders -aq -F ./x.genders
+  - src/pdsh/pdsh -M genders -qa -F ./x.genders
   - lldb -c /cores/* --batch -o 'bt' -o 'quit'
   - nodeattr -q -f ./x.genders compute
 
