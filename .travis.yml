@@ -43,12 +43,17 @@ script:
     fi
   - export CFLAGS="-Werror -Wno-error=deprecated-declarations"
   - ./bootstrap
-  - ./configure --with-exec --with-ssh --with-mrsh --with-genders --with-dshgroups --with-netgroup --with-machines
+  - ./configure --with-exec --with-ssh --with-mrsh --with-genders --with-dshgroups --with-netgroup --with-machines --enable-debug
   - make -j 2 check
 
 after_failure:
   - cat tests/test-suite.log
-  - (cd tests && ./t1001-genders.sh -d -v)
+  - echo 'host[0-10] compute' > x.genders
+  - ecoh 'host[11-12] storage' >> x.genders
+  - ulimit -c unlimited
+  - src/pdsh/pdsh -M genders -aq -F ./x.genders
+  - lldb -c /cores/* --batch -o 'bt' -o 'quit'
+  - nodeattr -q -f ./x.genders compute
 
 before_deploy:
   - make dist
