@@ -647,7 +647,7 @@ static void *_rsh_thread(void *args)
     if (a->rcmd->opts->resolve_hosts)
         _gethost(a->host, a->addr);
 #endif
-    _xsignal (SIGPIPE, SIG_BLOCK);
+    _xsignal (SIGPIPE, SIG_IGN);
 
     /* establish the connection */
     dsh_mutex_lock(&thd_mutex);
