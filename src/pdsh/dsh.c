@@ -263,8 +263,8 @@ static void _fwd_signal(int signum)
 
     dsh_mutex_lock(&thd_mutex);
     for (i = 0; t[i].host != NULL; i++) {
-        if ((t[i].state == DSH_READING)) 
-			rcmd_signal(t[i].rcmd, signum);
+        if (t[i].state == DSH_READING)
+            rcmd_signal(t[i].rcmd, signum);
     }
     dsh_mutex_unlock(&thd_mutex);
 
