@@ -803,7 +803,13 @@ _mod_load_dynamic(const char *fq_path)
 
     mod = mod_create();
 
-    if (!(mod->handle = dlopen(fq_path, RTLD_NOW)))
+    /*  RTLD_GLOBAL is used here so that symbols in any libraries
+     *  linked to by the loaded module are global, such that any DSOs
+     *  dlopened in turn by those libraries can find symbols in
+     *  their parent library. This is specifically a problem with the
+     *  nodeupdown and slurm modules at this time.
+     */
+    if (!(mod->handle = dlopen(fq_path, RTLD_GLOBAL | RTLD_NOW)))
         goto fail;
 
     mod->filename = Strdup(fq_path);
