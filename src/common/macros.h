@@ -35,6 +35,8 @@
 #include <pthread.h>
 #endif
 
+#include <stdbool.h>
+
 #define LINEBUFSIZE     	2048
 
 #ifndef MAXHOSTNAMELEN
