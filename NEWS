@@ -1,6 +1,13 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents those changes that are of interest to users and admins.
 
+* Changes in pdsh-2.33 (2017-06-28)
+===================================
+ -- Fix segfault and build issues on Mac OSX (#95)
+ -- Always pass RTLD_GLOBAL to dlopen(3) of modules. Fixes missing symbol
+     errors from modules using libraries that also use dlopen() (e.g.
+     nodeupdown, slurm)
+
 * Changes in pdsh-2.32 (2017-06-22)
 ===================================
  -- Autotools update

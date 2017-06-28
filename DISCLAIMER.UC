@@ -18,7 +18,7 @@ details.
 
 You should have received a copy of the GNU General Public License along
 with Pdsh; if not, write to the Free Software Foundation, Inc.,
-59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
+51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 This notice is required to be provided under our contract with the U.S.
 Department of Energy (DOE).  This work was produced at the University

@@ -1,13 +1,13 @@
 Name: pdsh
-Version: 
-Release: 
+Version: 2.33
+Release: 1
 
 Summary: Parallel remote shell program
 
 License: GPL
-Url: https://github.com/grondo/pdsh
+Url: https://github.com/chaos/pdsh
 Group: System Environment/Base
-Source: pdsh-%{version}-1.tar.gz
+Source: pdsh-%{version}-%{release}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires: pdsh-rcmd
 
