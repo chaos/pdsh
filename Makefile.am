@@ -38,7 +38,8 @@ MAINTAINERCLEANFILES = \
     stamp-h.in 
 
 EXTRA_DIST = \
-    DISCLAIMER \
+    DISCLAIMER.UC \
+    DISCLAIMER.LLNS \
     pdsh.spec \
     README.KRB4 \
     README.modules \
