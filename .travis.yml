@@ -38,9 +38,9 @@ script:
         scripts/travis-ci-deps.sh;
         eval $(scripts/travis-ci-deps.sh --printenv);
     fi
-  - export CFLAGS="-Werror -Wno-error=deprecated-declarations"
   - ./bootstrap
   - ./configure --with-exec --with-ssh --with-mrsh --with-genders --with-dshgroups --with-netgroup --with-machines
+  - export CFLAGS="-Werror -Wno-error=deprecated-declarations"
   - make -j 2 check
 
 after_failure:
