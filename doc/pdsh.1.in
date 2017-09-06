@@ -148,6 +148,9 @@ character.
 .I "-S"
 Return the largest of the remote command return values.
 .TP
+.I "-A"
+Return all individual exit codes
+.TP
 .I "-h"
 Output usage menu and quit. A list of available rcmd modules
 will also be printed at the end of the usage message.
