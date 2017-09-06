@@ -108,6 +108,10 @@ void opt_free(opt_t *);
  */
 pers_t pdsh_personality(void);
 
+/*
+ * Used to trigger the -A option in pipecmd.c, print every exit code on stdout
+ */
+int rc_all_display;
 
 /*
  *  Return a list of the original remote args

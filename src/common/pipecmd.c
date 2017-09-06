@@ -226,7 +226,11 @@ int pipecmd_wait (pipecmd_t p, int *pstatus)
         err ("%p: %S: %s pid %ld: waitpid: %m\n", p->target, 
                 xbasename (p->path), p->pid);
 
-    if (status != 0)
+    if (rc_all_display)
+        out ("%p: %S: %s exited with exit code %d\n",
+                p->target, xbasename (p->path), WEXITSTATUS (status));
+
+    else if (status != 0)
         err ("%p: %S: %s exited with exit code %d\n",
                 p->target, xbasename (p->path), WEXITSTATUS (status));
 

@@ -66,7 +66,9 @@
 
 #define OPT_USAGE_DSH "\
 Usage: pdsh [-options] command ...\n\
--S                return largest of remote command return values\n"
+-S                return largest of remote command return values\n\
+-A                return all exit codes on stdout\n"
+
 
 /* -s option only useful on AIX */
 #if	HAVE_MAGIC_RSHELL_CLEANUP
@@ -113,9 +115,9 @@ Usage: rpdcp [-options] src [src2...] dir\n\
 /* undocumented "-K" option -  keep domain name in output */
 
 #if	HAVE_MAGIC_RSHELL_CLEANUP
-#define DSH_ARGS	"sS"
+#define DSH_ARGS	"sSA"
 #else
-#define DSH_ARGS    "S"
+#define DSH_ARGS    "SA"
 #endif
 #define PCP_ARGS	"pryzZe:"
 #define GEN_ARGS	"hLNKR:M:t:cqf:w:x:l:u:bI:dVT:Q"
@@ -419,6 +421,8 @@ void opt_default(opt_t * opt, char *argv0)
     opt->pcp_client = false;
     opt->pcp_client_host = NULL;
 
+    rc_all_display = 0;
+
     return;
 }
 
@@ -587,6 +591,9 @@ void opt_args(opt_t * opt, int argc, char *argv[])
 
         /*  Continue processing regular options...
          */
+        case 'A':
+            rc_all_display = 1;
+            break;
         case 'N':
             opt->labels = false;
             break;
