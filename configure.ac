@@ -77,6 +77,9 @@ AC_CHECK_LIB([socket], [socket], LIBS="-lsocket -lnsl $LIBS",, [-lsocket -lnsl])
 
 # Check for how to compile pthread programs:
 ACX_PTHREAD
+if test x"$acx_pthread_ok" = "xno"; then
+    AC_MSG_ERROR([Could not figure out how to compile with pthreads.])
+fi
 AC_DEFINE(WITH_PTHREADS, 1, [Define if you have pthreads])
 
 # PTHREAD_CFLAGS needs to be appended to both LDFLAGS and CPPFLAGS or some
