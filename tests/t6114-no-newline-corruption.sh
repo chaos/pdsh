@@ -18,4 +18,12 @@ test_expect_success "pdsh does not garble $i with no newline" "
 	test_cmp ${i} output.${i}
 "
 done
+
+for i in 1K 8K 8K+ 10K; do
+test_expect_success "pdsh labels $i with no newline only once" '
+	pdsh -w foo -Rexec cat $i | sed "s/foo/\n&\n/g" > labels.${i} &&
+	test $(grep -c foo labels.${i}) -eq 1
+'
+done
+
 test_done
