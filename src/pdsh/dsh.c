@@ -519,19 +519,10 @@ static int _extract_rc(char *buf)
     return ret;
 }
 
-
-static int _do_output (int fd, cbuf_t cb, out_f outf, bool read_rc, thd_t *t)
+static void _flush_lines (cbuf_t cb, out_f outf, bool read_rc, thd_t *t)
 {
     char c;
-    int n, rc;
-    int dropped = 0;
-
-    if ((rc = cbuf_write_from_fd (cb, fd, -1, &dropped)) < 0) {
-        if (errno == EAGAIN)
-            return (1);
-        err ("%p: %S: read: %m\n", t->host);
-        return (-1);
-    } 
+    int n;
 
     /*
      *  Use cbuf_peek_line with a single character buffer in order to
@@ -573,18 +564,41 @@ static int _do_output (int fd, cbuf_t cb, out_f outf, bool read_rc, thd_t *t)
         Free ((void **)&buf);
     }
 
+}
+
+static int _do_output (int fd, cbuf_t cb, out_f outf, bool read_rc, thd_t *t)
+{
+    int rc;
+    int dropped = 0;
+
+    if ((rc = cbuf_write_from_fd (cb, fd, -1, &dropped)) < 0) {
+        if (errno == EAGAIN)
+            return (1);
+        err ("%p: %S: read: %m\n", t->host);
+        return (-1);
+    }
+
+    _flush_lines (cb, outf, read_rc, t);
+
     return (rc);
 }
 
 static void _flush_output (cbuf_t cb, out_f outf, thd_t *t)
 {
+    int n;
+    bool labeled = false;
     char buf[8192];
 
-    while (cbuf_read (cb, buf, 8192) > 0) {
-        if (t->labels)
-            outf ("%S: %s\n", t->host, buf);
-        else
-            outf ("%s\n", buf);
+    _flush_lines (cb, outf, false, t);
+
+    /* In case no newline at end of buffer, grab the rest of data */
+    while ((n = cbuf_read (cb, buf, sizeof (buf) - 1)) > 0) {
+        buf[n] = '\0';
+        if (t->labels && !labeled) {
+            outf ("%S: ", t->host);
+            labeled = true;
+        }
+        outf ("%s", buf);
     }
 
     return;
