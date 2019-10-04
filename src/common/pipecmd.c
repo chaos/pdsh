@@ -179,7 +179,7 @@ pipecmd_t pipecmd (const char *path, const char **args, const char *target,
     pipecmd_t p = pipe_info_create (path, target, user, rank);
     p->args = cmd_args_create (p, args);
 
-    if (!(p->fd = _pipecmd (p->path, p->args, &p->efd, &p->pid))) {
+    if ((p->fd = _pipecmd (p->path, p->args, &p->efd, &p->pid)) < 0) {
         err ("%p: exec cmd %s failed for host %S\n", path, target);
         pipecmd_destroy (p);
         return (NULL);
