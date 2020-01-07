@@ -270,19 +270,19 @@ static void _fwd_signal(int signum)
 
 }
 
-static int _thd_connect_timeout (thd_t *t)
+static int _thd_connect_timeout (thd_t *th)
 {
-    if ((connect_timeout > 0) && (t->start != ((time_t) -1))) {
-        if (t->start + connect_timeout < time (NULL))
+    if ((connect_timeout > 0) && (th->start != ((time_t) -1))) {
+        if (th->start + connect_timeout < time (NULL))
             return (1);
     }
     return (0);
 }
 
-static int _thd_command_timeout (thd_t *t)
+static int _thd_command_timeout (thd_t *th)
 {
-    if ((command_timeout > 0) && (t->connect != ((time_t) -1))) {
-        if (t->connect + command_timeout < time (NULL))
+    if ((command_timeout > 0) && (th->connect != ((time_t) -1))) {
+        if (th->connect + command_timeout < time (NULL))
             return (1);
     }
     return (0);
@@ -519,7 +519,7 @@ static int _extract_rc(char *buf)
     return ret;
 }
 
-static void _flush_lines (cbuf_t cb, out_f outf, bool read_rc, thd_t *t)
+static void _flush_lines (cbuf_t cb, out_f outf, bool read_rc, thd_t *th)
 {
     char c;
     int n;
@@ -532,7 +532,7 @@ static void _flush_lines (cbuf_t cb, out_f outf, bool read_rc, thd_t *t)
         char *buf;
 
         if (n < 0) {
-            err ("%p: %S: Failed to peek line: %m\n", t->host);
+            err ("%p: %S: Failed to peek line: %m\n", th->host);
             break;
         }
 
@@ -543,19 +543,19 @@ static void _flush_lines (cbuf_t cb, out_f outf, bool read_rc, thd_t *t)
         buf = Malloc (n + 1);
         if ((n = cbuf_read (cb, buf, n))) {
             if (n < 0) {
-                err ("%p: %S: Failed to read line from buffer: %m\n", t->host);
+                err ("%p: %S: Failed to read line from buffer: %m\n", th->host);
                 break;
             }
             if (read_rc)
-                t->rc = _extract_rc (buf);
+                th->rc = _extract_rc (buf);
             if (strlen (buf) > 0) {
                 /*
                  *  We are careful to use a single call to write the line
                  *   to the output stream to avoid interleaved lines of
                  *   output.
                  */
-                if (t->labels)
-                    outf ("%S: %s", t->host, buf);
+                if (th->labels)
+                    outf ("%S: %s", th->host, buf);
                 else
                     outf ("%s", buf);
                 fflush (NULL);
@@ -583,7 +583,7 @@ static int _do_output (int fd, cbuf_t cb, out_f outf, bool read_rc, thd_t *t)
     return (rc);
 }
 
-static void _flush_output (cbuf_t cb, out_f outf, thd_t *t)
+static void _flush_output (cbuf_t cb, out_f outf, thd_t *th)
 {
     int n;
     bool labeled = false;
@@ -594,8 +594,8 @@ static void _flush_output (cbuf_t cb, out_f outf, thd_t *t)
     /* In case no newline at end of buffer, grab the rest of data */
     while ((n = cbuf_read (cb, buf, sizeof (buf) - 1)) > 0) {
         buf[n] = '\0';
-        if (t->labels && !labeled) {
-            outf ("%S: ", t->host);
+        if (th->labels && !labeled) {
+            outf ("%S: ", th->host);
             labeled = true;
         }
         outf ("%s", buf);
@@ -604,14 +604,14 @@ static void _flush_output (cbuf_t cb, out_f outf, thd_t *t)
     return;
 }
 
-static int _die_if_signalled (thd_t *t)
+static int _die_if_signalled (thd_t *th)
 {
     int sig;
 
-    if ((sig = (t->rc - 128)) <= 0)
+    if ((sig = (th->rc - 128)) <= 0)
         return (0);
 
-    err ("%p: process on host %S killed by signal %d\n", t->host, sig);
+    err ("%p: process on host %S killed by signal %d\n", th->host, sig);
     _fwd_signal (SIGTERM);
     errx ("%p: terminating all processes.\n");
 
