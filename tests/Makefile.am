@@ -22,7 +22,8 @@ check_SCRIPTS = \
     t2001-ssh.sh \
     t2002-mrsh.sh \
     t5000-dshbak.sh \
-    t6036-long-output-lines.sh
+    t6036-long-output-lines.sh \
+    t6114-no-newline-corruption.sh
 
 TESTS = \
     $(check_SCRIPTS)
