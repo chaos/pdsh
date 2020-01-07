@@ -44,7 +44,12 @@
 /*
  * SLURM headers need to be included after pdsh header files to
  *  avoid possibly conflicts with the definition of "bool"
+ *
+ * Also, Slurm inexplicably exports the "list.h" interface in slurm.h,
+ *  and we must define __list_datatypes_defined here to avoid conflict
+ *  with our internal List datatype.
  */
+#define __list_datatypes_defined 1
 #include <slurm/slurm.h>
 #include <slurm/slurm_errno.h>
 
