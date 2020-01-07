@@ -69,12 +69,16 @@ int main(int argc, char *argv[])
     opt_t opt;
     int retval = 0;
     const char *m;
+    char *prog = xbasename(argv[0]);
 
+#if HAVE_READLINE
+    rl_readline_name = prog;
+#endif
 
     /*
      * Initialize.
      */
-    err_init(xbasename(argv[0]));       /* init err package */
+    err_init(prog);       /* init err package */
 
     /*
      *  If running setuid, fork a child to handle 
