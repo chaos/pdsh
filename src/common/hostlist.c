@@ -2145,7 +2145,7 @@ _get_bracketed_list(hostlist_t hl, int *start, const size_t n, char *buf)
     if ((len < 0) || (len > n))
         return n; /* truncated, buffer filled */
 
-    if (bracket_needed && len < n && len >= 0)
+    if (bracket_needed && len < n)
         buf[len++] = '[';
 
     do {

@@ -1,5 +1,5 @@
 Name: pdsh
-Version: 2.33
+Version: 2.34
 Release: 1
 
 Summary: Parallel remote shell program
