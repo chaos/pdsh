@@ -1,6 +1,14 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents those changes that are of interest to users and admins.
 
+* Changes in pdsh-2.34 (2020-01-07)
+===================================
+ -- Fix for output corruption with no newlines (#114)
+ -- pipecmd: fix result check error handling (Dylan Simon)
+ -- slurm: workaround slurm export of internal List interfaces
+ -- readline: add application name as argv[0] (#112)
+ -- Fix errors from lgtm.com scan
+
 * Changes in pdsh-2.33 (2017-06-28)
 ===================================
  -- Fix segfault and build issues on Mac OSX (#95)
