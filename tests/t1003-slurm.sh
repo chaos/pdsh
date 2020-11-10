@@ -133,6 +133,13 @@ test_expect_success 'slurm -P works with -w' '
 	fi
 '
 
+test_expect_success 'slurm -C filters out nodes' '
+	part=$(sinfo -ho %P | head -1)
+	if pdsh -P $part -C featurethathopefullydoesntexist -q ; then
+		say_color error "Error: pdsh -P $part -C featurethathopefullydoesntexist resulted in hosts"
+	fi
+'
+
 #
 #  Clean up:
 #
