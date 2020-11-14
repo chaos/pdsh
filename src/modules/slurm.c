@@ -74,10 +74,12 @@ static int mod_slurm_wcoll(opt_t *opt);
 static int mod_slurm_exit(void);
 static hostlist_t _slurm_wcoll(List jobids);
 static hostlist_t _slurm_wcoll_partition(List partitions);
+static hostlist_t _slurm_wcoll_constraint(hostlist_t, List constraint);
 static int slurm_process_opt(opt_t *, int opt, char *arg);
 
 static List job_list = NULL;
 static List partition_list = NULL;
+static List constraint_list = NULL;
 
 /*
  *  Export generic pdsh module options
@@ -101,6 +103,10 @@ struct pdsh_module_option slurm_module_options[] =
    },
    { 'P', "partition,...",
      "Run on nodes contained in SLURM partition",
+     DSH | PCP, (optFunc) slurm_process_opt
+   },
+   { 'C', "feature,...",
+     "Limit to SLURM nodes with any of the specified features",
      DSH | PCP, (optFunc) slurm_process_opt
    },
    PDSH_OPT_TABLE_END
@@ -155,6 +161,9 @@ slurm_process_opt(opt_t *pdsh_opts, int opt, char *arg)
     case 'P':
         partition_list = list_split_append (partition_list, ",", arg);
         break;
+    case 'C':
+        constraint_list = list_split_append (constraint_list, ",", arg);
+        break;
     default:
         break;
     }
@@ -170,6 +179,9 @@ mod_slurm_exit(void)
 
     if (partition_list)
         list_destroy (partition_list);
+
+    if (constraint_list)
+        list_destroy (constraint_list);
 
     return (0);
 }
@@ -188,7 +200,7 @@ static void _append_hostlist (hostlist_t *hl1, hostlist_t hl2)
  */
 static int mod_slurm_wcoll(opt_t *opt)
 {
-    hostlist_t hlp = NULL, hlj = NULL;
+    hostlist_t hlp = NULL, hlj = NULL, hlc = NULL;
 
     /*
      *  If a list of partitions is supplied gather the hosts
@@ -213,6 +225,12 @@ static int mod_slurm_wcoll(opt_t *opt)
     if (hlj) {
         _append_hostlist (&opt->wcoll, hlj);
         hostlist_destroy (hlj);
+    }
+
+    if (constraint_list) {
+        hlc = _slurm_wcoll_constraint(opt->wcoll, constraint_list);
+        hostlist_destroy(opt->wcoll);
+        opt->wcoll = hlc;
     }
 
     return 0;
@@ -258,6 +276,20 @@ static int _alljobids_requested (List l)
     return (list_delete_all (l, (ListFindF)_find_str, all));
 }
 
+static int _features_include (const char *f, const char *c) {
+    int l;
+
+    l = strlen(c);
+    while (f) {
+        while (*f == ',')
+            f++;
+        if (strncmp(f, c, l) == 0 && (f[l] == '\0' || f[l] == ','))
+            return (1);
+        f = strchr(f, ',');
+    }
+    return (0);
+}
+
 static hostlist_t _hl_append (hostlist_t hl, char *nodes)
 {
     if (hl == NULL)
@@ -278,7 +310,7 @@ static hostlist_t _slurm_wcoll (List joblist)
     if ((joblist == NULL) && (envjobid = _slurm_jobid()) < 0)
         return (NULL);
 
-    if (slurm_load_jobs((time_t) NULL, &msg, 1) < 0) 
+    if (slurm_load_jobs((time_t) NULL, &msg, SHOW_ALL) < 0) 
         errx ("Unable to contact slurm controller: %s\n", 
               slurm_strerror (errno));
 
@@ -327,7 +359,7 @@ static hostlist_t _slurm_wcoll_partition (List partitionlist)
     partition_info_t * p;
     ListIterator li;
 
-    if (slurm_load_partitions((time_t) NULL, &msg, 1) < 0)
+    if (slurm_load_partitions((time_t) NULL, &msg, SHOW_ALL) < 0)
         errx ("Unable to contact slurm controller: %s\n",
               slurm_strerror (errno));
 
@@ -356,6 +388,44 @@ static hostlist_t _slurm_wcoll_partition (List partitionlist)
 
     if (hl)
         hostlist_uniq (hl);
+
+    return (hl);
+}
+
+static hostlist_t _slurm_wcoll_constraint (hostlist_t wl, List constraintlist)
+{
+    int i;
+    hostlist_t hl;
+    node_info_msg_t * msg;
+    node_info_t * n;
+    char *f;
+    char *c;
+    ListIterator li;
+
+    if (slurm_load_node((time_t) NULL, &msg, SHOW_ALL) < 0)
+        errx ("Unable to contact slurm controller: %s\n",
+              slurm_strerror (errno));
+
+    li = list_iterator_create(constraintlist);
+    hl = hostlist_create("");
+    for (i = 0; i < msg->record_count; i++){
+        n = &msg->node_array[i];
+
+        if (hostlist_find(wl, n->name) < 0)
+            continue;
+
+        f = n->features_act ? n->features_act : n->features;
+        if (!f)
+            continue;
+
+        list_iterator_reset(li);
+        while ((c = list_next(li))){
+            if (_features_include(f, c)) {
+                hostlist_push_host(hl, n->name);
+                continue;
+            }
+        }
+    }
 
     return (hl);
 }
