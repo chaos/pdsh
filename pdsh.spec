@@ -280,7 +280,7 @@ rm -rf "$RPM_BUILD_ROOT"
 %files
 %defattr(-,root,root)
 %doc COPYING README NEWS DISCLAIMER.LLNS DISCLAIMER.UC
-%doc README.KRB4 README.modules README.QsNet
+%doc README.KRB4 README.modules
 %{_bindir}/pdsh
 %{_bindir}/pdcp
 %{_bindir}/rpdcp
