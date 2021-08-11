@@ -213,5 +213,10 @@ test_expect_success 'Issue 70: dshbak fails on hostname of 0' '
 2: bar
 " "[0-2]"
 '
+test_expect_success 'Issue 132: dshbak handles empty input' '
+  echo "" | dshbak -c >empty.output 2>&1 &&
+  touch empty.expected &&
+  test_cmp empty.expected empty.output
+'
 
 test_done
