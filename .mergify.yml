@@ -6,6 +6,12 @@ pull_request_rules:
       - status-success="ubuntu"
       - status-success="macos"
       - status-success="coverage"
+      - label="merge-when-passing"
+      - label!="work-in-progress"
+      - "approved-reviews-by=@chaos/chaos-developers"
+      - "#approved-reviews-by>0"
+      - "#changes-requested-reviews-by=0"
+      - -title~=^\[*[Ww][Ii][Pp]
     actions:
       merge:
         method: merge
@@ -13,7 +19,7 @@ pull_request_rules:
         strict_method: rebase
   - name: remove outdated approved reviews
     conditions:
-      - author!=@core
+      - author!=@chaos-developers
     actions:
       dismiss_reviews:
         approved: true
