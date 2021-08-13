@@ -1,0 +1,79 @@
+on: [push, pull_request]
+name: ci
+jobs:
+  check-pr:
+    name: validate commits
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        fetch-depth: 0
+    - run: git fetch origin master
+    - uses: flux-framework/pr-validator@master
+
+  ubuntu:
+    name: ubuntu
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        fetch-depth: 0
+    - name: install dependencies
+      run: sudo apt install libgenders0-dev
+    - name: fix permissions
+      run: chmod -R o-w /home/runner || true
+    - name: configure
+      run: >
+        ./bootstrap &&
+        ./configure --with-ssh --with-exec --with-netgroup
+        --with-dshgroups --with-genders --with-machines
+    - name: make
+      run: make -j 2 CFLAGS="-Werror"
+    - name: make check
+      run: make -j 2 check
+
+  macos:
+    name: macos
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        fetch-depth: 0
+    - name: install dependencies
+      run: brew install autoconf automake libtool
+    - name: fix permissions
+      run: chmod -R o-w /home/runner || true
+    - name: configure macos
+      run: >
+        ./bootstrap &&
+        ./configure --with-ssh --with-exec --with-netgroup --with-dshgroups
+    - name: make check
+      run: make -j 2 check
+
+
+  coverage:
+    name: coverage
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        fetch-depth: 0
+    - name: install dependencies
+      run: sudo apt install libgenders0-dev lcov
+    - name: fix permissions
+      run: chmod -R o-w /home/runner || true
+    - name: configure
+      run: >
+        ./bootstrap &&
+        ./configure --with-ssh --with-exec --with-netgroup
+        --with-dshgroups --with-genders --with-machines
+        --enable-code-coverage
+    - name: make check-code-coverage
+      run: make check-code-coverage
+    - name: coverage report
+      uses: codecov/codecov-action@v1

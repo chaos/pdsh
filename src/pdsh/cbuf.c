@@ -40,6 +40,7 @@
 #include <unistd.h>
 #include "cbuf.h"
 
+#define _unused(x) ((void)(x))
 
 /*********************
  *  lsd_fatal_error  *
@@ -668,6 +669,7 @@ cbuf_peek_line (cbuf_t src, char *dstbuf, int len, int lines)
     int n, m, l;
     char *pdst;
 
+    _unused (l);
     assert(src != NULL);
 
     if ((dstbuf == NULL) || (len < 0) || (lines < -1)) {
@@ -705,6 +707,7 @@ cbuf_read_line (cbuf_t src, char *dstbuf, int len, int lines)
     char *pdst;
 
     assert(src != NULL);
+    _unused (l);
 
     if ((dstbuf == NULL) || (len < 0) || (lines < -1)) {
         errno = EINVAL;
@@ -743,6 +746,7 @@ cbuf_replay_line (cbuf_t src, char *dstbuf, int len, int lines)
     char *pdst;
 
     assert(src != NULL);
+    _unused (l);
 
     if ((dstbuf == NULL) || (len < 0) || (lines < -1)) {
         errno = EINVAL;
@@ -818,6 +822,7 @@ cbuf_write_line (cbuf_t dst, char *srcbuf, int *ndropped)
     char *newline = "\n";
 
     assert(dst != NULL);
+    _unused (n);
 
     if (ndropped) {
         *ndropped = 0;
