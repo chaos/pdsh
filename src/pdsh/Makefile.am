@@ -16,9 +16,9 @@ else
 MODULE_FLAGS =             -export-dynamic $(AIX_PDSH_LDFLAGS) -ldl
 endif
 
-pdsh_LDADD =               $(READLINE_LIBS)
-pdsh_LDFLAGS =             $(MODULE_LIBS) $(MODULE_FLAGS) \
+pdsh_LDADD =               $(READLINE_LIBS) \
                            $(top_builddir)/src/common/libcommon.la
+pdsh_LDFLAGS =             $(MODULE_LIBS) $(MODULE_FLAGS)
 
 pdsh_inst_LDADD =          $(pdsh_LDADD)
 pdsh_inst_LDFLAGS =        $(pdsh_LDFLAGS)
