@@ -1192,6 +1192,7 @@ int dsh(opt_t * opt)
     dsh_mutex_lock(&threadcount_mutex);
     while (threadcount > 0)
         pthread_cond_wait(&threadcount_cond, &threadcount_mutex);
+    dsh_mutex_unlock(&threadcount_mutex);
 
     if (debug)
         _dump_debug_stats(rshcount);
