@@ -302,8 +302,10 @@ _mod_destroy(mod_t mod)
 static bool
 _mod_opts_ok(mod_t mod)
 {
-    if (!opt_register(mod->pmod->opt_table))
+    if (!opt_register(mod->pmod->opt_table)) {
+        err("%p: Error loading module %s\n",mod->filename); 
         return false;
+    }
 
     return true;
 }

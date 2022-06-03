@@ -204,8 +204,10 @@ bool opt_register(struct pdsh_module_option *opt_table)
      */
     for (p = opt_table; p && (p->opt != 0); p++) {
         if (  (personality & p->personality) 
-           && (strchr(pdsh_options, p->opt) != NULL))
+           && (strchr(pdsh_options, p->opt) != NULL)) {
+            err("%p: Option %c in use by an already loaded module.\n",opt_table->opt); 
             return false;
+	}
     }
 
     for (p = opt_table; p && (p->opt != 0); p++) {
