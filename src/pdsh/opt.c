@@ -66,7 +66,8 @@
 
 #define OPT_USAGE_DSH "\
 Usage: pdsh [-options] command ...\n\
--S                return largest of remote command return values\n"
+-S                return largest of remote command return values\n\
+-k                fail fast on connect failure or non-zero return code\n"
 
 /* -s option only useful on AIX */
 #if	HAVE_MAGIC_RSHELL_CLEANUP
@@ -113,9 +114,9 @@ Usage: rpdcp [-options] src [src2...] dir\n\
 /* undocumented "-K" option -  keep domain name in output */
 
 #if	HAVE_MAGIC_RSHELL_CLEANUP
-#define DSH_ARGS	"sS"
+#define DSH_ARGS	"sSk"
 #else
-#define DSH_ARGS    "S"
+#define DSH_ARGS    "Sk"
 #endif
 #define PCP_ARGS	"pryzZe:"
 #define GEN_ARGS	"hLNKR:M:t:cqf:w:x:l:u:bI:dVT:Q"
@@ -690,6 +691,9 @@ void opt_args(opt_t * opt, int argc, char *argv[])
                 opt->pcp_client = true;          /* run PDCP client */
             else
                 goto test_module_option;
+            break;
+        case 'k':
+            opt->kill_on_fail = true;
             break;
         default: test_module_option:
             if (mod_process_opt(opt, c, optarg) < 0)
