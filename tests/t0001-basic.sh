@@ -40,7 +40,6 @@ EOF
 
 chmod +x passing-todo.sh &&
 ./passing-todo.sh >out 2>err &&
-! test -s err &&
 sed -e 's/^> //' >expect <<EOF &&
 > ok 1 - pretend we have fixed a known breakage # TODO known breakage
 > # fixed 1 known breakage(s)
@@ -95,7 +94,6 @@ test_done
 EOF
     chmod +x failing-cleanup.sh &&
     test_must_fail ./failing-cleanup.sh >out 2>err &&
-    ! test -s err &&
     ! test -f \"trash directory.failing-cleanup/clean-after-failure\" &&
 sed -e 's/Z$//' -e 's/^> //' >expect <<\EOF &&
 > not ok - 1 tests clean up even after a failure
