@@ -1,5 +1,5 @@
-pull_request_rules:
-  - name: rebase and merge when passing all checks
+queue_rules:
+  - name: default
     conditions:
       - base=master
       - status-success="validate commits"
@@ -12,11 +12,22 @@ pull_request_rules:
       - "#approved-reviews-by>0"
       - "#changes-requested-reviews-by=0"
       - -title~=^\[*[Ww][Ii][Pp]
+ 
+pull_request_rules:
+  - name: rebase and merge when passing all checks
+    conditions:
+      - base=master
+      - label="merge-when-passing"
+      - label!="work-in-progress"
+      - "approved-reviews-by=@chaos/chaos-developers"
+      - "#approved-reviews-by>0"
+      - "#changes-requested-reviews-by=0"
+      - -title~=^\[*[Ww][Ii][Pp]
     actions:
-      merge:
+      queue:
+        name: default
         method: merge
-        strict: smart
-        strict_method: rebase
+        update_method: rebase
   - name: remove outdated approved reviews
     conditions:
       - author!=@chaos-developers
