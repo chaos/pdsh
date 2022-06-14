@@ -144,9 +144,12 @@ as if they had been given to \fB\-w\fR and preceeded with the minus `-'
 character.
 
 .SH "Standard pdsh options"
-.TP 
+.TP
 .I "-S"
 Return the largest of the remote command return values.
+.TP
+.I "-k"
+Fail fast on connect failure or non-zero return code.
 .TP
 .I "-h"
 Output usage menu and quit. A list of available rcmd modules
