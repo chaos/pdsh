@@ -197,5 +197,20 @@ test_expect_success 'ssh works with pdsh -S and multiple targets' '
 	done
 '
 unset PDSH_SSH_ARGS
+test_expect_success 'ssh works with pdsh -k' '
+	TEST_EXIT_CODE=$(random 254) &&
+	export PDSH_SSH_ARGS="-n%n -i0 -e$TEST_EXIT_CODE"
+	test_expect_code "1" pdsh -Rssh -k -w foo0 command
+'
+unset PDSH_SSH_ARGS
+test_expect_success 'ssh works with pdsh -k and multiple targets' '
+	for n in $(seq 1 24); do
+		TEST_EXIT_CODE=$(random 254) &&
+		FAILING_RANK=$(random $n) &&
+		export PDSH_SSH_ARGS="-n%n -i$FAILING_RANK -e$TEST_EXIT_CODE"
+		test_expect_code "1" pdsh -Rssh -k -wfoo[0-$n] command
+	done
+'
+unset PDSH_SSH_ARGS
 
 test_done

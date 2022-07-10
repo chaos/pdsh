@@ -753,7 +753,7 @@ static void *_rsh_thread(void *args)
         a->rc = rv;
 
     /* if a single qshell thread fails, terminate whole job */
-    if (a->kill_on_fail && a->state == DSH_FAILED) {
+    if (a->kill_on_fail && ((a->state == DSH_FAILED) || (a->rc > 0))) {
         _fwd_signal(SIGTERM);
         errx("%p: terminating all processes\n");
     }

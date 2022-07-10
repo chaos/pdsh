@@ -257,7 +257,6 @@ static int sshcmd_signal(int fd, void *arg, int signum)
      *  Always send SIGTERM. SIGINT doesn't seem to get forwarded by ssh, and
      *    really termination of the connection is probably the desired result.
      */
-    err ("sending SIGTERM to ssh %s\n", pipecmd_target ((pipecmd_t) arg));
     return (pipecmd_signal ((pipecmd_t) arg, SIGTERM));
 }
 
