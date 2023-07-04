@@ -99,7 +99,7 @@ static int  _mod_load_static_modules(void);
 static int  _mod_load_static(int);
 #else
 static int  _mod_load_dynamic_modules(const char *, opt_t *);
-static int  _mod_load_dynamic(const char *);
+static int  _mod_load_dynamic(const char *, opt_t *);
 static int  _cmp_filenames(mod_t, char *);
 static int  _is_loaded(char *filename); 
 static bool _path_permissions_ok(const char *dir, uid_t pdsh_owner);
@@ -795,7 +795,7 @@ _mod_load_static_modules(void)
  *  Load a single module from file `fq_path' and append to module_list.
  */
 static int
-_mod_load_dynamic(const char *fq_path)
+_mod_load_dynamic(const char *fq_path, opt_t *pdsh_opts)
 {
     mod_t mod = NULL;
     int *priority;
@@ -809,8 +809,12 @@ _mod_load_dynamic(const char *fq_path)
      *  their parent library. This is specifically a problem with the
      *  nodeupdown and slurm modules at this time.
      */
-    if (!(mod->handle = dlopen(fq_path, RTLD_GLOBAL | RTLD_NOW)))
+    if (!(mod->handle = dlopen(fq_path, RTLD_GLOBAL | RTLD_NOW))) {
+        if (pdsh_opts->debug) {
+            err("%p: Can't load %s: %s\n", fq_path, dlerror());
+	}
         goto fail;
+    }
 
     mod->filename = Strdup(fq_path);
 
@@ -911,7 +915,7 @@ _mod_load_dynamic_modules(const char *dir, opt_t *pdsh_opts)
             continue;
         }
         
-        if (_mod_load_dynamic(path) < 0) 
+        if (_mod_load_dynamic(path, pdsh_opts) < 0)
             continue;
 
         count++;
