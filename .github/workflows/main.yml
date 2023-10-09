@@ -76,4 +76,4 @@ jobs:
     - name: make check-code-coverage
       run: make check-code-coverage
     - name: coverage report
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v3
