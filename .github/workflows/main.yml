@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         fetch-depth: 0
@@ -17,19 +17,19 @@ jobs:
     name: ubuntu
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         fetch-depth: 0
     - name: install dependencies
-      run: sudo apt install libgenders0-dev
+      run: sudo apt install libgenders0-dev libslurm-dev
     - name: fix permissions
       run: chmod -R o-w /home/runner || true
     - name: configure
       run: >
         ./bootstrap &&
         ./configure --with-ssh --with-exec --with-netgroup
-        --with-dshgroups --with-genders --with-machines
+        --with-dshgroups --with-genders --with-machines --with-slurm
     - name: make
       run: make -j 2 CFLAGS="-Werror"
     - name: make check
@@ -39,7 +39,7 @@ jobs:
     name: macos
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         fetch-depth: 0
@@ -59,7 +59,7 @@ jobs:
     name: coverage
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         fetch-depth: 0
@@ -76,4 +76,4 @@ jobs:
     - name: make check-code-coverage
       run: make check-code-coverage
     - name: coverage report
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v3
