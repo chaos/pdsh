@@ -50,6 +50,16 @@
  *  with our internal List datatype.
  */
 #define __list_datatypes_defined 1
+/*
+ * Also, Slurm>=23.x requires that `struct xlist` be typedef'd to list_t:
+ */
+typedef struct xlist list_t;
+typedef struct listIterator list_itr_t;
+/*
+ * Also, Slurm exports the hostlist_t interface as well:
+ */
+#define __hostlist_t_defined 1
+
 #include <slurm/slurm.h>
 #include <slurm/slurm_errno.h>
 
