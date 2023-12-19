@@ -1,6 +1,19 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents those changes that are of interest to users and admins.
 
+* Changes in pdsh-2.35 (2023-12-19)
+===================================
+ -- slurm: call slurm_init() once before any call to Slurm API (Egbert Eich)
+ -- slurm: fix compile of slurm plugin against Slurm >= 23.x
+ -- log module option errors with -d (Erik Jacobson)
+ -- fail fast on connect error or non-zero return code (Jerry Mannil)
+ -- release a lock that is no longer used (ycaibb)
+ -- build: use LDADD instead of LDFLAGS for libcommon.la (orbea)
+ -- Remove README.QsNet from the RPM SPEC file's doc list (Jason St. John)
+ -- slurm: add -C to restrict hostlist to nodes with features (Dylan Simon)
+ -- ssh: fix sshcmd_signal on macos
+ -- dsbak: fix handling of empty input lines
+
 * Changes in pdsh-2.34 (2020-01-07)
 ===================================
  -- Fix for output corruption with no newlines (#114)
