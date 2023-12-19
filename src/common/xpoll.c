@@ -5,20 +5,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -26,7 +26,7 @@
 
 #if HAVE_CONFIG_H
 #  include <config.h>
-#endif 
+#endif
 
 #if HAVE_POLL_H
 #include <poll.h>
@@ -50,7 +50,7 @@
 #include "xmalloc.h"
 
 #if HAVE_POLL
-static int 
+static int
 _poll(struct xpollfd *xfds, unsigned int nfds, int timeout) {
     int i, rv;
     struct pollfd *pfds = Malloc(nfds * sizeof(struct pollfd));
@@ -58,7 +58,7 @@ _poll(struct xpollfd *xfds, unsigned int nfds, int timeout) {
     for (i = 0; i < nfds; i++) {
         pfds[i].fd = xfds[i].fd;
         pfds[i].events = 0;
-        pfds[i].revents = 0; 
+        pfds[i].revents = 0;
 
         if (xfds[i].events & XPOLLREAD)
             pfds[i].events |= POLLIN;
@@ -81,7 +81,7 @@ _poll(struct xpollfd *xfds, unsigned int nfds, int timeout) {
         if (pfds[i].revents & POLLNVAL)
             xfds[i].revents |= XPOLLINVAL;
     }
-    
+
     Free((void **)&pfds);
     errno = 0;
     return rv;
@@ -89,7 +89,7 @@ _poll(struct xpollfd *xfds, unsigned int nfds, int timeout) {
 
 #else /* !HAVE_POLL */
 
-static int 
+static int
 _select(struct xpollfd *xfds, unsigned int nfds, int timeout) {
     int i, maxfd = -1, inval = 0, rv = -1;
     struct timeval tv;
@@ -108,7 +108,7 @@ _select(struct xpollfd *xfds, unsigned int nfds, int timeout) {
     FD_ZERO(&writes);
     for (i = 0; i < nfds; i++) {
         if (xfds[i].fd >= FD_SETSIZE || xfds[i].fd < 0) {
-            xfds[i].revents |= XPOLLINVAL; 
+            xfds[i].revents |= XPOLLINVAL;
             inval++;
             continue;
         }
@@ -167,7 +167,7 @@ _select(struct xpollfd *xfds, unsigned int nfds, int timeout) {
 
     for (i = 0; i < nfds; i++) {
         /* protect segfault prone FD_ISSET */
-        if (xfds[i].revents & XPOLLINVAL)  
+        if (xfds[i].revents & XPOLLINVAL)
             continue;
 
         if (FD_ISSET(xfds[i].fd, &reads))
@@ -175,7 +175,7 @@ _select(struct xpollfd *xfds, unsigned int nfds, int timeout) {
         if (FD_ISSET(xfds[i].fd, &writes))
             xfds[i].revents |= XPOLLWRITE;
     }
-    
+
     errno = 0;
     return (rv + inval);
 }
@@ -189,7 +189,7 @@ int xpoll(struct xpollfd *xfds, int nfds, int timeout) {
     if (xfds == NULL || nfds <= 0) {
         errno = EINVAL;
         return -1;
-    }  
+    }
 
     for (i = 0; i < nfds; i++) {
         xfds[i].revents = 0;
@@ -199,9 +199,9 @@ int xpoll(struct xpollfd *xfds, int nfds, int timeout) {
     return _poll(xfds, nfds, timeout);
 #else
     return _select(xfds, nfds, timeout);
-#endif     
+#endif
 }
-   
+
 /*
  * vi: tabstop=4 shiftwidth=4 expandtab
  */

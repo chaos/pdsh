@@ -5,20 +5,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -44,7 +44,7 @@
 
 #include "xstring.h"
 #include "xmalloc.h"
-#include "macros.h" 
+#include "macros.h"
 
 static char *prog = NULL;
 static char *host = NULL;
@@ -55,7 +55,7 @@ static char *host = NULL;
 static bool keep_host_domain = false;
 
 /*
- * Call this before calling err() or errx().  Sets hostname and program name 
+ * Call this before calling err() or errx().  Sets hostname and program name
  * for %H, %p, and %P.
  *   str (IN)	program name
  */
@@ -85,7 +85,7 @@ void err_cleanup(void)
     Free((void **) &host);
 }
 
-/* 
+/*
  * _verr() is like vfprintf, but handles (only) the following formats:
  * following formats:
  * %s	string
@@ -93,7 +93,7 @@ void err_cleanup(void)
  * %c	character
  * %m	string (sys_errlist[errno])
  * %d   int	
- * %z   equivalent to %.3d 
+ * %z   equivalent to %.3d
  * %p   program name with @host attached
  * %P   program name
  * %H   hostname for this host
@@ -115,8 +115,8 @@ static void _verr(FILE * stream, char *format, va_list ap)
                 xstrcat(&buf, va_arg(ap, char *));
             } else if (*format == 'S') {        /* %S - string, trunc */
                 snprintf(tmpstr, sizeof(tmpstr), "%s", va_arg(ap, char *));
-                if (  !isdigit(*tmpstr) 
-                   && !keep_host_domain 
+                if (  !isdigit(*tmpstr)
+                   && !keep_host_domain
                    && (q = strchr(tmpstr, '.')))
                     *q = '\0';
                 xstrcat(&buf, tmpstr);

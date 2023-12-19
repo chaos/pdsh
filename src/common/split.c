@@ -5,20 +5,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -34,10 +34,10 @@
 #include "xmalloc.h"
 #include "split.h"
 
-/* 
- * Helper function for list_split(). Extract tokens from str.  
- * Return a pointer to the next token; at the same time, advance 
- * *str to point to the next separator.  
+/*
+ * Helper function for list_split(). Extract tokens from str.
+ * Return a pointer to the next token; at the same time, advance
+ * *str to point to the next separator.
  *   sep (IN)   string containing list of separator characters
  *   str (IN)   double-pointer to string containing tokens and separators
  *   RETURN next token
@@ -127,18 +127,18 @@ int list_join (char *result, size_t len, const char *sep, List l)
     ListIterator i;
 
     memset (result, 0, len);
-        
+
     if (list_count(l) == 0)
         return (0);
-        
+
     i = list_iterator_create(l);
     while ((str = list_next(i))) {
         int count;
-            
-        if (!truncated)  {
-            count = snprintf(result + n, len - n, "%s%s", str, sep); 
 
-            if ((count >= (len - n)) || (count < 0)) 
+        if (!truncated)  {
+            count = snprintf(result + n, len - n, "%s%s", str, sep);
+
+            if ((count >= (len - n)) || (count < 0))
                 truncated = 1;
             else
                 n += count;
@@ -151,7 +151,7 @@ int list_join (char *result, size_t len, const char *sep, List l)
     if (truncated)
         result [len - 1] = '\0';
     else {
-        /* 
+        /*
          * Delete final separator
          */
         result[strlen(result) - strlen(sep)] = '\0';

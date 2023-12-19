@@ -5,20 +5,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -42,7 +42,7 @@
 #include "static_modules.h"
 #else
 #include "dlfcn.h"
-#endif 
+#endif
 
 #include "src/common/err.h"
 #include "src/common/xmalloc.h"
@@ -53,7 +53,7 @@
 #include "mod.h"
 
 /*
- * pdsh/322: Workaround apparent bug in glibc 2.2.4 which 
+ * pdsh/322: Workaround apparent bug in glibc 2.2.4 which
  * occaisionally causes LinuxThreads manager thread to
  * segfault at exit. (Disable dlclose() and lt_dlexit()
  * in these versions of glibc)
@@ -91,7 +91,7 @@ typedef enum permission_error {
 } perm_error_t;
 
 
-/* 
+/*
  *  Static function prototypes:
  */
 #if STATIC_MODULES
@@ -101,7 +101,7 @@ static int  _mod_load_static(int);
 static int  _mod_load_dynamic_modules(const char *, opt_t *);
 static int  _mod_load_dynamic(const char *, opt_t *);
 static int  _cmp_filenames(mod_t, char *);
-static int  _is_loaded(char *filename); 
+static int  _is_loaded(char *filename);
 static bool _path_permissions_ok(const char *dir, uid_t pdsh_owner);
 static perm_error_t  _dir_permission_error(struct stat *, uid_t alt_uid);
 #endif
@@ -140,11 +140,11 @@ mod_exit(void)
         return 0;
 
     /*
-     *  list_destroy() will call module destructor on each 
+     *  list_destroy() will call module destructor on each
      *    element in list
      */
     list_destroy(module_list);
-    
+
     return 0;
 }
 
@@ -185,15 +185,15 @@ static mod_t _mod_next_active (ListIterator i)
 
 /*
  *  Call any "read wcoll" functions exported by modules. The module
- *    is responsible for deciding when to generate a new wcoll, 
+ *    is responsible for deciding when to generate a new wcoll,
  *    append to existing wcoll, etc. (presumably based on the contents
  *    of opt)
  *
  *  This function appends to wcoll any new hosts returned from the
- *    module specific read_wcoll() functions. 
+ *    module specific read_wcoll() functions.
  *
  *  Returns -1 on error, 0 for success.
- */  
+ */
 int
 mod_read_wcoll(opt_t *opt)
 {
@@ -285,7 +285,7 @@ _mod_destroy(mod_t mod)
 
     if (mod->filename)
         Free((void **) &mod->filename);
-    
+
 #if !STATIC_MODULES
 #  if !PREVENT_DLCLOSE_BUG
     if (mod->handle)
@@ -379,14 +379,14 @@ int mod_load_modules(const char *dir, opt_t *opt)
  *  Print all options from module option table 'p,' aligning description
  *    with column 'col'
  */
-static void 
+static void
 _print_option_help(struct pdsh_module_option *p, int col)
 {
     char buf[81];
 
     assert(p != NULL);
 
-    snprintf(buf, 81, "-%c %-*s %s\n", p->opt, col - 4, 
+    snprintf(buf, 81, "-%c %-*s %s\n", p->opt, col - 4,
              (p->arginfo ? p->arginfo : ""), p->descr);
 
     err("%s", buf);
@@ -403,24 +403,24 @@ mod_print_options(mod_t mod, int col)
     p = mod->pmod->opt_table;
     if (!p || !p->opt)
         return;
-    /* 
+    /*
      * out("%s/%s Options:\n", mod->pmod->type, mod->pmod->name);
      */
-    for (p = mod->pmod->opt_table; p && (p->opt != 0); p++) 
+    for (p = mod->pmod->opt_table; p && (p->opt != 0); p++)
         _print_option_help(p, col);
-        
+
 }
 
 /*
  *  Print to stdout information stanza for module "mod"
  */
-static int 
+static int
 _mod_print_info(mod_t mod)
 {
-    if (mod == NULL) 
+    if (mod == NULL)
         return 0;
 
-    out("Module: %s/%s\n",    mod->pmod->type, mod->pmod->name); 
+    out("Module: %s/%s\n",    mod->pmod->type, mod->pmod->name);
     out("Author: %s\n",       mod->pmod->author ? mod->pmod->author : "???");
     out("Descr:  %s\n",       mod->pmod->descr ? mod->pmod->descr : "???");
     out("Active: %s\n",       mod->initialized ? "yes" : "no");
@@ -443,7 +443,7 @@ static int _opt_print(mod_t mod, int *col)
 }
 
 
-void mod_print_all_options(int col) 
+void mod_print_all_options(int col)
 {
     list_for_each(module_list, (ListForF) _opt_print, &col);
 }
@@ -471,7 +471,7 @@ mod_count(char *type)
         return -1;
     }
 
-    while (list_find(module_itr, (ListFindF) _cmp_type, type)) 
+    while (list_find(module_itr, (ListFindF) _cmp_type, type))
         i++;
 
     list_iterator_destroy(module_itr);
@@ -628,7 +628,7 @@ mod_get_rcmd_destroy (mod_t mod)
 {
     assert (mod != NULL);
     assert (mod->pmod != NULL);
-    
+
     if (mod->pmod->rcmd_ops && mod->pmod->rcmd_ops->rcmd_destroy)
         return mod->pmod->rcmd_ops->rcmd_destroy;
     else
@@ -636,7 +636,7 @@ mod_get_rcmd_destroy (mod_t mod)
 }
 
 
-int 
+int
 mod_process_opt(opt_t *opt, int c, char *optarg)
 {
     mod_t mod;
@@ -669,12 +669,12 @@ static struct pdsh_module_option *
 _mod_find_opt(mod_t mod, int opt)
 {
   struct pdsh_module_option *p = mod->pmod->opt_table;
-  for (p = mod->pmod->opt_table; p && (p->opt != 0); p++) 
+  for (p = mod->pmod->opt_table; p && (p->opt != 0); p++)
       if (p->opt == opt) return p;
   return NULL;
 }
 
-static int 
+static int
 _mod_delete (const char *type, const char *name)
 {
     ListIterator i = list_iterator_create (module_list);
@@ -691,8 +691,8 @@ _mod_delete (const char *type, const char *name)
 static int _mod_register (mod_t mod, const char *name)
 {
     mod_t prev;
-    /* 
-     *  Must have atleast a name and type 
+    /*
+     *  Must have atleast a name and type
      */
     if (!mod->pmod->type || !mod->pmod->name) {
         err("%p:[%s] type or name not specified in module\n", name);
@@ -704,8 +704,8 @@ static int _mod_register (mod_t mod, const char *name)
      *   Delete previous module if its priority is higher.
      */
     if ((prev = mod_get_module (mod->pmod->type, mod->pmod->name))) {
-        err("%p: %s: [%s/%s] already loaded from [%s]\n", 
-                mod->filename, mod->pmod->type, mod->pmod->name, 
+        err("%p: %s: [%s/%s] already loaded from [%s]\n",
+                mod->filename, mod->pmod->type, mod->pmod->name,
                 prev->filename);
         if (mod->priority > prev->priority)
             _mod_delete (mod->pmod->type, mod->pmod->name);
@@ -713,8 +713,8 @@ static int _mod_register (mod_t mod, const char *name)
             return (-1);
     }
 
-    /* 
-     * Continue with module loading only if personality acceptable 
+    /*
+     * Continue with module loading only if personality acceptable
      */
     if (!(mod->pmod->personality & pdsh_personality()))
         return -1;
@@ -729,10 +729,10 @@ static int _mod_initialize (mod_t mod)
     if (!_mod_opts_ok(mod))
         return -1;
 
-    if (mod->pmod->mod_ops && 
-        mod->pmod->mod_ops->init && 
+    if (mod->pmod->mod_ops &&
+        mod->pmod->mod_ops->init &&
         ((*mod->pmod->mod_ops->init)() < 0)) {
-        err("%p: error: %s/%s failed to initialize.\n", 
+        err("%p: error: %s/%s failed to initialize.\n",
             mod->pmod->type, mod->pmod->name);
         return -1;
     }
@@ -775,7 +775,7 @@ _mod_load_static(int idx)
 /*
  *  Load all statically defined modules from internal static_mods array
  */
-static int 
+static int
 _mod_load_static_modules(void)
 {
     int i = 0;
@@ -821,18 +821,18 @@ _mod_load_dynamic(const char *fq_path, opt_t *pdsh_opts)
     if (_is_loaded(mod->filename)) {
         /* Module already loaded. This is OK, no need for
          *   error message. (Could have already opened a .la and
-         *   we are now opening the corresponding .so 
+         *   we are now opening the corresponding .so
          */
         goto fail;
     }
-  
+
     /* load all module info from the pdsh_module structure */
     if (!(mod->pmod = dlsym(mod->handle, "pdsh_module_info"))) {
         err("%p:[%s] can't resolve pdsh module\n", mod->filename);
         goto fail;
     }
 
-    if ((priority = dlsym(mod->handle, "pdsh_module_priority"))) 
+    if ((priority = dlsym(mod->handle, "pdsh_module_priority")))
         mod->priority = *priority;
 
     if (_mod_register(mod, mod->filename) < 0)
@@ -845,11 +845,11 @@ _mod_load_dynamic(const char *fq_path, opt_t *pdsh_opts)
     return -1;
 }
 
-static int  
+static int
 _pdsh_owner(const char *pdsh_path, uid_t *pdsh_uid)
 {
     struct stat st;
-  
+
     if (stat (pdsh_path, &st) < 0) {
         err ("%p: Unable to determine ownership of pdsh binary: %m\n");
         return -1;
@@ -873,13 +873,13 @@ _mod_load_dynamic_modules(const char *dir, opt_t *pdsh_opts)
     assert(dir != NULL);
     assert(*dir != '\0');
 
-    if (!initialized) 
+    if (!initialized)
         mod_init();
 
     if (_pdsh_owner(pdsh_opts->local_program_path, &pdsh_owner) < 0)
         return -1;
 
-    if (!_path_permissions_ok(dir, pdsh_owner)) 
+    if (!_path_permissions_ok(dir, pdsh_owner))
         return -1;
 
     if (!(dirp = opendir(dir)))
@@ -895,14 +895,14 @@ _mod_load_dynamic_modules(const char *dir, opt_t *pdsh_opts)
         strcpy(p, entry->d_name);
 
         if (stat(path, &st) < 0)
-            continue; 
+            continue;
         if (!S_ISREG(st.st_mode))
             continue;
 
         /*
          *  Do not load modules that could have been altered by
          *   a user other than root or the current user or the user
-         *   owning the pdsh executable. Otherwise pdsh could execute 
+         *   owning the pdsh executable. Otherwise pdsh could execute
          *   arbitrary code.
          */
         if (  (st.st_uid != 0) && (st.st_uid != getuid())
@@ -914,7 +914,7 @@ _mod_load_dynamic_modules(const char *dir, opt_t *pdsh_opts)
             err ("%p: skipping insecure module \"%s\" (check perms)\n", path);
             continue;
         }
-        
+
         if (_mod_load_dynamic(path, pdsh_opts) < 0)
             continue;
 
@@ -925,7 +925,7 @@ _mod_load_dynamic_modules(const char *dir, opt_t *pdsh_opts)
         err("%p: error closing %s: %m", dir);
 
     if (count == 0)
-        errx("%p: no modules found\n"); 
+        errx("%p: no modules found\n");
 
     return 0;
 }
@@ -945,11 +945,11 @@ _is_loaded(char *filename)
     return 0;
 }
 
-static char * 
+static char *
 _perm_error_string (perm_error_t error)
 {
     switch (error) {
-        case DIR_OK: 
+        case DIR_OK:
             return ("Permissions are valid");
         case DIR_NOT_DIRECTORY:
             return ("Not a directory");
@@ -977,8 +977,8 @@ _dir_permission_error(struct stat *st, uid_t alt_uid)
 {
     if (!S_ISDIR(st->st_mode))
         return DIR_NOT_DIRECTORY;
-    if (  (st->st_uid != 0) && (st->st_uid != getuid()) 
-       && (st->st_uid != alt_uid)) 
+    if (  (st->st_uid != 0) && (st->st_uid != getuid())
+       && (st->st_uid != alt_uid))
         return DIR_BAD_OWNER;
     if ((st->st_mode & S_IWOTH) && !(st->st_mode & S_ISVTX))
         return DIR_WORLD_WRITABLE;
@@ -987,7 +987,7 @@ _dir_permission_error(struct stat *st, uid_t alt_uid)
 
 /*
  *  Temprarily chdir() to path and use getcwd to return real patch
- *   to caller. 
+ *   to caller.
  */
 static char *
 _get_dir_name (const char *path, char *buf, size_t len)
@@ -996,7 +996,7 @@ _get_dir_name (const char *path, char *buf, size_t len)
     char * orig_path = Malloc (pathlen * sizeof (char));
 
     while (!getcwd (orig_path, pathlen) && (pathlen < MAXPATHLEN*2))
-        Realloc ((void **) &orig_path, pathlen*=2 * sizeof (char)); 
+        Realloc ((void **) &orig_path, pathlen*=2 * sizeof (char));
 
     if (chdir (path) < 0)
         errx ("Unable to chdir() to %s: %m", path);
@@ -1015,7 +1015,7 @@ _get_dir_name (const char *path, char *buf, size_t len)
 }
 
 /*
- *  Returns true if, for the directory "dir" and all of its parent 
+ *  Returns true if, for the directory "dir" and all of its parent
  *    directories,  the following are true:
  *    - ownership is root or the calling user (as returned by getuid())
  *        or same ownership as the pdsh or pdcp binary.
@@ -1059,9 +1059,9 @@ _path_permissions_ok(const char *dir, uid_t pdsh_owner)
         if ((error = _dir_permission_error(&st, pdsh_owner)) != DIR_OK) {
             char buf [MAXPATHLEN];
             err("%p: module path \"%s\" insecure.\n", dir);
-            err("%p: \"%s\": %s\n", 
-                _get_dir_name (dirbuf, buf, MAXPATHLEN), 
-                _perm_error_string (error)); 
+            err("%p: \"%s\": %s\n",
+                _get_dir_name (dirbuf, buf, MAXPATHLEN),
+                _perm_error_string (error));
             return false;
         }
 

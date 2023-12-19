@@ -5,31 +5,31 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 \*****************************************************************************/
 
 /*
- * This is an rcmd() replacement originally by Chris Siebenmann 
+ * This is an rcmd() replacement originally by Chris Siebenmann
  * <cks@utcc.utoronto.ca>.  There was no copyright information on the original.
  * If this finds its way back to the original author please let me know if
  * you would like this header block changed...
- * 
+ *
  * Brought in to pdsh from USC rdist -jg
  * Changes:
  * - added fd2p arg handling
@@ -58,7 +58,7 @@
 #include <string.h>             /* memset */
 
 #include <stddef.h>
-#include <sys/socket.h> 
+#include <sys/socket.h>
 #include <sys/wait.h>
 
 #include "src/common/xmalloc.h"
@@ -73,13 +73,13 @@
 #if STATIC_MODULES
 #  define pdsh_module_info sshcmd_module_info
 #  define pdsh_module_priority sshcmd_module_priority
-#endif    
+#endif
 
 #define DEFAULT_SSH_ARGS "-2 -a -x %h"
 
 int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
 
-    
+
 static int mod_ssh_postop(opt_t *opt);
 static int mod_ssh_exit (void);
 
@@ -112,23 +112,23 @@ struct pdsh_rcmd_operations sshcmd_rcmd_ops = {
     (RcmdDestroyF) sshcmd_destroy
 };
 
-/* 
+/*
  * Export module options
  */
-struct pdsh_module_option sshcmd_module_options[] = 
- { 
+struct pdsh_module_option sshcmd_module_options[] =
+ {
    PDSH_OPT_TABLE_END
  };
 
-/* 
- * Sshcmd module info 
+/*
+ * Sshcmd module info
  */
 struct pdsh_module pdsh_module_info = {
   "rcmd",
   "ssh",
   "Jim Garlick <garlick@llnl.gov>",
   "ssh based rcmd connect method",
-  DSH | PCP, 
+  DSH | PCP,
 
   &sshcmd_module_ops,
   &sshcmd_rcmd_ops,
@@ -153,7 +153,7 @@ static char **ssh_argv_create (List arg_list, const char **remote_argv)
 
     n = 0;
     i = list_iterator_create (arg_list);
-    while ((arg = list_next (i))) 
+    while ((arg = list_next (i)))
         argv[n++] = Strdup (arg);
     list_iterator_destroy (i);
 
@@ -311,13 +311,13 @@ out:
     return (p ? pipecmd_stdoutfd (p) : -1);
 }
 
-static int 
+static int
 sshcmd_destroy (pipecmd_t p)
 {
     int status = 0;
 
     if (pipecmd_wait (p, &status) < 0)
-        err ("%p: %S: wait on ssh cmd: %m\n", pipecmd_target (p));  
+        err ("%p: %S: wait on ssh cmd: %m\n", pipecmd_target (p));
 
     pipecmd_destroy (p);
 

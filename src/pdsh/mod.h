@@ -5,20 +5,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Mark Grondona <mgrondona@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -28,7 +28,7 @@
 
 #if HAVE_CONFIG_H
 #  include <config.h>
-#endif 
+#endif
 
 #include "src/pdsh/opt.h"
 
@@ -46,18 +46,18 @@ int mod_init(void);
  *  Finalize and close the module loader interface.
  *    Cycles through list of loaded modules and runs each modules
  *    "exit" routine if one was exported. Then frees memory associated
- *    with the module and unloads it. 
+ *    with the module and unloads it.
  *
  *  Returns 0 for Success and -1 for Failure.
  */
 int mod_exit(void);
 
 /*
- *  Load all modules from specified directory. 
- *    Directory must be owned by the current user and not writable 
- *    by any other user.  After successfully loading each module, 
- *    the module's "init" routine is called and module command line 
- *    options are registered.  The module is not loaded if init 
+ *  Load all modules from specified directory.
+ *    Directory must be owned by the current user and not writable
+ *    by any other user.  After successfully loading each module,
+ *    the module's "init" routine is called and module command line
+ *    options are registered.  The module is not loaded if init
  *    returns < 0 or any module option cannot be registered.
  *
  *  If modules are being compiled statically, the directory argument
@@ -73,7 +73,7 @@ int mod_load_modules(const char *dir, opt_t *opt);
 void mod_list_module_info(void);
 
 /*
- *  Traverse through loaded modules and attempt to process 
+ *  Traverse through loaded modules and attempt to process
  *    option `opt' with argument `arg.'
  *
  *  Note: Only one module exporting a given option can be loaded
@@ -82,7 +82,7 @@ void mod_list_module_info(void);
 int mod_process_opt(opt_t *pdsh_opts, int opt, char *arg);
 
 /*
- *  Traverses list of loaded modules, calling any exported "read_wcoll" 
+ *  Traverses list of loaded modules, calling any exported "read_wcoll"
  *    routines. Appends any returned results onto opt->wcoll.
  *
  *  This routine should only be called from within pdsh/opt.c after
@@ -134,14 +134,14 @@ List mod_get_uninitialized_module_names (char *type);
  */
 void mod_print_all_options(int column);
 
-/* 
+/*
  *  Print options for module "mod"
  */
 void mod_print_options(mod_t mod, int descr_column);
 
 /*
  * Functions that may be exported by any pdsh module
- *   via a pdsh_module_operations structure. 
+ *   via a pdsh_module_operations structure.
  */
 typedef int        (*ModInitF)      (void);
 typedef int        (*ModExitF)      (void);
@@ -150,7 +150,7 @@ typedef int        (*ModPostOpF)    (opt_t *);
 
 /*
  * Functions that may be exported by any rcmd module
- *   via a pdsh_rcmd_operations structure. 
+ *   via a pdsh_rcmd_operations structure.
  */
 typedef int        (*RcmdInitF)     (opt_t *);
 typedef int        (*RcmdSigF)      (int, void *, int);
@@ -173,8 +173,8 @@ RcmdF        mod_get_rcmd(mod_t mod);
 RcmdDestroyF mod_get_rcmd_destroy(mod_t mod);
 
 
-/* 
- * Store all module operations of a module 
+/*
+ * Store all module operations of a module
  */
 struct pdsh_module_operations {
     ModInitF      init;         /* Called just after module is loaded      */
@@ -182,13 +182,13 @@ struct pdsh_module_operations {
 
     ModReadWcollF read_wcoll;   /* Called if wcoll is not initialized at
                                    end of option processing. First wcoll
-                                   returned by a module will be used.      */ 
+                                   returned by a module will be used.      */
 
     ModPostOpF    postop;       /* Called after argv option processing     */
 };
 
-/* 
- * Stores all rcmd operations of a module 
+/*
+ * Stores all rcmd operations of a module
  */
 struct pdsh_rcmd_operations {
     RcmdInitF    rcmd_init;
@@ -197,12 +197,12 @@ struct pdsh_rcmd_operations {
     RcmdDestroyF rcmd_destroy;
 };
 
-/* 
- * Stores all information about a module 
+/*
+ * Stores all information about a module
  */
 struct pdsh_module {
     char *type;        /* module type, e.g. Jedi */
-    char *name;        /* module name, e.g. Yoda */ 
+    char *name;        /* module name, e.g. Yoda */
     char *author;      /* module author, e.g. George Lucas */
     char *descr;       /* module description, e.g. "Run pdsh with the force */
     int personality;   /* personality mask for module (DSH, PCP, or DSH|PCP */
@@ -214,6 +214,6 @@ struct pdsh_module {
 
 #endif /* !_MOD_H */
 
-/* 
+/*
  * vi: tabstop=4 shiftwidth=4 expandtab
  */

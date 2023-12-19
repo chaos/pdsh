@@ -5,37 +5,37 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 \*****************************************************************************/
 
 /*
- *  This module uses the "pipecmd" interface to execute 
+ *  This module uses the "pipecmd" interface to execute
  *   arbitrary processes. First of the "remote" args is the
- *   command to execute. Some simple parameters are substituted 
+ *   command to execute. Some simple parameters are substituted
  *   on the command line:
- * 
+ *
  *    %h :  Target "hostname"
  *    %u :  Remote username
  *    %n :  Remote "rank" (0-n)
  *
  *  E.g.:
- *   
+ *
  *   pdsh -Rexec -w foo[0-1] ssh -l %u -x %h hostname
  *
  *  would somewhat mimic the existing ssh module.
@@ -60,7 +60,7 @@
 #if STATIC_MODULES
 #  define pdsh_module_info execcmd_module_info
 #  define pdsh_module_priority execcmd_module_priority
-#endif    
+#endif
 
 int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
 
@@ -69,7 +69,7 @@ static int mod_exec_exit (void);
 
 static int exec_init(opt_t *);
 static int exec_signal(int, void *arg, int);
-static int execcmd(char *, char *, char *, char *, char *, int, int *, void **); 
+static int execcmd(char *, char *, char *, char *, char *, int, int *, void **);
 static int exec_destroy (pipecmd_t p);
 
 /*
@@ -92,16 +92,16 @@ struct pdsh_rcmd_operations execcmd_rcmd_ops = {
     (RcmdDestroyF) exec_destroy
 };
 
-/* 
+/*
  * Export module options
  */
-struct pdsh_module_option execcmd_module_options[] = 
- { 
+struct pdsh_module_option execcmd_module_options[] =
+ {
    PDSH_OPT_TABLE_END
  };
 
-/* 
- * Sshcmd module info 
+/*
+ * Sshcmd module info
  */
 struct pdsh_module pdsh_module_info = {
   "rcmd",
@@ -181,7 +181,7 @@ execcmd(char *ahost, char *addr, char *luser, char *ruser, char *cmd,
     return (pipecmd_stdoutfd (p));
 }
 
-static int 
+static int
 exec_destroy (pipecmd_t p)
 {
     int status;

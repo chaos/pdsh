@@ -5,20 +5,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Mark Grondona <mgrondona@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -66,9 +66,9 @@ typedef struct listIterator list_itr_t;
 #if STATIC_MODULES
 #  define pdsh_module_info slurm_module_info
 #  define pdsh_module_priority slurm_module_priority
-#endif    
+#endif
 /*
- *  Give this module low priority 
+ *  Give this module low priority
  */
 int pdsh_module_priority = 10;
 
@@ -95,19 +95,19 @@ static List constraint_list = NULL;
  *  Export generic pdsh module options
  */
 struct pdsh_module_operations slurm_module_ops = {
-    (ModInitF)       mod_slurm_init, 
-    (ModExitF)       mod_slurm_exit, 
+    (ModInitF)       mod_slurm_init,
+    (ModExitF)       mod_slurm_exit,
     (ModReadWcollF)  mod_slurm_wcoll,
     (ModPostOpF)     NULL
 };
 
 
-/* 
+/*
  * Export module options
  */
-struct pdsh_module_option slurm_module_options[] = 
- { 
-   { 'j', "jobid,...", 
+struct pdsh_module_option slurm_module_options[] =
+ {
+   { 'j', "jobid,...",
      "Run on nodes allocated to SLURM job(s) (\"all\" = all jobs)",
      DSH | PCP, (optFunc) slurm_process_opt
    },
@@ -122,15 +122,15 @@ struct pdsh_module_option slurm_module_options[] =
    PDSH_OPT_TABLE_END
  };
 
-/* 
- * SLURM module info 
+/*
+ * SLURM module info
  */
 struct pdsh_module pdsh_module_info = {
   "misc",
   "slurm",
   "Mark Grondona <mgrondona@llnl.gov>",
   "Target nodes contained in SLURM jobs or partitions, read SLURM_JOBID by default",
-  DSH | PCP, 
+  DSH | PCP,
 
   &slurm_module_ops,
   NULL,
@@ -149,18 +149,18 @@ static int32_t str2jobid (char *str)
     char *p = NULL;
     long int jid;
 
-    if (str == NULL) 
+    if (str == NULL)
         return (-1);
 
     jid = strtoul (str, &p, 10);
 
-    if (*p != '\0') 
+    if (*p != '\0')
         errx ("%p: invalid setting \"%s\" for -j or SLURM_JOBID\n", str);
 
     return ((int32_t) jid);
 }
 
-    
+
 static int
 slurm_process_opt(opt_t *pdsh_opts, int opt, char *arg)
 {
@@ -335,8 +335,8 @@ static hostlist_t _slurm_wcoll (List joblist)
         return (NULL);
 
     _slurm_init();
-    if (slurm_load_jobs((time_t) NULL, &msg, SHOW_ALL) < 0) 
-        errx ("Unable to contact slurm controller: %s\n", 
+    if (slurm_load_jobs((time_t) NULL, &msg, SHOW_ALL) < 0)
+        errx ("Unable to contact slurm controller: %s\n",
               slurm_strerror (errno));
 
     /*
@@ -359,14 +359,14 @@ static hostlist_t _slurm_wcoll (List joblist)
         }
         else if (_jobid_requested (joblist, j->job_id)) {
             hl = _hl_append (hl, j->nodes);
-            /* 
+            /*
              * Exit when there is no more jobids to search
              */
             if (list_count (joblist) == 0)
                 break;
         }
     }
-    
+
     slurm_free_job_info_msg (msg);
 
     if (hl)

@@ -5,42 +5,42 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 \*****************************************************************************/
 
-/* 
+/*
  * Theory of operation:
  *
- * The main thread creates a separate thread for each rsh/krsh/etc. which lasts 
- * the life of the connection (establishing it, copying remote stdout/stderr  
- * to local stdout/stderr and closing the connection).  The main thread makes 
- * sure that at most fanout number of threads are active at any given time.  
+ * The main thread creates a separate thread for each rsh/krsh/etc. which lasts
+ * the life of the connection (establishing it, copying remote stdout/stderr
+ * to local stdout/stderr and closing the connection).  The main thread makes
+ * sure that at most fanout number of threads are active at any given time.
  * When a thread terminates, it signals a condition variable (threadcount_cond)
- * which causes the main thread to start another rsh/krsh/etc. thread to take 
+ * which causes the main thread to start another rsh/krsh/etc. thread to take
  * its place.
  *
- * We rely on implicit stdio locking to enable us to write lines to 
- * stdout/stderr from multiple threads concurrently without getting the lines 
+ * We rely on implicit stdio locking to enable us to write lines to
+ * stdout/stderr from multiple threads concurrently without getting the lines
  * all mixed up.
- * 
- * A special watchdog thread sends SIGLARM to any threads that have been in 
- * the DSH_RCMD state (usually connect() in rcmd/k4cmd/etc.) for more than 
+ *
+ * A special watchdog thread sends SIGLARM to any threads that have been in
+ * the DSH_RCMD state (usually connect() in rcmd/k4cmd/etc.) for more than
  * CONNECT_TIMEOUT seconds.  SIGALRM is masked everywhere but during connect().
  * Similarly, if a command timeout is specified (default is none), the watchdog
  * thread sends SIGALRM to threads that have been in the DSH_READING state
@@ -49,7 +49,7 @@
  * When a user types ^C, the resulting SIGINT invokes a handler which lists
  * threads in the DSH_READING state.  If another SIGINT is received within
  * INTR_TIME secs (default 1 sec), pdsh terminates.
- * 
+ *
  * All the state for a thread is contained in thd_t struct.  An array of
  * these structures is declared globally so signal handlers can access.
  * The array is initialized by dsh() below, and the rsh() function for each
@@ -185,7 +185,7 @@ static void _alarm_handler(int dummy)
 {
 }
 
-/* 
+/*
  * Helper function for handle_sigint().  Lists the status of all connected
  * threads.
  */
@@ -254,7 +254,7 @@ static void _mask_signals(int how)
 }
 
 /*
- * If the underlying rsh mechanism supports it, forward signals to remote 
+ * If the underlying rsh mechanism supports it, forward signals to remote
  * process.
  */
 static void _fwd_signal(int signum)
@@ -288,16 +288,16 @@ static int _thd_command_timeout (thd_t *th)
     return (0);
 }
 
-/* 
- * Watchdog thread.  Send SIGALRM to 
+/*
+ * Watchdog thread.  Send SIGALRM to
  *   - threads in connecting state for too long
  *   - threads in connected state for too long (if selected on command line)
- * Sleep for two seconds between polls 
+ * Sleep for two seconds between polls
  */
 static void *_wdog(void *args)
 {
     int i;
-    
+
     for (;;) {
 
         if (t == NULL) /* We're done */
@@ -395,7 +395,7 @@ static int _pcp_client (thd_t *th)
 static int _parallel_copy (thd_t *th)
 {
     int rv = 0;
-    /* 
+    /*
      * Run threaded pcp server or client
      */
     if (th->pcp_Popt)
@@ -404,11 +404,11 @@ static int _parallel_copy (thd_t *th)
         rv = _pcp_client (th);
 
     if ((!th->pcp_Popt && rv < 0) || (th->pcp_Popt)) {
-        /* 
-         *  Copy any pending stderr to user 
-         *   (ignore errors) 
+        /*
+         *  Copy any pending stderr to user
+         *   (ignore errors)
          *
-         *  Notes: 
+         *  Notes:
          *
          *  If the pcp_client was executed, stderr is unlikely b/c
          *  the pcp_server does not write to stderr and all
@@ -470,7 +470,7 @@ static void *_rcp_thread(void *args)
         xstrcat(&rcpycmd, a->host);
     }
 
-    rcmd_connect (a->rcmd, a->host, a->addr, a->luser, a->ruser, 
+    rcmd_connect (a->rcmd, a->host, a->addr, a->luser, a->ruser,
                   (rcpycmd) ? rcpycmd : a->cmd, a->nodeid, a->dsh_sopt);
 
     if (rcpycmd)
@@ -478,7 +478,7 @@ static void *_rcp_thread(void *args)
 
     if (a->rcmd->fd == -1)
         result = DSH_FAILED;
-    else if (_update_connect_state(a) != DSH_CANCELED) 
+    else if (_update_connect_state(a) != DSH_CANCELED)
         _parallel_copy(a);
 
     /* update status */
@@ -500,7 +500,7 @@ static void *_rcp_thread(void *args)
     return NULL;
 }
 
-/* 
+/*
  * Extract a remote command return code embedded in output, returning
  * the code as an integer and truncating the line.
  */
@@ -689,7 +689,7 @@ static void *_rsh_thread(void *args)
         else
             xpfds[1].fd = -1;
 
-        xpfds[0].events = xpfds[1].events = POLLIN; 
+        xpfds[0].events = xpfds[1].events = POLLIN;
 #if	STDIN_BCAST             /* not yet supported */
         xpfds[0].events |= POLLOUT;
 #endif
@@ -702,7 +702,7 @@ static void *_rsh_thread(void *args)
             /* poll (possibility for SIGALRM) */
             rv = xpoll(xpfds, nfds, -1);
             if (rv == -1) {
-                if (errno != EINTR) 
+                if (errno != EINTR)
                     err("%p: %S: xpoll: %m\n", a->host);
                 else if (_thd_command_timeout (a))
                     err("%p: %S: command timeout\n", a->host);
@@ -727,7 +727,7 @@ static void *_rsh_thread(void *args)
             }
 
             /* kill parallel job if kill_on_fail and one task was signaled */
-            if (a->kill_on_fail) 
+            if (a->kill_on_fail)
                 _die_if_signalled (a);
 
 #if	STDIN_BCAST             /* not yet supported */
@@ -814,7 +814,7 @@ static void _dump_debug_stats(int rshcount)
 /*
  * Initialize pthread attr pointed to by `attrp' with dsh default
  *  detach state, and stacksize `stacksize.'
- * 
+ *
  * Exits program on failure.
  */
 static int _dsh_attr_init (pthread_attr_t *attrp, int stacksize)
@@ -824,7 +824,7 @@ static int _dsh_attr_init (pthread_attr_t *attrp, int stacksize)
     if (stacksize < PTHREAD_STACK_MIN)
         stacksize = PTHREAD_STACK_MIN;
 
-    if ((rc = pthread_attr_init (attrp))) 
+    if ((rc = pthread_attr_init (attrp)))
         errx ("pthread_attr_init: %s\n", strerror (rc));
     if ((rc = pthread_attr_setdetachstate (attrp, PTHREAD_CREATE_DETACHED)))
         errx ("pthread_attr_setdetachstate: %s\n", strerror (rc));
@@ -853,7 +853,7 @@ static void _increase_nofile_limit (opt_t *opt)
 
     if ((rlim->rlim_cur < rlim->rlim_max) && (rlim->rlim_cur <= nfds)) {
         rlim->rlim_cur = rlim->rlim_max;
-        if (setrlimit (RLIMIT_NOFILE, rlim) < 0) 
+        if (setrlimit (RLIMIT_NOFILE, rlim) < 0)
             err ("Unable to increase max no. files: %m");
     }
 
@@ -861,7 +861,7 @@ static void _increase_nofile_limit (opt_t *opt)
 }
 
 static int _thd_init (thd_t *th, opt_t *opt, List pcp_infiles, int i)
-{ 
+{
     th->luser = opt->luser;        /* general */
     th->ruser = opt->ruser;
     th->state = DSH_NEW;
@@ -899,13 +899,13 @@ static int _thd_init (thd_t *th, opt_t *opt, List pcp_infiles, int i)
 
 }
 
-static int 
+static int
 _cancel_pending_threads (void)
 {
     int n = 0;
     int i;
 
-    if (t == NULL) 
+    if (t == NULL)
         return (0);
 
     dsh_mutex_lock (&threadcount_mutex);
@@ -921,11 +921,11 @@ _cancel_pending_threads (void)
     return (0);
 }
 
-/* 
+/*
  *  Handle SIGNINT from signals thread. One ^C lists slow threads.
  *   Another ^C within one second aborts the job.
  */
-static void 
+static void
 _handle_sigint(time_t *last_intrp)
 {
     if (!t) return;
@@ -950,18 +950,18 @@ _handle_sigint(time_t *last_intrp)
  *    threads that have not started or are still connecting.
  *    Otherwise, ^Z has the default behavior of stopping the process.
  */
-static void 
+static void
 _handle_sigtstp (time_t last_intr)
 {
-    if (!t) 
+    if (!t)
         return;
-    if (time (NULL) - last_intr > INTR_TIME) 
+    if (time (NULL) - last_intr > INTR_TIME)
         raise (SIGSTOP);
     else
         _cancel_pending_threads ();
 }
 
-static void * 
+static void *
 _signals_thread (void *arg)
 {
     sigset_t set;
@@ -980,11 +980,11 @@ _signals_thread (void *arg)
         }
 
         switch (signo) {
-        case SIGINT:  
-            _handle_sigint (&last_intr); 
+        case SIGINT:
+            _handle_sigint (&last_intr);
             break;
-        case SIGTSTP: 
-            _handle_sigtstp (last_intr); 
+        case SIGTSTP:
+            _handle_sigtstp (last_intr);
             break;
         default:
             err ("%p: Didn't expect to be here.\n");
@@ -993,8 +993,8 @@ _signals_thread (void *arg)
     return NULL;
 }
 
-/* 
- * Run command on a list of hosts, keeping 'fanout' number of connections 
+/*
+ * Run command on a list of hosts, keeping 'fanout' number of connections
  * active concurrently.
  */
 int dsh(opt_t * opt)
@@ -1040,7 +1040,7 @@ int dsh(opt_t * opt)
     }
 
     /* Initialize getstat if needed */
-    if (opt->kill_on_fail || opt->ret_remote_rc) 
+    if (opt->kill_on_fail || opt->ret_remote_rc)
         opt->getstat = ";echo " RC_MAGIC "$?";
 
     /* append echo $? to command */
@@ -1111,13 +1111,13 @@ int dsh(opt_t * opt)
     i = 0;
     while ((t[i].host = hostlist_next(itr))) {
         char *d;
-        
+
         assert(i < rshcount);
 
         _thd_init (&t[i], opt, pcp_infiles, i);
 
         /*
-         * Require domain names in labels if hosts have 
+         * Require domain names in labels if hosts have
          *  different domains
          */
         if (!domain_in_label && (d = strchr (t[i].host, '.'))) {

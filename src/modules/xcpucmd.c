@@ -5,20 +5,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -69,21 +69,21 @@ struct xcpu_info_struct {
 #if STATIC_MODULES
 #  define pdsh_module_info xcpucmd_module_info
 #  define pdsh_module_priority xcpucmd_module_priority
-#endif    
+#endif
 
 int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
 
 static int xcpucmd_init(opt_t *);
 static int xcpucmd_signal(int, void *, int);
 static int xcpucmd_destroy(struct xcpu_info_struct *);
-static int xcpucmd(char *, char *, char *, char *, char *, int, int *, void **); 
+static int xcpucmd(char *, char *, char *, char *, char *, int, int *, void **);
 
-/* 
+/*
  * Export pdsh module operations structure
  */
 struct pdsh_module_operations xcpucmd_module_ops = {
-  (ModInitF)       NULL, 
-  (ModExitF)       NULL, 
+  (ModInitF)       NULL,
+  (ModExitF)       NULL,
   (ModReadWcollF)  NULL,
   (ModPostOpF)     NULL,
 };
@@ -100,16 +100,16 @@ struct pdsh_rcmd_operations xcpucmd_xcpucmd_ops = {
 
 
 
-/* 
+/*
  * Export module options
  */
-struct pdsh_module_option xcpucmd_module_options[] = 
- { 
+struct pdsh_module_option xcpucmd_module_options[] =
+ {
    PDSH_OPT_TABLE_END
  };
 
-/* 
- * Xxcpucmd module info 
+/*
+ * Xxcpucmd module info
  */
 struct pdsh_module pdsh_module_info = {
   "rcmd",
@@ -139,7 +139,7 @@ _openclone(char *hostname, int *sidp)
 
     sprintf(path, CLONE_TMPL, hostname);
     f = fopen(path, "r");
-    if (f == NULL) 
+    if (f == NULL)
         err("%s: %m\n", path);
     else if (fscanf(f, "%x", sidp) != 1) {
         err("error reading %s\n", path);
@@ -256,11 +256,11 @@ done:
         fclose(fclone);
     if (fd >= 0)
         *sidp = sid;
-        
+
     return fd; /* session goes away when fd is closed */
 }
 
-static int 
+static int
 xcpucmd_signal(int efd, void *arg, int signum)
 {
     char cmd[256];
@@ -270,9 +270,9 @@ xcpucmd_signal(int efd, void *arg, int signum)
     (void) _writefile(x->hostname, x->sid, "ctl", cmd);
 
     return 0;
-} 
+}
 
-static int 
+static int
 xcpucmd_destroy(struct xcpu_info_struct *x)
 {
     if (x) {
@@ -283,7 +283,7 @@ xcpucmd_destroy(struct xcpu_info_struct *x)
 
     /* XXX Insert retreival of exit status here when we have a wait file. */
 
-    return 0; 
+    return 0;
 }
 
 static int

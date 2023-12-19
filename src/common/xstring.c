@@ -5,20 +5,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -101,7 +101,7 @@ static void _makespace(char **str, int needed)
     }
 }
 
-/* 
+/*
  * Concatenate str2 onto str1, expanding str1 as needed.
  *   str1 (IN/OUT)	target string (pointer to in case of expansion)
  *   str2 (IN)		source string
@@ -112,7 +112,7 @@ void xstrcat(char **str1, char *str2)
     strcat(*str1, str2);
 }
 
-/* 
+/*
  * Copy str2 to str1, expanding str1 as needed.
  *   str1 (IN/OUT)	target string (pointer to in case of expansion)
  *   str2 (IN)		source string
@@ -131,7 +131,7 @@ static void _strcatchar(char *str, char c)
     str[len] = '\0';
 }
 
-/* 
+/*
  * Add a character to str, expanding str1 as needed.
  *   str1 (IN/OUT)	target string (pointer to in case of expansion)
  *   size (IN/OUT)	size of str1 (pointer to in case of expansion)
@@ -168,7 +168,7 @@ void xstrerrorcat(char **buf)
 }
 
 
-/* 
+/*
  * Replacement for libc basename
  *   path (IN)		path possibly containing '/' characters
  *   RETURN		last component of path

@@ -5,20 +5,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Mark Grondona <mgrondona@llnl.gov>
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -47,7 +47,7 @@
 #if STATIC_MODULES
 #  define pdsh_module_info dshgroup_module_info
 #  define pdsh_module_priority dshgroup_module_priority
-#endif    
+#endif
 
 int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
 
@@ -58,17 +58,17 @@ static int dshgroup_process_opt(opt_t *, int, char *);
 static List groups = NULL;
 static List exgroups = NULL;
 
-/* 
+/*
  * Export pdsh module operations structure
  */
 struct pdsh_module_operations dshgroup_module_ops = {
-    (ModInitF)       NULL, 
-    (ModExitF)       NULL, 
-    (ModReadWcollF)  read_groupfile, 
+    (ModInitF)       NULL,
+    (ModExitF)       NULL,
+    (ModReadWcollF)  read_groupfile,
     (ModPostOpF)     dshgroup_postop,
 };
 
-/* 
+/*
  * Export rcmd module operations
  */
 struct pdsh_rcmd_operations dshgroup_rcmd_ops = {
@@ -77,26 +77,26 @@ struct pdsh_rcmd_operations dshgroup_rcmd_ops = {
     (RcmdF)      NULL,
 };
 
-/* 
+/*
  * Export module options
  */
-struct pdsh_module_option dshgroup_module_options[] = 
- { { 'g', "groupname", "target hosts in dsh group \"groupname\"", 
+struct pdsh_module_option dshgroup_module_options[] =
+ { { 'g', "groupname", "target hosts in dsh group \"groupname\"",
    DSH | PCP, (optFunc) dshgroup_process_opt },
-   { 'X', "groupname", "exclude hosts in dsh group \"groupname\"", 
+   { 'X', "groupname", "exclude hosts in dsh group \"groupname\"",
    DSH | PCP, (optFunc) dshgroup_process_opt },
    PDSH_OPT_TABLE_END
  };
 
-/* 
- * Machines module info 
+/*
+ * Machines module info
  */
 struct pdsh_module pdsh_module_info = {
   "misc",
   "dshgroup",
   "Mark Grondona <mgrondona@llnl.gov>",
   "Read list of targets from dsh-style \"group\" files",
-  DSH | PCP, 
+  DSH | PCP,
   &dshgroup_module_ops,
   &dshgroup_rcmd_ops,
   &dshgroup_module_options[0],
@@ -159,7 +159,7 @@ static hostlist_t _read_groups (List grouplist)
 
         if (l == NULL)
             continue;
-    
+
         if (hl == NULL) {
             hl = l;
         } else {
@@ -205,7 +205,7 @@ _delete_all (hostlist_t hl, hostlist_t dl)
 static int dshgroup_postop (opt_t *opt)
 {
     hostlist_t hl = NULL;
-    
+
     if (!opt->wcoll || !exgroups)
         return (0);
 

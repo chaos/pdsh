@@ -5,20 +5,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
     err_init(prog);       /* init err package */
 
     /*
-     *  If running setuid, fork a child to handle 
+     *  If running setuid, fork a child to handle
      *   all privileged operations and drop privs in this process.
      */
     privsep_init();
@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
          */
         if (opt.info_only)      /* display info only */
             opt_list(&opt);
-        else if (pdsh_personality() == PCP && opt.pcp_server) 
+        else if (pdsh_personality() == PCP && opt.pcp_server)
             retval = (_pcp_remote_server (&opt) < 0);
         else if (pdsh_personality() == PCP && opt.pcp_client)
             retval = (_pcp_remote_client (&opt) < 0);
@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
         retval = 1;
     }
 
-    mod_exit(); 
+    mod_exit();
 
     /*
      * Clean up.
@@ -174,7 +174,7 @@ static int _history_file_create (char *path, size_t len)
         return (-1);
     }
 
-    /*  Check for ~/.pdsh directory 
+    /*  Check for ~/.pdsh directory
      *    and create if it does not exist
      */
     if (lstat (path, &sbuf) < 0) {
@@ -209,7 +209,7 @@ static int _history_file_create (char *path, size_t len)
     close (fd);
 
     if ((rc = read_history (path))) {
-        err ("%p: Warning: Unable to read history file \"%s\": %s\n", 
+        err ("%p: Warning: Unable to read history file \"%s\": %s\n",
                 path, strerror (rc));
         return (-1);
     }
@@ -249,7 +249,7 @@ static void _interactive_dsh(opt_t * opt)
 
     if (_history_file_create (history_filename, len) < 0) {
         got_history_file = 0;
-    } 
+    }
 
     while ((cmd = readline(prompt)) != NULL) {
         int   errnum;
@@ -267,7 +267,7 @@ static void _interactive_dsh(opt_t * opt)
         }
 
         cmd = expansion;
- 
+
         if (!strcmp(cmd, "history")) {
             _history_list ();
             continue;
@@ -284,11 +284,11 @@ static void _interactive_dsh(opt_t * opt)
             break;
         }
 
-        if ((strlen(cmd) != 0) && (got_history_file)) 
+        if ((strlen(cmd) != 0) && (got_history_file))
             append_history (1, history_filename);
 
-        /* 
-         * fork dsh so we can ignore SIGINT in prompt loop 
+        /*
+         * fork dsh so we can ignore SIGINT in prompt loop
          */
         switch (pid = fork()) {
         case -1:               /* error */
@@ -358,8 +358,8 @@ static void _interactive_dsh(opt_t * opt)
 
 /*
  * Run a command that was shell-escaped from the dsh> prompt.  Run it as
- * the real uid of the invoking user, so we must fork to maintain root 
- * effective uid in the parent. 
+ * the real uid of the invoking user, so we must fork to maintain root
+ * effective uid in the parent.
  *	uid (IN)	uid used to execute command
  *	cmd (IN)	command and args
  */
@@ -383,8 +383,8 @@ static void _shell(uid_t uid, char *cmd)
     }
 }
 
-/* 
- * Prompt for a command and return it.  
+/*
+ * Prompt for a command and return it.
  *	prompt (IN)	string used to build prompt (e.g. program name)
  */
 static char *_getcmd(char *prompt)

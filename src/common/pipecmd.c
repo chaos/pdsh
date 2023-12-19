@@ -5,20 +5,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -59,7 +59,7 @@ struct pipe_info_struct {
 
 static int _pipecmd (char *path, char *args[], int *fd2p, pid_t *ppid);
 
-pipecmd_t pipe_info_create (const char *path, const char *target, 
+pipecmd_t pipe_info_create (const char *path, const char *target,
         const char *user, int rank)
 {
     struct pipe_info_struct *e = Malloc (sizeof (*e));
@@ -120,7 +120,7 @@ static char * pipecmd_format_arg (pipecmd_t e, const char *arg)
                     break;
             }
         }
-        else 
+        else
             xstrcatchar (&str, *p);
         p++;
     }
@@ -145,7 +145,7 @@ static char ** cmd_args_create (pipecmd_t e, const char **argv)
      *  Cmd should be args[0]:
      */
     args [0] = Strdup (e->cmd);
-    for (i = 1; i < n+1; i++) 
+    for (i = 1; i < n+1; i++)
         args[i] = pipecmd_format_arg (e, argv[i-1]);
 
     args[i] = NULL;
@@ -207,7 +207,7 @@ int pipecmd_signal (pipecmd_t p, int signo)
 
     if (p == NULL)
         return (-1);
-   
+
     cmd =  xbasename (p->path);
     err ("sending signal %d to %s [%s] pid %d\n", signo, p->target, cmd,
             p->pid);
@@ -223,7 +223,7 @@ int pipecmd_wait (pipecmd_t p, int *pstatus)
         return (-1);
 
     if (waitpid (p->pid, &status, 0) < 0)
-        err ("%p: %S: %s pid %ld: waitpid: %m\n", p->target, 
+        err ("%p: %S: %s pid %ld: waitpid: %m\n", p->target,
                 xbasename (p->path), p->pid);
 
     if (status != 0) {

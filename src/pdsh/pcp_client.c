@@ -5,20 +5,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -130,7 +130,7 @@ static void _rexpand_dir(List list, char *name)
      * efficiency, we must specify a special flag so we know when
      * to tell the server to "move up" the directory tree.
      */
-    
+
     /* XXX: This memleaks */
     pf = Malloc(sizeof(struct pcp_filename));
     pf->filename = Strdup(EXIT_SUBDIR_FILENAME);
@@ -153,7 +153,7 @@ List pcp_expand_dirs(List infiles)
             errx("%p: access: %s: %m\n", name);
         if (stat(name, &sb) < 0)
             errx("%p: stat: %s: %m\n", name);
-        
+
         /* XXX: This memleaks */
         pf = Malloc(sizeof(struct pcp_filename));
         pf->filename = name;
@@ -165,14 +165,14 @@ List pcp_expand_dirs(List infiles)
         if (S_ISDIR(sb.st_mode))
             _rexpand_dir(new, name);
     }
-    
+
     return new;
 }
 
 /*
  * Wrapper for the write system call that handles short writes.
  * Not sure if write ever returns short in practice but we have to be sure.
- *	fd (IN)		file descriptor to write to 
+ *	fd (IN)		file descriptor to write to
  *	buf (IN)	data to write
  *	size (IN)	size of buf
  *	RETURN		-1 on failure, size on success
@@ -197,7 +197,7 @@ static int _pcp_write(int fd, char *buf, int size)
 
 /*
  * Write the contents of the named file to the specified file descriptor.
- *	outfd (IN)	file descriptor to write to 
+ *	outfd (IN)	file descriptor to write to
  *	filename (IN)	name of file
  *	host (IN)	name of remote host for error messages
  *	RETURN		-1 on failure, 0 on success.
@@ -245,7 +245,7 @@ static int pcp_sendstr(int outfd, char *str, char *host)
     assert(strlen(str) > 0);
     assert(str[strlen(str) - 1] == '\n');
 
-    if ((n = _pcp_write(outfd, str, strlen(str))) < 0) 
+    if ((n = _pcp_write(outfd, str, strlen(str))) < 0)
         return -1;
 
     assert(n == strlen(str));
@@ -265,7 +265,7 @@ static int pcp_response(int infd, char *host)
     int n;
     char errstr[BUFSIZ];
 
-    if ((n = read(infd, &resp, sizeof(resp))) != sizeof(resp)) 
+    if ((n = read(infd, &resp, sizeof(resp))) != sizeof(resp))
         return (-1);
 
     switch (resp) {
@@ -302,8 +302,8 @@ int pcp_sendfile(struct pcp_client *pcp, char *file, char *output_file)
     }
 
     if (pcp->preserve) {
-        /* 
-         * 1: SEND stat time: "T%ld %ld %ld %ld\n" 
+        /*
+         * 1: SEND stat time: "T%ld %ld %ld %ld\n"
          *    (st_mtime, st_mtime_usec, st_atime, st_atime_usec)
          */
         snprintf(tmpstr, sizeof(tmpstr), "T%ld %ld %ld %ld\n",
@@ -317,7 +317,7 @@ int pcp_sendfile(struct pcp_client *pcp, char *file, char *output_file)
     }
 
     if (S_ISDIR(sb.st_mode)) {
-        /* 
+        /*
          * 3a: SEND directory mode: "D%04o %d %s\n"
          *     (st_mode & RCP_MODEMASK, 0, name)
          */
@@ -326,7 +326,7 @@ int pcp_sendfile(struct pcp_client *pcp, char *file, char *output_file)
         if (pcp_sendstr(pcp->outfd, tmpstr, pcp->host) < 0)
             goto fail;
     } else {
-        /* 
+        /*
          * 3b: SEND file mode: "C%04o %lld %s\n" or "C%04o %ld %s\n"
          *    (st_mode & MODE_MASK, st_size, basename(filename))
          *    Use second template if sizeof(st_size) > sizeof(long).
