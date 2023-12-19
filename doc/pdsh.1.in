@@ -207,7 +207,8 @@ Disable hostname: prefix on lines of output.
 .TP
 .I "-d"
 Include more complete thread status when SIGINT is received, and display
-connect and command time statistics on stderr when done.
+connect and command time statistics on stderr when done. Also, display
+any module loading errors to stderr, including option conflicts.
 .TP
 .I "-V"
 Output \fBpdsh\fR version information, along with list of currently
