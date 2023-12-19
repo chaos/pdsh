@@ -5,20 +5,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Mark Grondona <mgrondona@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -44,7 +44,7 @@
  *  Ordered preference for determining default rcmd method.
  *   Warning: If none of these modules are loaded, there will be no default.
  */
-static char * rcmd_rank[] = 
+static char * rcmd_rank[] =
 #if defined(RCMD_RANK_LIST)
     { RCMD_RANK_LIST, NULL };
 #else
@@ -73,7 +73,7 @@ static List rcmd_module_list = NULL;
 static struct rcmd_module *default_rcmd_module = NULL;
 static struct rcmd_module *current_rcmd_module = NULL;
 
-static struct node_rcmd_info * 
+static struct node_rcmd_info *
 node_rcmd_info_create (char *hostname, char *user, struct rcmd_module *module)
 {
     struct node_rcmd_info *n = Malloc (sizeof (*n));
@@ -169,8 +169,8 @@ static struct rcmd_module * rcmd_module_register (char *name)
     if (rcmd_module_list == NULL)
         rcmd_module_list = list_create ((ListDelF) rcmd_module_destroy);
     else
-        rmod = list_find_first (rcmd_module_list, 
-                                (ListFindF) find_rcmd_module, 
+        rmod = list_find_first (rcmd_module_list,
+                                (ListFindF) find_rcmd_module,
                                 name);
     if (rmod != NULL)
         return (rmod);
@@ -200,14 +200,14 @@ static int hostlist_register_rcmd (const char *hosts, struct rcmd_module *rmod,
 
     if (hl == NULL)
         return (-1);
-    
+
     if (host_info_list == NULL)
         host_info_list = list_create ((ListDelF) node_rcmd_info_destroy);
 
     while ((host = hostlist_pop (hl))) {
         struct node_rcmd_info *n = NULL;
 
-        /* 
+        /*
          *  Do not override previously installed host info. First registered
          *   rcmd type for a host wins. This allows command line to override
          *   everything else.
@@ -221,7 +221,7 @@ static int hostlist_register_rcmd (const char *hosts, struct rcmd_module *rmod,
         list_append (host_info_list, n);
 
         free (host);
-    
+
     }
 
     hostlist_destroy (hl);
@@ -244,7 +244,7 @@ char * rcmd_get_default_module (void)
     if (default_rcmd_module != NULL)
         return (default_rcmd_module->name);
 
-    while ((name = rcmd_rank[i++]) && !mod) 
+    while ((name = rcmd_rank[i++]) && !mod)
         mod = mod_get_module ("rcmd", name);
 
     return mod ? mod_get_name (mod) : NULL;
@@ -311,9 +311,9 @@ struct rcmd_info * rcmd_create (char *host)
 
     if ((n = host_rcmd_info (host))) {
         rmod = n->rmod;
-    } 
+    }
 
-    /* 
+    /*
      * If no rcmd module use default
      */
     if (rmod == NULL) {
@@ -322,7 +322,7 @@ struct rcmd_info * rcmd_create (char *host)
             return (NULL);
         }
     }
-    
+
     if ((rcmd = rcmd_info_create (rmod)) == NULL) {
         err ("%p: Unable to allocate rcmd info for \"%s\"\n", host);
         return (NULL);
@@ -335,8 +335,8 @@ struct rcmd_info * rcmd_create (char *host)
 }
 
 
-int rcmd_connect (struct rcmd_info *rcmd, char *ahost, char *addr, 
-                  char *locuser, char *remuser, char *cmd, int nodeid, 
+int rcmd_connect (struct rcmd_info *rcmd, char *ahost, char *addr,
+                  char *locuser, char *remuser, char *cmd, int nodeid,
                   bool error_fd)
 {
     /*
@@ -345,7 +345,7 @@ int rcmd_connect (struct rcmd_info *rcmd, char *ahost, char *addr,
     if (rcmd->ruser)
         remuser = rcmd->ruser;
 
-    rcmd->fd = (*rcmd->rmod->rcmd) (ahost, addr, locuser, remuser, cmd, nodeid, 
+    rcmd->fd = (*rcmd->rmod->rcmd) (ahost, addr, locuser, remuser, cmd, nodeid,
                                     error_fd ? &rcmd->efd : NULL, &rcmd->arg);
     return (rcmd->fd);
 }
@@ -416,7 +416,7 @@ int rcmd_opt_set (int id, void * value)
     }
 
     switch (id) {
-        case RCMD_OPT_RESOLVE_HOSTS: 
+        case RCMD_OPT_RESOLVE_HOSTS:
             current_rcmd_module->options.resolve_hosts = (long int) value;
             break;
         default:

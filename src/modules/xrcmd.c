@@ -5,27 +5,27 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 \*****************************************************************************/
 
 /*
- * This code is based on the BSD rcmd.c with MT safety added, and the 
+ * This code is based on the BSD rcmd.c with MT safety added, and the
  * interface changed.  Original UC regents header included below.
  */
 
@@ -64,7 +64,7 @@
 
 /*
  * Changes:
- *  - MT save 
+ *  - MT save
  *  - changed functional interface.
  */
 
@@ -116,20 +116,20 @@ static char sccsid[] = "@(#)rcmd.c	8.3 (Berkeley) 3/26/94";
 #if STATIC_MODULES
 #  define pdsh_module_info xrcmd_module_info
 #  define pdsh_module_priority xrcmd_module_priority
-#endif    
+#endif
 
 int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
 
 static int xrcmd_init(opt_t *);
 static int xrcmd_signal(int, void *, int);
-static int xrcmd(char *, char *, char *, char *, char *, int, int *, void **); 
+static int xrcmd(char *, char *, char *, char *, char *, int, int *, void **);
 
-/* 
+/*
  * Export pdsh module operations structure
  */
 struct pdsh_module_operations xrcmd_module_ops = {
-  (ModInitF)       NULL, 
-  (ModExitF)       NULL, 
+  (ModInitF)       NULL,
+  (ModExitF)       NULL,
   (ModReadWcollF)  NULL,
   (ModPostOpF)     NULL,
 };
@@ -143,23 +143,23 @@ struct pdsh_rcmd_operations xrcmd_rcmd_ops = {
     (RcmdF)      xrcmd,
 };
 
-/* 
+/*
  * Export module options
  */
-struct pdsh_module_option xrcmd_module_options[] = 
- { 
+struct pdsh_module_option xrcmd_module_options[] =
+ {
    PDSH_OPT_TABLE_END
  };
 
-/* 
- * Xrcmd module info 
+/*
+ * Xrcmd module info
  */
 struct pdsh_module pdsh_module_info = {
   "rcmd",
   "rsh",
   "Jim Garlick <garlick@llnl.gov>",
   "BSD rcmd connect method",
-  DSH | PCP, 
+  DSH | PCP,
 
   &xrcmd_module_ops,
   &xrcmd_rcmd_ops,

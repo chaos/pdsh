@@ -5,20 +5,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -66,10 +66,10 @@ typedef struct {
     int command_timeout;
 
     char *rcmd_name;            /* -R name   */
-    char *misc_modules;         /* Explicit list of misc modules to load */ 
+    char *misc_modules;         /* Explicit list of misc modules to load */
     bool resolve_hosts;         /* Set optionally by rcmd modules */
 
-    bool kill_on_fail;          
+    bool kill_on_fail;
 
     /* DSH-specific options */
     bool separate_stderr;       /* -s */
@@ -103,7 +103,7 @@ bool opt_verify(opt_t *);
 void opt_list(opt_t *);
 void opt_free(opt_t *);
 
-/* 
+/*
  *  Return the current pdsh "personality"
  */
 pers_t pdsh_personality(void);
@@ -120,8 +120,8 @@ const char ** pdsh_remote_argv (void);
 int pdsh_remote_argc (void);
 
 /*
- * Structure for pdsh modules to export new options. 
- * 
+ * Structure for pdsh modules to export new options.
+ *
  * Module should define a table of options as:
  *
  *     struct pdsh_module_option pdsh_module_opts[] = { ... };
@@ -130,7 +130,7 @@ int pdsh_remote_argc (void);
  *   (see mod.c) will call opt_register for each of the defined
  *   options. If any option fails to register, the module will
  *   be unloaded and a warning message printed.
- */ 
+ */
 
 typedef int (*optFunc)(opt_t *opt, int optopt, char *optarg);
 
@@ -139,7 +139,7 @@ struct pdsh_module_option {
     char   *arginfo;      /* one word descr of arg if option takes one      */
     char   *descr;        /* short description of option                    */
     int     personality;  /* Personality for which this option is suitable. *
-                           * May be set to DSH, PCP, or DSH |PCP            */  
+                           * May be set to DSH, PCP, or DSH |PCP            */
 
     optFunc f;            /* callback function for option processing        */
 };

@@ -5,20 +5,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -43,7 +43,7 @@
 #if STATIC_MODULES
 #  define pdsh_module_info nodeupdown_module_info
 #  define pdsh_module_priority nodeupdown_module_priority
-#endif    
+#endif
 
 int pdsh_module_priority = 120;
 
@@ -53,7 +53,7 @@ static void remove_all_down_nodes(hostlist_t);
 
 static bool verify = false;
 
-/* 
+/*
  * Export pdsh module operations structure
  */
 struct pdsh_module_operations nodeupdown_module_ops = {
@@ -63,7 +63,7 @@ struct pdsh_module_operations nodeupdown_module_ops = {
     (ModPostOpF)     mod_nodeupdown_postop
 };
 
-/* 
+/*
  * Export rcmd module operations
  */
 struct pdsh_rcmd_operations nodeupdown_rcmd_ops = {
@@ -72,25 +72,25 @@ struct pdsh_rcmd_operations nodeupdown_rcmd_ops = {
     (RcmdF)      NULL,
 };
 
-/* 
+/*
  * Export module options
  */
-struct pdsh_module_option nodeupdown_module_options[] = 
- { { 'v', NULL, "exclude targets if they are down", 
+struct pdsh_module_option nodeupdown_module_options[] =
+ { { 'v', NULL, "exclude targets if they are down",
      DSH | PCP, (optFunc) nodeupdown_opt_v
    },
    PDSH_OPT_TABLE_END
  };
 
-/* 
- * Nodeupdown module info 
+/*
+ * Nodeupdown module info
  */
 struct pdsh_module pdsh_module_info = {
   "misc",
   "nodeupdown",
   "Al Chu <chu11@llnl.gov>",
   "remove targets if down according to libnodeupdown",
-  DSH | PCP, 
+  DSH | PCP,
 
   &nodeupdown_module_ops,
   &nodeupdown_rcmd_ops,
@@ -124,14 +124,14 @@ remove_all_down_nodes(hostlist_t wcoll)
     nodeupdown_t  nh   = NULL;
     char *        host = NULL;
     hostlist_iterator_t i = NULL;
-    
+
     if ((nh = nodeupdown_handle_create()) == NULL)
         errx("%p: Unable to create nodeupdown handle.\n");
 
 #if HAVE_NODEUPDOWN_LOAD_DATA_6
-    if (nodeupdown_load_data(nh, NULL, NULL, NULL, 0, 0) < 0) 
+    if (nodeupdown_load_data(nh, NULL, NULL, NULL, 0, 0) < 0)
 #else
-    if (nodeupdown_load_data(nh, NULL, 0, 0, NULL) < 0) 
+    if (nodeupdown_load_data(nh, NULL, 0, 0, NULL) < 0)
 #endif
         errx("%p: nodeupdown: %s\n", nodeupdown_errormsg(nh));
 

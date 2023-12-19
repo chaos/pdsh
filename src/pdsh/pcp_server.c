@@ -5,20 +5,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -108,7 +108,7 @@ char rcsid[] = "$Id$";
  * - removal of conditions that are impossible to hit in pdcp
  * - update error messages to use pdcp error functions
  * - minor changes to enhance readability and fit style to rest
- *   of pdsh/pdcp code. 
+ *   of pdsh/pdcp code.
  * - pass infd/outfd through structure rather than global
  * - don't exit on error, just return
  */
@@ -334,8 +334,8 @@ _sink(struct pcp_server *svr, char *targ, BUF *bufp) {
             if (need > cursize) {
                 if (namebuf)
                     free(namebuf);
-              
-                if (!(namebuf = malloc(need))) { 
+
+                if (!(namebuf = malloc(need))) {
                     _error(svr, "out of memory\n");
                     cursize = 0;
 
@@ -378,7 +378,7 @@ _sink(struct pcp_server *svr, char *targ, BUF *bufp) {
         }
 
         if ((ofd = open(np, O_WRONLY|O_CREAT, mode)) < 0) {
-bad:	     
+bad:	
             _error(svr, "%s: %m\n", np);
             continue;
         }
@@ -455,7 +455,7 @@ end_server:
     return;
 }
 
-int pcp_server(struct pcp_server *svr) 
+int pcp_server(struct pcp_server *svr)
 {
 	BUF buffer;
 	memset (&buffer, 0, sizeof (buffer));

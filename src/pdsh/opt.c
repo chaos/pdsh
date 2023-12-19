@@ -5,20 +5,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -52,7 +52,7 @@
 #include "src/common/split.h"
 #include "src/common/xstring.h"
 #include "src/common/xmalloc.h"
-#include "dsh.h"                
+#include "dsh.h"
 #include "opt.h"
 #include "wcoll.h"
 #include "mod.h"
@@ -126,13 +126,18 @@ Usage: rpdcp [-options] src [src2...] dir\n\
  *  Pdsh options string (for getopt) -- initialized
  *    in _init_pdsh_options(), and appended to by modules that
  *    register new pdsh options.
- */    
+ */
 static char *pdsh_options = NULL;
 
 /*
  *  Pdsh personality
  */
 static pers_t personality = DSH;
+
+/*
+ *  Debug mode
+ */
+static bool debug = false;
 
 /*
  *  Return the current pdsh "personality"
@@ -193,20 +198,27 @@ _init_pdsh_options()
 bool opt_register(struct pdsh_module_option *opt_table)
 {
     struct pdsh_module_option *p;
-  
+
     if (opt_table == NULL)
         return true;
 
     if (pdsh_options == NULL)
         _init_pdsh_options();
-    
+
     /*  Don't register any options if we can't register all the options
-     *   in this module 
+     *   in this module
      */
     for (p = opt_table; p && (p->opt != 0); p++) {
-        if (  (personality & p->personality) 
-           && (strchr(pdsh_options, p->opt) != NULL))
+        if (  (personality & p->personality)
+           && (strchr(pdsh_options, p->opt) != NULL)) {
+            if (debug) {
+                err("%p: Option %c in use by a previously loaded module.\n",
+                    p->opt);
+                err("%p: Module options currently in use are: %s\n",
+                    pdsh_options);
+            }
             return false;
+        }
     }
 
     for (p = opt_table; p && (p->opt != 0); p++) {
@@ -235,7 +247,7 @@ char * _check_path(char *dir, char *cwd, char *argv0)
   xstrcat(&abspath, dir);
   xstrcat(&abspath, "/");
   xstrcat(&abspath, argv0);
-  
+
   if (access(abspath, R_OK) == 0)
       return abspath;
 
@@ -247,7 +259,7 @@ char * _check_path(char *dir, char *cwd, char *argv0)
 /*
  *  Determine absolute path to the program name based on argv0
  */
-char * _find_path(char *argv0) 
+char * _find_path(char *argv0)
 {
     char *abspath = NULL;
     char cwd[MAXPATHLEN];
@@ -258,9 +270,9 @@ char * _find_path(char *argv0)
         goto done;
     }
 
-    if (getcwd(cwd, MAXPATHLEN) == NULL) 
-        errx("%p: getcwd failed: %m\n"); 
-      
+    if (getcwd(cwd, MAXPATHLEN) == NULL)
+        errx("%p: getcwd failed: %m\n");
+
     if (*argv0 == '.' || strchr(argv0, '/') != NULL) {
         /* path relative */
         abspath = Strdup(cwd);
@@ -270,14 +282,14 @@ char * _find_path(char *argv0)
     else {
       /* argv0 executed in PATH environment var */
       char *path, *dir, *p;
-      
+
       if ((path = Strdup(getenv("PATH"))) == NULL)
-        errx("%p: getenv PATH failed\n"); 
-      
+        errx("%p: getenv PATH failed\n");
+
       dir = path;
       while ((p = strchr(dir,':')) != NULL) {
         *p = '\0';
-        
+
         if (strlen(dir) > 0 && (abspath = _check_path(dir,cwd,argv0)) != NULL) {
             Free((void **) &path);
             goto done;
@@ -285,10 +297,10 @@ char * _find_path(char *argv0)
 
         dir = ++p;
       }
-      
+
       if (strlen(dir) > 0)
           abspath = _check_path(dir,cwd,argv0);
-        
+
       Free((void **) &path);
     }
 
@@ -346,7 +358,7 @@ void opt_default(opt_t * opt, char *argv0)
 
     if (!strcmp(opt->progname, "pdsh") || !strcmp(opt->progname, "dsh"))
         personality = DSH;
-    else if (!strcmp(opt->progname, "pdcp") 
+    else if (!strcmp(opt->progname, "pdcp")
             || !strcmp(opt->progname, "dcp")
             || !strcmp(opt->progname, "pcp") )
         personality = PCP;
@@ -384,7 +396,7 @@ void opt_default(opt_t * opt, char *argv0)
     /*
      *  Resolve hostnames by default
      */
-    opt->resolve_hosts = true; 
+    opt->resolve_hosts = true;
 
     /*
      *  Do not kill all tasks on single failure by default
@@ -529,6 +541,10 @@ void opt_args_early (opt_t * opt, int argc, char *argv[])
                 break;
             case 'd':              /* debug */
                 opt->debug = true;
+                /*  Also set global debug flag to get module option
+                 *  debugging.
+                 */
+                debug = true;
                 break;
         }
     }
@@ -598,7 +614,7 @@ void opt_args(opt_t * opt, int argc, char *argv[])
             mod_list_module_info();
             exit(0);
             break;
-        case 'R': 
+        case 'R':
             opt->rcmd_name = Strdup(optarg);
             break;
         case 'S':              /* get remote command status */
@@ -672,7 +688,7 @@ void opt_args(opt_t * opt, int argc, char *argv[])
             _usage(opt);
             break;
         case 'K':              /* don't strip host domain in output */
-            err_no_strip_domain (); 
+            err_no_strip_domain ();
             break;
         case 'y':
             if (pdsh_personality() == PCP)
@@ -711,7 +727,7 @@ void opt_args(opt_t * opt, int argc, char *argv[])
             exit(1);
 
 
-    /* 
+    /*
      *  Save beginning of remote argv in case something needs
      *   to view the unadulterated version (after shell quoting
      *   applied, etc.)
@@ -730,7 +746,7 @@ void opt_args(opt_t * opt, int argc, char *argv[])
     } else {
         if (!opt->infile_names)
             opt->infile_names = list_create(NULL);
-        
+
         for (; optind < argc - 1; optind++)
             list_append(opt->infile_names, argv[optind]);
         if (optind < argc) {
@@ -803,7 +819,7 @@ static void wcoll_expand (opt_t *opt)
 }
 
 
-/* 
+/*
  * Check if infile_names are legit.
  */
 static int
@@ -856,7 +872,7 @@ bool opt_verify(opt_t * opt)
         verified = false;
     }
 
-    if (!opt->pcp_server && !opt->pcp_client) { 
+    if (!opt->pcp_server && !opt->pcp_client) {
         /* wcoll is required */
         if (opt->wcoll == NULL || hostlist_count(opt->wcoll) == 0) {
             err("%p: no remote hosts specified\n");
@@ -1113,7 +1129,7 @@ static char *_rcmd_module_list(char *buf, int maxlen)
     n = _module_list_string ("rcmd", rbuf, sizeof (rbuf));
 
     len = snprintf(buf, maxlen, "%s", n ? rbuf : "(none)");
-    if ((len < 0) || (len >= maxlen)) 
+    if ((len < 0) || (len >= maxlen))
         goto done;
 
     if (mod_count("rcmd") > 1) {
@@ -1127,15 +1143,15 @@ static char *_rcmd_module_list(char *buf, int maxlen)
     }
 
 done:
-    if ((len < 0) || (len > maxlen)) 
-        snprintf(buf + maxlen - 12, 12, "[truncated]"); 
+    if ((len < 0) || (len > maxlen))
+        snprintf(buf + maxlen - 12, 12, "[truncated]");
 
     buf[maxlen - 1] = '\0';
     return buf;
 }
 
 /*
- * Spit out all the options and their one-line synopsis for the user, 
+ * Spit out all the options and their one-line synopsis for the user,
  * then exit.
  */
 static void _usage(opt_t * opt)
@@ -1149,7 +1165,7 @@ static void _usage(opt_t * opt)
 #endif
     } else if (!opt->reverse_copy) /* PCP */
         err(OPT_USAGE_PCP);
-    else 
+    else
         err(OPT_USAGE_RPCP);
 
     err(OPT_USAGE_COMMON);
@@ -1191,7 +1207,7 @@ static void _show_version(void)
  *    of the string in rptr. Returns nonzero if an rcmd_type was found,
  *    zero otherwise (in which case rptr is not touched).
  */
-static int get_host_rcmd_type (char *hosts, char **rptr, char **hptr, 
+static int get_host_rcmd_type (char *hosts, char **rptr, char **hptr,
                                char **uptr)
 {
     char *p = hosts;

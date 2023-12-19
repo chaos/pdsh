@@ -248,7 +248,7 @@ fd_null_read_n (int fd, void *buf, size_t n)
     ssize_t nread;
     unsigned char *p;
     unsigned char *q;
-                                                                                                  
+
     q = p = (unsigned char *)buf;
     nleft = n;
     while (nleft > 0) {

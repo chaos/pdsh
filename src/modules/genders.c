@@ -5,20 +5,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -50,7 +50,7 @@
 #if STATIC_MODULES
 #  define pdsh_module_info genders_module_info
 #  define pdsh_module_priority genders_module_priority
-#endif    
+#endif
 
 int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
 
@@ -78,17 +78,17 @@ static char *gfile     = NULL;
 static List attrlist   = NULL;
 static List excllist   = NULL;
 
-/* 
+/*
  * Export pdsh module operations structure
  */
 struct pdsh_module_operations genders_module_ops = {
-    (ModInitF)       genders_init, 
-    (ModExitF)       genders_fini, 
-    (ModReadWcollF)  genders_wcoll, 
+    (ModInitF)       genders_init,
+    (ModExitF)       genders_fini,
+    (ModReadWcollF)  genders_wcoll,
     (ModPostOpF)     genders_postop,
 };
 
-/* 
+/*
  * Export rcmd module operations
  */
 struct pdsh_rcmd_operations genders_rcmd_ops = {
@@ -97,16 +97,16 @@ struct pdsh_rcmd_operations genders_rcmd_ops = {
     (RcmdF)      NULL,
 };
 
-/* 
+/*
  * Export module options
  */
-struct pdsh_module_option genders_module_options[] = 
- { 
-   { 'g', "query,...", 
+struct pdsh_module_option genders_module_options[] =
+ {
+   { 'g', "query,...",
      "target nodes using genders query",
-     DSH | PCP, (optFunc) genders_process_opt 
+     DSH | PCP, (optFunc) genders_process_opt
    },
-   { 'X', "query,...", 
+   { 'X', "query,...",
      "exclude nodes using genders query",
      DSH | PCP, (optFunc) genders_process_opt
    },
@@ -117,8 +117,8 @@ struct pdsh_module_option genders_module_options[] =
    { 'i', NULL, "request alternate or canonical hostnames if applicable",
      DSH | PCP, (optFunc) genders_process_opt
    },
-   { 'a', NULL, "target all nodes except those with \"pdsh_all_skip\" attribute", 
-     DSH | PCP, (optFunc) genders_process_opt 
+   { 'a', NULL, "target all nodes except those with \"pdsh_all_skip\" attribute",
+     DSH | PCP, (optFunc) genders_process_opt
    },
    { 'A', NULL, "target all nodes listed in genders database",
      DSH | PCP, (optFunc) genders_process_opt
@@ -127,8 +127,8 @@ struct pdsh_module_option genders_module_options[] =
    PDSH_OPT_TABLE_END
  };
 
-/* 
- * Genders module info 
+/*
+ * Genders module info
  */
 struct pdsh_module pdsh_module_info = {
     "misc",
@@ -139,7 +139,7 @@ struct pdsh_module pdsh_module_info = {
 #endif /* GENDERS_G_ONLY */
     "Jim Garlick <garlick@llnl.gov>",
     "target nodes using libgenders and genders attributes",
-    DSH | PCP, 
+    DSH | PCP,
 
     &genders_module_ops,
     &genders_rcmd_ops,
@@ -166,8 +166,8 @@ genders_process_opt(opt_t *pdsh_opts, int opt, char *arg)
 {
     switch (opt) {
 #if !GENDERS_G_ONLY
-    case 'a':  
-        /* For -a, exclude nodes with "pdsh_all_skip" */ 
+    case 'a':
+        /* For -a, exclude nodes with "pdsh_all_skip" */
         excllist = list_split_append (excllist, ",", "pdsh_all_skip");
     case 'A':
         allnodes = true;
@@ -215,7 +215,7 @@ genders_fini(void)
     return 0;
 }
 
-static hostlist_t 
+static hostlist_t
 genders_wcoll(opt_t *opt)
 {
     _genders_opt_verify(opt);
@@ -346,7 +346,7 @@ genders_postop(opt_t *opt)
 }
 
 
-/* 
+/*
  * Verify options passed to this module
  */
 static void
@@ -406,7 +406,7 @@ _genders_to_altnames(genders_t g, hostlist_t hl)
          *  If node not found, attempt to lookup canonical name via
          *   altername name.
          */
-        if ((rc < 0) && (genders_errnum(g) == GENDERS_ERR_NOTFOUND)) 
+        if ((rc < 0) && (genders_errnum(g) == GENDERS_ERR_NOTFOUND))
             rc = genders_getnodes (g, &altname, 1, altattr, host);
 
         if (hostlist_push_host(retlist, (rc > 0 ? altname : host)) <= 0)
@@ -422,7 +422,7 @@ _genders_to_altnames(genders_t g, hostlist_t hl)
     return (retlist);
 }
 
-static hostlist_t 
+static hostlist_t
 _genders_to_hostlist(genders_t gh, char **nodes, int nnodes)
 {
     hostlist_t hl = NULL;
@@ -515,7 +515,7 @@ _get_val(char *attr)
 }
 #endif /* !HAVE_GENDERS_QUERY */
 
-static hostlist_t 
+static hostlist_t
 _read_genders_attr(char *query)
 {
     hostlist_t hl = NULL;
@@ -527,7 +527,7 @@ _read_genders_attr(char *query)
 
 #if HAVE_GENDERS_QUERY
     if ((nnodes = genders_query (gh, nodes, len, query)) < 0) {
-        errx("%p: Error querying genders for query \"%s\": %s\n", 
+        errx("%p: Error querying genders for query \"%s\": %s\n",
                 query ? query : "(all)", genders_errormsg(gh));
     }
 #else /* !HAVE_GENDERS_QUERY */
@@ -536,7 +536,7 @@ _read_genders_attr(char *query)
         char *val;
         val = _get_val(query);
         if ((nnodes = genders_getnodes(gh, nodes, len, query, val)) < 0) {
-            errx("%p: Error querying genders for attr \"%s\": %s\n", 
+            errx("%p: Error querying genders for attr \"%s\": %s\n",
                  query ? query : "(all)", genders_errormsg(gh));
         }
     }
@@ -552,7 +552,7 @@ _read_genders_attr(char *query)
     return hl;
 }
 
-static hostlist_t 
+static hostlist_t
 _read_genders (List attrs)
 {
     hostlist_t   hl = NULL;
@@ -581,10 +581,10 @@ _read_genders (List attrs)
     return (hl);
 }
 
-static int 
+static int
 attrval_by_altname (genders_t g, const char *host, const char *attr,
                            char *val, int len)
-{   
+{
     char *altname = NULL;
     char *altattr = GENDERS_ALTNAME_ATTRIBUTE;
     int maxlen = _maxnamelen (g);
@@ -605,8 +605,8 @@ attrval_by_altname (genders_t g, const char *host, const char *attr,
  *  Parse the value of "pdsh_rcmd_type" and split into user and rcmd
  *   strings, passing rcmd name (if any) in *rp, and user name (if any)
  *   in *up.
- *   
- *  Allows pdsh_rcmd_type to be set to [user@][rcmd], where user@ and 
+ *
+ *  Allows pdsh_rcmd_type to be set to [user@][rcmd], where user@ and
  *   rcmd are both optional. (i.e. you can set user or rcmd or both)
  */
 static int rcmd_type_parse (char *val, char **rp, char **up)
@@ -636,10 +636,10 @@ register_genders_rcmd_types (opt_t *opt)
     char rcmd_attr[] = "pdsh_rcmd_type";
     hostlist_iterator_t i = NULL;
 
-    if (!opt->wcoll) 
+    if (!opt->wcoll)
         return (0);
 
-    /* 
+    /*
      *  Assume no nodes have "pdsh_rcmd_type" attr if index fails:
      */
     if (genders_index_attrvals (gh, rcmd_attr) < 0)
@@ -655,23 +655,23 @@ register_genders_rcmd_types (opt_t *opt)
          *  If host wasn't found, try to see if "host" is the altname
          *   for this node, then lookup with the real name
          */
-        if (rc < 0 && (genders_errnum(gh) == GENDERS_ERR_NOTFOUND)) 
+        if (rc < 0 && (genders_errnum(gh) == GENDERS_ERR_NOTFOUND))
             rc = attrval_by_altname (gh, host, rcmd_attr, val, sizeof (val));
-        
+
         rcmd_type_parse (val, &rcmd, &user);
 
-        if (rc > 0) 
+        if (rc > 0)
             rcmd_register_defaults (host, rcmd, user);
 
         free (host);
     }
 
     hostlist_iterator_destroy (i);
-            
+
     return 0;
 }
 
-static int 
+static int
 _delete_all (hostlist_t hl, hostlist_t dl)
 {
     int                 rc   = 0;

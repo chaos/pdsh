@@ -7,20 +7,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Mark Grondona <mgrondona@llnl.gov>
  *  UCRL-CODE-2002-040.
- *  
+ *
  *  This file is part of SLURM, a resource management program.
  *  For details, see <http://www.llnl.gov/linux/slurm/>.
- *  
+ *
  *  SLURM is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  SLURM is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with SLURM; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -42,7 +42,7 @@
  *    #define lsd_fatal_error(file,line,mesg)  \
  *              error("%s:%s %s\n",file,line,mesg);
  *
- * If WITH_LSD_NOMEM_ERROR_FUNC is defined, the linker will expect to 
+ * If WITH_LSD_NOMEM_ERROR_FUNC is defined, the linker will expect to
  * find an external lsd_nomem_error(file,line,mesg) function. By default,
  * lsd_nomem_error(file,line,mesg) is a macro definition that returns NULL.
  * This macro may be redefined to invoke another routine instead.
@@ -51,9 +51,9 @@
  *
  */
 
-/* The hostlist opaque data type 
+/* The hostlist opaque data type
  *
- * A hostlist is a list of hostnames optimized for a prefixXXXX style 
+ * A hostlist is a list of hostnames optimized for a prefixXXXX style
  * naming convention, where XXXX  is a decimal, numeric suffix.
  */
 typedef struct hostlist * hostlist_t;
@@ -61,7 +61,7 @@ typedef struct hostlist * hostlist_t;
 /* A hostset is a special case of a hostlist. It:
  *
  * 1. never contains duplicates
- * 2. is always sorted 
+ * 2. is always sorted
  *    (Note: sort occurs first on alphanumeric prefix -- where prefix
  *     matches, numeric suffixes will be sorted *by value*)
  */
@@ -69,7 +69,7 @@ typedef struct hostset * hostset_t;
 
 /* The hostlist iterator type (may be used with a hostset as well)
  * used for non-destructive access to hostlist members.
- * 
+ *
  */
 typedef struct hostlist_iterator * hostlist_iterator_t;
 
@@ -78,25 +78,25 @@ typedef struct hostlist_iterator * hostlist_iterator_t;
 /* ----[ hostlist creation and destruction ]---- */
 
 /*
- * hostlist_create(): 
+ * hostlist_create():
  *
- * Create a new hostlist from a string representation. 
+ * Create a new hostlist from a string representation.
  *
  * The string representation (str) may contain one or more hostnames or
- * bracketed hostlists separated by either `,' or whitespace. A bracketed 
- * hostlist is denoted by a common prefix followed by a list of numeric 
- * ranges contained within brackets: e.g. "tux[0-5,12,20-25]" 
+ * bracketed hostlists separated by either `,' or whitespace. A bracketed
+ * hostlist is denoted by a common prefix followed by a list of numeric
+ * ranges contained within brackets: e.g. "tux[0-5,12,20-25]"
  *
  * Note: if this module is compiled with WANT_RECKLESS_HOSTRANGE_EXPANSION
- * defined, a much more loose interpretation of host ranges is used. 
- * Reckless hostrange expansion allows all of the following (in addition to 
+ * defined, a much more loose interpretation of host ranges is used.
+ * Reckless hostrange expansion allows all of the following (in addition to
  * bracketed hostlists):
  *
  *  o tux0-5,tux12,tux20-25
  *  o tux0-tux5,tux12,tux20-tux25
  *  o tux0-5,12,20-25
  *
- * If str is NULL, and empty hostlist is created and returned. 
+ * If str is NULL, and empty hostlist is created and returned.
  *
  * If the create fails, hostlist_create() returns NULL.
  *
@@ -105,7 +105,7 @@ typedef struct hostlist_iterator * hostlist_iterator_t;
  */
 hostlist_t hostlist_create(const char *hostlist);
 
-/* hostlist_copy(): 
+/* hostlist_copy():
  *
  * Allocate a copy of a hostlist object. Returned hostlist must be freed
  * with hostlist_destroy.
@@ -127,7 +127,7 @@ void hostlist_destroy(hostlist_t hl);
  *
  * The hosts argument may take the same form as in hostlist_create()
  *
- * Returns the number of hostnames inserted into the list, 
+ * Returns the number of hostnames inserted into the list,
  * or 0 on failure.
  */
 int hostlist_push(hostlist_t hl, const char *hosts);
@@ -135,7 +135,7 @@ int hostlist_push(hostlist_t hl, const char *hosts);
 
 /* hostlist_push_host():
  *
- * Push a single host onto the hostlist hl. 
+ * Push a single host onto the hostlist hl.
  * This function is more efficient than hostlist_push() for a single
  * hostname, since the argument does not need to be checked for ranges.
  *
@@ -203,8 +203,8 @@ char * hostlist_shift_range(hostlist_t hl);
 
 /* hostlist_find():
  *
- * Searches hostlist hl for the first host matching hostname 
- * and returns position in list if found. 
+ * Searches hostlist hl for the first host matching hostname
+ * and returns position in list if found.
  *
  * Returns -1 if host is not found.
  *
@@ -223,7 +223,7 @@ int hostlist_delete(hostlist_t hl, const char *hosts);
 /* hostlist_delete_host():
  *
  * Deletes the first host that matches `hostname' from the hostlist hl.
- * Note: "hostname" argument cannot contain a range of hosts 
+ * Note: "hostname" argument cannot contain a range of hosts
  *       (see hostlist_delete() for this functionality.)
  *
  * Returns 1 if successful, 0 if hostname is not found in list.
@@ -244,7 +244,7 @@ int hostlist_delete_nth(hostlist_t hl, int n);
 /* hostlist_count():
  *
  * Return the number of hosts in hostlist hl.
- */ 
+ */
 int hostlist_count(hostlist_t hl);
 
 /* hostlist_is_empty(): return true if hostlist is empty. */
@@ -253,7 +253,7 @@ int hostlist_count(hostlist_t hl);
 /* ----[ Other hostlist operations ]---- */
 
 /* hostlist_sort():
- * 
+ *
  * Sort the hostlist hl.
  *
  */
@@ -262,7 +262,7 @@ void hostlist_sort(hostlist_t hl);
 /* hostlist_uniq():
  *
  * Sort the hostlist hl and remove duplicate entries.
- * 
+ *
  */
 void hostlist_uniq(hostlist_t hl);
 
@@ -276,7 +276,7 @@ void hostlist_uniq(hostlist_t hl);
  * or -1 if truncation occurred.
  *
  * The result will be NULL terminated.
- * 
+ *
  * hostlist_ranged_string() will write a bracketed hostlist representation
  * where possible.
  */
@@ -336,11 +336,11 @@ void hostlist_iterator_reset(hostlist_iterator_t i);
 
 /* hostlist_next():
  *
- * Returns a pointer to the  next hostname on the hostlist 
+ * Returns a pointer to the  next hostname on the hostlist
  * or NULL at the end of the list
  *
  * The caller is responsible for freeing the returned memory.
- */ 
+ */
 char * hostlist_next(hostlist_iterator_t i);
 
 

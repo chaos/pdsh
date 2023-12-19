@@ -183,7 +183,8 @@ List info on all loaded \fBpdcp\fR modules and quit.
 .TP
 .I "-d"
 Include more complete thread status when SIGINT is received, and display
-connect and command time statistics on stderr when done.
+connect and command time statistics on stderr when done. Also, display any
+module loading errors on stderr, include option conflicts.
 .TP
 .I "-V"
 Output \fBpdcp\fR version information, along with list of currently

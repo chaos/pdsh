@@ -5,20 +5,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -26,7 +26,7 @@
 
 /*
  * Started with BSD mcmd.c which is:
- * 
+ *
  * Copyright (c) 1983, 1993, 1994, 2003
  *      The Regents of the University of California.  All rights reserved.
  *
@@ -53,12 +53,12 @@
  *    under the terms of the GNU General Public License as published
  *    by the Free Software Foundation; either version 2 of the
  *    License, or (at your option) any later version.
- *                              
+ *
  * 6. This is distributed in the hope that it will be useful, but
  *    WITHOUT ANY WARRANTY; without even the implied warranty of
  *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *    GNU General Public License for more details.
- *                                                           
+ *
  * 7. You should have received a copy of the GNU General Public License;
  *    if not, write to the Free Software Foundation, Inc., 59 Temple
  *    Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -146,24 +146,24 @@ static char sccsid[] = "@(#)mcmd.c      Based from: 8.3 (Berkeley) 3/26/94";
 #if STATIC_MODULES
 #  define pdsh_module_info mcmd_module_info
 #  define pdsh_module_priority mcmd_module_priority
-#endif    
+#endif
 
 int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
 
 static int mcmd_init(opt_t *);
 static int mcmd_signal(int, void *, int);
-static int mcmd(char *, char *, char *, char *, char *, int, int *, void **); 
+static int mcmd(char *, char *, char *, char *, char *, int, int *, void **);
 
 /* random num for all jobs in this group */
 static unsigned int randy = -1;
 
-/* 
+/*
  * Export pdsh module operations structure
  */
 struct pdsh_module_operations mcmd_module_ops = {
-    (ModInitF)       NULL, 
-    (ModExitF)       NULL, 
-    (ModReadWcollF)  NULL, 
+    (ModInitF)       NULL,
+    (ModExitF)       NULL,
+    (ModReadWcollF)  NULL,
     (ModPostOpF)     NULL,
 };
 
@@ -176,23 +176,23 @@ struct pdsh_rcmd_operations mcmd_rcmd_ops = {
     (RcmdF)        mcmd,
 };
 
-/* 
+/*
  * Export module options
  */
-struct pdsh_module_option mcmd_module_options[] = 
-{ 
+struct pdsh_module_option mcmd_module_options[] =
+{
     PDSH_OPT_TABLE_END
 };
 
-/* 
- * Mcmd module info 
+/*
+ * Mcmd module info
  */
 struct pdsh_module pdsh_module_info = {
     "rcmd",
     "mrsh",
     "Al Chu <chu11@llnl.gov>",
     "mrsh rcmd connect method",
-    DSH | PCP, 
+    DSH | PCP,
 
     &mcmd_module_ops,
     &mcmd_rcmd_ops,
@@ -211,7 +211,7 @@ mcmd_init(opt_t * opt)
         setuid (getuid ());
 
     /*
-     * Generate a random number to send in our package to the 
+     * Generate a random number to send in our package to the
      * server.  We will see it again and compare it when the
      * server sets up the stderr socket and sends it to us.
      * We need to loop for the tiny possibility we read 0 :P
@@ -292,7 +292,7 @@ encode_localhost_string (const char *host, char *str, int maxlen)
  *      locuser (IN)            local username
  *      remuser (IN)            remote username
  *      cmd (IN)                remote command to execute under shell
- *      rank (IN)               not used 
+ *      rank (IN)               not used
  *      fd2p (IN)               if non NULL, return stderr file descriptor here
  *      int (RETURN)            -1 on error, socket for I/O on success
  *
@@ -301,10 +301,10 @@ encode_localhost_string (const char *host, char *str, int maxlen)
  * - using "err" function output errors.
  * - passing in address as addr intead of calling gethostbyname
  * - using default mshell port instead of calling getservbyname
- * 
+ *
  */
-static int 
-mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd, 
+static int
+mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
         int rank, int *fd2p, void **argp)
 {
     struct sockaddr m_socket;
@@ -365,7 +365,7 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
 
     sin.sin_family = AF_INET;
 
-    memcpy(&sin.sin_addr.s_addr, addr, IP_ADDR_LEN); 
+    memcpy(&sin.sin_addr.s_addr, addr, IP_ADDR_LEN);
 
     sin.sin_port = htons(MRSH_PORT);
     if (connect(s, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
@@ -423,12 +423,12 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     /* put port in buffer. will be 0 if user didn't want stderr */
     snprintf(num,sizeof(num),"%d",lport);
 
-    /* 
+    /*
      * Use special keyed string if target is localhost, otherwise,
      *  encode the IP addr string.
      */
     if (!encode_localhost_string (ahost, haddrdot, sizeof (haddrdot))) {
-        /* inet_ntoa is not thread safe, so we use the following, 
+        /* inet_ntoa is not thread safe, so we use the following,
          * which is more or less ripped from glibc
          */
         memcpy(&m_in.s_addr, addr, IP_ADDR_LEN);
@@ -440,8 +440,8 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
      * We call munge_encode which will take what we write in and return a
      * pointer to an munged buffer.  What we get back is a null terminated
      * string of encrypted characters.
-     * 
-     * The format of the unmunged buffer is as follows (each a string terminated 
+     *
+     * The format of the unmunged buffer is as follows (each a string terminated
      * with a '\0' (null):
      *
      * stderr_port_number & /dev/urandom_client_produce_number are 0
@@ -461,15 +461,15 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
      * users_command                              variable        "ls -al"
      * '\0' '\0'
      *
-     * (The last extra null is accounted for in the following line's 
+     * (The last extra null is accounted for in the following line's
      *  last strlen() call.)
      *
      */
 
     mpvers = MRSH_PROTOCOL_VERSION;
 
-    mcount = ((strlen(remuser)+1) + (strlen(mpvers)+1) + 
-              (strlen(haddrdot)+1) + (strlen(num)+1) + 
+    mcount = ((strlen(remuser)+1) + (strlen(mpvers)+1) +
+              (strlen(haddrdot)+1) + (strlen(num)+1) +
               (strlen(num_seq)+1) + strlen(cmd)+2);
 
     tmbuf = mbuf = malloc(mcount);
@@ -502,7 +502,7 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
     if ((rv = munge_encode(&m,ctx,mbuf,mcount)) != EMUNGE_SUCCESS) {
         err("%p: %S: mcmd: munge_encode: %s\n", ahost, munge_ctx_strerror(ctx));
         munge_ctx_destroy(ctx);
-        if (s2 >= 0) 
+        if (s2 >= 0)
             close(s2);
         free(tmbuf);
         goto bad;
@@ -514,7 +514,7 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
 
     /*
      * Write stderr port in the clear in case we can't decode for
-     * some reason (i.e. bad credentials).  May be 0 if user 
+     * some reason (i.e. bad credentials).  May be 0 if user
      * doesn't want stderr
      */
     if (fd2p != NULL) {
@@ -565,8 +565,8 @@ mcmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
         xpfds[0].fd = s;
         xpfds[1].fd = s2;
         xpfds[0].events = xpfds[1].events = XPOLLREAD;
-        if (  ((rv = xpoll(xpfds, 2, -1)) < 0) 
-            || rv != 1 
+        if (  ((rv = xpoll(xpfds, 2, -1)) < 0)
+            || rv != 1
             || (xpfds[0].revents > 0)) {
             if (errno != 0)
                 err("%p: %S: mcmd: xpoll (setting up stderr): %m\n", ahost);

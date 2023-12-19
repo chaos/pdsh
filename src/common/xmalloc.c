@@ -5,20 +5,20 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
@@ -73,7 +73,7 @@ void *Malloc(size_t size)
     return new;
 }
 
-/* 
+/*
  * "Safe" version of realloc().  Args are different: pass in a pointer to
  * the object to be realloced instead of the object itself.
  *   item (IN/OUT)	double-pointer to allocated space
@@ -129,7 +129,7 @@ int Size(void *item)
     return p[1];
 }
 
-/* 
+/*
  * Free which takes a pointer to object to free, which it turns into a null
  * object.
  *   item (IN/OUT)	double-pointer to allocated space

@@ -5,27 +5,27 @@
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
  *  Written by Jim Garlick <garlick@llnl.gov>.
  *  UCRL-CODE-2003-005.
- *  
+ *
  *  This file is part of Pdsh, a parallel remote shell program.
  *  For details, see <http://www.llnl.gov/linux/pdsh/>.
- *  
+ *
  *  Pdsh is free software; you can redistribute it and/or modify it under
  *  the terms of the GNU General Public License as published by the Free
  *  Software Foundation; either version 2 of the License, or (at your option)
  *  any later version.
- *  
+ *
  *  Pdsh is distributed in the hope that it will be useful, but WITHOUT ANY
  *  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *  FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  *  details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License along
  *  with Pdsh; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 \*****************************************************************************/
 
 /*
- * This code is based on the MIT Kerberos IV kcmd.c with some athena hacks 
+ * This code is based on the MIT Kerberos IV kcmd.c with some athena hacks
  * removed and MT safety added, and the interface changed.  Original UC regents
  * header from BSD included below.
  *
@@ -35,7 +35,7 @@
 
 /*
  * Copyright (c) 1983 Regents of the University of California. All rights
- * reserved. 
+ * reserved.
  *
  * Redistribution and use in source and binary forms are permitted provided that
  * the above copyright notice and this paragraph are duplicated in all such
@@ -46,7 +46,7 @@
  * derived from this software without specific prior written permission. THIS
  * SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
- * MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE. 
+ * MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
 #if     HAVE_CONFIG_H
@@ -95,7 +95,7 @@
 #if STATIC_MODULES
 #  define pdsh_module_info k4cmd_module_info
 #  define pdsh_module_priority k4cmd_module_priority
-#endif    
+#endif
 
 int pdsh_module_priority = DEFAULT_MODULE_PRIORITY;
 
@@ -104,15 +104,15 @@ extern char *inet_ntoa();
 
 static int k4cmd_init(opt_t *);
 static int k4cmd_signal(int, void *, int);
-static int k4cmd(char *, char *, char *, char *, char *, int, int *, void **); 
+static int k4cmd(char *, char *, char *, char *, char *, int, int *, void **);
 
-/* 
+/*
  * Export pdsh module operations structure
  */
 struct pdsh_module_operations k4cmd_module_ops = {
-    (ModInitF)       NULL, 
-    (ModExitF)       NULL, 
-    (ModReadWcollF)  NULL, 
+    (ModInitF)       NULL,
+    (ModExitF)       NULL,
+    (ModReadWcollF)  NULL,
     (ModPostOpF)     NULL,
 };
 
@@ -125,23 +125,23 @@ struct pdsh_rcmd_operations k4cmd_rcmd_ops = {
     (RcmdF)      k4cmd,
 };
 
-/* 
+/*
  * Export module options
  */
-struct pdsh_module_option k4cmd_module_options[] = 
- { 
+struct pdsh_module_option k4cmd_module_options[] =
+ {
    PDSH_OPT_TABLE_END
  };
 
-/* 
- * k4cmd module info 
+/*
+ * k4cmd module info
  */
 struct pdsh_module pdsh_module_info = {
     "rcmd",
     "k4",
     "Jim Garlick <garlick@llnl.gov>",
     "kerberos based rcmd connect method",
-    DSH | PCP, 
+    DSH | PCP,
 
     &k4cmd_module_ops,
     &k4cmd_rcmd_ops,
@@ -286,7 +286,7 @@ k4cmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
 
     /*
      * Kerberos-authenticated service.  Don't have to send locuser, since
-     * its already in the ticket, and we'll extract it on the other side. 
+     * its already in the ticket, and we'll extract it on the other side.
      */
     /*krb_options |= KOPT_DONT_CANON; */
     pthread_mutex_lock(&mylock);
@@ -301,7 +301,7 @@ k4cmd(char *ahost, char *addr, char *locuser, char *remuser, char *cmd,
          * bits. This only catches the case of total failure -- but
          * that's the one where we get useful data from the remote
          * end. If we even get an authenticator back, then the
-         * problem gets diagnosed locally anyhow. 
+         * problem gets diagnosed locally anyhow.
          */
         extern KRB_INT32 __krb_sendauth_hidden_tkt_len;
         char *old_data = (char *) &__krb_sendauth_hidden_tkt_len;
