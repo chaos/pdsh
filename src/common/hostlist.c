@@ -1512,7 +1512,7 @@ _hostlist_create_bracketed(const char *hostlist, char *sep, char *r_op)
     }
 
     while ((tok = _next_tok(sep, &str)) != NULL) {
-        strncpy(cur_tok, tok, 1024);
+        strncpy(cur_tok, tok, 1023);
 
         if ((p = strchr(tok, '[')) != NULL) {
             char *q, *prefix = tok;

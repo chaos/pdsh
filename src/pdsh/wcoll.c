@@ -187,10 +187,10 @@ static char * wcoll_ctx_resolve_path (struct wcoll_ctx *ctx,
         const char *file, char *buf, int len)
 {
     if (file[0] == '/')
-        strncpy (buf, file, len);
+        strncpy (buf, file, len - 1);
     else if ( file[0] == '.'
             && (file[1] == '/' || (file[1] == '.' && file[2] == '/')))
-       strncpy (buf, file, len);
+       strncpy (buf, file, len - 1);
     else {
         if (wcoll_ctx_path_lookup (ctx, file, buf, len) < 0)
             return NULL;
