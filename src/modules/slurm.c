@@ -309,6 +309,20 @@ static hostlist_t _hl_append (hostlist_t hl, char *nodes)
     return (hl);
 }
 
+/*
+ * Make sure, slurm_init() is called before any call to the Slurm API
+ */
+static void _slurm_init() {
+  static bool _inited = false;
+
+  if (_inited)
+    return;
+#if SLURM_VERSION_NUMBER >= SLURM_VERSION_NUM(20,11,0)
+  slurm_init(NULL);
+#endif
+  _inited = true;
+}
+
 static hostlist_t _slurm_wcoll (List joblist)
 {
     int i;
@@ -320,6 +334,7 @@ static hostlist_t _slurm_wcoll (List joblist)
     if ((joblist == NULL) && (envjobid = _slurm_jobid()) < 0)
         return (NULL);
 
+    _slurm_init();
     if (slurm_load_jobs((time_t) NULL, &msg, SHOW_ALL) < 0) 
         errx ("Unable to contact slurm controller: %s\n", 
               slurm_strerror (errno));
@@ -369,6 +384,7 @@ static hostlist_t _slurm_wcoll_partition (List partitionlist)
     partition_info_t * p;
     ListIterator li;
 
+    _slurm_init();
     if (slurm_load_partitions((time_t) NULL, &msg, SHOW_ALL) < 0)
         errx ("Unable to contact slurm controller: %s\n",
               slurm_strerror (errno));
@@ -412,6 +428,7 @@ static hostlist_t _slurm_wcoll_constraint (hostlist_t wl, List constraintlist)
     char *c;
     ListIterator li;
 
+    _slurm_init();
     if (slurm_load_node((time_t) NULL, &msg, SHOW_ALL) < 0)
         errx ("Unable to contact slurm controller: %s\n",
               slurm_strerror (errno));

@@ -527,6 +527,9 @@ void opt_args_early (opt_t * opt, int argc, char *argv[])
                     Free ((void **) &opt->misc_modules);
                 opt->misc_modules = Strdup (optarg);
                 break;
+            case 'd':              /* debug */
+                opt->debug = true;
+                break;
         }
     }
 #ifdef __linux
@@ -600,9 +603,6 @@ void opt_args(opt_t * opt, int argc, char *argv[])
             break;
         case 'S':              /* get remote command status */
             opt->ret_remote_rc = true;
-            break;
-        case 'd':              /* debug */
-            opt->debug = true;
             break;
         case 'f':              /* fanout */
             if (string_to_int (optarg, &opt->fanout) < 0)
