@@ -135,6 +135,11 @@ static char *pdsh_options = NULL;
 static pers_t personality = DSH;
 
 /*
+ *  Debug mode
+ */
+static bool debug = false;
+
+/*
  *  Return the current pdsh "personality"
  */
 pers_t pdsh_personality(void)
@@ -205,8 +210,15 @@ bool opt_register(struct pdsh_module_option *opt_table)
      */
     for (p = opt_table; p && (p->opt != 0); p++) {
         if (  (personality & p->personality) 
-           && (strchr(pdsh_options, p->opt) != NULL))
+           && (strchr(pdsh_options, p->opt) != NULL)) {
+            if (debug) {
+                err("%p: Option %c in use by a previously loaded module.\n",
+                    p->opt);
+                err("%p: Module options currently in use are: %s\n",
+                    pdsh_options);
+            }
             return false;
+        }
     }
 
     for (p = opt_table; p && (p->opt != 0); p++) {
@@ -529,6 +541,10 @@ void opt_args_early (opt_t * opt, int argc, char *argv[])
                 break;
             case 'd':              /* debug */
                 opt->debug = true;
+                /*  Also set global debug flag to get module option
+                 *  debugging.
+                 */
+                debug = true;
                 break;
         }
     }
