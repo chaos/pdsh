@@ -2278,6 +2278,11 @@ static void _iterator_advance(hostlist_iterator_t i)
         return;
     if (++(i->depth) > (i->hr->hi - i->hr->lo)) {
         i->depth = 0;
+        if (i->idx >= (i->hl->size - 1)) {
+            ++i->idx;
+            i->hr = NULL;
+            return;
+        }
         i->hr = i->hl->hr[++i->idx];
     }
 }
