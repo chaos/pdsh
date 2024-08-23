@@ -1,7 +1,5 @@
 /*****************************************************************************\
- *  $Id$
- *****************************************************************************
- *  $LSDId: hostlist.h 7428 2008-05-23 16:08:31Z grondo $
+ *  $LSDId: commit c08d251f3cc9b1a5b69a268f952d64f990366835 $
  *****************************************************************************
  *  Copyright (C) 2002 The Regents of the University of California.
  *  Produced at Lawrence Livermore National Laboratory (cf, DISCLAIMER).
