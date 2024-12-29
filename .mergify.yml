@@ -1,6 +1,14 @@
 queue_rules:
   - name: default
-    conditions:
+    queue_conditions:
+      - base=master
+      - label="merge-when-passing"
+      - label!="work-in-progress"
+      - "approved-reviews-by=@chaos/chaos-developers"
+      - "#approved-reviews-by>0"
+      - "#changes-requested-reviews-by=0"
+      - -title~=^\[*[Ww][Ii][Pp]
+    merge_conditions:
       - base=master
       - status-success="validate commits"
       - status-success="ubuntu"
@@ -12,22 +20,10 @@ queue_rules:
       - "#approved-reviews-by>0"
       - "#changes-requested-reviews-by=0"
       - -title~=^\[*[Ww][Ii][Pp]
- 
+    update_method: rebase
+    merge_method: merge
+
 pull_request_rules:
-  - name: rebase and merge when passing all checks
-    conditions:
-      - base=master
-      - label="merge-when-passing"
-      - label!="work-in-progress"
-      - "approved-reviews-by=@chaos/chaos-developers"
-      - "#approved-reviews-by>0"
-      - "#changes-requested-reviews-by=0"
-      - -title~=^\[*[Ww][Ii][Pp]
-    actions:
-      queue:
-        name: default
-        method: merge
-        update_method: rebase
   - name: remove outdated approved reviews
     conditions:
       - author!=@chaos-developers
@@ -38,3 +34,7 @@ pull_request_rules:
         message: |
           Approving reviews have been dismissed because this pull request
           was updated.
+  - name: rebase and merge when passing all checks
+    conditions: []
+    actions:
+      queue:
