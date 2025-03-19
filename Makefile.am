@@ -47,6 +47,9 @@ EXTRA_DIST = \
 
 # coverage
 
+CODE_COVERAGE_LCOV_RMOPTS = \
+	--ignore-errors unused
+
 CODE_COVERAGE_IGNORE_PATTERN = \
         "/tests/*" \
         "/pdsh/cbuf.*" \
