@@ -58,9 +58,11 @@
 
 #ifndef _BOOL_DEFINED
 #  define _BOOL_DEFINED
+# if __STDC_VERSION__ < 202311L
 #  if !defined (true) && !defined (false)
 typedef enum { false, true } bool;
 #  endif
+# endif
 #endif
 
 #endif                          /* !_MACROS_INCLUDED */
