@@ -817,7 +817,8 @@ cbuf_write_line (cbuf_t dst, char *srcbuf, int *ndropped)
 {
     int len;
     int nfree, ncopy, n;
-    int ndrop = 0, d;
+    int ndrop = 0;
+    int d = 0;
     char *psrc = srcbuf;
     char *newline = "\n";
 
