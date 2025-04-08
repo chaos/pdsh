@@ -207,8 +207,12 @@ mcmd_init(opt_t * opt)
     /*
      * Drop privileges if running setuid root
      */
-    if ((geteuid() == 0) && (getuid() != 0))
-        setuid (getuid ());
+    if ((geteuid() == 0) && (getuid() != 0)) {
+        if ((setuid (getuid ()) < 0)) {
+            err("%p: mcmd: setuid () failed\n");
+            return -1;
+	}
+    }
 
     /*
      * Generate a random number to send in our package to the
@@ -277,8 +281,8 @@ encode_localhost_string (const char *host, char *str, int maxlen)
     if (gethostname (hostname, MAXHOSTNAMELEN) < 0)
         errx ("mcmd: gethostname: %m\n");
 
-    strncpy (str, MRSH_LOCALHOST_KEY, MRSH_LOCALHOST_KEYLEN);
-    strncat (str, hostname, maxlen - MRSH_LOCALHOST_KEYLEN - 1);
+    strncpy (str, MRSH_LOCALHOST_KEY, MRSH_LOCALHOST_KEYLEN + 1);
+    strncat (str, hostname, maxlen - MRSH_LOCALHOST_KEYLEN);
 
     return (strlen (str));
 }
