@@ -404,7 +404,7 @@ _genders_to_altnames(genders_t g, hostlist_t hl)
 
         /*
          *  If node not found, attempt to lookup canonical name via
-         *   altername name.
+         *   alternate name.
          */
         if ((rc < 0) && (genders_errnum(g) == GENDERS_ERR_NOTFOUND))
             rc = genders_getnodes (g, &altname, 1, altattr, host);
