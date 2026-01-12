@@ -1,6 +1,14 @@
 This file describes changes in recent versions of pdsh. It primarily
 documents those changes that are of interest to users and admins.
 
+* Changes in pdsh-2.36 (2025-01-12)
+===================================
+ -- fix build on C23 compiler (Egbert Eich)
+ -- mcmd: fix compiler warnings on modern GCC (Adrian Reber)
+ -- fix closeall performance with large _SC_OPEN_MAX (Zheyu Shen)
+ -- genders: fix typo in comment (Al Chu)
+ -- fix hostlist out of bounds array access (Al Chu)
+
 * Changes in pdsh-2.35 (2023-12-19)
 ===================================
  -- slurm: call slurm_init() once before any call to Slurm API (Egbert Eich)
