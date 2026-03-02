@@ -380,6 +380,14 @@ or "-v" would increase the verbosity of ssh. (Note: these arguments
 are actually prepended to the ssh commandline to ensure they appear
 before any target hostname argument to ssh.)
 .TP
+PDSH_DEFAULT_DOMAIN
+When set, \fBpdsh\fR will append \fI.\fRDOMAIN to any short hostname
+(one containing no \fI.\fR character) given to the \fI\-x\fR exclusion
+option before attempting to remove it from the working collection.
+This is useful when the target list (e.g. from an IPA hostgroup via
+\fI\-g\fR) contains fully-qualified domain names but the exclusion list
+is specified with short hostnames.
+.TP
 WCOLL
 If no other node selection option is used, the WCOLL environment
 variable may be set to a filename from which a list of target

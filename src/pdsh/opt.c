@@ -1434,16 +1434,34 @@ static void wcoll_apply_excluded (opt_t *opt, List excludes)
 {
     ListIterator i;
     char *arg;
+    const char *domain;
 
     if (!opt->wcoll || !excludes)
         return;
+
+    domain = getenv ("PDSH_DEFAULT_DOMAIN");
 
     /*
      *  filter explicitly excluded hosts:
      */
     i = list_iterator_create (excludes);
-    while ((arg = list_next (i)))
+    while ((arg = list_next (i))) {
         hostlist_delete (opt->wcoll, arg);
+        /*
+         *  If PDSH_DEFAULT_DOMAIN is set and the excluded hostname contains
+         *  no '.' (i.e. it is a short hostname), also try to delete the
+         *  fully-qualified form so that short hostnames in -x match FQDNs
+         *  in the working collection (e.g. from IPA hostgroups via -g).
+         */
+        if (domain && !strchr (arg, '.')) {
+            char *fqdn = NULL;
+            xstrcat (&fqdn, arg);
+            xstrcatchar (&fqdn, '.');
+            xstrcat (&fqdn, (char *) domain);
+            hostlist_delete (opt->wcoll, fqdn);
+            Free ((void **) &fqdn);
+        }
+    }
     list_iterator_destroy (i);
 }
 
